@@ -1,0 +1,276 @@
+{
+  "@@locale": "pt",
+  "appTitle": "flutter_bloc_app_template",
+  "@appTitle": {
+    "description": "O título do aplicativo"
+  },
+  "itemsTitle": "Artigos de Exemplo",
+  "@itemsTitle": {
+    "description": "O título dos artigos de exemplo"
+  },
+  "emailsTitle": "E-mails",
+  "@emailsTitle": {
+    "description": "O título da tela de e-mails"
+  },
+  "launchesTitle": "Lançamentos",
+  "@launchesTitle": {
+    "description": "O título da tela de lançamentos"
+  },
+  "itemTitle": "Artigo de Exemplo {id}",
+  "@itemTitle": {
+    "description": "O título do artigo"
+  },
+  "settingsTitle": "Configurações",
+  "@settingsTitle": {
+    "description": "O título das configurações"
+  },
+  "appearanceTitle": "Aparência",
+  "@appearanceTitle": {
+    "description": "Título da tela de aparência"
+  },
+  "dynamicColorSettingsItemTitle": "Usar cores dinâmicas",
+  "@dynamicColorSettingsItemTitle": {
+    "description": "Título para ativar cores dinâmicas do papel de parede"
+  },
+  "dynamicColorSettingsItemDescription": "Adaptar as cores do app ao papel de parede",
+  "@dynamicColorSettingsItemDescription": {
+    "description": "Descrição da configuração de cores dinâmicas"
+  },
+  "darkThemeSettingsItemTitle": "Modo de tema",
+  "@darkThemeSettingsItemTitle": {
+    "description": "Título para selecionar tema claro/escuro/sistema"
+  },
+  "darkThemeOnSettingsItemTitle": "Escuro",
+  "@darkThemeOnSettingsItemTitle": {
+    "description": "Opção de tema escuro"
+  },
+  "darkThemeOffSettingsItemTitle": "Claro",
+  "@darkThemeOffSettingsItemTitle": {
+    "description": "Opção de tema claro"
+  },
+  "darkThemeFollowSystemSettingsItemTitle": "Padrão do sistema",
+  "@darkThemeFollowSystemSettingsItemTitle": {
+    "description": "Opção para seguir o tema do sistema"
+  },
+  "tryAgainButton": "Tentar novamente",
+  "@tryAgainButton": {
+    "description": "Rótulo do botão de tentativa novamente em telas de erro"
+  },
+  "appearanceSettingsItem": "Appearance",
+  "@appearanceSettingsItem": {
+    "description": "Title for appearance settings item"
+  },
+  "appearanceSettingsItemDescription": "Dark theme dynamic color, languages",
+  "@appearanceSettingsItemDescription": {
+    "description": "Description for appearance settings item"
+  },
+  "aboutSettingsItem": "About",
+  "@aboutSettingsItem": {
+    "description": "Title for about settings item"
+  },
+  "aboutSettingsItemDescription": "Version, links, feedback",
+  "@aboutSettingsItemDescription": {
+    "description": "Description for about settings item"
+  },
+  "missionTitle": "Missão: {mission}",
+  "@missionTitle": {
+    "description": "O rótulo do item de lançamento da missão",
+    "placeholders": {
+      "mission": {}
+    }
+  },
+  "launchedAt": "Lançado em: {launchedAt}",
+  "@launchedAt": {
+    "description": "Rótulo do item 'Lançado em'",
+    "placeholders": {
+      "launchedAt": {}
+    }
+  },
+  "rocket": "Foguete: {rocketName} ({rocketType})",
+  "@rocket": {
+    "description": "Rótulo do item de foguete",
+    "placeholders": {
+      "rocketName": {},
+      "rocketType": {}
+    }
+  },
+  "daysSinceTodayTitle": "Há {days} dias",
+  "@daysSinceTodayTitle": {
+    "description": "Mostra quantos dias se passaram desde hoje"
+  },
+  "daysFromTodayTitle": "Em {days} dias",
+  "@daysFromTodayTitle": {
+    "description": "Mostra quantos dias a partir de hoje"
+  },
+  "themeTitle": "Tema",
+  "@themeTitle": {},
+  "systemThemeTitle": "Tema do Sistema",
+  "@systemThemeTitle": {},
+  "lightThemeTitle": "Tema Claro",
+  "@lightThemeTitle": {},
+  "darkThemeTitle": "Tema Escuro",
+  "@darkThemeTitle": {},
+  "lightGoldThemeTitle": "Tema Dourado Claro",
+  "@lightGoldThemeTitle": {},
+  "darkGoldThemeTitle": "Tema Dourado Escuro",
+  "@darkGoldThemeTitle": {},
+  "lightMintThemeTitle": "Tema Menta Claro",
+  "@lightMintThemeTitle": {},
+  "darkMintThemeTitle": "Tema Menta Escuro",
+  "@darkMintThemeTitle": {},
+  "itemDetailsTitle": "Detalhes do Artigo",
+  "@itemDetailsTitle": {
+    "description": "O título da tela de detalhes do artigo"
+  },
+  "error": "Erro",
+  "@error": {},
+  "emptyList": "Lista Vazia",
+  "@emptyList": {},
+  "tabHome": "Início",
+  "@tabHome": {},
+  "tabSettings": "Configurações",
+  "@tabSettings": {},
+  "newsScreen": "Notícias",
+  "@newsScreen": {},
+  "disabledButtonTitle": "Desativado",
+  "@disabledButtonTitle": {},
+  "disabledRoundedButtonTitle": "Desativado com Bordas Arredondadas",
+  "@disabledRoundedButtonTitle": {},
+  "disabledWithIconButtonTitle": "Desativado com Ícone",
+  "@disabledWithIconButtonTitle": {},
+  "enabledButtonTitle": "Ativado",
+  "@enabledButtonTitle": {},
+  "borderRadiusButtonTitle": "Raio da Borda",
+  "@borderRadiusButtonTitle": {},
+  "borderSideButtonTitle": "Lado da Borda",
+  "@borderSideButtonTitle": {},
+  "iconButtonTitle": "Com Ícone",
+  "@iconButtonTitle": {},
+  "iconAndPaddingButtonTitle": "Com Ícone e Espaçamento",
+  "@iconAndPaddingButtonTitle": {},
+  "transparentButtonTitle": "Transparente",
+  "@transparentButtonTitle": {},
+  "missionTimeline": "Cronograma da Missão",
+  "staticFireTest": "Teste de Fogo Estático",
+  "launch": "Lançamento",
+  "missionSuccess": "Sucesso da Missão",
+  "objectivesCompleted": "Objetivos Concluídos",
+  "missionSuccessful": "Missão bem-sucedida",
+  "missionFailed": "Missão falhou",
+  "allObjectivesCompleted": "Todos os objetivos concluídos",
+  "objectivesNotMet": "Objetivos da missão não alcançados",
+  "rocketTitle": "Foguete",
+  "payload": "Carga útil",
+  "orbit": "Órbita",
+  "rocketDetails": "Detalhes do Foguete",
+  "rocketName": "Nome do Foguete",
+  "rocketType": "Tipo",
+  "rocketBlock": "Bloco",
+  "firstStage": "🚀 Primeiro Estágio",
+  "coreSerial": "Número de Série do Núcleo",
+  "flight": "Voo",
+  "landing": "Pouso",
+  "landingSuccess": "Pouso bem-sucedido",
+  "gridFins": "Aletas de grade",
+  "landingLegs": "Pernas de pouso",
+  "reused": "Reutilizado",
+  "notAvailable": "N/D",
+  "recoveryShips": "Navios de Recuperação",
+  "payloadTitle": "Carga útil",
+  "id": "ID",
+  "type": "Tipo",
+  "mass": "Massa",
+  "manufacturer": "Fabricante",
+  "nationality": "Nacionalidade",
+  "customers": "Clientes",
+  "missionOverview": "Visão geral da missão",
+  "noDetails": "Nenhum detalhe disponível",
+  "linksResources": "Links e Recursos",
+  "watchVideo": "Assistir Vídeo",
+  "wikipedia": "Wikipédia",
+  "article": "Artigo",
+  "reddit": "Reddit",
+  "pressKit": "Kit de Imprensa",
+  "launchSite": "Local de Lançamento",
+  "siteIdLabel": "ID do Local:",
+  "flightNumber": "Voo #{number}",
+  "rocketsTab": "Foguetes",
+  "@rocketsTab": {
+    "description": "Título da aba Foguetes"
+  },
+  "activeStatus": "Ativa",
+  "@activeStatus": {
+    "description": "Rótulo para foguete ativo"
+  },
+  "retiredStatus": "Aposentada",
+  "@retiredStatus": {
+    "description": "Rótulo para foguete inativo"
+  },
+  "successRate": "{percentage}% de sucesso",
+  "@successRate": {
+    "description": "Rótulo de taxa de sucesso do foguete"
+  },
+  "rocketsTitle": "Foguetes",
+  "@rocketsTitle": {
+    "description": "Título da tela de Foguetes"
+  },
+  "overview": "Visão Geral",
+  "specifications": "Especificações",
+  "payloadCapacity": "Capacidade de Carga",
+  "engineDetails": "Detalhes do Motor",
+  "heightLabel": "Altura",
+  "diameterLabel": "Diâmetro",
+  "massLabel": "Massa",
+  "stagesLabel": "Estágios",
+  "typeLabel": "Tipo",
+  "versionLabel": "Versão",
+  "numberLabel": "Número",
+  "propellant1Label": "Propelente 1",
+  "propellant2Label": "Propelente 2",
+  "thrustSeaLevelLabel": "Empuxo (nível do mar)",
+  "tons": "toneladas",
+  "learnMore": "Saiba mais",
+  "launchInformation": "Informações do lançamento",
+  "launchMass": "Massa do lançamento",
+  "launchVehicle": "Veículo de lançamento",
+  "orbitalParameters": "Parâmetros orbitais",
+  "millionKm": "milhões km",
+  "missionDetails": "Detalhes da missão",
+  "trackLive": "Acompanhar ao vivo",
+  "marsDistance": "Distância a Marte",
+  "earthDistance": "Distância à Terra",
+  "currentSpeed": "Velocidade Atual",
+  "orbitalPeriod": "Período Orbital",
+  "unitDays": "dias",
+  "unitKph": "km/h",
+  "launched": "Lançado: {date}",
+  "roadsterTitle": "Roadster",
+  "roadsterDescription": "Tesla Roadster de Elon Musk",
+  "apoapsis": "Apoápse",
+  "periapsis": "Periápse",
+  "semiMajorAxis": "Eixo semi-maior",
+  "eccentricity": "Excentricidade",
+  "inclination": "Inclinação",
+  "longitude": "Longitude",
+  "core_status_active": "ativo",
+  "core_status_lost": "perdido",
+  "core_status_inactive": "inativo",
+  "core_status_unknown": "desconhecido",
+  "errorLoadingCores": "Erro ao carregar núcleos",
+  "retry": "Tentar novamente",
+  "firstLaunch": "Primeiro lançamento",
+  "missions": "{count} missões",
+  "reuses": "{count} reutilizações",
+  "unknown": "Desconhecido",
+  "na": "N/D",
+  "core_filter_status_all": "Todos",
+  "core_filter_status_active": "Ativo",
+  "core_filter_status_lost": "Perdido",
+  "core_filter_status_inactive": "Inativo",
+  "core_filter_status_unknown": "Desconhecido",
+  "core_filter_search_hint": "Pesquisar núcleos ou missões...",
+  "noCoresFound": "Nenhum núcleo encontrado para \"{query}\"",
+  "blockLabel": "Bloco {blockNumber}",
+  "spaceXCoresTitle": "Núcleos Falcon da SpaceX",
+  "coresLabel": "Núcleos"
+}
