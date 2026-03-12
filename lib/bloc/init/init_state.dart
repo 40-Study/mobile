@@ -1,5 +1,7 @@
 part of 'init_bloc.dart';
 
+/// [InitBloc] states (nouns).
+@immutable
 abstract class InitState extends Equatable {
   const InitState();
 
@@ -7,6 +9,8 @@ abstract class InitState extends Equatable {
   List<Object> get props => [];
 }
 
-class Initial extends InitState {}
+/// Before app is ready.
+final class InitInitial extends InitState {}
 
-class OpenApp extends InitState {}
+/// Ready; navigate to main.
+final class InitOpenApp extends InitState {}

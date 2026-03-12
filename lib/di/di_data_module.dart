@@ -1,5 +1,5 @@
-import 'package:flutter_bloc_app_template/data/theme_storage.dart';
-import 'package:flutter_bloc_app_template/di/di_container.dart';
+import 'package:study/data/theme_storage.dart';
+import 'package:study/di/di_container.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

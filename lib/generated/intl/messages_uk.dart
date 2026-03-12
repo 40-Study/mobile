@@ -58,7 +58,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Всі цілі досягнуті",
     ),
     "apoapsis": MessageLookupByLibrary.simpleMessage("Апоцентр"),
-    "appTitle": MessageLookupByLibrary.simpleMessage("шаблон_flutter_bloc_app"),
+    "appTitle": MessageLookupByLibrary.simpleMessage("40Study"),
     "appearanceSettingsItem": MessageLookupByLibrary.simpleMessage(
       "Зовнішній вигляд",
     ),

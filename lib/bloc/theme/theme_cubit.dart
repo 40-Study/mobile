@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc_app_template/bloc/theme/app_theme.dart';
-import 'package:flutter_bloc_app_template/index.dart';
+import 'package:study/bloc/theme/app_theme.dart';
+import 'package:study/index.dart';
 
 Map<AppTheme, ThemeData> getThemeData(MaterialTheme theme) {
   final themeData = <AppTheme, ThemeData>{
@@ -18,7 +18,7 @@ Map<AppTheme, ThemeData> getThemeData(MaterialTheme theme) {
   return themeData;
 }
 
-/// Saves and loads information regarding the theme setting.
+/// Theme persistence and mode (light/dark/system).
 class ThemeCubit extends Cubit<AppThemeSettings> {
   ThemeCubit(this.themeRepository) : super(defaultTheme);
 
@@ -45,7 +45,6 @@ class ThemeCubit extends Cubit<AppThemeSettings> {
 
   void updateTheme(AppThemeSettings value) => setTheme = value;
 
-  /// Returns appropriate theme mode
   ThemeMode get themeMode {
     switch (state.darkTheme.darkThemeValue) {
       case DarkThemePreference.on:
@@ -58,7 +57,6 @@ class ThemeCubit extends Cubit<AppThemeSettings> {
     }
   }
 
-  /// Default theme
   ThemeData getDefaultTheme(MaterialTheme theme) {
     final themeData = getThemeData(theme);
     switch (state.appTheme) {

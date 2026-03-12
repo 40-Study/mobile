@@ -1,10 +1,7 @@
-/// Application configuration.
+/// App config.
 class AppConfig {
-  AppConfig({
-    required this.url,
-  });
+  AppConfig({required this.url});
 
-  /// Base url.
   final String url;
 
   AppConfig copyWith({

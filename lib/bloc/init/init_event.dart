@@ -1,5 +1,7 @@
 part of 'init_bloc.dart';
 
+/// [InitBloc] events (use past tense).
+@immutable
 abstract class InitEvent extends Equatable {
   const InitEvent();
 
@@ -7,4 +9,5 @@ abstract class InitEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class StartAppEvent extends InitEvent {}
+/// App start requested (e.g. after splash).
+final class InitStarted extends InitEvent {}

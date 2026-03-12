@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_app_template/index.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/index.dart';
 
 class Routes {
   static const app = 'home';
@@ -10,7 +11,9 @@ class Routes {
   static const settings = 'settings';
 }
 
-final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+/// Navigator key from DI. Use after [initDI].
+GlobalKey<NavigatorState> get appNavigatorKey =>
+    diContainer.get<GlobalKey<NavigatorState>>();
 
 class NavigationService {
   final _appRoutes = {
@@ -26,12 +29,10 @@ class NavigationService {
     Routes.settings,
   };
 
-  // iOS: full screen routes pop up from the bottom and disappear vertically too
-  // On iOS that's a standard full screen dialog
-  // Has no effect on Android.
+  /// Full-screen dialog routes (iOS style; no effect on Android).
   final Set<String> _fullScreenRoutes = {};
 
-  // iOS transition: Pages that slides in from the right and exits in reverse.
+  /// Routes with slide-from-right transition (Cupertino).
   final Set<String> _cupertinoRoutes = {};
 
   static NavigationService of(BuildContext context) =>
@@ -69,7 +70,7 @@ class NavigationService {
         pageBuilder: (context, animation, secondaryAnimation) =>
             builder(settings.arguments),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(1.0, 0.0); // Slide from right
+          const begin = Offset(1.0, 0.0);
           const end = Offset.zero;
           const curve = Curves.easeInOut;
 

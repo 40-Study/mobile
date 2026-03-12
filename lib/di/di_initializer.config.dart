@@ -11,16 +11,14 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:dio/dio.dart' as _i361;
 import 'package:flutter/material.dart' as _i409;
-import 'package:flutter_bloc_app_template/data/theme_storage.dart' as _i750;
-import 'package:flutter_bloc_app_template/di/di_app_module.dart' as _i367;
-import 'package:flutter_bloc_app_template/di/di_data_module.dart' as _i513;
-import 'package:flutter_bloc_app_template/di/di_network_module.dart' as _i52;
-import 'package:flutter_bloc_app_template/di/di_repository_module.dart'
-    as _i381;
-import 'package:flutter_bloc_app_template/repository/theme_repository.dart'
-    as _i626;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
+import 'package:study/data/theme_storage.dart' as _i1013;
+import 'package:study/di/di_app_module.dart' as _i183;
+import 'package:study/di/di_data_module.dart' as _i207;
+import 'package:study/di/di_network_module.dart' as _i541;
+import 'package:study/di/di_repository_module.dart' as _i169;
+import 'package:study/repository/theme_repository.dart' as _i354;
 import 'package:talker/talker.dart' as _i993;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -30,27 +28,27 @@ extension GetItInjectableX on _i174.GetIt {
     _i526.EnvironmentFilter? environmentFilter,
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
-    final dIAppModule = _$DIAppModule();
     final networkModule = _$NetworkModule();
+    final dIAppModule = _$DIAppModule();
     final dIDataModule = _$DIDataModule();
     final repositoryModule = _$RepositoryModule();
-    gh.factory<_i993.Talker>(() => dIAppModule.provideLogger());
     gh.factory<_i361.Dio>(() => networkModule.provideDio());
     gh.lazySingleton<_i409.GlobalKey<_i409.NavigatorState>>(
-      () => dIAppModule.key,
+      () => dIAppModule.navigatorKey,
     );
-    gh.lazySingleton<_i750.ThemeStorage>(() => dIDataModule.themeStorage);
-    gh.factory<_i626.ThemeRepository>(
-      () => repositoryModule.provideThemeRepository(gh<_i750.ThemeStorage>()),
+    gh.lazySingleton<_i993.Talker>(() => dIAppModule.provideLogger());
+    gh.lazySingleton<_i1013.ThemeStorage>(() => dIDataModule.themeStorage);
+    gh.factory<_i354.ThemeRepository>(
+      () => repositoryModule.provideThemeRepository(gh<_i1013.ThemeStorage>()),
     );
     return this;
   }
 }
 
-class _$DIAppModule extends _i367.DIAppModule {}
+class _$NetworkModule extends _i541.NetworkModule {}
 
-class _$NetworkModule extends _i52.NetworkModule {}
+class _$DIAppModule extends _i183.DIAppModule {}
 
-class _$DIDataModule extends _i513.DIDataModule {}
+class _$DIDataModule extends _i207.DIDataModule {}
 
-class _$RepositoryModule extends _i381.RepositoryModule {}
+class _$RepositoryModule extends _i169.RepositoryModule {}

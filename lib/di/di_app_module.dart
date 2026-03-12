@@ -5,9 +5,8 @@ import 'package:talker/talker.dart';
 @module
 abstract class DIAppModule {
   @lazySingleton
-  GlobalKey<NavigatorState> get key => GlobalKey<NavigatorState>();
+  GlobalKey<NavigatorState> get navigatorKey => GlobalKey<NavigatorState>();
 
-  Talker provideLogger() {
-    return Talker();
-  }
+  @lazySingleton
+  Talker provideLogger() => Talker();
 }

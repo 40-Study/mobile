@@ -51,7 +51,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "apoapsis": MessageLookupByLibrary.simpleMessage("Aphel"),
     "appTitle": MessageLookupByLibrary.simpleMessage(
-      "flutter_bloc_app_template",
+      "40Study",
     ),
     "appearanceSettingsItem": MessageLookupByLibrary.simpleMessage(
       "Appearance",

@@ -9,7 +9,7 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
-  String get appTitle => 'flutter_bloc_app_template';
+  String get appTitle => '40Study';
 
   @override
   String get itemsTitle => 'Artigos de Exemplo';

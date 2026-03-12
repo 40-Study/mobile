@@ -9,7 +9,7 @@ class AppLocalizationsUk extends AppLocalizations {
   AppLocalizationsUk([String locale = 'uk']) : super(locale);
 
   @override
-  String get appTitle => 'шаблон_flutter_bloc_app';
+  String get appTitle => '40Study';
 
   @override
   String get itemsTitle => 'Приклади елементів';

@@ -1,5 +1,5 @@
-import 'package:flutter_bloc_app_template/di/di_container.dart';
-import 'package:flutter_bloc_app_template/di/di_initializer.config.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/di/di_initializer.config.dart';
 import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,7 +13,7 @@ Future<GetIt> initDI(GetIt getIt, String environment) async {
 
 @module
 void registerDependencies() {
-  // Register SharedPreferences dependency
+  // SharedPreferences
   diContainer.registerLazySingletonAsync<SharedPreferences>(() async {
     final sharedPreferences = await SharedPreferences.getInstance();
     return sharedPreferences;

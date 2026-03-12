@@ -1,4 +1,4 @@
-import 'package:flutter_bloc_app_template/bloc/theme/app_theme.dart';
+import 'package:study/bloc/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 abstract class ThemeStorage {

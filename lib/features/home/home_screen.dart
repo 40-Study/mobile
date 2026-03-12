@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc_app_template/generated/l10n.dart';
-import 'package:flutter_bloc_app_template/index.dart';
+import 'package:study/generated/l10n.dart';
+import 'package:study/index.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

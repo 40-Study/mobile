@@ -9,7 +9,7 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
-  String get appTitle => 'flutter_bloc_app_template';
+  String get appTitle => '40Study';
 
   @override
   String get itemsTitle => 'Beispielartikel';

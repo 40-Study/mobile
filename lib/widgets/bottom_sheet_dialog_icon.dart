@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc_app_template/constants/index.dart';
-import 'package:flutter_bloc_app_template/generated/colors.gen.dart';
+import 'package:study/constants/index.dart';
+import 'package:study/generated/colors.gen.dart';
 
 class BottomSheetDialogIcon extends StatelessWidget {
   @override
@@ -10,8 +10,8 @@ class BottomSheetDialogIcon extends StatelessWidget {
       height: UiSize.bottomSheetTopIconHeight,
       child: Card(
         shadowColor: Colors.transparent,
-        color: ColorName.bottomSheetTopIconColor, //Center
-      ), //Card
+        color: ColorName.bottomSheetTopIconColor,
+      ),
     );
   }
 }

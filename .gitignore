@@ -18,8 +18,9 @@ Thumbs.db
 .gradle/
 local.properties
 
-# VS Code
+# VS Code / Cursor
 .vscode/
+.cursor/
 *.code-workspace
 
 # Flutter / Dart / Pub
