@@ -100,7 +100,6 @@ coverage/
 !.env.example
 *.pem
 
-# Generated (keep in repo if needed for build, uncomment to ignore)
-# lib/generated/
-# lib/**/*.g.dart
-# lib/**/*.freezed.dart
+# Generated
+lib/**/*.g.dart
+lib/**/*.freezed.dart
