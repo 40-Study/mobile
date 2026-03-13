@@ -57,6 +57,13 @@ abstract class AuthApiClient {
     @Body() Map<String, dynamic> body,
   );
 
+  /// Lấy danh sách system roles.
+  @GET('/api/system-roles/')
+  Future<HttpResponse<dynamic>> getSystemRoles(
+    @Query('page') int page,
+    @Query('page_size') int pageSize,
+  );
+
   // --- Protected APIs (cần token) ---
 
   /// Đăng xuất thiết bị hiện tại.

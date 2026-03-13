@@ -7,7 +7,7 @@ void main(List<String> args) {
   Environment.init(
     buildType: BuildType.staging,
     config: AppConfig(
-      url: '',
+      url: 'http://localhost:3000',
     ),
   );
   run();

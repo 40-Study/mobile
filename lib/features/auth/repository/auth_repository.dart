@@ -20,6 +20,9 @@ abstract class AuthRepository {
     String? organizationId,
   });
 
+  /// Lấy danh sách system roles từ server.
+  Future<List<RoleModel>> getSystemRoles();
+
   /// Gửi form đăng ký, server gửi OTP qua email.
   Future<void> registerRequest({
     required String email,
