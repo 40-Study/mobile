@@ -6,6 +6,7 @@ import 'package:study/index.dart';
 
 class Routes {
   static const app = 'home';
+  static const onboarding = 'onboarding';
   static const appearance = 'appearance';
   static const darkTheme = 'darkTheme';
   static const settings = 'settings';
@@ -18,6 +19,7 @@ GlobalKey<NavigatorState> get appNavigatorKey =>
 class NavigationService {
   final _appRoutes = {
     Routes.app: (_) => const HomeScreen(),
+    Routes.onboarding: (_) => const OnboardingScreen(),
     Routes.appearance: (_) => const AppearanceScreen(),
     Routes.darkTheme: (_) => const DarkThemeScreen(),
     Routes.settings: (_) => const SettingsScreen(),

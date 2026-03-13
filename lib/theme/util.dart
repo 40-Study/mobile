@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-const _defaultFontName = 'Rubik';
+// Web dùng Inter làm font sans chính (tailwind.config.ts).
+const _defaultFontName = 'Inter';
 
 TextTheme createTextTheme({
   required BuildContext context,

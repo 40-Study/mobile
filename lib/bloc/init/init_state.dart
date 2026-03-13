@@ -12,5 +12,8 @@ abstract class InitState extends Equatable {
 /// Before app is ready.
 final class InitInitial extends InitState {}
 
+/// First launch: show onboarding (3 splash pages).
+final class InitOpenOnboarding extends InitState {}
+
 /// Ready; navigate to main.
 final class InitOpenApp extends InitState {}

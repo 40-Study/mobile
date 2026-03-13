@@ -40,6 +40,8 @@ class App extends StatelessWidget {
                   listener: (_, state) {
                     if (state is InitOpenApp) {
                       navigator.pushAndRemoveAll(Routes.app);
+                    } else if (state is InitOpenOnboarding) {
+                      navigator.pushAndRemoveAll(Routes.onboarding);
                     }
                   },
                   child: child,
