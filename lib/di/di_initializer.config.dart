@@ -13,13 +13,13 @@ import 'package:dio/dio.dart' as _i361;
 import 'package:flutter/material.dart' as _i409;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
-import 'package:study/data/onboarding_storage.dart' as _i1020;
+import 'package:study/data/onboarding_storage.dart' as _i38;
 import 'package:study/data/theme_storage.dart' as _i1013;
 import 'package:study/di/di_app_module.dart' as _i183;
 import 'package:study/di/di_data_module.dart' as _i207;
 import 'package:study/di/di_network_module.dart' as _i541;
 import 'package:study/di/di_repository_module.dart' as _i169;
-import 'package:study/repository/onboarding_repository.dart' as _i355;
+import 'package:study/repository/onboarding_repository.dart' as _i812;
 import 'package:study/repository/theme_repository.dart' as _i354;
 import 'package:talker/talker.dart' as _i993;
 
@@ -39,17 +39,17 @@ extension GetItInjectableX on _i174.GetIt {
       () => dIAppModule.navigatorKey,
     );
     gh.lazySingleton<_i993.Talker>(() => dIAppModule.provideLogger());
-    gh.lazySingleton<_i1020.OnboardingStorage>(
-      () => dIDataModule.onboardingStorage,
-    );
     gh.lazySingleton<_i1013.ThemeStorage>(() => dIDataModule.themeStorage);
-    gh.factory<_i355.OnboardingRepository>(
-      () => repositoryModule.provideOnboardingRepository(
-        gh<_i1020.OnboardingStorage>(),
-      ),
+    gh.lazySingleton<_i38.OnboardingStorage>(
+      () => dIDataModule.onboardingStorage,
     );
     gh.factory<_i354.ThemeRepository>(
       () => repositoryModule.provideThemeRepository(gh<_i1013.ThemeStorage>()),
+    );
+    gh.factory<_i812.OnboardingRepository>(
+      () => repositoryModule.provideOnboardingRepository(
+        gh<_i38.OnboardingStorage>(),
+      ),
     );
     return this;
   }
