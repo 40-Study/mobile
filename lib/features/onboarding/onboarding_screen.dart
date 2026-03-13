@@ -24,7 +24,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _onGetStarted() async {
     await _onboardingRepo.setSeenOnboarding();
     if (!mounted) return;
-    NavigationService.of(context).pushAndRemoveAll(Routes.app);
+    NavigationService.of(context).pushAndRemoveAll(Routes.login);
   }
 
   @override
