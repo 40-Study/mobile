@@ -19,13 +19,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
 
   final AuthRepository _authRepository;
 
-  static const _fallbackRoles = [
-    RoleModel(id: 'STUDENT', name: 'STUDENT'),
-    RoleModel(id: 'TEACHER', name: 'TEACHER'),
-    RoleModel(id: 'PARENT', name: 'PARENT'),
-    RoleModel(id: 'ORG_OWNER', name: 'ORG_OWNER'),
-  ];
-
   Future<void> _onRolesRequested(
     RegisterRolesRequested event,
     Emitter<RegisterState> emit,
@@ -34,9 +27,13 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
 
     try {
       final roles = await _authRepository.getSystemRoles();
-      emit(RegisterRolesLoaded(roles.isNotEmpty ? roles : _fallbackRoles));
-    } on DioException {
-      emit(const RegisterRolesLoaded(_fallbackRoles));
+      if (roles.isEmpty) {
+        emit(const RegisterRolesFailure('Không có vai trò nào khả dụng'));
+        return;
+      }
+      emit(RegisterRolesLoaded(roles));
+    } on DioException catch (e) {
+      emit(RegisterRolesFailure(_extractError(e)));
     }
   }
 

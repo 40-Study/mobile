@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
+import 'package:study/features/auth/bloc/auth_animation_cubit.dart';
 import 'package:study/features/auth/bloc/login/login_bloc.dart';
 import 'package:study/features/auth/presentation/widgets/auth_gradient_header.dart';
 import 'package:study/routes/router.dart';
@@ -18,76 +19,79 @@ class SelectRoleScreen extends StatelessWidget {
       return const Scaffold(body: Center(child: Text('Dữ liệu không hợp lệ')));
     }
 
-    return Scaffold(
-      backgroundColor: cs.surface,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => Navigator.of(context).pop(),
+    return BlocProvider(
+      create: (_) => AuthAnimationCubit()..startEntrance(),
+      child: Scaffold(
+        backgroundColor: cs.surface,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
-      ),
-      body: BlocListener<LoginBloc, LoginState>(
-        listener: (context, state) {
-          switch (state) {
-            case LoginSuccess(:final response):
-              context.read<AuthBloc>().add(AuthLoggedIn(response));
-              navigator.pushAndRemoveAll(Routes.app);
-            case LoginNeedOrg():
-              navigator.navigateTo(Routes.selectOrg, state, true);
-            case LoginFailure(:final message):
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(message)));
-            case LoginInitial():
-            case LoginInProgress():
-            case LoginNeedRole():
-              break;
-          }
-        },
-        child: SafeArea(
-          top: false,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: AuthHeader(
-                  icon: Icons.badge_outlined,
-                  title: 'Chọn vai trò',
-                  subtitle: 'Bạn có nhiều vai trò, hãy chọn một',
+        body: BlocListener<LoginBloc, LoginState>(
+          listener: (context, state) {
+            switch (state) {
+              case LoginSuccess(:final response):
+                context.read<AuthBloc>().add(AuthLoggedIn(response));
+                navigator.pushAndRemoveAll(Routes.app);
+              case LoginNeedOrg():
+                navigator.navigateTo(Routes.selectOrg, state, true);
+              case LoginFailure(:final message):
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(message)));
+              case LoginInitial():
+              case LoginInProgress():
+              case LoginNeedRole():
+                break;
+            }
+          },
+          child: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: AuthHeader(
+                    icon: Icons.badge_outlined,
+                    title: 'Chọn vai trò',
+                    subtitle: 'Bạn có nhiều vai trò, hãy chọn một',
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: BlocBuilder<LoginBloc, LoginState>(
-                  builder: (context, state) {
-                    final isLoading = state is LoginInProgress;
+                const SizedBox(height: 24),
+                Expanded(
+                  child: BlocBuilder<LoginBloc, LoginState>(
+                    builder: (context, state) {
+                      final isLoading = state is LoginInProgress;
 
-                    return ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                      itemCount: args.roles.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final role = args.roles[index];
-                        return _RoleTile(
-                          icon: _roleIcon(role.name),
-                          label: _roleLabel(role.name),
-                          color: cs.primary,
-                          isLoading: isLoading,
-                          onTap: () {
-                            context.read<LoginBloc>().add(
-                              LoginRoleSelected(
-                                sessionToken: args.sessionToken,
-                                systemRoleId: role.id,
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    );
-                  },
+                      return ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                        itemCount: args.roles.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final role = args.roles[index];
+                          return _RoleTile(
+                            icon: _roleIcon(role.name),
+                            label: _roleLabel(role.name),
+                            color: cs.primary,
+                            isLoading: isLoading,
+                            onTap: () {
+                              context.read<LoginBloc>().add(
+                                LoginRoleSelected(
+                                  sessionToken: args.sessionToken,
+                                  systemRoleId: role.id,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

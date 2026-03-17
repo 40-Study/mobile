@@ -77,8 +77,11 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<List<RoleModel>> getSystemRoles() async {
     final response = await _api.getSystemRoles(1, 20);
-    final data = response.data['data'] as List<dynamic>? ?? [];
-    return data
+    final wrapper = response.data['data'];
+    final roles = wrapper is Map<String, dynamic>
+        ? (wrapper['roles'] as List<dynamic>? ?? [])
+        : (wrapper as List<dynamic>? ?? []);
+    return roles
         .map((e) => RoleModel.fromJson(e as Map<String, dynamic>))
         .toList();
   }
