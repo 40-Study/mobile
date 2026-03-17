@@ -1,40 +1,47 @@
 import 'package:flutter/material.dart';
 
-/// Card trắng bo tròn góc trên, chồng lên gradient header.
+/// White card with rounded corners and shadow, matching web AuthCard.
 class AuthFormCard extends StatelessWidget {
-  const AuthFormCard({
-    super.key,
-    required this.child,
-    this.overlap = 40,
-  });
+  const AuthFormCard({super.key, required this.child, this.showLogo = false});
 
   final Widget child;
-
-  /// Khoảng card chồng lên header.
-  final double overlap;
+  final bool showLogo;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
-    return Transform.translate(
-      offset: Offset(0, -overlap),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: cs.surface,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(28),
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 16,
-              offset: const Offset(0, -4),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showLogo) ...[
+            Text(
+              '40Study',
+              style: tt.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: cs.primary,
+              ),
             ),
+            const SizedBox(height: 24),
           ],
-        ),
-        child: child,
+          child,
+        ],
       ),
     );
   }

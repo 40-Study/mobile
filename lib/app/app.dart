@@ -31,83 +31,66 @@ class _AppState extends State<App> {
 
   @override
   Widget build(BuildContext context) => MultiRepositoryProvider(
-        providers: [...AppRepositoryProviders.providers()],
-        child: MultiBlocProvider(
-          providers: [...AppBlocProviders.providers()],
-          child: Builder(
-            builder: (context) {
-              _listenSessionExpired(context);
+    providers: [...AppRepositoryProviders.providers()],
+    child: MultiBlocProvider(
+      providers: [...AppBlocProviders.providers()],
+      child: Builder(
+        builder: (context) {
+          _listenSessionExpired(context);
 
-              final navigator = NavigationService.of(context);
-              var textTheme =
-                  createTextTheme(context: context);
-              var theme = MaterialTheme(textTheme);
+          final navigator = NavigationService.of(context);
+          var textTheme = createTextTheme(context: context);
+          var theme = MaterialTheme(textTheme);
 
-              return MaterialApp(
-                debugShowCheckedModeBanner: kDebugMode,
-                restorationScopeId: 'app',
-                key: Key(
-                  '${context.watch<ThemeCubit>().themeMode}',
+          return MaterialApp(
+            debugShowCheckedModeBanner: kDebugMode,
+            restorationScopeId: 'app',
+            key: Key('${context.watch<ThemeCubit>().themeMode}'),
+            localizationsDelegates: appLocalizationsDelegates,
+            supportedLocales: appSupportedLocales,
+            onGenerateTitle: (BuildContext context) => context.appTitle,
+            theme: theme.light(),
+            darkTheme: theme.dark(),
+            themeMode: context.watch<ThemeCubit>().themeMode,
+            navigatorKey: appNavigatorKey,
+            onGenerateRoute: navigator.onGenerateRoute,
+            builder: (_, child) => MultiBlocListener(
+              listeners: [
+                BlocListener<InitBloc, InitState>(
+                  listener: (_, state) {
+                    if (state is InitOpenApp) {
+                      navigator.pushAndRemoveAll(Routes.app);
+                    } else if (state is InitOpenOnboarding) {
+                      navigator.pushAndRemoveAll(Routes.onboarding);
+                    } else if (state is InitOpenLogin) {
+                      navigator.pushAndRemoveAll(Routes.login);
+                    }
+                  },
                 ),
-                localizationsDelegates:
-                    appLocalizationsDelegates,
-                supportedLocales: appSupportedLocales,
-                onGenerateTitle: (BuildContext context) =>
-                    context.appTitle,
-                theme: theme.yellowLight(),
-                darkTheme: theme.yellowDark(),
-                themeMode:
-                    context.watch<ThemeCubit>().themeMode,
-                navigatorKey: appNavigatorKey,
-                onGenerateRoute: navigator.onGenerateRoute,
-                builder: (_, child) => MultiBlocListener(
-                  listeners: [
-                    BlocListener<InitBloc, InitState>(
-                      listener: (_, state) {
-                        if (state is InitOpenApp) {
-                          navigator
-                              .pushAndRemoveAll(Routes.app);
-                        } else if (state
-                            is InitOpenOnboarding) {
-                          navigator.pushAndRemoveAll(
-                            Routes.onboarding,
-                          );
-                        } else if (state is InitOpenLogin) {
-                          navigator.pushAndRemoveAll(
-                            Routes.login,
-                          );
-                        }
-                      },
-                    ),
-                    BlocListener<AuthBloc, AuthState>(
-                      listenWhen: (prev, curr) =>
-                          prev is! AuthUnauthenticated &&
-                          curr is AuthUnauthenticated,
-                      listener: (_, state) {
-                        if (state is AuthUnauthenticated) {
-                          navigator.pushAndRemoveAll(
-                            Routes.login,
-                          );
-                        }
-                      },
-                    ),
-                  ],
-                  child: child ?? const SizedBox.shrink(),
+                BlocListener<AuthBloc, AuthState>(
+                  listenWhen: (prev, curr) =>
+                      prev is! AuthUnauthenticated &&
+                      curr is AuthUnauthenticated,
+                  listener: (_, state) {
+                    if (state is AuthUnauthenticated) {
+                      navigator.pushAndRemoveAll(Routes.login);
+                    }
+                  },
                 ),
-              );
-            },
-          ),
-        ),
-      );
+              ],
+              child: child ?? const SizedBox.shrink(),
+            ),
+          );
+        },
+      ),
+    ),
+  );
 
   /// Khi interceptor phát hiện session hết hạn,
   /// dispatch event vào AuthBloc để xử lý.
   void _listenSessionExpired(BuildContext context) {
     if (_sessionSub != null) return;
-    _sessionSub = diContainer
-        .get<SessionExpiredNotifier>()
-        .stream
-        .listen((_) {
+    _sessionSub = diContainer.get<SessionExpiredNotifier>().stream.listen((_) {
       context.read<AuthBloc>().add(AuthSessionExpired());
     });
   }

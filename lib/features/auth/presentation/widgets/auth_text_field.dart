@@ -56,12 +56,9 @@ class AuthTextField extends StatelessWidget {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: tt.bodyLarge?.copyWith(
-              color: cs.onSurfaceVariant
-                  .withValues(alpha: 0.5),
+              color: cs.onSurfaceVariant.withValues(alpha: 0.5),
             ),
-            prefixIcon: prefixIcon != null
-                ? Icon(prefixIcon, size: 20)
-                : null,
+            prefixIcon: prefixIcon != null ? Icon(prefixIcon, size: 20) : null,
             suffixIcon: onToggleObscure != null
                 ? IconButton(
                     icon: Icon(
@@ -76,35 +73,25 @@ class AuthTextField extends StatelessWidget {
                 : null,
             filled: true,
             fillColor: cs.surfaceContainerLow,
-            contentPadding:
-                const EdgeInsets.symmetric(
+            contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 14,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: cs.outline,
-              ),
+              borderSide: BorderSide(color: cs.outline),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: cs.outline,
-              ),
+              borderSide: BorderSide(color: cs.outline),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: cs.primary,
-                width: 1.5,
-              ),
+              borderSide: BorderSide(color: cs.primary, width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: cs.error,
-              ),
+              borderSide: BorderSide(color: cs.error),
             ),
           ),
         ),

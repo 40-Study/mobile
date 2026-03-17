@@ -9,10 +9,7 @@ sealed class LoginEvent extends Equatable {
 
 /// Gửi email + password.
 final class LoginSubmitted extends LoginEvent {
-  const LoginSubmitted({
-    required this.email,
-    required this.password,
-  });
+  const LoginSubmitted({required this.email, required this.password});
 
   final String email;
   final String password;
@@ -37,10 +34,7 @@ final class LoginRoleSelected extends LoginEvent {
 
 /// Chọn tổ chức (khi cần chọn org).
 final class LoginOrgSelected extends LoginEvent {
-  const LoginOrgSelected({
-    required this.sessionToken,
-    this.organizationId,
-  });
+  const LoginOrgSelected({required this.sessionToken, this.organizationId});
 
   final String sessionToken;
   final String? organizationId;

@@ -12,9 +12,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   LoginBloc({
     required AuthRepository authRepository,
     required DeviceInfoHelper deviceInfoHelper,
-  })  : _authRepository = authRepository,
-        _deviceInfoHelper = deviceInfoHelper,
-        super(LoginInitial()) {
+  }) : _authRepository = authRepository,
+       _deviceInfoHelper = deviceInfoHelper,
+       super(LoginInitial()) {
     on<LoginSubmitted>(_onSubmitted);
     on<LoginRoleSelected>(_onRoleSelected);
     on<LoginOrgSelected>(_onOrgSelected);
@@ -30,8 +30,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(LoginInProgress());
 
     try {
-      final deviceInfo =
-          await _deviceInfoHelper.getDeviceInfo();
+      final deviceInfo = await _deviceInfoHelper.getDeviceInfo();
       final response = await _authRepository.login(
         email: event.email,
         password: event.password,
@@ -50,8 +49,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(LoginInProgress());
 
     try {
-      final response =
-          await _authRepository.selectProfile(
+      final response = await _authRepository.selectProfile(
         sessionToken: event.sessionToken,
         systemRoleId: event.systemRoleId,
       );
@@ -68,8 +66,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(LoginInProgress());
 
     try {
-      final response =
-          await _authRepository.selectOrg(
+      final response = await _authRepository.selectOrg(
         sessionToken: event.sessionToken,
         organizationId: event.organizationId,
       );
@@ -79,37 +76,34 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     }
   }
 
-  void _handleAuthResponse(
-    AuthResponse response,
-    Emitter<LoginState> emit,
-  ) {
+  void _handleAuthResponse(AuthResponse response, Emitter<LoginState> emit) {
     if (response.completed) {
       emit(LoginSuccess(response));
       return;
     }
 
-    if (response.systemRoles != null &&
-        response.systemRoles!.isNotEmpty) {
-      emit(LoginNeedRole(
-        sessionToken: response.sessionToken!,
-        roles: response.systemRoles!,
-      ));
+    if (response.systemRoles != null && response.systemRoles!.isNotEmpty) {
+      emit(
+        LoginNeedRole(
+          sessionToken: response.sessionToken!,
+          roles: response.systemRoles!,
+        ),
+      );
       return;
     }
 
-    if (response.organizations != null &&
-        response.organizations!.isNotEmpty) {
-      emit(LoginNeedOrg(
-        sessionToken: response.sessionToken!,
-        organizations: response.organizations!,
-        activeRole: response.activeRole,
-      ));
+    if (response.organizations != null && response.organizations!.isNotEmpty) {
+      emit(
+        LoginNeedOrg(
+          sessionToken: response.sessionToken!,
+          organizations: response.organizations!,
+          activeRole: response.activeRole,
+        ),
+      );
       return;
     }
 
-    emit(LoginFailure(
-      'Phản hồi không hợp lệ từ server',
-    ));
+    emit(LoginFailure('Phản hồi không hợp lệ từ server'));
   }
 
   /// Sau khi chọn role: chỉ kỳ vọng completed hoặc cần chọn org.
@@ -122,13 +116,14 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       return;
     }
 
-    if (response.organizations != null &&
-        response.organizations!.isNotEmpty) {
-      emit(LoginNeedOrg(
-        sessionToken: response.sessionToken!,
-        organizations: response.organizations!,
-        activeRole: response.activeRole,
-      ));
+    if (response.organizations != null && response.organizations!.isNotEmpty) {
+      emit(
+        LoginNeedOrg(
+          sessionToken: response.sessionToken!,
+          organizations: response.organizations!,
+          activeRole: response.activeRole,
+        ),
+      );
       return;
     }
 
@@ -136,19 +131,14 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   /// Sau khi chọn org: chỉ kỳ vọng completed.
-  void _handlePostOrgResponse(
-    AuthResponse response,
-    Emitter<LoginState> emit,
-  ) {
+  void _handlePostOrgResponse(AuthResponse response, Emitter<LoginState> emit) {
     emit(LoginSuccess(response));
   }
 
   String _extractError(DioException e) {
     final data = e.response?.data;
     if (data is Map<String, dynamic>) {
-      return (data['message'] ??
-          data['error'] ??
-          '') as String;
+      return (data['message'] ?? data['error'] ?? '') as String;
     }
     return e.message ?? 'Đã có lỗi xảy ra';
   }

@@ -6,8 +6,7 @@ import 'package:study/repository/onboarding_repository.dart';
 part 'init_event.dart';
 part 'init_state.dart';
 
-const Duration _splashDuration =
-    Duration(milliseconds: 2200);
+const Duration _splashDuration = Duration(milliseconds: 2200);
 // TODO: Đổi về false khi không cần test onboarding
 const bool _alwaysShowOnboarding = true;
 
@@ -15,9 +14,9 @@ class InitBloc extends Bloc<InitEvent, InitState> {
   InitBloc({
     required OnboardingRepository onboardingRepository,
     required AuthRepository authRepository,
-  })  : _onboardingRepository = onboardingRepository,
-        _authRepository = authRepository,
-        super(InitInitial()) {
+  }) : _onboardingRepository = onboardingRepository,
+       _authRepository = authRepository,
+       super(InitInitial()) {
     on<InitStarted>(_onStarted);
   }
 
@@ -25,10 +24,7 @@ class InitBloc extends Bloc<InitEvent, InitState> {
   // ignore: unused_field
   final AuthRepository _authRepository;
 
-  Future<void> _onStarted(
-    InitStarted event,
-    Emitter<InitState> emit,
-  ) async {
+  Future<void> _onStarted(InitStarted event, Emitter<InitState> emit) async {
     await Future<void>.delayed(_splashDuration);
 
     if (_alwaysShowOnboarding) {
@@ -36,8 +32,7 @@ class InitBloc extends Bloc<InitEvent, InitState> {
       return;
     }
 
-    final seen = await _onboardingRepository
-        .hasSeenOnboarding();
+    final seen = await _onboardingRepository.hasSeenOnboarding();
     if (!seen) {
       emit(InitOpenOnboarding());
       return;

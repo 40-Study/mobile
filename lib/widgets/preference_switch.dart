@@ -38,10 +38,7 @@ class PreferenceSwitch extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             if (icon != null)
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: icon,
-              ),
+              Padding(padding: const EdgeInsets.only(right: 16.0), child: icon),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,15 +46,15 @@ class PreferenceSwitch extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: enabled ? null : onSurfaceVariant,
-                        ),
+                      color: enabled ? null : onSurfaceVariant,
+                    ),
                   ),
                   if (description != null && description!.isNotEmpty)
                     Text(
                       description!,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: enabled ? null : onSurfaceVariant,
-                          ),
+                        color: enabled ? null : onSurfaceVariant,
+                      ),
                     ),
                 ],
               ),

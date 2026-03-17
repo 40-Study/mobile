@@ -25,10 +25,7 @@ class ThemeRepositoryImpl implements ThemeRepository {
   Future<AppThemeSettings> getTheme() async {
     final appTheme = await themeStorage.getTheme();
     final darkTheme = await themeStorage.getDarkTheme();
-    return AppThemeSettings(
-      darkTheme: darkTheme,
-      appTheme: appTheme,
-    );
+    return AppThemeSettings(darkTheme: darkTheme, appTheme: appTheme);
   }
 
   @override

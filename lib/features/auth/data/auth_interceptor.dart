@@ -10,9 +10,9 @@ class AuthInterceptor extends QueuedInterceptor {
     required AuthStorage authStorage,
     required Dio dio,
     required SessionExpiredNotifier sessionNotifier,
-  })  : _authStorage = authStorage,
-        _dio = dio,
-        _sessionNotifier = sessionNotifier;
+  }) : _authStorage = authStorage,
+       _dio = dio,
+       _sessionNotifier = sessionNotifier;
 
   final AuthStorage _authStorage;
   final Dio _dio;
@@ -35,14 +35,12 @@ class AuthInterceptor extends QueuedInterceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final isPublic =
-        _publicPaths.any((p) => options.path.contains(p));
+    final isPublic = _publicPaths.any((p) => options.path.contains(p));
 
     if (!isPublic) {
       final token = await _authStorage.getAccessToken();
       if (token != null) {
-        options.headers['Authorization'] =
-            'Bearer $token';
+        options.headers['Authorization'] = 'Bearer $token';
       }
     }
 
@@ -58,8 +56,13 @@ class AuthInterceptor extends QueuedInterceptor {
       return handler.next(err);
     }
 
-    final isRefreshCall = err.requestOptions.path
-        .contains('/api/auth/refresh-token');
+    final path = err.requestOptions.path;
+    final isPublic = _publicPaths.any((p) => path.contains(p));
+    if (isPublic) {
+      return handler.next(err);
+    }
+
+    final isRefreshCall = path.contains('/api/auth/refresh-token');
     if (isRefreshCall) {
       await _authStorage.clearAll();
       _sessionNotifier.notify();
@@ -86,19 +89,16 @@ class AuthInterceptor extends QueuedInterceptor {
   }
 
   Future<bool> _tryRefreshToken() async {
-    final refreshToken =
-        await _authStorage.getRefreshToken();
+    final refreshToken = await _authStorage.getRefreshToken();
     if (refreshToken == null) return false;
 
     try {
-      final response =
-          await _dio.post<Map<String, dynamic>>(
+      final response = await _dio.post<Map<String, dynamic>>(
         '/api/auth/refresh-token',
         data: {'refresh_token': refreshToken},
       );
 
-      final data = response.data?['data']
-          as Map<String, dynamic>?;
+      final data = response.data?['data'] as Map<String, dynamic>?;
       if (data == null) return false;
 
       await _authStorage.saveTokens(

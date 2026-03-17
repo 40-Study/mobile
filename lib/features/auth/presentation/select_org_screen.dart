@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/features/auth/bloc/login/login_bloc.dart';
-import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
 import 'package:study/features/auth/presentation/widgets/auth_gradient_header.dart';
 import 'package:study/routes/router.dart';
 
@@ -13,30 +12,30 @@ class SelectOrgScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final navigator = NavigationService.of(context);
-    final args =
-        ModalRoute.of(context)?.settings.arguments;
+    final args = ModalRoute.of(context)?.settings.arguments;
 
     if (args is! LoginNeedOrg) {
-      return const Scaffold(
-        body: Center(
-          child: Text('Dữ liệu không hợp lệ'),
-        ),
-      );
+      return const Scaffold(body: Center(child: Text('Dữ liệu không hợp lệ')));
     }
 
     return Scaffold(
+      backgroundColor: cs.surface,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) {
           switch (state) {
             case LoginSuccess(:final response):
-              context
-                  .read<AuthBloc>()
-                  .add(AuthLoggedIn(response));
+              context.read<AuthBloc>().add(AuthLoggedIn(response));
               navigator.pushAndRemoveAll(Routes.app);
             case LoginFailure(:final message):
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(message)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(message)));
             case LoginInitial():
             case LoginInProgress():
             case LoginNeedRole():
@@ -44,67 +43,60 @@ class SelectOrgScreen extends StatelessWidget {
               break;
           }
         },
-        child: Column(
-          children: [
-            const AuthGradientHeader(
-              title: 'Chọn tổ chức',
-              subtitle:
-                  'Chọn tổ chức bạn muốn hoạt động',
-              height: 220,
-              showBackButton: true,
-            ),
-            Expanded(
-              child: AuthFormCard(
+        child: SafeArea(
+          top: false,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: AuthHeader(
+                  icon: Icons.business_outlined,
+                  title: 'Chọn tổ chức',
+                  subtitle: 'Chọn tổ chức bạn muốn hoạt động',
+                ),
+              ),
+              const SizedBox(height: 24),
+              Expanded(
                 child: BlocBuilder<LoginBloc, LoginState>(
                   builder: (context, state) {
-                    final isLoading =
-                        state is LoginInProgress;
-                    final total =
-                        args.organizations.length + 1;
+                    final isLoading = state is LoginInProgress;
+                    final total = args.organizations.length + 1;
 
                     return ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(
-                        24, 28, 24, 24,
-                      ),
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                       itemCount: total,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(height: 12),
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
-                        if (index ==
-                            args.organizations.length) {
+                        if (index == args.organizations.length) {
                           return _OrgTile(
                             icon: Icons.person_outline,
                             label: 'Độc lập',
-                            subtitle:
-                                'Không thuộc tổ chức nào',
+                            subtitle: 'Không thuộc tổ chức nào',
                             color: cs.secondary,
                             isLoading: isLoading,
                             onTap: () {
-                              context
-                                  .read<LoginBloc>()
-                                  .add(LoginOrgSelected(
-                                    sessionToken: args
-                                        .sessionToken,
-                                  ));
+                              context.read<LoginBloc>().add(
+                                LoginOrgSelected(
+                                  sessionToken: args.sessionToken,
+                                ),
+                              );
                             },
                           );
                         }
 
-                        final org =
-                            args.organizations[index];
+                        final org = args.organizations[index];
                         return _OrgTile(
                           icon: Icons.business_outlined,
                           label: org.name,
                           color: cs.primary,
                           isLoading: isLoading,
                           onTap: () {
-                            context
-                                .read<LoginBloc>()
-                                .add(LoginOrgSelected(
-                                  sessionToken:
-                                      args.sessionToken,
-                                  organizationId: org.id,
-                                ));
+                            context.read<LoginBloc>().add(
+                              LoginOrgSelected(
+                                sessionToken: args.sessionToken,
+                                organizationId: org.id,
+                              ),
+                            );
                           },
                         );
                       },
@@ -112,8 +104,8 @@ class SelectOrgScreen extends StatelessWidget {
                   },
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -143,15 +135,16 @@ class _OrgTile extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Material(
-      color: cs.surfaceContainerLow,
+      color: cs.surfaceContainerLowest,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: isLoading ? null : onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: cs.outline),
           ),
           child: Row(
             children: [
@@ -167,8 +160,7 @@ class _OrgTile extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       label,
@@ -190,15 +182,10 @@ class _OrgTile extends StatelessWidget {
                 const SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 )
               else
-                Icon(
-                  Icons.chevron_right,
-                  color: cs.onSurfaceVariant,
-                ),
+                Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
             ],
           ),
         ),

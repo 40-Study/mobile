@@ -7,8 +7,8 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
     required AuthApiClient apiClient,
     required AuthStorage authStorage,
-  })  : _api = apiClient,
-        _storage = authStorage;
+  }) : _api = apiClient,
+       _storage = authStorage;
 
   final AuthApiClient _api;
   final AuthStorage _storage;
@@ -58,9 +58,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String sessionToken,
     String? organizationId,
   }) async {
-    final body = <String, dynamic>{
-      'session_token': sessionToken,
-    };
+    final body = <String, dynamic>{'session_token': sessionToken};
     if (organizationId != null && organizationId.isNotEmpty) {
       body['organization_id'] = organizationId;
     }
@@ -78,16 +76,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<List<RoleModel>> getSystemRoles() async {
-    final response =
-        await _api.getSystemRoles(1, 20);
-    final data =
-        response.data['data'] as List<dynamic>? ?? [];
+    final response = await _api.getSystemRoles(1, 20);
+    final data = response.data['data'] as List<dynamic>? ?? [];
     return data
-        .map(
-          (e) => RoleModel.fromJson(
-            e as Map<String, dynamic>,
-          ),
-        )
+        .map((e) => RoleModel.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
@@ -117,10 +109,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String otp,
   }) async {
-    final response = await _api.registerVerify({
-      'email': email,
-      'otp': otp,
-    });
+    final response = await _api.registerVerify({'email': email, 'otp': otp});
     final data = response.data['data'] as Map<String, dynamic>;
     return RegisterResponse.fromJson(data);
   }
@@ -148,9 +137,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<TokenPair> refreshToken() async {
     final rt = await _storage.getRefreshToken();
-    final response = await _api.refreshToken({
-      'refresh_token': rt ?? '',
-    });
+    final response = await _api.refreshToken({'refresh_token': rt ?? ''});
     final data = response.data['data'] as Map<String, dynamic>;
     final pair = TokenPair.fromJson(data);
 
@@ -180,8 +167,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> saveSession(AuthResponse response) async {
-    if (response.accessToken != null &&
-        response.refreshToken != null) {
+    if (response.accessToken != null && response.refreshToken != null) {
       await _storage.saveTokens(
         accessToken: response.accessToken!,
         refreshToken: response.refreshToken!,

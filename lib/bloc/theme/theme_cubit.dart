@@ -3,21 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:study/bloc/theme/app_theme.dart';
 import 'package:study/index.dart';
 
-Map<AppTheme, ThemeData> getThemeData(MaterialTheme theme) {
-  final themeData = <AppTheme, ThemeData>{
-    AppTheme.system: theme.yellowLight(),
-    AppTheme.light: theme.yellowLight(),
-    AppTheme.lightGold: theme.orangeLight(),
-    AppTheme.lightMint: theme.yellowLightMediumContrast(),
-    AppTheme.dark: theme.yellowDark(),
-    AppTheme.darkGold: theme.orangeDark(),
-    AppTheme.darkMint: theme.yellowDarkMediumContrast(),
-    AppTheme.experimental: theme.yellowDarkMediumContrast(),
-  };
-
-  return themeData;
-}
-
 /// Theme persistence and mode (light/dark/system).
 class ThemeCubit extends Cubit<AppThemeSettings> {
   ThemeCubit(this.themeRepository) : super(defaultTheme);
@@ -54,28 +39,6 @@ class ThemeCubit extends Cubit<AppThemeSettings> {
       case DarkThemePreference.followSystem:
       default:
         return ThemeMode.system;
-    }
-  }
-
-  ThemeData getDefaultTheme(MaterialTheme theme) {
-    final themeData = getThemeData(theme);
-    switch (state.appTheme) {
-      case AppTheme.light:
-        return themeData[AppTheme.light] ?? theme.yellowLight();
-      case AppTheme.lightGold:
-        return themeData[AppTheme.lightGold] ?? theme.yellowLight();
-      case AppTheme.lightMint:
-        return themeData[AppTheme.lightMint] ?? theme.yellowLight();
-      case AppTheme.dark:
-        return themeData[AppTheme.dark] ?? theme.yellowDark();
-      case AppTheme.darkGold:
-        return themeData[AppTheme.darkGold] ?? theme.yellowDark();
-      case AppTheme.darkMint:
-        return themeData[AppTheme.darkMint] ?? theme.yellowDark();
-      case AppTheme.system:
-        return themeData[AppTheme.system] ?? theme.yellowLight();
-      case AppTheme.experimental:
-        return themeData[AppTheme.experimental] ?? theme.yellowLight();
     }
   }
 }

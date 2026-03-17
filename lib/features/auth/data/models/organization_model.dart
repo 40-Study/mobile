@@ -5,10 +5,8 @@ part 'organization_model.g.dart';
 
 @freezed
 abstract class OrganizationModel with _$OrganizationModel {
-  const factory OrganizationModel({
-    required String id,
-    required String name,
-  }) = _OrganizationModel;
+  const factory OrganizationModel({required String id, required String name}) =
+      _OrganizationModel;
 
   factory OrganizationModel.fromJson(Map<String, dynamic> json) =>
       _$OrganizationModelFromJson(json);

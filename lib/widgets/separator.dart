@@ -16,8 +16,7 @@ class Separator {
     double indent = 0,
     double? endIndent,
     double? thickness,
-  }) =>
-      Divider(height: 0, indent: indent);
+  }) => Divider(height: 0, indent: indent);
 
   static Widget none() => const Gap(0);
 }
@@ -25,8 +24,7 @@ class Separator {
 extension ListGutter on List<Widget> {
   List<Widget> separate([double space = Space.medium]) => length <= 1
       ? this
-      : sublist(1).fold(
-          [first],
-          (r, element) => [...r, Separator.spacer(space), element],
-        );
+      : sublist(1).fold([
+          first,
+        ], (r, element) => [...r, Separator.spacer(space), element]);
 }

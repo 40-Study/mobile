@@ -10,23 +10,16 @@ import 'package:study/features/auth/data/session_expired_notifier.dart';
 abstract class DIDataModule {
   @lazySingleton
   ThemeStorage get themeStorage =>
-      SharedPreferencesThemeStorage(
-        diContainer.get<SharedPreferences>(),
-      );
+      SharedPreferencesThemeStorage(diContainer.get<SharedPreferences>());
 
   @lazySingleton
   OnboardingStorage get onboardingStorage =>
-      SharedPreferencesOnboardingStorage(
-        diContainer.get<SharedPreferences>(),
-      );
+      SharedPreferencesOnboardingStorage(diContainer.get<SharedPreferences>());
 
   @lazySingleton
   AuthStorage get authStorage =>
-      SharedPreferencesAuthStorage(
-        diContainer.get<SharedPreferences>(),
-      );
+      SharedPreferencesAuthStorage(diContainer.get<SharedPreferences>());
 
   @lazySingleton
-  SessionExpiredNotifier get sessionExpiredNotifier =>
-      SessionExpiredNotifier();
+  SessionExpiredNotifier get sessionExpiredNotifier => SessionExpiredNotifier();
 }

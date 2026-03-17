@@ -8,8 +8,7 @@ sealed class RegisterEvent extends Equatable {
 }
 
 /// Load danh sách system roles từ server.
-final class RegisterRolesRequested
-    extends RegisterEvent {
+final class RegisterRolesRequested extends RegisterEvent {
   const RegisterRolesRequested();
 }
 
@@ -33,21 +32,18 @@ final class RegisterSubmitted extends RegisterEvent {
 
   @override
   List<Object?> get props => [
-        email,
-        password,
-        confirmPassword,
-        userName,
-        fullName,
-        roleIds,
-      ];
+    email,
+    password,
+    confirmPassword,
+    userName,
+    fullName,
+    roleIds,
+  ];
 }
 
 /// Xác thực OTP.
 final class RegisterOTPSubmitted extends RegisterEvent {
-  const RegisterOTPSubmitted({
-    required this.email,
-    required this.otp,
-  });
+  const RegisterOTPSubmitted({required this.email, required this.otp});
 
   final String email;
   final String otp;

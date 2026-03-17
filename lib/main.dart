@@ -4,10 +4,7 @@ import 'package:study/config/build_type.dart';
 import 'package:study/config/environment.dart';
 
 void main(List<String> args) {
-  const env = String.fromEnvironment(
-    'ENV',
-    defaultValue: 'dev',
-  );
+  const env = String.fromEnvironment('ENV', defaultValue: 'dev');
 
   final (buildType, envFile) = switch (env) {
     'prod' => (BuildType.release, '.env.prod'),

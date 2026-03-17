@@ -14,8 +14,7 @@ import 'package:talker_dio_logger/talker_dio_logger_settings.dart';
 abstract class NetworkModule {
   @lazySingleton
   Dio provideDio() {
-    final config =
-        Environment<AppConfig>.instance().config;
+    final config = Environment<AppConfig>.instance().config;
 
     final dio = Dio(BaseOptions(baseUrl: config.url));
 
@@ -23,8 +22,7 @@ abstract class NetworkModule {
       AuthInterceptor(
         authStorage: diContainer.get<AuthStorage>(),
         dio: dio,
-        sessionNotifier:
-            diContainer.get<SessionExpiredNotifier>(),
+        sessionNotifier: diContainer.get<SessionExpiredNotifier>(),
       ),
     );
 
@@ -42,6 +40,5 @@ abstract class NetworkModule {
   }
 
   @lazySingleton
-  AuthApiClient provideAuthApiClient(Dio dio) =>
-      AuthApiClient(dio);
+  AuthApiClient provideAuthApiClient(Dio dio) => AuthApiClient(dio);
 }

@@ -58,9 +58,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Todos os objetivos concluídos",
     ),
     "apoapsis": MessageLookupByLibrary.simpleMessage("Apoápse"),
-    "appTitle": MessageLookupByLibrary.simpleMessage(
-      "40Study",
-    ),
+    "appTitle": MessageLookupByLibrary.simpleMessage("40Study"),
     "appearanceSettingsItem": MessageLookupByLibrary.simpleMessage(
       "Appearance",
     ),

@@ -17,16 +17,11 @@ abstract class RepositoryModule {
   @factoryMethod
   OnboardingRepository provideOnboardingRepository(
     OnboardingStorage onboardingStorage,
-  ) =>
-      OnboardingRepositoryImpl(onboardingStorage);
+  ) => OnboardingRepositoryImpl(onboardingStorage);
 
   @factoryMethod
   AuthRepository provideAuthRepository(
     AuthApiClient apiClient,
     AuthStorage authStorage,
-  ) =>
-      AuthRepositoryImpl(
-        apiClient: apiClient,
-        authStorage: authStorage,
-      );
+  ) => AuthRepositoryImpl(apiClient: apiClient, authStorage: authStorage);
 }

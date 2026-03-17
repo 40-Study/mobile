@@ -40,21 +40,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final pages = onboardingPages;
 
     return Scaffold(
-      body: Container(
+      backgroundColor: colorScheme.surface,
+      body: SizedBox(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              colorScheme.surface,
-              colorScheme.primaryContainer.withValues(alpha: 0.25),
-              colorScheme.secondaryContainer.withValues(alpha: 0.15),
-            ],
-            stops: const [0.0, 0.5, 1.0],
-          ),
-        ),
         child: SafeArea(
           child: Column(
             children: [
@@ -83,11 +72,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: PageView.builder(
                   controller: _pageController,
                   itemCount: _pageCount,
-                  onPageChanged: (index) => setState(() => _currentPage = index),
-                  itemBuilder: (context, index) => AnimatedOnboardingPageContent(
-                    data: pages[index],
-                    isActive: index == _currentPage,
-                  ),
+                  onPageChanged: (index) =>
+                      setState(() => _currentPage = index),
+                  itemBuilder: (context, index) =>
+                      AnimatedOnboardingPageContent(
+                        data: pages[index],
+                        isActive: index == _currentPage,
+                      ),
                 ),
               ),
               Padding(
@@ -143,47 +134,29 @@ class _OnboardingCtaButton extends StatelessWidget {
         scale: animation,
         child: FadeTransition(opacity: animation, child: child),
       ),
-      child: Material(
+      child: FilledButton(
         key: ValueKey<bool>(isLastPage),
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(16),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-            decoration: BoxDecoration(
-              gradient: isLastPage
-                  ? LinearGradient(
-                      colors: [
-                        colorScheme.primary,
-                        colorScheme.secondary,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : null,
-              color: isLastPage ? null : colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: isLastPage
-                  ? [
-                      BoxShadow(
-                        color: colorScheme.primary.withValues(alpha: 0.4),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ]
-                  : null,
-            ),
-            child: Text(
-              isLastPage ? 'Bắt đầu' : 'Tiếp',
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: isLastPage
-                    ? colorScheme.onPrimary
-                    : colorScheme.onSurface,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: isLastPage
+              ? colorScheme.primary
+              : colorScheme.surfaceContainerLow,
+          foregroundColor: isLastPage
+              ? colorScheme.onPrimary
+              : colorScheme.onSurface,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: isLastPage
+                ? BorderSide.none
+                : BorderSide(color: colorScheme.outline),
+          ),
+        ),
+        child: Text(
+          isLastPage ? 'Bắt đầu' : 'Tiếp',
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: isLastPage ? colorScheme.onPrimary : colorScheme.onSurface,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),

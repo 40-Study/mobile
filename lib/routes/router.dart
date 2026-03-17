@@ -80,8 +80,10 @@ class NavigationService {
   ]) async {
     if (_appRoutes[routeName] != null) {
       return replace
-          ? appNavigatorKey.currentState
-              ?.pushReplacementNamed(routeName, arguments: arguments)
+          ? appNavigatorKey.currentState?.pushReplacementNamed(
+              routeName,
+              arguments: arguments,
+            )
           : appNavigatorKey.currentState?.pushNamed(
               routeName,
               arguments: arguments,
@@ -109,14 +111,13 @@ class NavigationService {
           const end = Offset.zero;
           const curve = Curves.easeInOut;
 
-          final tween =
-              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          final tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
           final offsetAnimation = animation.drive(tween);
 
-          return SlideTransition(
-            position: offsetAnimation,
-            child: child,
-          );
+          return SlideTransition(position: offsetAnimation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 400),
       );
@@ -141,7 +142,9 @@ class NavigationService {
     String routeName, [
     Object? arguments,
   ]) async {
-    return appNavigatorKey.currentState
-        ?.pushNamedAndRemoveUntil(routeName, (route) => false);
+    return appNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+      routeName,
+      (route) => false,
+    );
   }
 }

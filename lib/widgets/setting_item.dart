@@ -42,20 +42,18 @@ class SettingItem extends StatelessWidget {
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleLarge
-                          ?.copyWith(color: onSurface),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleLarge?.copyWith(color: onSurface),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(color: onSurfaceVariant),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: onSurfaceVariant),
                     ),
                   ],
                 ),

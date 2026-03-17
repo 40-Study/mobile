@@ -22,10 +22,7 @@ final class LoginSuccess extends LoginState {
 
 /// Cần chọn role.
 final class LoginNeedRole extends LoginState {
-  const LoginNeedRole({
-    required this.sessionToken,
-    required this.roles,
-  });
+  const LoginNeedRole({required this.sessionToken, required this.roles});
 
   final String sessionToken;
   final List<RoleModel> roles;
@@ -47,11 +44,7 @@ final class LoginNeedOrg extends LoginState {
   final RoleModel? activeRole;
 
   @override
-  List<Object?> get props => [
-        sessionToken,
-        organizations,
-        activeRole,
-      ];
+  List<Object?> get props => [sessionToken, organizations, activeRole];
 }
 
 final class LoginFailure extends LoginState {

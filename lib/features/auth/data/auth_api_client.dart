@@ -23,9 +23,7 @@ abstract class AuthApiClient {
 
   /// Đăng nhập (multi-step).
   @POST('/api/auth/login')
-  Future<HttpResponse<dynamic>> login(
-    @Body() Map<String, dynamic> body,
-  );
+  Future<HttpResponse<dynamic>> login(@Body() Map<String, dynamic> body);
 
   /// Chọn role sau khi login.
   @POST('/api/auth/select-profile')
@@ -35,15 +33,11 @@ abstract class AuthApiClient {
 
   /// Chọn tổ chức sau khi chọn role.
   @POST('/api/auth/select-org')
-  Future<HttpResponse<dynamic>> selectOrg(
-    @Body() Map<String, dynamic> body,
-  );
+  Future<HttpResponse<dynamic>> selectOrg(@Body() Map<String, dynamic> body);
 
   /// Refresh token.
   @POST('/api/auth/refresh-token')
-  Future<HttpResponse<dynamic>> refreshToken(
-    @Body() Map<String, dynamic> body,
-  );
+  Future<HttpResponse<dynamic>> refreshToken(@Body() Map<String, dynamic> body);
 
   /// Gửi OTP reset mật khẩu.
   @POST('/api/auth/reset-password/request')
@@ -80,9 +74,7 @@ abstract class AuthApiClient {
 
   /// Cập nhật profile.
   @PUT('/api/auth/me')
-  Future<HttpResponse<dynamic>> updateMe(
-    @Body() Map<String, dynamic> body,
-  );
+  Future<HttpResponse<dynamic>> updateMe(@Body() Map<String, dynamic> body);
 
   /// Đổi mật khẩu.
   @PUT('/api/auth/change-password')
@@ -98,9 +90,7 @@ abstract class AuthApiClient {
 
   /// Đổi tổ chức (đã đăng nhập).
   @POST('/api/auth/switch-org')
-  Future<HttpResponse<dynamic>> switchOrg(
-    @Body() Map<String, dynamic> body,
-  );
+  Future<HttpResponse<dynamic>> switchOrg(@Body() Map<String, dynamic> body);
 
   /// Danh sách thiết bị đã đăng nhập.
   @GET('/api/auth/devices')

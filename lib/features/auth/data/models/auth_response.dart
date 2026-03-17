@@ -37,10 +37,8 @@ abstract class AuthResponse with _$AuthResponse {
 /// Wrapper response API: message + data.
 @freezed
 abstract class ApiResponse<T> with _$ApiResponse<T> {
-  const factory ApiResponse({
-    required String message,
-    T? data,
-  }) = _ApiResponse<T>;
+  const factory ApiResponse({required String message, T? data}) =
+      _ApiResponse<T>;
 }
 
 /// Cặp token trả về từ refresh-token.

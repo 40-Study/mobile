@@ -1,15 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum AppTheme {
-  light,
-  dark,
-  lightGold,
-  darkGold,
-  lightMint,
-  darkMint,
-  system,
-  experimental,
-}
+enum AppTheme { light, dark, system }
 
 class DarkThemePreference extends Equatable {
   DarkThemePreference({
@@ -25,10 +16,7 @@ class DarkThemePreference extends Equatable {
   final bool isHighContrastModeEnabled;
 
   @override
-  List<Object?> get props => [
-        darkThemeValue,
-        isHighContrastModeEnabled,
-      ];
+  List<Object?> get props => [darkThemeValue, isHighContrastModeEnabled];
 
   DarkThemePreference copyWith({
     int? darkThemeValue,
@@ -49,19 +37,13 @@ extension DarkThemePreferenceExt on DarkThemePreference {
 }
 
 class AppThemeSettings extends Equatable {
-  AppThemeSettings({
-    required this.darkTheme,
-    required this.appTheme,
-  });
+  AppThemeSettings({required this.darkTheme, required this.appTheme});
 
   final DarkThemePreference darkTheme;
   final AppTheme appTheme;
 
   @override
-  List<Object?> get props => [
-        darkTheme,
-        appTheme,
-      ];
+  List<Object?> get props => [darkTheme, appTheme];
 
   AppThemeSettings copyWith({
     DarkThemePreference? darkTheme,
@@ -71,13 +53,5 @@ class AppThemeSettings extends Equatable {
       darkTheme: darkTheme ?? this.darkTheme,
       appTheme: appTheme ?? this.appTheme,
     );
-  }
-}
-
-extension AppThemeExtention on AppTheme {
-  bool isDarkTheme() {
-    return this == AppTheme.dark ||
-        this != AppTheme.darkGold ||
-        this != AppTheme.darkMint;
   }
 }

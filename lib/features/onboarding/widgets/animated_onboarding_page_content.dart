@@ -73,39 +73,25 @@ class _AnimatedOnboardingPageContentState
       ),
     );
     _illustrationOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _illustrationController,
-        curve: Curves.easeOut,
-      ),
+      CurvedAnimation(parent: _illustrationController, curve: Curves.easeOut),
     );
     _pulseScale = Tween<double>(begin: 1.0, end: 1.06).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
     _titleOffset = Tween<double>(begin: 24.0, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _titleController,
-        curve: Curves.easeOutCubic,
-      ),
+      CurvedAnimation(parent: _titleController, curve: Curves.easeOutCubic),
     );
-    _titleOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _titleController,
-        curve: Curves.easeOut,
-      ),
-    );
+    _titleOpacity = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _titleController, curve: Curves.easeOut));
 
     _subtitleOffset = Tween<double>(begin: 20.0, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _subtitleController,
-        curve: Curves.easeOutCubic,
-      ),
+      CurvedAnimation(parent: _subtitleController, curve: Curves.easeOutCubic),
     );
     _subtitleOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _subtitleController,
-        curve: Curves.easeOut,
-      ),
+      CurvedAnimation(parent: _subtitleController, curve: Curves.easeOut),
     );
 
     // Trang đầu build với isActive = true nhưng didUpdateWidget không chạy lần đầu.
@@ -260,26 +246,7 @@ class _AnimatedOnboardingPageContentState
       height: 140,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colorScheme.primaryContainer,
-            colorScheme.secondaryContainer.withValues(alpha: 0.8),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.primary.withValues(alpha: 0.35),
-            blurRadius: 28,
-            offset: const Offset(0, 10),
-          ),
-          BoxShadow(
-            color: colorScheme.secondary.withValues(alpha: 0.2),
-            blurRadius: 40,
-            offset: const Offset(0, 16),
-          ),
-        ],
+        color: colorScheme.primaryContainer,
       ),
       child: Icon(icon, size: 64, color: colorScheme.primary),
     );

@@ -7,8 +7,7 @@ part 'auth_event.dart';
 part 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc(this._authRepository)
-      : super(AuthInitial()) {
+  AuthBloc(this._authRepository) : super(AuthInitial()) {
     on<AuthStarted>(_onStarted);
     on<AuthLoggedIn>(_onLoggedIn);
     on<AuthLoggedOut>(_onLoggedOut);
@@ -17,18 +16,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   final AuthRepository _authRepository;
 
-  Future<void> _onStarted(
-    AuthStarted event,
-    Emitter<AuthState> emit,
-  ) async {
-    final loggedIn =
-        await _authRepository.isLoggedIn();
+  Future<void> _onStarted(AuthStarted event, Emitter<AuthState> emit) async {
+    final loggedIn = await _authRepository.isLoggedIn();
     if (!loggedIn) {
       emit(AuthUnauthenticated());
       return;
     }
-    final user =
-        await _authRepository.getSavedUser();
+    final user = await _authRepository.getSavedUser();
     if (user != null) {
       emit(AuthAuthenticated(user: user));
     } else {
@@ -36,14 +30,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  Future<void> _onLoggedIn(
-    AuthLoggedIn event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onLoggedIn(AuthLoggedIn event, Emitter<AuthState> emit) async {
     if (event.response.user != null) {
-      emit(AuthAuthenticated(
-        user: event.response.user!,
-      ));
+      emit(AuthAuthenticated(user: event.response.user!));
     }
   }
 

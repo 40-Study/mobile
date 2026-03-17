@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:study/index.dart';
 
-const kDialogContentPadding =
-    EdgeInsets.symmetric(horizontal: Paddings.kDialogContentPadding);
+const kDialogContentPadding = EdgeInsets.symmetric(
+  horizontal: Paddings.kDialogContentPadding,
+);
 
 Future<T?> showBottomSheetDialog<T>({
   required BuildContext context,
@@ -12,12 +13,10 @@ Future<T?> showBottomSheetDialog<T>({
   return showModalBottomSheet(
     context: context,
     isDismissible: true,
-    barrierColor: Colors.black54,
+    barrierColor: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.54),
     enableDrag: true,
-    builder: (context) => _RoundDialog.bottom(
-      children: children,
-      padding: padding,
-    ),
+    builder: (context) =>
+        _RoundDialog.bottom(children: children, padding: padding),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.only(
         topLeft: Radius.circular(RadiusSize.kDialogCornerRadius),
@@ -33,18 +32,10 @@ class _RoundDialog extends StatelessWidget {
     required List<Widget> children,
     EdgeInsets? padding,
   }) {
-    return _RoundDialog._(
-      key: key,
-      children: children,
-      padding: padding,
-    );
+    return _RoundDialog._(key: key, children: children, padding: padding);
   }
 
-  const _RoundDialog._({
-    super.key,
-    required this.children,
-    this.padding,
-  });
+  const _RoundDialog._({super.key, required this.children, this.padding});
 
   final List<Widget> children;
   final EdgeInsets? padding;
@@ -65,9 +56,7 @@ class _RoundDialog extends StatelessWidget {
               Flexible(
                 child: SingleChildScrollView(
                   padding: padding,
-                  child: ListBody(
-                    children: children,
-                  ),
+                  child: ListBody(children: children),
                 ),
               ),
             ],

@@ -3,11 +3,7 @@ import 'package:flutter/services.dart';
 
 /// 6 ô nhập OTP riêng biệt, tự chuyển focus.
 class OtpBoxes extends StatefulWidget {
-  const OtpBoxes({
-    super.key,
-    required this.onCompleted,
-    this.length = 6,
-  });
+  const OtpBoxes({super.key, required this.onCompleted, this.length = 6});
 
   final ValueChanged<String> onCompleted;
   final int length;
@@ -20,8 +16,7 @@ class OtpBoxesState extends State<OtpBoxes> {
   late final List<TextEditingController> _controllers;
   late final List<FocusNode> _focusNodes;
 
-  String get otp =>
-      _controllers.map((c) => c.text).join();
+  String get otp => _controllers.map((c) => c.text).join();
 
   void clear() {
     for (final c in _controllers) {
@@ -33,14 +28,8 @@ class OtpBoxesState extends State<OtpBoxes> {
   @override
   void initState() {
     super.initState();
-    _controllers = List.generate(
-      widget.length,
-      (_) => TextEditingController(),
-    );
-    _focusNodes = List.generate(
-      widget.length,
-      (_) => FocusNode(),
-    );
+    _controllers = List.generate(widget.length, (_) => TextEditingController());
+    _focusNodes = List.generate(widget.length, (_) => FocusNode());
   }
 
   @override
@@ -78,63 +67,64 @@ class OtpBoxesState extends State<OtpBoxes> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    const gap = 8.0;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(widget.length, (i) {
-        return Container(
-          width: 48,
-          height: 56,
-          margin: EdgeInsets.only(
-            right: i < widget.length - 1 ? 10 : 0,
-          ),
-          child: KeyboardListener(
-            focusNode: FocusNode(),
-            onKeyEvent: (e) => _onKeyEvent(i, e),
-            child: TextField(
-              controller: _controllers[i],
-              focusNode: _focusNodes[i],
-              textAlign: TextAlign.center,
-              keyboardType: TextInputType.number,
-              maxLength: 1,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: cs.onSurface,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final totalGap = gap * (widget.length - 1);
+        final boxWidth = ((constraints.maxWidth - totalGap) / widget.length)
+            .floorToDouble();
+        final clampedWidth = boxWidth.clamp(36.0, 52.0);
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(widget.length, (i) {
+            return Padding(
+              padding: EdgeInsets.only(right: i < widget.length - 1 ? gap : 0),
+              child: SizedBox(
+                width: clampedWidth,
+                height: clampedWidth + 8,
+                child: KeyboardListener(
+                  focusNode: FocusNode(),
+                  onKeyEvent: (e) => _onKeyEvent(i, e),
+                  child: TextField(
+                    controller: _controllers[i],
+                    focusNode: _focusNodes[i],
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.number,
+                    maxLength: 1,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: cs.onSurface,
+                    ),
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: InputDecoration(
+                      counterText: '',
+                      contentPadding: EdgeInsets.zero,
+                      filled: true,
+                      fillColor: cs.surfaceContainerLow,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: cs.outline),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: cs.primary, width: 2),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: cs.outline),
+                      ),
+                    ),
+                    onChanged: (v) => _onChanged(i, v),
+                  ),
+                ),
               ),
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-              ],
-              decoration: InputDecoration(
-                counterText: '',
-                contentPadding: EdgeInsets.zero,
-                filled: true,
-                fillColor: cs.surfaceContainerLow,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: cs.outline,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: cs.primary,
-                    width: 2,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: cs.outline,
-                  ),
-                ),
-              ),
-              onChanged: (v) => _onChanged(i, v),
-            ),
-          ),
+            );
+          }),
         );
-      }),
+      },
     );
   }
 }

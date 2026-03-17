@@ -11,12 +11,10 @@ class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() =>
-      _ForgotPasswordScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState
-    extends State<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
 
@@ -29,19 +27,24 @@ class _ForgotPasswordScreenState
   void _onSubmit() {
     if (!_formKey.currentState!.validate()) return;
     context.read<ForgotPasswordBloc>().add(
-          ForgotPasswordSubmitted(
-            email: _emailCtrl.text.trim(),
-          ),
-        );
+      ForgotPasswordSubmitted(email: _emailCtrl.text.trim()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final navigator = NavigationService.of(context);
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      body: BlocListener<ForgotPasswordBloc,
-          ForgotPasswordState>(
+      backgroundColor: cs.surface,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: BlocListener<ForgotPasswordBloc, ForgotPasswordState>(
         listener: (context, state) {
           switch (state) {
             case ForgotPasswordOTPSent():
@@ -50,9 +53,9 @@ class _ForgotPasswordScreenState
                 _emailCtrl.text.trim(),
               );
             case ForgotPasswordFailure(:final message):
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(message)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(message)));
             case ForgotPasswordInitial():
             case ForgotPasswordInProgress():
             case ForgotPasswordOTPVerifiedState():
@@ -60,64 +63,76 @@ class _ForgotPasswordScreenState
               break;
           }
         },
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const AuthGradientHeader(
-                title: 'Quên mật khẩu',
-                subtitle:
-                    'Nhập email để nhận mã xác thực',
-                showBackButton: true,
-              ),
-              AuthFormCard(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    24, 32, 24, 16,
-                  ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.stretch,
-                      children: [
-                        AuthTextField(
-                          controller: _emailCtrl,
-                          label: 'Email',
-                          hint: 'you@example.com',
-                          keyboardType:
-                              TextInputType.emailAddress,
-                          textInputAction:
-                              TextInputAction.done,
-                          validator: (v) {
-                            if (v == null ||
-                                v.trim().isEmpty) {
-                              return 'Vui lòng nhập email';
-                            }
-                            if (!v.contains('@')) {
-                              return 'Email không hợp lệ';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        BlocBuilder<ForgotPasswordBloc,
-                            ForgotPasswordState>(
-                          builder: (context, state) {
-                            return AuthButton(
-                              label: 'Gửi OTP',
-                              isLoading: state
-                                  is ForgotPasswordInProgress,
-                              onPressed: _onSubmit,
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                    ),
+        child: SafeArea(
+          top: false,
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              child: AuthFormCard(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      AuthHeader(
+                        icon: Icons.lock_outline_rounded,
+                        title: 'Quên mật khẩu?',
+                        subtitle: 'Nhập email của bạn để nhận mã xác thực',
+                      ),
+                      const SizedBox(height: 24),
+                      AuthTextField(
+                        controller: _emailCtrl,
+                        label: 'Email',
+                        hint: 'Nhập email của bạn',
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.done,
+                        validator: (v) {
+                          if (v == null || v.trim().isEmpty) {
+                            return 'Vui lòng nhập email';
+                          }
+                          if (!v.contains('@')) return 'Email không hợp lệ';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(
+                        builder: (context, state) {
+                          return AuthButton(
+                            label: 'Gửi mã xác thực',
+                            isLoading: state is ForgotPasswordInProgress,
+                            onPressed: _onSubmit,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Quay lại ',
+                            style: TextStyle(
+                              color: cs.onSurfaceVariant,
+                              fontSize: 13,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => Navigator.of(context).pop(),
+                            child: Text(
+                              'Đăng nhập',
+                              style: TextStyle(
+                                color: cs.primary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),

@@ -7,12 +7,10 @@ import 'package:study/features/auth/repository/auth_repository.dart';
 part 'register_event.dart';
 part 'register_state.dart';
 
-class RegisterBloc
-    extends Bloc<RegisterEvent, RegisterState> {
-  RegisterBloc({
-    required AuthRepository authRepository,
-  })  : _authRepository = authRepository,
-        super(RegisterInitial()) {
+class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
+  RegisterBloc({required AuthRepository authRepository})
+    : _authRepository = authRepository,
+      super(RegisterInitial()) {
     on<RegisterRolesRequested>(_onRolesRequested);
     on<RegisterSubmitted>(_onSubmitted);
     on<RegisterOTPSubmitted>(_onOTPSubmitted);
@@ -21,6 +19,13 @@ class RegisterBloc
 
   final AuthRepository _authRepository;
 
+  static const _fallbackRoles = [
+    RoleModel(id: 'STUDENT', name: 'STUDENT'),
+    RoleModel(id: 'TEACHER', name: 'TEACHER'),
+    RoleModel(id: 'PARENT', name: 'PARENT'),
+    RoleModel(id: 'ORG_OWNER', name: 'ORG_OWNER'),
+  ];
+
   Future<void> _onRolesRequested(
     RegisterRolesRequested event,
     Emitter<RegisterState> emit,
@@ -28,11 +33,10 @@ class RegisterBloc
     emit(RegisterInProgress());
 
     try {
-      final roles =
-          await _authRepository.getSystemRoles();
-      emit(RegisterRolesLoaded(roles));
-    } on DioException catch (e) {
-      emit(RegisterRolesFailure(_extractError(e)));
+      final roles = await _authRepository.getSystemRoles();
+      emit(RegisterRolesLoaded(roles.isNotEmpty ? roles : _fallbackRoles));
+    } on DioException {
+      emit(const RegisterRolesLoaded(_fallbackRoles));
     }
   }
 
@@ -64,10 +68,7 @@ class RegisterBloc
     emit(RegisterInProgress());
 
     try {
-      await _authRepository.registerVerify(
-        email: event.email,
-        otp: event.otp,
-      );
+      await _authRepository.registerVerify(email: event.email, otp: event.otp);
       emit(RegisterSuccess());
     } on DioException catch (e) {
       emit(RegisterFailure(_extractError(e)));
@@ -100,13 +101,9 @@ class RegisterBloc
     if (data is Map<String, dynamic>) {
       final errors = data['errors'];
       if (errors is List && errors.isNotEmpty) {
-        return errors
-            .map((e) => e.toString())
-            .join(', ');
+        return errors.map((e) => e.toString()).join(', ');
       }
-      return (data['message'] ??
-          data['error'] ??
-          '') as String;
+      return (data['message'] ?? data['error'] ?? '') as String;
     }
     return e.message ?? 'Đã có lỗi xảy ra';
   }

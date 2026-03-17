@@ -1,7 +1,2 @@
 /// App build types.
-enum BuildType {
-  debug,
-  staging,
-  qa,
-  release,
-}
+enum BuildType { debug, staging, qa, release }

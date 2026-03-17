@@ -18,15 +18,14 @@ class SettingCell extends StatelessWidget {
     VoidCallback? onTap,
     EdgeInsets? contentPadding,
     bool dense = false,
-  }) =>
-      SettingCell(
-        key: key,
-        leading: Icon(icon, size: IconSizes.settingsItem),
-        title: title,
-        onTap: onTap,
-        contentPadding: contentPadding,
-        dense: dense,
-      );
+  }) => SettingCell(
+    key: key,
+    leading: Icon(icon, size: IconSizes.settingsItem),
+    title: title,
+    onTap: onTap,
+    contentPadding: contentPadding,
+    dense: dense,
+  );
 
   final Widget leading;
   final String title;
@@ -36,23 +35,23 @@ class SettingCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ListTile(
-        leading: leading,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-            ),
-          ],
+    leading: leading,
+    title: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
         ),
-        trailing: const Icon(AppIcons.chevronRight),
-        contentPadding: contentPadding,
-        onTap: onTap,
-        dense: dense,
-      );
+      ],
+    ),
+    trailing: const Icon(AppIcons.chevronRight),
+    contentPadding: contentPadding,
+    onTap: onTap,
+    dense: dense,
+  );
 }

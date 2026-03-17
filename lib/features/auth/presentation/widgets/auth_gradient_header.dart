@@ -1,94 +1,69 @@
 import 'package:flutter/material.dart';
 
-/// Header gradient cho các màn auth.
-/// Hiển thị title + subtitle trên nền gradient primary -> secondary.
-class AuthGradientHeader extends StatelessWidget {
-  const AuthGradientHeader({
+/// Auth header matching web: icon circle + title + subtitle on surface bg.
+class AuthHeader extends StatelessWidget {
+  const AuthHeader({
     super.key,
     required this.title,
     this.subtitle,
-    this.height = 260,
+    this.icon,
+    this.iconBackgroundColor,
     this.showBackButton = false,
     this.onBack,
   });
 
   final String title;
   final String? subtitle;
-  final double height;
+  final IconData? icon;
+  final Color? iconBackgroundColor;
   final bool showBackButton;
   final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
-    return Container(
-      width: double.infinity,
-      height: height,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            cs.primary,
-            cs.secondary,
-            cs.secondary.withValues(alpha: 0.7),
-          ],
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Stack(
-          children: [
-            if (showBackButton)
-              Positioned(
-                top: 4,
-                left: 4,
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white,
-                  ),
-                  onPressed:
-                      onBack ?? () => Navigator.of(context).pop(),
-                ),
-              ),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        subtitle!,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white
-                              .withValues(alpha: 0.85),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+    return Column(
+      children: [
+        if (showBackButton)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: IconButton(
+              icon: Icon(Icons.arrow_back_ios_new_rounded, color: cs.onSurface),
+              onPressed: onBack ?? () => Navigator.of(context).pop(),
             ),
-          ],
+          ),
+        if (icon != null) ...[
+          const SizedBox(height: 8),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: iconBackgroundColor ?? cs.primaryContainer,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 32, color: cs.primary),
+          ),
+          const SizedBox(height: 16),
+        ],
+        Text(
+          title,
+          style: tt.titleLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: cs.onSurface,
+          ),
+          textAlign: TextAlign.center,
         ),
-      ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            subtitle!,
+            style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ],
     );
   }
 }

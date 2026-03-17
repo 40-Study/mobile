@@ -19,15 +19,12 @@ class HomeScreen extends StatelessWidget {
             icon: const Icon(Icons.logout_outlined),
             tooltip: 'Đăng xuất',
             onPressed: () {
-              context
-                  .read<AuthBloc>()
-                  .add(AuthLoggedOut());
+              context.read<AuthBloc>().add(AuthLoggedOut());
             },
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            onPressed: () =>
-                navigator.navigateTo(Routes.settings),
+            onPressed: () => navigator.navigateTo(Routes.settings),
           ),
         ],
       ),
@@ -37,14 +34,11 @@ class HomeScreen extends StatelessWidget {
           children: [
             Text(
               S.of(context).appTitle,
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineMedium,
+              style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
-              onPressed: () => navigator
-                  .navigateTo(Routes.appearance),
+              onPressed: () => navigator.navigateTo(Routes.appearance),
               icon: const Icon(Icons.palette_outlined),
               label: Text(S.of(context).themeTitle),
             ),

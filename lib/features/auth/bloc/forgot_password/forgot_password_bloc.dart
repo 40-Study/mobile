@@ -6,17 +6,14 @@ import 'package:study/features/auth/repository/auth_repository.dart';
 part 'forgot_password_event.dart';
 part 'forgot_password_state.dart';
 
-class ForgotPasswordBloc extends Bloc<
-    ForgotPasswordEvent, ForgotPasswordState> {
-  ForgotPasswordBloc({
-    required AuthRepository authRepository,
-  })  : _authRepository = authRepository,
-        super(ForgotPasswordInitial()) {
+class ForgotPasswordBloc
+    extends Bloc<ForgotPasswordEvent, ForgotPasswordState> {
+  ForgotPasswordBloc({required AuthRepository authRepository})
+    : _authRepository = authRepository,
+      super(ForgotPasswordInitial()) {
     on<ForgotPasswordSubmitted>(_onSubmitted);
     on<ForgotPasswordOTPVerified>(_onOTPVerified);
-    on<ForgotPasswordResetSubmitted>(
-      _onResetSubmitted,
-    );
+    on<ForgotPasswordResetSubmitted>(_onResetSubmitted);
     on<ForgotPasswordOTPResent>(_onOTPResent);
   }
 
@@ -29,14 +26,10 @@ class ForgotPasswordBloc extends Bloc<
     emit(ForgotPasswordInProgress());
 
     try {
-      await _authRepository.resetPasswordRequest(
-        email: event.email,
-      );
+      await _authRepository.resetPasswordRequest(email: event.email);
       emit(ForgotPasswordOTPSent());
     } on DioException catch (e) {
-      emit(ForgotPasswordFailure(
-        _extractError(e),
-      ));
+      emit(ForgotPasswordFailure(_extractError(e)));
     }
   }
 
@@ -46,10 +39,7 @@ class ForgotPasswordBloc extends Bloc<
   ) async {
     emit(ForgotPasswordInProgress());
 
-    emit(ForgotPasswordOTPVerifiedState(
-      email: event.email,
-      otp: event.otp,
-    ));
+    emit(ForgotPasswordOTPVerifiedState(email: event.email, otp: event.otp));
   }
 
   Future<void> _onResetSubmitted(
@@ -67,9 +57,7 @@ class ForgotPasswordBloc extends Bloc<
       );
       emit(ForgotPasswordSuccess());
     } on DioException catch (e) {
-      emit(ForgotPasswordFailure(
-        _extractError(e),
-      ));
+      emit(ForgotPasswordFailure(_extractError(e)));
     }
   }
 
@@ -80,23 +68,17 @@ class ForgotPasswordBloc extends Bloc<
     emit(ForgotPasswordInProgress());
 
     try {
-      await _authRepository.resetPasswordRequest(
-        email: event.email,
-      );
+      await _authRepository.resetPasswordRequest(email: event.email);
       emit(ForgotPasswordOTPSent());
     } on DioException catch (e) {
-      emit(ForgotPasswordFailure(
-        _extractError(e),
-      ));
+      emit(ForgotPasswordFailure(_extractError(e)));
     }
   }
 
   String _extractError(DioException e) {
     final data = e.response?.data;
     if (data is Map<String, dynamic>) {
-      return (data['message'] ??
-          data['error'] ??
-          '') as String;
+      return (data['message'] ?? data['error'] ?? '') as String;
     }
     return e.message ?? 'Đã có lỗi xảy ra';
   }

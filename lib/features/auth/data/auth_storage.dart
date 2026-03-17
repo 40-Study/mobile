@@ -59,12 +59,10 @@ class SharedPreferencesAuthStorage implements AuthStorage {
   }
 
   @override
-  Future<String?> getAccessToken() async =>
-      _prefs.getString(_keyAccessToken);
+  Future<String?> getAccessToken() async => _prefs.getString(_keyAccessToken);
 
   @override
-  Future<String?> getRefreshToken() async =>
-      _prefs.getString(_keyRefreshToken);
+  Future<String?> getRefreshToken() async => _prefs.getString(_keyRefreshToken);
 
   @override
   Future<void> clearTokens() async {
@@ -109,9 +107,7 @@ class SharedPreferencesAuthStorage implements AuthStorage {
   Future<OrganizationModel?> getActiveOrg() async {
     final raw = _prefs.getString(_keyActiveOrg);
     if (raw == null) return null;
-    return OrganizationModel.fromJson(
-      jsonDecode(raw) as Map<String, dynamic>,
-    );
+    return OrganizationModel.fromJson(jsonDecode(raw) as Map<String, dynamic>);
   }
 
   @override
@@ -123,9 +119,7 @@ class SharedPreferencesAuthStorage implements AuthStorage {
   Future<EntryContextModel?> getEntryContext() async {
     final raw = _prefs.getString(_keyEntryContext);
     if (raw == null) return null;
-    return EntryContextModel.fromJson(
-      jsonDecode(raw) as Map<String, dynamic>,
-    );
+    return EntryContextModel.fromJson(jsonDecode(raw) as Map<String, dynamic>);
   }
 
   @override

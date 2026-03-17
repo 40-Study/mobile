@@ -25,6 +25,7 @@ class SharedPreferencesThemeStorage implements ThemeStorage {
   Future<AppTheme> getTheme() async {
     final prefs = await SharedPreferences.getInstance();
     final themeIndex = prefs.getInt(_themeKey) ?? 0;
+    if (themeIndex >= AppTheme.values.length) return AppTheme.system;
     return AppTheme.values[themeIndex];
   }
 
@@ -37,7 +38,9 @@ class SharedPreferencesThemeStorage implements ThemeStorage {
   Future<void> saveDarkTheme(DarkThemePreference pref) async {
     await sharedPreferences.setInt(_darkThemeKey, pref.darkThemeValue);
     await sharedPreferences.setBool(
-        _isHighContrastModeEnabledKey, pref.isHighContrastModeEnabled);
+      _isHighContrastModeEnabledKey,
+      pref.isHighContrastModeEnabled,
+    );
   }
 
   @override

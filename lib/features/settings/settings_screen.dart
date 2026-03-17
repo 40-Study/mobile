@@ -12,9 +12,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(S.of(context).settingsTitle),
-      ),
+      appBar: AppBar(title: Text(S.of(context).settingsTitle)),
       body: ListView(
         children: <Widget>[
           BlocConsumer<ThemeCubit, AppThemeSettings>(
@@ -26,56 +24,24 @@ class SettingsScreen extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 children: [
                   ThemeDialogCell<AppThemeSettings>(
-                    title: S.of(context).darkThemeTitle,
-                    groupValue: state,
-                    value: AppThemeSettings(
-                      darkTheme: DarkThemePreference(),
-                      appTheme: AppTheme.dark,
-                    ),
-                    onChanged: (value) => updateTheme(context, value),
-                  ),
-                  ThemeDialogCell<AppThemeSettings>(
                     title: S.of(context).lightThemeTitle,
                     groupValue: state,
                     value: AppThemeSettings(
-                      darkTheme: DarkThemePreference(),
+                      darkTheme: DarkThemePreference(
+                        darkThemeValue: DarkThemePreference.off,
+                      ),
                       appTheme: AppTheme.light,
                     ),
                     onChanged: (value) => updateTheme(context, value),
                   ),
                   ThemeDialogCell<AppThemeSettings>(
-                    title: S.of(context).lightGoldThemeTitle,
+                    title: S.of(context).darkThemeTitle,
                     groupValue: state,
                     value: AppThemeSettings(
-                      darkTheme: DarkThemePreference(),
-                      appTheme: AppTheme.lightGold,
-                    ),
-                    onChanged: (value) => updateTheme(context, value),
-                  ),
-                  ThemeDialogCell<AppThemeSettings>(
-                    title: S.of(context).lightMintThemeTitle,
-                    groupValue: state,
-                    value: AppThemeSettings(
-                      darkTheme: DarkThemePreference(),
-                      appTheme: AppTheme.lightMint,
-                    ),
-                    onChanged: (value) => updateTheme(context, value),
-                  ),
-                  ThemeDialogCell<AppThemeSettings>(
-                    title: S.of(context).darkGoldThemeTitle,
-                    groupValue: state,
-                    value: AppThemeSettings(
-                      darkTheme: DarkThemePreference(),
-                      appTheme: AppTheme.darkGold,
-                    ),
-                    onChanged: (value) => updateTheme(context, value),
-                  ),
-                  ThemeDialogCell<AppThemeSettings>(
-                    title: S.of(context).darkMintThemeTitle,
-                    groupValue: state,
-                    value: AppThemeSettings(
-                      darkTheme: DarkThemePreference(),
-                      appTheme: AppTheme.darkMint,
+                      darkTheme: DarkThemePreference(
+                        darkThemeValue: DarkThemePreference.on,
+                      ),
+                      appTheme: AppTheme.dark,
                     ),
                     onChanged: (value) => updateTheme(context, value),
                   ),
@@ -83,26 +49,17 @@ class SettingsScreen extends StatelessWidget {
                     title: S.of(context).systemThemeTitle,
                     groupValue: state,
                     value: AppThemeSettings(
-                      darkTheme: DarkThemePreference(),
+                      darkTheme: DarkThemePreference(
+                        darkThemeValue: DarkThemePreference.followSystem,
+                      ),
                       appTheme: AppTheme.system,
-                    ),
-                    onChanged: (value) => updateTheme(context, value),
-                  ),
-                  ThemeDialogCell<AppThemeSettings>(
-                    title: S.of(context).experimentalThemeTitle,
-                    groupValue: state,
-                    value: AppThemeSettings(
-                      darkTheme: DarkThemePreference(),
-                      appTheme: AppTheme.experimental,
                     ),
                     onChanged: (value) => updateTheme(context, value),
                   ),
                 ],
               ),
             ),
-            listener: (context, state) {
-              // Navigator.of(context).pop();
-            },
+            listener: (context, state) {},
           ),
           SettingItem(
             key: const Key('appearance'),

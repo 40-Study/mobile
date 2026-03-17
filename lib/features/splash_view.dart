@@ -10,8 +10,7 @@ class SplashView extends StatefulWidget {
   State<SplashView> createState() => _SplashViewState();
 }
 
-class _SplashViewState extends State<SplashView>
-    with TickerProviderStateMixin {
+class _SplashViewState extends State<SplashView> with TickerProviderStateMixin {
   late AnimationController _logoController;
   late AnimationController _loadingController;
 
@@ -65,22 +64,10 @@ class _SplashViewState extends State<SplashView>
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      body: Container(
+      backgroundColor: colorScheme.surface,
+      body: SizedBox(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          // Bám đúng web: nền trắng + xanh primary nhạt (primary-100).
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.surface, // ~ --background
-              colorScheme.primaryContainer,
-              colorScheme.surface,
-            ],
-            stops: const [0.0, 0.55, 1.0],
-          ),
-        ),
         child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -105,27 +92,13 @@ class _SplashViewState extends State<SplashView>
                       width: 88,
                       height: 88,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            colorScheme.primary,
-                            colorScheme.secondary,
-                          ],
-                        ),
+                        color: colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(22),
-                        boxShadow: [
-                          BoxShadow(
-                            color: colorScheme.primary.withValues(alpha: 0.4),
-                            blurRadius: 24,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
                       ),
                       child: Icon(
                         Icons.school_rounded,
                         size: 44,
-                        color: colorScheme.onPrimary,
+                        color: colorScheme.primary,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -144,10 +117,7 @@ class _SplashViewState extends State<SplashView>
               AnimatedBuilder(
                 animation: _logoController,
                 builder: (context, child) {
-                  return Opacity(
-                    opacity: _loadingOpacity.value,
-                    child: child,
-                  );
+                  return Opacity(opacity: _loadingOpacity.value, child: child);
                 },
                 child: _SplashLoadingDots(controller: _loadingController),
               ),
@@ -184,10 +154,7 @@ class _SplashLoadingDots extends StatelessWidget {
               final scale = 0.7 + 0.3 * math.sin(t * math.pi);
               return Transform.translate(
                 offset: Offset(0, y),
-                child: Transform.scale(
-                  scale: scale,
-                  child: child,
-                ),
+                child: Transform.scale(scale: scale, child: child),
               );
             },
             child: Container(

@@ -8,11 +8,8 @@ sealed class ForgotPasswordEvent extends Equatable {
 }
 
 /// Gửi email yêu cầu OTP reset mật khẩu.
-final class ForgotPasswordSubmitted
-    extends ForgotPasswordEvent {
-  const ForgotPasswordSubmitted({
-    required this.email,
-  });
+final class ForgotPasswordSubmitted extends ForgotPasswordEvent {
+  const ForgotPasswordSubmitted({required this.email});
   final String email;
 
   @override
@@ -20,12 +17,8 @@ final class ForgotPasswordSubmitted
 }
 
 /// Xác thực OTP (chỉ verify, chưa đặt mật khẩu).
-final class ForgotPasswordOTPVerified
-    extends ForgotPasswordEvent {
-  const ForgotPasswordOTPVerified({
-    required this.email,
-    required this.otp,
-  });
+final class ForgotPasswordOTPVerified extends ForgotPasswordEvent {
+  const ForgotPasswordOTPVerified({required this.email, required this.otp});
 
   final String email;
   final String otp;
@@ -35,8 +28,7 @@ final class ForgotPasswordOTPVerified
 }
 
 /// Đặt mật khẩu mới (sau khi OTP đã verify).
-final class ForgotPasswordResetSubmitted
-    extends ForgotPasswordEvent {
+final class ForgotPasswordResetSubmitted extends ForgotPasswordEvent {
   const ForgotPasswordResetSubmitted({
     required this.email,
     required this.otp,
@@ -50,19 +42,12 @@ final class ForgotPasswordResetSubmitted
   final String confirmPassword;
 
   @override
-  List<Object?> get props => [
-        email,
-        otp,
-        newPassword,
-      ];
+  List<Object?> get props => [email, otp, newPassword];
 }
 
 /// Gửi lại OTP.
-final class ForgotPasswordOTPResent
-    extends ForgotPasswordEvent {
-  const ForgotPasswordOTPResent({
-    required this.email,
-  });
+final class ForgotPasswordOTPResent extends ForgotPasswordEvent {
+  const ForgotPasswordOTPResent({required this.email});
   final String email;
 
   @override
