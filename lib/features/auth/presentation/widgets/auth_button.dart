@@ -85,7 +85,7 @@ class _AuthButtonState extends State<AuthButton>
           curve: Curves.easeOut,
           child: SizedBox(
             width: double.infinity,
-            height: 48,
+            height: 52,
             child: AnimatedContainer(
               duration: AuthAnimConst.successDuration,
               curve: Curves.easeOut,
@@ -135,7 +135,7 @@ class _AuthButtonState extends State<AuthButton>
                               widget.label,
                               key: ValueKey(widget.label),
                               style: TextStyle(
-                                fontSize: 15,
+                                fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: fgColor,
                               ),

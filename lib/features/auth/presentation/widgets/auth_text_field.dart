@@ -7,6 +7,7 @@ class AuthTextField extends StatefulWidget {
     super.key,
     required this.controller,
     required this.label,
+    this.focusNode,
     this.hint,
     this.obscureText = false,
     this.keyboardType,
@@ -20,6 +21,7 @@ class AuthTextField extends StatefulWidget {
 
   final TextEditingController controller;
   final String label;
+  final FocusNode? focusNode;
   final String? hint;
   final bool obscureText;
   final TextInputType? keyboardType;
@@ -36,7 +38,8 @@ class AuthTextField extends StatefulWidget {
 
 class _AuthTextFieldState extends State<AuthTextField>
     with SingleTickerProviderStateMixin {
-  late final FocusNode _focusNode;
+  FocusNode? _internalFocusNode;
+  FocusNode get _focusNode => widget.focusNode ?? _internalFocusNode!;
   bool _isFocused = false;
   bool _hasError = false;
 
@@ -46,7 +49,10 @@ class _AuthTextFieldState extends State<AuthTextField>
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode()..addListener(_onFocusChange);
+    if (widget.focusNode == null) {
+      _internalFocusNode = FocusNode();
+    }
+    _focusNode.addListener(_onFocusChange);
 
     _shakeController = AnimationController(
       vsync: this,
@@ -68,9 +74,8 @@ class _AuthTextFieldState extends State<AuthTextField>
 
   @override
   void dispose() {
-    _focusNode
-      ..removeListener(_onFocusChange)
-      ..dispose();
+    _focusNode.removeListener(_onFocusChange);
+    _internalFocusNode?.dispose();
     _shakeController.dispose();
     widget.controller.removeListener(_onTextChanged);
     super.dispose();
@@ -104,7 +109,7 @@ class _AuthTextFieldState extends State<AuthTextField>
       children: [
         Text(
           widget.label,
-          style: tt.bodyMedium?.copyWith(
+          style: tt.bodyLarge?.copyWith(
             fontWeight: FontWeight.w600,
             color: cs.onSurface,
           ),
@@ -143,11 +148,11 @@ class _AuthTextFieldState extends State<AuthTextField>
               textInputAction: widget.textInputAction,
               enabled: widget.enabled,
               validator: widget.validator != null ? _wrappedValidator : null,
-              style: tt.bodyLarge,
+              style: tt.bodyLarge?.copyWith(color: cs.onSurface),
               decoration: InputDecoration(
                 hintText: widget.hint,
                 hintStyle: tt.bodyLarge?.copyWith(
-                  color: cs.onSurfaceVariant.withValues(alpha: 0.5),
+                  color: cs.onSurfaceVariant.withValues(alpha: 0.6),
                 ),
                 prefixIcon: widget.prefixIcon != null
                     ? Icon(widget.prefixIcon, size: 20)
