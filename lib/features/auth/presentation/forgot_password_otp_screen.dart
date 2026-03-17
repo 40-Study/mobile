@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/features/auth/bloc/auth_animation_cubit.dart';
 import 'package:study/features/auth/bloc/forgot_password/forgot_password_bloc.dart';
+import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
 import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
 import 'package:study/features/auth/presentation/widgets/auth_gradient_header.dart';
@@ -19,6 +21,7 @@ class ForgotPasswordOtpScreen extends StatefulWidget {
 
 class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
   final _otpKey = GlobalKey<OtpBoxesState>();
+  final _animCubit = AuthAnimationCubit();
   String _otp = '';
   Timer? _timer;
   int _countdown = 300;
@@ -26,12 +29,14 @@ class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
   @override
   void initState() {
     super.initState();
+    _animCubit.startEntrance();
     _startCountdown();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _animCubit.close();
     super.dispose();
   }
 
@@ -72,106 +77,117 @@ class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
     final cs = Theme.of(context).colorScheme;
     final email = ModalRoute.of(context)?.settings.arguments as String? ?? '';
 
-    return Scaffold(
-      backgroundColor: cs.surface,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => Navigator.of(context).pop(),
+    return BlocProvider.value(
+      value: _animCubit,
+      child: Scaffold(
+        backgroundColor: cs.surface,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
-      ),
-      body: BlocListener<ForgotPasswordBloc, ForgotPasswordState>(
-        listener: (context, state) {
-          switch (state) {
-            case ForgotPasswordOTPVerifiedState():
-              navigator.navigateTo(Routes.resetPassword, {
-                'email': state.email,
-                'otp': state.otp,
-              });
-            case ForgotPasswordOTPSent():
-              _startCountdown();
-              _otpKey.currentState?.clear();
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Đã gửi lại OTP')));
-            case ForgotPasswordFailure(:final message):
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(message)));
-            case ForgotPasswordInitial():
-            case ForgotPasswordInProgress():
-            case ForgotPasswordSuccess():
-              break;
-          }
-        },
-        child: SafeArea(
-          top: false,
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: 32),
-              child: AuthFormCard(
-                child: Column(
-                  children: [
-                    AuthHeader(
-                      icon: Icons.email_outlined,
-                      title: 'Xác thực OTP',
-                      subtitle: 'Mã OTP đã gửi đến $email',
-                    ),
-                    const SizedBox(height: 24),
-                    OtpBoxes(key: _otpKey, onCompleted: (otp) => _otp = otp),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Hết hạn sau $_countdownText',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: _countdown > 0 ? cs.primary : cs.error,
+        body: BlocListener<ForgotPasswordBloc, ForgotPasswordState>(
+          listener: (context, state) {
+            final anim = context.read<AuthAnimationCubit>();
+            switch (state) {
+              case ForgotPasswordInProgress():
+                anim.submit();
+              case ForgotPasswordOTPVerifiedState():
+                anim.entranceComplete();
+                navigator.navigateTo(Routes.resetPassword, {
+                  'email': state.email,
+                  'otp': state.otp,
+                });
+              case ForgotPasswordOTPSent():
+                anim.entranceComplete();
+                _startCountdown();
+                _otpKey.currentState?.clear();
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Đã gửi lại OTP')));
+              case ForgotPasswordFailure(:final message):
+                anim.fail();
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(message)));
+              case ForgotPasswordInitial():
+              case ForgotPasswordSuccess():
+                break;
+            }
+          },
+          child: SafeArea(
+            top: false,
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(vertical: 40),
+                child: AuthFormCard(
+                  child: StaggeredColumn(
+                    animate: _animCubit.state.shouldAnimate,
+                    spacing: 20,
+                    onComplete: _animCubit.entranceComplete,
+                    children: [
+                      AuthHeader(
+                        icon: Icons.email_outlined,
+                        title: 'Xác thực OTP',
+                        subtitle: 'Mã OTP đã gửi đến $email',
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(
-                      builder: (context, state) {
-                        return AuthButton(
-                          label: 'Xác thực',
-                          isLoading: state is ForgotPasswordInProgress,
-                          onPressed: () => _onVerify(email),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Chưa nhận được mã? ',
+                      OtpBoxes(key: _otpKey, onCompleted: (otp) => _otp = otp),
+                      Center(
+                        child: Text(
+                          'Hết hạn sau $_countdownText',
                           style: TextStyle(
-                            color: cs.onSurfaceVariant,
                             fontSize: 13,
+                            color: _countdown > 0 ? cs.primary : cs.error,
                           ),
                         ),
-                        GestureDetector(
-                          onTap: _countdown > 0
-                              ? null
-                              : () {
-                                  context.read<ForgotPasswordBloc>().add(
-                                    ForgotPasswordOTPResent(email: email),
-                                  );
-                                },
-                          child: Text(
-                            _countdown > 0
-                                ? 'Gửi lại ($_countdownText)'
-                                : 'Gửi lại OTP',
+                      ),
+                      const SizedBox(height: 4),
+                      BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(
+                        builder: (context, state) {
+                          return AuthButton(
+                            label: 'Xác thực',
+                            isLoading: state is ForgotPasswordInProgress,
+                            onPressed: () => _onVerify(email),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Chưa nhận được mã? ',
                             style: TextStyle(
-                              color: _countdown > 0
-                                  ? cs.onSurfaceVariant
-                                  : cs.primary,
-                              fontWeight: FontWeight.w600,
+                              color: cs.onSurfaceVariant,
                               fontSize: 13,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          GestureDetector(
+                            onTap: _countdown > 0
+                                ? null
+                                : () {
+                                    context.read<ForgotPasswordBloc>().add(
+                                      ForgotPasswordOTPResent(email: email),
+                                    );
+                                  },
+                            child: Text(
+                              _countdown > 0
+                                  ? 'Gửi lại ($_countdownText)'
+                                  : 'Gửi lại OTP',
+                              style: TextStyle(
+                                color: _countdown > 0
+                                    ? cs.onSurfaceVariant
+                                    : cs.primary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
