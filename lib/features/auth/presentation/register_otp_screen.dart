@@ -7,7 +7,7 @@ import 'package:study/features/auth/bloc/register/register_bloc.dart';
 import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
 import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
-import 'package:study/features/auth/presentation/widgets/auth_gradient_header.dart';
+import 'package:study/features/auth/presentation/widgets/login_bear.dart';
 import 'package:study/features/auth/presentation/widgets/otp_boxes.dart';
 import 'package:study/routes/router.dart';
 
@@ -21,6 +21,7 @@ class RegisterOtpScreen extends StatefulWidget {
 class _RegisterOtpScreenState extends State<RegisterOtpScreen> {
   final _otpKey = GlobalKey<OtpBoxesState>();
   final _animCubit = AuthAnimationCubit();
+  final _bearKey = GlobalKey<AuthBearState>();
   String _otp = '';
   Timer? _timer;
   int _countdown = 300;
@@ -62,6 +63,7 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> {
   Widget build(BuildContext context) {
     final navigator = NavigationService.of(context);
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final args = ModalRoute.of(context)?.settings.arguments;
 
     if (args is! Map<String, dynamic>) {
@@ -119,101 +121,133 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> {
             top: false,
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                child: AuthFormCard(
-                  child: StaggeredColumn(
-                    animate: _animCubit.state.shouldAnimate,
-                    spacing: 20,
-                    onComplete: _animCubit.entranceComplete,
-                    children: [
-                      AuthHeader(
-                        icon: Icons.email_outlined,
-                        title: 'Xác thực OTP',
-                        subtitle: 'Mã xác thực đã gửi đến $email',
-                      ),
-                      OtpBoxes(key: _otpKey, onCompleted: (otp) => _otp = otp),
-                      Center(
-                        child: Text(
-                          'Hết hạn sau $_countdownText',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: _countdown > 0 ? cs.primary : cs.error,
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Transform.translate(
+                      offset: const Offset(0, 40),
+                      child: AuthBear(key: _bearKey),
+                    ),
+                    AuthFormCard(
+                      child: StaggeredColumn(
+                        animate: _animCubit.state.shouldAnimate,
+                        spacing: 20,
+                        onComplete: _animCubit.entranceComplete,
+                        children: [
+                          Column(
+                            children: [
+                              Text(
+                                'Xác thực OTP',
+                                style: tt.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: cs.onSurface,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Mã xác thực đã gửi đến $email',
+                                style: tt.bodyLarge?.copyWith(
+                                  color: cs.onSurfaceVariant,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      BlocBuilder<RegisterBloc, RegisterState>(
-                        builder: (context, state) {
-                          return BlocBuilder<
-                            AuthAnimationCubit,
-                            AuthAnimationState
-                          >(
-                            builder: (context, animState) {
-                              return AuthButton(
-                                label: 'Xác nhận OTP',
-                                isLoading: state is RegisterInProgress,
-                                isSuccess:
-                                    animState.status ==
-                                    AuthScreenAnimStatus.success,
-                                onPressed: () {
-                                  context.read<RegisterBloc>().add(
-                                    RegisterOTPSubmitted(
-                                      email: email,
-                                      otp: _otp,
-                                    ),
+                          OtpBoxes(
+                            key: _otpKey,
+                            onCompleted: (otp) => _otp = otp,
+                          ),
+                          Center(
+                            child: Text(
+                              'Hết hạn sau $_countdownText',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: _countdown > 0 ? cs.primary : cs.error,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          BlocBuilder<RegisterBloc, RegisterState>(
+                            builder: (context, state) {
+                              return BlocBuilder<
+                                AuthAnimationCubit,
+                                AuthAnimationState
+                              >(
+                                builder: (context, animState) {
+                                  return AuthButton(
+                                    label: 'Xác nhận OTP',
+                                    isLoading: state is RegisterInProgress,
+                                    isSuccess:
+                                        animState.status ==
+                                        AuthScreenAnimStatus.success,
+                                    onPressed: () {
+                                      context.read<RegisterBloc>().add(
+                                        RegisterOTPSubmitted(
+                                          email: email,
+                                          otp: _otp,
+                                        ),
+                                      );
+                                    },
                                   );
                                 },
                               );
                             },
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Chưa nhận được mã? ',
-                            style: TextStyle(
-                              color: cs.onSurfaceVariant,
-                              fontSize: 13,
-                            ),
                           ),
-                          GestureDetector(
-                            onTap: _countdown > 0
-                                ? null
-                                : () {
-                                    context.read<RegisterBloc>().add(
-                                      RegisterOTPResent(
-                                        email: email,
-                                        password: args['password'] as String,
-                                        confirmPassword:
-                                            args['confirmPassword'] as String,
-                                        userName: args['userName'] as String,
-                                        fullName: args['fullName'] as String?,
-                                        roleIds:
-                                            (args['roleIds'] as List<dynamic>?)
-                                                ?.cast<String>(),
-                                      ),
-                                    );
-                                  },
-                            child: Text(
-                              _countdown > 0
-                                  ? 'Gửi lại ($_countdownText)'
-                                  : 'Gửi lại OTP',
-                              style: TextStyle(
-                                color: _countdown > 0
-                                    ? cs.onSurfaceVariant
-                                    : cs.primary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Chưa nhận được mã? ',
+                                style: TextStyle(
+                                  color: cs.onSurfaceVariant,
+                                  fontSize: 14,
+                                ),
                               ),
-                            ),
+                              GestureDetector(
+                                onTap: _countdown > 0
+                                    ? null
+                                    : () {
+                                        context.read<RegisterBloc>().add(
+                                          RegisterOTPResent(
+                                            email: email,
+                                            password:
+                                                args['password'] as String,
+                                            confirmPassword:
+                                                args['confirmPassword']
+                                                    as String,
+                                            userName:
+                                                args['userName'] as String,
+                                            fullName:
+                                                args['fullName'] as String?,
+                                            roleIds:
+                                                (args['roleIds']
+                                                        as List<dynamic>?)
+                                                    ?.cast<String>(),
+                                          ),
+                                        );
+                                      },
+                                child: Text(
+                                  _countdown > 0
+                                      ? 'Gửi lại ($_countdownText)'
+                                      : 'Gửi lại OTP',
+                                  style: TextStyle(
+                                    color: _countdown > 0
+                                        ? cs.onSurfaceVariant
+                                        : cs.primary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

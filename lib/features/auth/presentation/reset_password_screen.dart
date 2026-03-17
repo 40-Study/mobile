@@ -5,8 +5,8 @@ import 'package:study/features/auth/bloc/forgot_password/forgot_password_bloc.da
 import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
 import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
-import 'package:study/features/auth/presentation/widgets/auth_gradient_header.dart';
 import 'package:study/features/auth/presentation/widgets/auth_text_field.dart';
+import 'package:study/features/auth/presentation/widgets/login_bear.dart';
 import 'package:study/routes/router.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -20,7 +20,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
+  final _passwordFocus = FocusNode();
+  final _confirmFocus = FocusNode();
   final _animCubit = AuthAnimationCubit();
+  final _bearKey = GlobalKey<AuthBearState>();
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
 
@@ -34,6 +37,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   void dispose() {
     _passwordCtrl.dispose();
     _confirmCtrl.dispose();
+    _passwordFocus.dispose();
+    _confirmFocus.dispose();
     _animCubit.close();
     super.dispose();
   }
@@ -54,6 +59,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   Widget build(BuildContext context) {
     final navigator = NavigationService.of(context);
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final args =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
         {};
@@ -102,76 +108,111 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             top: false,
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                child: AuthFormCard(
-                  child: Form(
-                    key: _formKey,
-                    child: StaggeredColumn(
-                      animate: _animCubit.state.shouldAnimate,
-                      spacing: 20,
-                      onComplete: _animCubit.entranceComplete,
-                      children: [
-                        const AuthHeader(
-                          icon: Icons.lock_reset_rounded,
-                          title: 'Đặt mật khẩu mới',
-                          subtitle: 'Nhập mật khẩu mới cho tài khoản',
-                        ),
-                        AuthTextField(
-                          controller: _passwordCtrl,
-                          label: 'Mật khẩu mới',
-                          textInputAction: TextInputAction.next,
-                          isObscured: _obscurePassword,
-                          onToggleObscure: () {
-                            setState(
-                              () => _obscurePassword = !_obscurePassword,
-                            );
-                          },
-                          validator: (v) {
-                            if (v == null || v.isEmpty) {
-                              return 'Vui lòng nhập mật khẩu';
-                            }
-                            if (v.length < 8) return 'Tối thiểu 8 ký tự';
-                            return null;
-                          },
-                        ),
-                        AuthTextField(
-                          controller: _confirmCtrl,
-                          label: 'Xác nhận mật khẩu',
-                          textInputAction: TextInputAction.done,
-                          isObscured: _obscureConfirm,
-                          onToggleObscure: () {
-                            setState(() => _obscureConfirm = !_obscureConfirm);
-                          },
-                          validator: (v) {
-                            if (v != _passwordCtrl.text) {
-                              return 'Mật khẩu không khớp';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 4),
-                        BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(
-                          builder: (context, state) {
-                            return BlocBuilder<
-                              AuthAnimationCubit,
-                              AuthAnimationState
-                            >(
-                              builder: (context, animState) {
-                                return AuthButton(
-                                  label: 'Đặt lại mật khẩu',
-                                  isLoading: state is ForgotPasswordInProgress,
-                                  isSuccess:
-                                      animState.status ==
-                                      AuthScreenAnimStatus.success,
-                                  onPressed: () => _onSubmit(email, otp),
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Transform.translate(
+                      offset: const Offset(0, 40),
+                      child: AuthBear(
+                        key: _bearKey,
+                        passwordFocusNodes: [_passwordFocus, _confirmFocus],
+                      ),
+                    ),
+                    AuthFormCard(
+                      child: Form(
+                        key: _formKey,
+                        child: StaggeredColumn(
+                          animate: _animCubit.state.shouldAnimate,
+                          spacing: 20,
+                          onComplete: _animCubit.entranceComplete,
+                          children: [
+                            Column(
+                              children: [
+                                Text(
+                                  'Đặt mật khẩu mới',
+                                  style: tt.headlineSmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: cs.onSurface,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Nhập mật khẩu mới cho tài khoản',
+                                  style: tt.bodyLarge?.copyWith(
+                                    color: cs.onSurfaceVariant,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                            AuthTextField(
+                              controller: _passwordCtrl,
+                              focusNode: _passwordFocus,
+                              label: 'Mật khẩu mới',
+                              textInputAction: TextInputAction.next,
+                              isObscured: _obscurePassword,
+                              onToggleObscure: () {
+                                setState(
+                                  () => _obscurePassword = !_obscurePassword,
                                 );
                               },
-                            );
-                          },
+                              validator: (v) {
+                                if (v == null || v.isEmpty) {
+                                  return 'Vui lòng nhập mật khẩu';
+                                }
+                                if (v.length < 8) return 'Tối thiểu 8 ký tự';
+                                return null;
+                              },
+                            ),
+                            AuthTextField(
+                              controller: _confirmCtrl,
+                              focusNode: _confirmFocus,
+                              label: 'Xác nhận mật khẩu',
+                              textInputAction: TextInputAction.done,
+                              isObscured: _obscureConfirm,
+                              onToggleObscure: () {
+                                setState(
+                                  () => _obscureConfirm = !_obscureConfirm,
+                                );
+                              },
+                              validator: (v) {
+                                if (v != _passwordCtrl.text) {
+                                  return 'Mật khẩu không khớp';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 4),
+                            BlocBuilder<
+                              ForgotPasswordBloc,
+                              ForgotPasswordState
+                            >(
+                              builder: (context, state) {
+                                return BlocBuilder<
+                                  AuthAnimationCubit,
+                                  AuthAnimationState
+                                >(
+                                  builder: (context, animState) {
+                                    return AuthButton(
+                                      label: 'Đặt lại mật khẩu',
+                                      isLoading:
+                                          state is ForgotPasswordInProgress,
+                                      isSuccess:
+                                          animState.status ==
+                                          AuthScreenAnimStatus.success,
+                                      onPressed: () => _onSubmit(email, otp),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
