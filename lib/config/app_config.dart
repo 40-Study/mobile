@@ -1,14 +1,10 @@
-/// App config.
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+/// App config loaded from .env file.
 class AppConfig {
-  AppConfig({required this.url});
+  AppConfig({required this.envFileName});
 
-  final String url;
+  final String envFileName;
 
-  AppConfig copyWith({
-    String? url,
-    String? proxyUrl,
-  }) =>
-      AppConfig(
-        url: url ?? this.url,
-      );
+  String get url => dotenv.get('BASE_URL', fallback: '');
 }

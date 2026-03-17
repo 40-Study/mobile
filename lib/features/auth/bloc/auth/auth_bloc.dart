@@ -15,58 +15,43 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSessionExpired>(_onSessionExpired);
   }
 
-  // ignore: unused_field
   final AuthRepository _authRepository;
 
   Future<void> _onStarted(
     AuthStarted event,
     Emitter<AuthState> emit,
   ) async {
-    // TODO: Bật lại khi test API
-    // final loggedIn =
-    //     await _authRepository.isLoggedIn();
-    // if (!loggedIn) {
-    //   emit(AuthUnauthenticated());
-    //   return;
-    // }
-    // final user =
-    //     await _authRepository.getSavedUser();
-    // if (user != null) {
-    //   emit(AuthAuthenticated(user: user));
-    // } else {
-    //   emit(AuthUnauthenticated());
-    // }
-
-    emit(AuthUnauthenticated());
+    final loggedIn =
+        await _authRepository.isLoggedIn();
+    if (!loggedIn) {
+      emit(AuthUnauthenticated());
+      return;
+    }
+    final user =
+        await _authRepository.getSavedUser();
+    if (user != null) {
+      emit(AuthAuthenticated(user: user));
+    } else {
+      emit(AuthUnauthenticated());
+    }
   }
 
   Future<void> _onLoggedIn(
     AuthLoggedIn event,
     Emitter<AuthState> emit,
   ) async {
-    // TODO: Bật lại khi test API
-    // if (event.response.user != null) {
-    //   emit(AuthAuthenticated(
-    //     user: event.response.user!,
-    //   ));
-    // }
-
-    final user = event.response.user ??
-        const UserModel(
-          id: 'mock-user',
-          username: 'testuser',
-          email: 'test@example.com',
-        );
-    emit(AuthAuthenticated(user: user));
+    if (event.response.user != null) {
+      emit(AuthAuthenticated(
+        user: event.response.user!,
+      ));
+    }
   }
 
   Future<void> _onLoggedOut(
     AuthLoggedOut event,
     Emitter<AuthState> emit,
   ) async {
-    // TODO: Bật lại khi test API
-    // await _authRepository.logout();
-
+    await _authRepository.logout();
     emit(AuthUnauthenticated());
   }
 
@@ -74,9 +59,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthSessionExpired event,
     Emitter<AuthState> emit,
   ) async {
-    // TODO: Bật lại khi test API
-    // await _authRepository.clearSession();
-
+    await _authRepository.clearSession();
     emit(AuthUnauthenticated());
   }
 }

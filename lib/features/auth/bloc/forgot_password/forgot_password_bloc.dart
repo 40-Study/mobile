@@ -20,7 +20,6 @@ class ForgotPasswordBloc extends Bloc<
     on<ForgotPasswordOTPResent>(_onOTPResent);
   }
 
-  // ignore: unused_field
   final AuthRepository _authRepository;
 
   Future<void> _onSubmitted(
@@ -29,22 +28,16 @@ class ForgotPasswordBloc extends Bloc<
   ) async {
     emit(ForgotPasswordInProgress());
 
-    // TODO: Bật lại khi test API
-    // try {
-    //   await _authRepository.resetPasswordRequest(
-    //     email: event.email,
-    //   );
-    //   emit(ForgotPasswordOTPSent());
-    // } on DioException catch (e) {
-    //   emit(ForgotPasswordFailure(
-    //     _extractError(e),
-    //   ));
-    // }
-
-    await Future<void>.delayed(
-      const Duration(milliseconds: 800),
-    );
-    emit(ForgotPasswordOTPSent());
+    try {
+      await _authRepository.resetPasswordRequest(
+        email: event.email,
+      );
+      emit(ForgotPasswordOTPSent());
+    } on DioException catch (e) {
+      emit(ForgotPasswordFailure(
+        _extractError(e),
+      ));
+    }
   }
 
   Future<void> _onOTPVerified(
@@ -53,11 +46,6 @@ class ForgotPasswordBloc extends Bloc<
   ) async {
     emit(ForgotPasswordInProgress());
 
-    // TODO: Bật lại khi test API (nếu BE có verify OTP riêng)
-
-    await Future<void>.delayed(
-      const Duration(milliseconds: 500),
-    );
     emit(ForgotPasswordOTPVerifiedState(
       email: event.email,
       otp: event.otp,
@@ -70,25 +58,19 @@ class ForgotPasswordBloc extends Bloc<
   ) async {
     emit(ForgotPasswordInProgress());
 
-    // TODO: Bật lại khi test API
-    // try {
-    //   await _authRepository.resetPassword(
-    //     email: event.email,
-    //     otp: event.otp,
-    //     newPassword: event.newPassword,
-    //     confirmPassword: event.confirmPassword,
-    //   );
-    //   emit(ForgotPasswordSuccess());
-    // } on DioException catch (e) {
-    //   emit(ForgotPasswordFailure(
-    //     _extractError(e),
-    //   ));
-    // }
-
-    await Future<void>.delayed(
-      const Duration(milliseconds: 800),
-    );
-    emit(ForgotPasswordSuccess());
+    try {
+      await _authRepository.resetPassword(
+        email: event.email,
+        otp: event.otp,
+        newPassword: event.newPassword,
+        confirmPassword: event.confirmPassword,
+      );
+      emit(ForgotPasswordSuccess());
+    } on DioException catch (e) {
+      emit(ForgotPasswordFailure(
+        _extractError(e),
+      ));
+    }
   }
 
   Future<void> _onOTPResent(
@@ -97,25 +79,18 @@ class ForgotPasswordBloc extends Bloc<
   ) async {
     emit(ForgotPasswordInProgress());
 
-    // TODO: Bật lại khi test API
-    // try {
-    //   await _authRepository.resetPasswordRequest(
-    //     email: event.email,
-    //   );
-    //   emit(ForgotPasswordOTPSent());
-    // } on DioException catch (e) {
-    //   emit(ForgotPasswordFailure(
-    //     _extractError(e),
-    //   ));
-    // }
-
-    await Future<void>.delayed(
-      const Duration(milliseconds: 800),
-    );
-    emit(ForgotPasswordOTPSent());
+    try {
+      await _authRepository.resetPasswordRequest(
+        email: event.email,
+      );
+      emit(ForgotPasswordOTPSent());
+    } on DioException catch (e) {
+      emit(ForgotPasswordFailure(
+        _extractError(e),
+      ));
+    }
   }
 
-  // ignore: unused_element
   String _extractError(DioException e) {
     final data = e.response?.data;
     if (data is Map<String, dynamic>) {

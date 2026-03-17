@@ -7,6 +7,12 @@ sealed class RegisterEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+/// Load danh sách system roles từ server.
+final class RegisterRolesRequested
+    extends RegisterEvent {
+  const RegisterRolesRequested();
+}
+
 /// Gửi form đăng ký.
 final class RegisterSubmitted extends RegisterEvent {
   const RegisterSubmitted({

@@ -102,6 +102,8 @@ class _RegisterOtpScreenState
               );
             case RegisterInitial():
             case RegisterInProgress():
+            case RegisterRolesLoaded():
+            case RegisterRolesFailure():
               break;
           }
         },

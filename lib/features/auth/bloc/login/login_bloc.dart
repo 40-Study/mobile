@@ -20,9 +20,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LoginOrgSelected>(_onOrgSelected);
   }
 
-  // ignore: unused_field
   final AuthRepository _authRepository;
-  // ignore: unused_field
   final DeviceInfoHelper _deviceInfoHelper;
 
   Future<void> _onSubmitted(
@@ -31,32 +29,18 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   ) async {
     emit(LoginInProgress());
 
-    // TODO: Bật lại khi test API
-    // try {
-    //   final deviceInfo =
-    //       await _deviceInfoHelper.getDeviceInfo();
-    //   final response = await _authRepository.login(
-    //     email: event.email,
-    //     password: event.password,
-    //     deviceInfo: deviceInfo,
-    //   );
-    //   _handleAuthResponse(response, emit);
-    // } on DioException catch (e) {
-    //   emit(LoginFailure(_extractError(e)));
-    // }
-
-    await Future<void>.delayed(
-      const Duration(milliseconds: 800),
-    );
-
-    // Giả lập: login -> cần chọn role
-    emit(LoginNeedRole(
-      sessionToken: 'fake-session-token',
-      roles: const [
-        RoleModel(id: 'role-1', name: 'STUDENT'),
-        RoleModel(id: 'role-2', name: 'TEACHER'),
-      ],
-    ));
+    try {
+      final deviceInfo =
+          await _deviceInfoHelper.getDeviceInfo();
+      final response = await _authRepository.login(
+        email: event.email,
+        password: event.password,
+        deviceInfo: deviceInfo,
+      );
+      _handleAuthResponse(response, emit);
+    } on DioException catch (e) {
+      emit(LoginFailure(_extractError(e)));
+    }
   }
 
   Future<void> _onRoleSelected(
@@ -65,40 +49,16 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   ) async {
     emit(LoginInProgress());
 
-    // TODO: Bật lại khi test API
-    // try {
-    //   final response =
-    //       await _authRepository.selectProfile(
-    //     sessionToken: event.sessionToken,
-    //     systemRoleId: event.systemRoleId,
-    //   );
-    //   _handleAuthResponse(response, emit);
-    // } on DioException catch (e) {
-    //   emit(LoginFailure(_extractError(e)));
-    // }
-
-    await Future<void>.delayed(
-      const Duration(milliseconds: 500),
-    );
-
-    // Giả lập: chọn role -> cần chọn org
-    emit(LoginNeedOrg(
-      sessionToken: event.sessionToken,
-      organizations: const [
-        OrganizationModel(
-          id: 'org-1',
-          name: 'Trường THPT ABC',
-        ),
-        OrganizationModel(
-          id: 'org-2',
-          name: 'Trung tâm XYZ',
-        ),
-      ],
-      activeRole: RoleModel(
-        id: event.systemRoleId,
-        name: 'STUDENT',
-      ),
-    ));
+    try {
+      final response =
+          await _authRepository.selectProfile(
+        sessionToken: event.sessionToken,
+        systemRoleId: event.systemRoleId,
+      );
+      _handlePostRoleResponse(response, emit);
+    } on DioException catch (e) {
+      emit(LoginFailure(_extractError(e)));
+    }
   }
 
   Future<void> _onOrgSelected(
@@ -107,36 +67,18 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   ) async {
     emit(LoginInProgress());
 
-    // TODO: Bật lại khi test API
-    // try {
-    //   final response =
-    //       await _authRepository.selectOrg(
-    //     sessionToken: event.sessionToken,
-    //     organizationId: event.organizationId,
-    //   );
-    //   _handleAuthResponse(response, emit);
-    // } on DioException catch (e) {
-    //   emit(LoginFailure(_extractError(e)));
-    // }
-
-    await Future<void>.delayed(
-      const Duration(milliseconds: 500),
-    );
-
-    // Giả lập: chọn org -> login thành công
-    emit(LoginSuccess(AuthResponse(
-      completed: true,
-      accessToken: 'fake-access-token',
-      refreshToken: 'fake-refresh-token',
-      user: const UserModel(
-        id: 'user-1',
-        username: 'testuser',
-        email: 'test@example.com',
-      ),
-    )));
+    try {
+      final response =
+          await _authRepository.selectOrg(
+        sessionToken: event.sessionToken,
+        organizationId: event.organizationId,
+      );
+      _handlePostOrgResponse(response, emit);
+    } on DioException catch (e) {
+      emit(LoginFailure(_extractError(e)));
+    }
   }
 
-  // ignore: unused_element
   void _handleAuthResponse(
     AuthResponse response,
     Emitter<LoginState> emit,
@@ -155,8 +97,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       return;
     }
 
-    if (response.requiresOrgSelection &&
-        response.organizations != null) {
+    if (response.organizations != null &&
+        response.organizations!.isNotEmpty) {
       emit(LoginNeedOrg(
         sessionToken: response.sessionToken!,
         organizations: response.organizations!,
@@ -164,9 +106,43 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       ));
       return;
     }
+
+    emit(LoginFailure(
+      'Phản hồi không hợp lệ từ server',
+    ));
   }
 
-  // ignore: unused_element
+  /// Sau khi chọn role: chỉ kỳ vọng completed hoặc cần chọn org.
+  void _handlePostRoleResponse(
+    AuthResponse response,
+    Emitter<LoginState> emit,
+  ) {
+    if (response.completed) {
+      emit(LoginSuccess(response));
+      return;
+    }
+
+    if (response.organizations != null &&
+        response.organizations!.isNotEmpty) {
+      emit(LoginNeedOrg(
+        sessionToken: response.sessionToken!,
+        organizations: response.organizations!,
+        activeRole: response.activeRole,
+      ));
+      return;
+    }
+
+    emit(LoginSuccess(response));
+  }
+
+  /// Sau khi chọn org: chỉ kỳ vọng completed.
+  void _handlePostOrgResponse(
+    AuthResponse response,
+    Emitter<LoginState> emit,
+  ) {
+    emit(LoginSuccess(response));
+  }
+
   String _extractError(DioException e) {
     final data = e.response?.data;
     if (data is Map<String, dynamic>) {

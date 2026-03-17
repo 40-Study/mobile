@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/register/register_bloc.dart';
+import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
 import 'package:study/features/auth/presentation/widgets/auth_gradient_header.dart';
@@ -15,40 +16,20 @@ class RegisterScreen extends StatefulWidget {
       _RegisterScreenState();
 }
 
-class _RoleOption {
-  const _RoleOption({
-    required this.id,
-    required this.label,
-    required this.icon,
-  });
-  final String id;
-  final String label;
-  final IconData icon;
+IconData _roleIcon(String roleName) {
+  switch (roleName.toUpperCase()) {
+    case 'STUDENT':
+      return Icons.school_outlined;
+    case 'TEACHER':
+      return Icons.person_outlined;
+    case 'PARENT':
+      return Icons.family_restroom;
+    case 'ORG_OWNER':
+      return Icons.business_outlined;
+    default:
+      return Icons.badge_outlined;
+  }
 }
-
-// TODO: Thay bằng API GET /api/system-roles/ sau
-const _availableRoles = [
-  _RoleOption(
-    id: 'STUDENT',
-    label: 'Học sinh',
-    icon: Icons.school_outlined,
-  ),
-  _RoleOption(
-    id: 'TEACHER',
-    label: 'Giáo viên',
-    icon: Icons.person_outlined,
-  ),
-  _RoleOption(
-    id: 'PARENT',
-    label: 'Phụ huynh',
-    icon: Icons.family_restroom,
-  ),
-  _RoleOption(
-    id: 'ORG_OWNER',
-    label: 'Chủ tổ chức',
-    icon: Icons.business_outlined,
-  ),
-];
 
 class _RegisterScreenState
     extends State<RegisterScreen> {
@@ -61,6 +42,15 @@ class _RegisterScreenState
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   final Set<String> _selectedRoleIds = {};
+  List<RoleModel> _roles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    context
+        .read<RegisterBloc>()
+        .add(const RegisterRolesRequested());
+  }
 
   @override
   void dispose() {
@@ -105,6 +95,17 @@ class _RegisterScreenState
       body: BlocListener<RegisterBloc, RegisterState>(
         listener: (context, state) {
           switch (state) {
+            case RegisterRolesLoaded(:final roles):
+              setState(() => _roles = roles);
+            case RegisterRolesFailure(:final message):
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Không tải được vai trò: $message',
+                  ),
+                ),
+              );
             case RegisterOTPSent():
               navigator.navigateTo(
                 Routes.registerOtp,
@@ -209,71 +210,88 @@ class _RegisterScreenState
                               ),
                         ),
                         const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: _availableRoles
-                              .map((role) {
-                            final selected =
-                                _selectedRoleIds
-                                    .contains(
-                              role.id,
-                            );
-                            return FilterChip(
-                              avatar: Icon(
-                                role.icon,
-                                size: 18,
-                                color: selected
-                                    ? cs.onPrimary
-                                    : cs.primary,
-                              ),
-                              label:
-                                  Text(role.label),
-                              selected: selected,
-                              selectedColor:
-                                  cs.primary,
-                              checkmarkColor:
-                                  cs.onPrimary,
-                              labelStyle: TextStyle(
-                                color: selected
-                                    ? cs.onPrimary
-                                    : cs.onSurface,
-                                fontWeight: selected
-                                    ? FontWeight.w600
-                                    : FontWeight
-                                        .normal,
-                              ),
-                              side: BorderSide(
-                                color: selected
-                                    ? cs.primary
-                                    : cs.outline,
-                              ),
-                              shape:
-                                  RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius
-                                        .circular(
-                                  20,
+                        if (_roles.isEmpty)
+                          const Padding(
+                            padding:
+                                EdgeInsets.symmetric(
+                              vertical: 8,
+                            ),
+                            child: Center(
+                              child:
+                                  CircularProgressIndicator(),
+                            ),
+                          )
+                        else
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children:
+                                _roles.map((role) {
+                              final selected =
+                                  _selectedRoleIds
+                                      .contains(
+                                role.id,
+                              );
+                              return FilterChip(
+                                avatar: Icon(
+                                  _roleIcon(
+                                    role.name,
+                                  ),
+                                  size: 18,
+                                  color: selected
+                                      ? cs.onPrimary
+                                      : cs.primary,
                                 ),
-                              ),
-                              onSelected: (v) {
-                                setState(() {
-                                  if (v) {
-                                    _selectedRoleIds
-                                        .add(
-                                      role.id,
-                                    );
-                                  } else {
-                                    _selectedRoleIds
-                                        .remove(
-                                      role.id,
-                                    );
-                                  }
-                                });
-                              },
-                            );
-                          }).toList(),
-                        ),
+                                label:
+                                    Text(role.name),
+                                selected: selected,
+                                selectedColor:
+                                    cs.primary,
+                                checkmarkColor:
+                                    cs.onPrimary,
+                                labelStyle:
+                                    TextStyle(
+                                  color: selected
+                                      ? cs.onPrimary
+                                      : cs.onSurface,
+                                  fontWeight:
+                                      selected
+                                          ? FontWeight
+                                              .w600
+                                          : FontWeight
+                                              .normal,
+                                ),
+                                side: BorderSide(
+                                  color: selected
+                                      ? cs.primary
+                                      : cs.outline,
+                                ),
+                                shape:
+                                    RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius
+                                          .circular(
+                                    20,
+                                  ),
+                                ),
+                                onSelected: (v) {
+                                  setState(() {
+                                    if (v) {
+                                      _selectedRoleIds
+                                          .add(
+                                        role.id,
+                                      );
+                                    } else {
+                                      _selectedRoleIds
+                                          .remove(
+                                        role.id,
+                                      );
+                                    }
+                                  });
+                                },
+                              );
+                            }).toList(),
+                          ),
                         const SizedBox(height: 16),
                         AuthTextField(
                           controller: _passwordCtrl,

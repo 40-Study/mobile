@@ -46,11 +46,11 @@ jobs:
 
       #6 Building APK
       - name: Build APK
-        run: flutter build apk --flavor dev --release -t lib/main_prod.dart
+        run: flutter build apk --flavor dev --release --dart-define=ENV=prod
 
         #7 Building App Bundle (aab)
       - name: Build appBundle
-        run: flutter build appbundle --flavor dev --release -t lib/main_prod.dart
+        run: flutter build appbundle --flavor dev --release --dart-define=ENV=prod
 
         #9 Upload Artifacts
       - name: Upload Artifacts
