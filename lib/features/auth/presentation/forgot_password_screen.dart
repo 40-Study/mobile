@@ -5,8 +5,8 @@ import 'package:study/features/auth/bloc/forgot_password/forgot_password_bloc.da
 import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
 import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
-import 'package:study/features/auth/presentation/widgets/auth_gradient_header.dart';
 import 'package:study/features/auth/presentation/widgets/auth_text_field.dart';
+import 'package:study/features/auth/presentation/widgets/login_bear.dart';
 import 'package:study/routes/router.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -19,7 +19,9 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
+  final _emailFocus = FocusNode();
   final _animCubit = AuthAnimationCubit();
+  final _bearKey = GlobalKey<AuthBearState>();
 
   @override
   void initState() {
@@ -30,6 +32,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   void dispose() {
     _emailCtrl.dispose();
+    _emailFocus.dispose();
     _animCubit.close();
     super.dispose();
   }
@@ -45,6 +48,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     final navigator = NavigationService.of(context);
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
     return BlocProvider.value(
       value: _animCubit,
@@ -83,73 +87,105 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             top: false,
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                child: AuthFormCard(
-                  child: Form(
-                    key: _formKey,
-                    child: StaggeredColumn(
-                      animate: _animCubit.state.shouldAnimate,
-                      spacing: 20,
-                      onComplete: _animCubit.entranceComplete,
-                      children: [
-                        const AuthHeader(
-                          icon: Icons.lock_outline_rounded,
-                          title: 'Quên mật khẩu?',
-                          subtitle: 'Nhập email của bạn để nhận mã xác thực',
-                        ),
-                        AuthTextField(
-                          controller: _emailCtrl,
-                          label: 'Email',
-                          hint: 'Nhập email của bạn',
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.done,
-                          validator: (v) {
-                            if (v == null || v.trim().isEmpty) {
-                              return 'Vui lòng nhập email';
-                            }
-                            if (!v.contains('@')) {
-                              return 'Email không hợp lệ';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 4),
-                        BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(
-                          builder: (context, state) {
-                            return AuthButton(
-                              label: 'Gửi mã xác thực',
-                              isLoading: state is ForgotPasswordInProgress,
-                              onPressed: _onSubmit,
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Transform.translate(
+                      offset: const Offset(0, 40),
+                      child: AuthBear(
+                        key: _bearKey,
+                        emailFocus: _emailFocus,
+                        emailController: _emailCtrl,
+                      ),
+                    ),
+                    AuthFormCard(
+                      child: Form(
+                        key: _formKey,
+                        child: StaggeredColumn(
+                          animate: _animCubit.state.shouldAnimate,
+                          spacing: 20,
+                          onComplete: _animCubit.entranceComplete,
                           children: [
-                            Text(
-                              'Quay lại ',
-                              style: TextStyle(
-                                color: cs.onSurfaceVariant,
-                                fontSize: 13,
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () => Navigator.of(context).pop(),
-                              child: Text(
-                                'Đăng nhập',
-                                style: TextStyle(
-                                  color: cs.primary,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
+                            Column(
+                              children: [
+                                Text(
+                                  'Quên mật khẩu?',
+                                  style: tt.headlineSmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: cs.onSurface,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
-                              ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Nhập email của bạn để nhận mã xác thực',
+                                  style: tt.bodyLarge?.copyWith(
+                                    color: cs.onSurfaceVariant,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                            AuthTextField(
+                              controller: _emailCtrl,
+                              focusNode: _emailFocus,
+                              label: 'Email',
+                              hint: 'Nhập email của bạn',
+                              keyboardType: TextInputType.emailAddress,
+                              textInputAction: TextInputAction.done,
+                              validator: (v) {
+                                if (v == null || v.trim().isEmpty) {
+                                  return 'Vui lòng nhập email';
+                                }
+                                if (!v.contains('@')) {
+                                  return 'Email không hợp lệ';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 4),
+                            BlocBuilder<
+                              ForgotPasswordBloc,
+                              ForgotPasswordState
+                            >(
+                              builder: (context, state) {
+                                return AuthButton(
+                                  label: 'Gửi mã xác thực',
+                                  isLoading: state is ForgotPasswordInProgress,
+                                  onPressed: _onSubmit,
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Quay lại ',
+                                  style: TextStyle(
+                                    color: cs.onSurfaceVariant,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () => Navigator.of(context).pop(),
+                                  child: Text(
+                                    'Đăng nhập',
+                                    style: TextStyle(
+                                      color: cs.primary,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
