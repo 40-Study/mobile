@@ -40,34 +40,55 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final pages = onboardingPages;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SizedBox(
+      body: Container(
         width: double.infinity,
         height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              colorScheme.surface,
+              colorScheme.primaryContainer.withValues(alpha: 0.3),
+            ],
+          ),
+        ),
         child: SafeArea(
           child: Column(
             children: [
-              if (_currentPage < _pageCount - 1)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 8, top: 8),
-                    child: TextButton(
-                      onPressed: () => _pageController.animateToPage(
-                        _pageCount - 1,
-                        duration: const Duration(milliseconds: 400),
-                        curve: Curves.easeInOutCubic,
-                      ),
-                      child: Text(
-                        'Bỏ qua',
-                        style: TextStyle(
-                          color: colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w600,
+              // Header: Skip button only (top right)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 12, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // Skip button (hide on last page)
+                    AnimatedOpacity(
+                      opacity: _currentPage < _pageCount - 1 ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: TextButton(
+                        onPressed: _currentPage < _pageCount - 1
+                            ? () => _pageController.animateToPage(
+                                _pageCount - 1,
+                                duration: const Duration(milliseconds: 400),
+                                curve: Curves.easeInOutCubic,
+                              )
+                            : null,
+                        child: Text(
+                          'Skip',
+                          style: TextStyle(
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
+              ),
+
+              // Page content
               Expanded(
                 child: PageView.builder(
                   controller: _pageController,
@@ -81,17 +102,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                 ),
               ),
+
+              // Bottom: Indicator + CTA
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                child: Column(
                   children: [
+                    // Page indicator
                     _AnimatedPageIndicator(
                       count: _pageCount,
                       current: _currentPage,
                     ),
+                    const SizedBox(height: 24),
+                    // Full-width CTA button
                     _OnboardingCtaButton(
-                      isLastPage: _currentPage >= _pageCount - 1,
+                      label: pages[_currentPage].buttonLabel ?? 'Next',
                       onPressed: () {
                         if (_currentPage < _pageCount - 1) {
                           _pageController.nextPage(
@@ -115,12 +140,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 }
 
 class _OnboardingCtaButton extends StatelessWidget {
-  const _OnboardingCtaButton({
-    required this.isLastPage,
-    required this.onPressed,
-  });
+  const _OnboardingCtaButton({required this.label, required this.onPressed});
 
-  final bool isLastPage;
+  final String label;
   final VoidCallback onPressed;
 
   @override
@@ -128,35 +150,49 @@ class _OnboardingCtaButton extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 250),
-      transitionBuilder: (child, animation) => ScaleTransition(
-        scale: animation,
-        child: FadeTransition(opacity: animation, child: child),
-      ),
-      child: FilledButton(
-        key: ValueKey<bool>(isLastPage),
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: isLastPage
-              ? colorScheme.primary
-              : colorScheme.surfaceContainerLow,
-          foregroundColor: isLastPage
-              ? colorScheme.onPrimary
-              : colorScheme.onSurface,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: isLastPage
-                ? BorderSide.none
-                : BorderSide(color: colorScheme.outline),
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              colorScheme.primary,
+              colorScheme.primary.withValues(alpha: 0.85),
+            ],
           ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.primary.withValues(alpha: 0.3),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
-        child: Text(
-          isLastPage ? 'Bắt đầu' : 'Tiếp',
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: isLastPage ? colorScheme.onPrimary : colorScheme.onSurface,
-            fontWeight: FontWeight.w700,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.arrow_forward,
+                  color: colorScheme.onPrimary,
+                  size: 20,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -177,20 +213,20 @@ class _AnimatedPageIndicator extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
         count,
         (index) => AnimatedContainer(
           duration: _indicatorAnimationDuration,
           curve: Curves.easeInOutCubic,
-          width: index == current ? 28 : 10,
-          height: 10,
-          margin: const EdgeInsets.only(right: 8),
+          width: index == current ? 24 : 8,
+          height: 8,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
             color: index == current
                 ? colorScheme.primary
-                : colorScheme.outline.withValues(alpha: 0.4),
-            borderRadius: BorderRadius.circular(5),
+                : colorScheme.outline.withValues(alpha: 0.35),
+            borderRadius: BorderRadius.circular(4),
           ),
         ),
       ),

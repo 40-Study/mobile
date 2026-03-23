@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/onboarding/models/onboarding_page_data.dart';
-import 'package:study/features/onboarding/widgets/onboarding_page_content.dart';
 
 /// Duration và delay cho animation từng phần (tái sử dụng / dễ chỉnh).
 const Duration _illustrationDuration = Duration(milliseconds: 500);
@@ -45,6 +44,11 @@ class _AnimatedOnboardingPageContentState
   late Animation<double> _pulseScale;
 
   bool _hasAnimated = false;
+
+  // Interactive rotation/tilt state
+  double _rotationX = 0.0;
+  double _rotationY = 0.0;
+  Offset _lastPanPosition = Offset.zero;
 
   @override
   void initState() {
@@ -110,6 +114,11 @@ class _AnimatedOnboardingPageContentState
     }
     if (widget.isActive && !oldWidget.isActive) {
       _pulseController.repeat(reverse: true);
+      // Reset rotation when page becomes active
+      setState(() {
+        _rotationX = 0.0;
+        _rotationY = 0.0;
+      });
     } else if (!widget.isActive && oldWidget.isActive) {
       _pulseController.stop(canceled: true);
       _pulseController.reset();
@@ -117,7 +126,57 @@ class _AnimatedOnboardingPageContentState
       _illustrationController.reset();
       _titleController.reset();
       _subtitleController.reset();
+      // Reset rotation
+      _rotationX = 0.0;
+      _rotationY = 0.0;
     }
+  }
+
+  void _onPanStart(DragStartDetails details) {
+    _lastPanPosition = details.localPosition;
+  }
+
+  void _onPanUpdate(DragUpdateDetails details) {
+    final delta = details.localPosition - _lastPanPosition;
+    _lastPanPosition = details.localPosition;
+
+    setState(() {
+      // Rotate based on drag direction (limited range)
+      _rotationY = (_rotationY + delta.dx * 0.005).clamp(-0.3, 0.3);
+      _rotationX = (_rotationX - delta.dy * 0.005).clamp(-0.3, 0.3);
+    });
+  }
+
+  void _onPanEnd(DragEndDetails details) {
+    // Animate back to neutral position
+    _animateRotationReset();
+  }
+
+  void _animateRotationReset() {
+    // Simple spring-back animation using setState
+    Future.doWhile(() async {
+      if (!mounted) return false;
+
+      await Future<void>.delayed(const Duration(milliseconds: 16));
+      if (!mounted) return false;
+
+      final newX = _rotationX * 0.85;
+      final newY = _rotationY * 0.85;
+
+      if (newX.abs() < 0.001 && newY.abs() < 0.001) {
+        setState(() {
+          _rotationX = 0.0;
+          _rotationY = 0.0;
+        });
+        return false;
+      }
+
+      setState(() {
+        _rotationX = newX;
+        _rotationY = newY;
+      });
+      return true;
+    });
   }
 
   Future<void> _runAnimation() async {
@@ -144,18 +203,24 @@ class _AnimatedOnboardingPageContentState
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     if (!widget.isActive) {
       return Padding(
         padding: widget.padding,
-        child: OnboardingPageContent(
-          data: widget.data,
-          padding: EdgeInsets.zero,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildIllustration(colorScheme),
+            const SizedBox(height: 36),
+            _buildTitle(theme, colorScheme),
+            const SizedBox(height: 16),
+            _buildSubtitle(theme, colorScheme),
+          ],
         ),
       );
     }
-
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return Padding(
       padding: widget.padding,
@@ -175,7 +240,19 @@ class _AnimatedOnboardingPageContentState
                 child: Transform.scale(
                   scale: entranceScale * pulse,
                   alignment: Alignment.center,
-                  child: _buildIllustration(colorScheme),
+                  child: GestureDetector(
+                    onPanStart: _onPanStart,
+                    onPanUpdate: _onPanUpdate,
+                    onPanEnd: _onPanEnd,
+                    child: Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.identity()
+                        ..setEntry(3, 2, 0.001) // perspective
+                        ..rotateX(_rotationX)
+                        ..rotateY(_rotationY),
+                      child: _buildIllustration(colorScheme),
+                    ),
+                  ),
                 ),
               );
             },
@@ -188,15 +265,7 @@ class _AnimatedOnboardingPageContentState
                 opacity: _titleOpacity.value,
                 child: Transform.translate(
                   offset: Offset(0, _titleOffset.value),
-                  child: Text(
-                    widget.data.title,
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.3,
-                      height: 1.2,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  child: _buildTitle(theme, colorScheme),
                 ),
               );
             },
@@ -209,14 +278,7 @@ class _AnimatedOnboardingPageContentState
                 opacity: _subtitleOpacity.value,
                 child: Transform.translate(
                   offset: Offset(0, _subtitleOffset.value),
-                  child: Text(
-                    widget.data.subtitle,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      height: 1.5,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  child: _buildSubtitle(theme, colorScheme),
                 ),
               );
             },
@@ -226,8 +288,64 @@ class _AnimatedOnboardingPageContentState
     );
   }
 
+  Widget _buildTitle(ThemeData theme, ColorScheme colorScheme) {
+    final data = widget.data;
+    final baseStyle = theme.textTheme.headlineMedium?.copyWith(
+      fontWeight: FontWeight.w800,
+      letterSpacing: -0.3,
+      height: 1.2,
+      color: colorScheme.onSurface,
+    );
+
+    // If there's a highlight segment, use RichText
+    if (data.highlightText != null && data.highlightText!.isNotEmpty) {
+      final title = data.title;
+      final highlight = data.highlightText!;
+      final highlightIndex = title.indexOf(highlight);
+
+      if (highlightIndex >= 0) {
+        final before = title.substring(0, highlightIndex);
+        final after = title.substring(highlightIndex + highlight.length);
+
+        return RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            style: baseStyle,
+            children: [
+              if (before.isNotEmpty) TextSpan(text: before),
+              TextSpan(
+                text: highlight,
+                style: baseStyle?.copyWith(color: colorScheme.primary),
+              ),
+              if (after.isNotEmpty) TextSpan(text: after),
+            ],
+          ),
+        );
+      }
+    }
+
+    return Text(data.title, style: baseStyle, textAlign: TextAlign.center);
+  }
+
+  Widget _buildSubtitle(ThemeData theme, ColorScheme colorScheme) {
+    return Text(
+      widget.data.subtitle,
+      style: theme.textTheme.bodyLarge?.copyWith(
+        color: colorScheme.onSurfaceVariant,
+        height: 1.5,
+      ),
+      textAlign: TextAlign.center,
+    );
+  }
+
   Widget _buildIllustration(ColorScheme colorScheme) {
     final data = widget.data;
+
+    // Use custom illustration builder if available
+    if (data.hasCustomIllustration) {
+      return data.illustrationBuilder!(context, isActive: widget.isActive);
+    }
+
     if (data.imagePath != null && data.imagePath!.isNotEmpty) {
       return Image.asset(
         data.imagePath!,
