@@ -7,28 +7,23 @@ sealed class RegisterEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Load danh sách system roles từ server.
-final class RegisterRolesRequested extends RegisterEvent {
-  const RegisterRolesRequested();
-}
-
-/// Gửi form đăng ký.
+/// Gửi form đăng ký (bước 1).
 final class RegisterSubmitted extends RegisterEvent {
   const RegisterSubmitted({
     required this.email,
     required this.password,
     required this.confirmPassword,
     required this.userName,
+    required this.roleId,
     this.fullName,
-    this.roleIds,
   });
 
   final String email;
   final String password;
   final String confirmPassword;
   final String userName;
+  final String roleId;
   final String? fullName;
-  final List<String>? roleIds;
 
   @override
   List<Object?> get props => [
@@ -36,12 +31,12 @@ final class RegisterSubmitted extends RegisterEvent {
     password,
     confirmPassword,
     userName,
+    roleId,
     fullName,
-    roleIds,
   ];
 }
 
-/// Xác thực OTP.
+/// Xác thực OTP (bước 2).
 final class RegisterOTPSubmitted extends RegisterEvent {
   const RegisterOTPSubmitted({required this.email, required this.otp});
 
@@ -52,23 +47,23 @@ final class RegisterOTPSubmitted extends RegisterEvent {
   List<Object?> get props => [email, otp];
 }
 
-/// Gửi lại OTP (gọi lại register/request).
+/// Gửi lại OTP.
 final class RegisterOTPResent extends RegisterEvent {
   const RegisterOTPResent({
     required this.email,
     required this.password,
     required this.confirmPassword,
     required this.userName,
+    required this.roleId,
     this.fullName,
-    this.roleIds,
   });
 
   final String email;
   final String password;
   final String confirmPassword;
   final String userName;
+  final String roleId;
   final String? fullName;
-  final List<String>? roleIds;
 
   @override
   List<Object?> get props => [email];

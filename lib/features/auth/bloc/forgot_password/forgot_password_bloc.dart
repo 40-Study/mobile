@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
+import 'package:study/features/auth/data/error_handler.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 
 part 'forgot_password_event.dart';
@@ -29,7 +30,7 @@ class ForgotPasswordBloc
       await _authRepository.resetPasswordRequest(email: event.email);
       emit(ForgotPasswordOTPSent());
     } on DioException catch (e) {
-      emit(ForgotPasswordFailure(_extractError(e)));
+      emit(ForgotPasswordFailure(AuthErrorHandler.extractMessage(e)));
     }
   }
 
@@ -38,7 +39,6 @@ class ForgotPasswordBloc
     Emitter<ForgotPasswordState> emit,
   ) async {
     emit(ForgotPasswordInProgress());
-
     emit(ForgotPasswordOTPVerifiedState(email: event.email, otp: event.otp));
   }
 
@@ -57,7 +57,7 @@ class ForgotPasswordBloc
       );
       emit(ForgotPasswordSuccess());
     } on DioException catch (e) {
-      emit(ForgotPasswordFailure(_extractError(e)));
+      emit(ForgotPasswordFailure(AuthErrorHandler.extractMessage(e)));
     }
   }
 
@@ -71,15 +71,7 @@ class ForgotPasswordBloc
       await _authRepository.resetPasswordRequest(email: event.email);
       emit(ForgotPasswordOTPSent());
     } on DioException catch (e) {
-      emit(ForgotPasswordFailure(_extractError(e)));
+      emit(ForgotPasswordFailure(AuthErrorHandler.extractMessage(e)));
     }
-  }
-
-  String _extractError(DioException e) {
-    final data = e.response?.data;
-    if (data is Map<String, dynamic>) {
-      return (data['message'] ?? data['error'] ?? '') as String;
-    }
-    return e.message ?? 'Đã có lỗi xảy ra';
   }
 }

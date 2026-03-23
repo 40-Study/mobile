@@ -11,7 +11,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthStarted>(_onStarted);
     on<AuthLoggedIn>(_onLoggedIn);
     on<AuthLoggedOut>(_onLoggedOut);
+    on<AuthProfileSwitched>(_onProfileSwitched);
     on<AuthSessionExpired>(_onSessionExpired);
+    on<AuthUserUpdated>(_onUserUpdated);
   }
 
   final AuthRepository _authRepository;
@@ -32,7 +34,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onLoggedIn(AuthLoggedIn event, Emitter<AuthState> emit) async {
     if (event.response.user != null) {
-      emit(AuthAuthenticated(user: event.response.user!));
+      emit(AuthAuthenticated(
+        user: event.response.user!,
+        activeProfile: event.response.activeProfile,
+      ));
     }
   }
 
@@ -44,11 +49,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthUnauthenticated());
   }
 
+  Future<void> _onProfileSwitched(
+    AuthProfileSwitched event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (event.response.user != null) {
+      emit(AuthAuthenticated(
+        user: event.response.user!,
+        activeProfile: event.response.activeProfile,
+      ));
+    }
+  }
+
   Future<void> _onSessionExpired(
     AuthSessionExpired event,
     Emitter<AuthState> emit,
   ) async {
     await _authRepository.clearSession();
     emit(AuthUnauthenticated());
+  }
+
+  void _onUserUpdated(
+    AuthUserUpdated event,
+    Emitter<AuthState> emit,
+  ) {
+    final currentState = state;
+    if (currentState is AuthAuthenticated) {
+      emit(AuthAuthenticated(
+        user: event.user,
+        activeProfile: currentState.activeProfile,
+      ));
+    }
   }
 }

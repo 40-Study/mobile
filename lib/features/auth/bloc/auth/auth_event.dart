@@ -22,5 +22,23 @@ final class AuthLoggedIn extends AuthEvent {
 /// Đăng xuất.
 final class AuthLoggedOut extends AuthEvent {}
 
+/// Chuyển đổi profile thành công.
+final class AuthProfileSwitched extends AuthEvent {
+  const AuthProfileSwitched(this.response);
+  final AuthResponse response;
+
+  @override
+  List<Object?> get props => [response];
+}
+
 /// Session hết hạn (refresh token fail).
 final class AuthSessionExpired extends AuthEvent {}
+
+/// User cập nhật thông tin.
+final class AuthUserUpdated extends AuthEvent {
+  const AuthUserUpdated(this.user);
+  final UserModel user;
+
+  @override
+  List<Object?> get props => [user];
+}
