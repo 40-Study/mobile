@@ -5,6 +5,9 @@ import 'package:study/features/auth/data/auth_api_client.dart';
 import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/auth/repository/auth_repository_impl.dart';
+import 'package:study/features/teacher/data/repository/teacher_repository.dart';
+import 'package:study/features/teacher/data/repository/teacher_repository_impl.dart';
+import 'package:study/features/teacher/data/teacher_api_client.dart';
 import 'package:study/repository/onboarding_repository.dart';
 import 'package:study/repository/theme_repository.dart';
 
@@ -24,4 +27,9 @@ abstract class RepositoryModule {
     AuthApiClient apiClient,
     AuthStorage authStorage,
   ) => AuthRepositoryImpl(apiClient: apiClient, authStorage: authStorage);
+
+  @factoryMethod
+  TeacherRepository provideTeacherRepository(
+    TeacherApiClient apiClient,
+  ) => TeacherRepositoryImpl(apiClient: apiClient);
 }

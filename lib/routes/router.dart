@@ -5,10 +5,9 @@ import 'package:study/di/di_container.dart';
 import 'package:study/features/auth/presentation/forgot_password_otp_screen.dart';
 import 'package:study/features/auth/presentation/forgot_password_screen.dart';
 import 'package:study/features/auth/presentation/login_screen.dart';
+import 'package:study/features/auth/presentation/register_form_screen.dart';
 import 'package:study/features/auth/presentation/register_otp_screen.dart';
-import 'package:study/features/auth/presentation/register_screen.dart';
 import 'package:study/features/auth/presentation/reset_password_screen.dart';
-import 'package:study/features/auth/presentation/select_org_screen.dart';
 import 'package:study/features/auth/presentation/select_role_screen.dart';
 import 'package:study/index.dart';
 
@@ -21,13 +20,12 @@ class Routes {
 
   // Auth
   static const login = 'login';
-  static const register = 'register';
+  static const selectRole = 'selectRole';
+  static const registerForm = 'registerForm';
   static const registerOtp = 'registerOtp';
   static const forgotPassword = 'forgotPassword';
   static const forgotPasswordOtp = 'forgotPasswordOtp';
   static const resetPassword = 'resetPassword';
-  static const selectRole = 'selectRole';
-  static const selectOrg = 'selectOrg';
 }
 
 /// Navigator key from DI. Use after [initDI].
@@ -42,26 +40,24 @@ class NavigationService {
     Routes.darkTheme: (_) => const DarkThemeScreen(),
     Routes.settings: (_) => const SettingsScreen(),
     Routes.login: (_) => const LoginScreen(),
-    Routes.register: (_) => const RegisterScreen(),
+    Routes.selectRole: (_) => const SelectRoleScreen(),
+    Routes.registerForm: (_) => const RegisterFormScreen(),
     Routes.registerOtp: (_) => const RegisterOtpScreen(),
     Routes.forgotPassword: (_) => const ForgotPasswordScreen(),
     Routes.forgotPasswordOtp: (_) => const ForgotPasswordOtpScreen(),
     Routes.resetPassword: (_) => const ResetPasswordScreen(),
-    Routes.selectRole: (_) => const SelectRoleScreen(),
-    Routes.selectOrg: (_) => const SelectOrgScreen(),
   };
 
   final Set<String> _animatedRoutes = {
     Routes.appearance,
     Routes.darkTheme,
     Routes.settings,
-    Routes.register,
+    Routes.selectRole,
+    Routes.registerForm,
     Routes.registerOtp,
     Routes.forgotPassword,
     Routes.forgotPasswordOtp,
     Routes.resetPassword,
-    Routes.selectRole,
-    Routes.selectOrg,
   };
 
   /// Full-screen dialog routes (iOS style; no effect on Android).

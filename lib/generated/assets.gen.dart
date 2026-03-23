@@ -103,6 +103,25 @@ class $AssetsImagesGen {
   ];
 }
 
+class $AssetsRiveGen {
+  const $AssetsRiveGen();
+
+  /// File path: assets/rive/AUTHENTICATION_API.md
+  String get authenticationApi => 'assets/rive/AUTHENTICATION_API.md';
+
+  /// File path: assets/rive/DESIGN.md
+  String get design => 'assets/rive/DESIGN.md';
+
+  /// File path: assets/rive/logo.svg
+  SvgGenImage get logo => const SvgGenImage('assets/rive/logo.svg');
+
+  /// File path: assets/rive/teddy_login.riv
+  String get teddyLogin => 'assets/rive/teddy_login.riv';
+
+  /// List of all assets
+  List<dynamic> get values => [authenticationApi, design, logo, teddyLogin];
+}
+
 class $AssetsIconsNavigationGen {
   const $AssetsIconsNavigationGen();
 
@@ -123,6 +142,7 @@ class Assets {
 
   static const $AssetsIconsGen icons = $AssetsIconsGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
+  static const $AssetsRiveGen rive = $AssetsRiveGen();
   static const $GoogleFontsGen googleFonts = $GoogleFontsGen();
 }
 
