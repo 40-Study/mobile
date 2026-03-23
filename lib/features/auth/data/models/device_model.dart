@@ -8,7 +8,8 @@ part 'device_model.g.dart';
 abstract class DeviceModel with _$DeviceModel {
   const factory DeviceModel({
     @JsonKey(name: 'device_id') required String deviceId,
-    @JsonKey(name: 'device_name') required String deviceName,
+    @JsonKey(name: 'device_name') String? deviceName,
+    String? os,
     @JsonKey(name: 'user_agent') String? userAgent,
     @JsonKey(name: 'logged_in_at') String? loggedInAt,
     @JsonKey(name: 'is_current') @Default(false) bool isCurrent,
