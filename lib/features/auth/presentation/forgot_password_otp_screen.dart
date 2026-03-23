@@ -1,9 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/auth_animation_cubit.dart';
 import 'package:study/features/auth/bloc/forgot_password/forgot_password_bloc.dart';
+import 'package:study/features/auth/presentation/utils/otp_countdown_mixin.dart';
 import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
 import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
@@ -19,45 +18,24 @@ class ForgotPasswordOtpScreen extends StatefulWidget {
       _ForgotPasswordOtpScreenState();
 }
 
-class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
+class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen>
+    with OtpCountdownMixin {
   final _otpKey = GlobalKey<OtpBoxesState>();
   final _animCubit = AuthAnimationCubit();
   final _bearKey = GlobalKey<AuthBearState>();
   String _otp = '';
-  Timer? _timer;
-  int _countdown = 300;
 
   @override
   void initState() {
     super.initState();
     _animCubit.startEntrance();
-    _startCountdown();
+    startCountdown();
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
     _animCubit.close();
     super.dispose();
-  }
-
-  void _startCountdown() {
-    _timer?.cancel();
-    _countdown = 300;
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (_countdown > 0) {
-        setState(() => _countdown--);
-      } else {
-        _timer?.cancel();
-      }
-    });
-  }
-
-  String get _countdownText {
-    final m = _countdown ~/ 60;
-    final s = _countdown % 60;
-    return '${m.toString().padLeft(2, '0')}'
-        ':${s.toString().padLeft(2, '0')}';
   }
 
   void _onVerify(String email) {
@@ -103,7 +81,7 @@ class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
                 });
               case ForgotPasswordOTPSent():
                 anim.entranceComplete();
-                _startCountdown();
+                startCountdown();
                 _otpKey.currentState?.clear();
                 ScaffoldMessenger.of(
                   context,
@@ -162,10 +140,10 @@ class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
                           ),
                           Center(
                             child: Text(
-                              'Hết hạn sau $_countdownText',
+                              'Hết hạn sau $countdownText',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: _countdown > 0 ? cs.primary : cs.error,
+                                color: isCountdownActive ? cs.primary : cs.error,
                               ),
                             ),
                           ),
@@ -191,7 +169,7 @@ class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: _countdown > 0
+                                onTap: isCountdownActive
                                     ? null
                                     : () {
                                         context.read<ForgotPasswordBloc>().add(
@@ -199,11 +177,11 @@ class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
                                         );
                                       },
                                 child: Text(
-                                  _countdown > 0
-                                      ? 'Gửi lại ($_countdownText)'
+                                  isCountdownActive
+                                      ? 'Gửi lại ($countdownText)'
                                       : 'Gửi lại OTP',
                                   style: TextStyle(
-                                    color: _countdown > 0
+                                    color: isCountdownActive
                                         ? cs.onSurfaceVariant
                                         : cs.primary,
                                     fontWeight: FontWeight.w600,

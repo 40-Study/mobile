@@ -1,93 +1,167 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
-import 'package:study/features/auth/bloc/auth_animation_cubit.dart';
-import 'package:study/features/auth/bloc/login/login_bloc.dart';
-import 'package:study/features/auth/presentation/widgets/auth_gradient_header.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/features/auth/bloc/select_role/select_role_cubit.dart';
+import 'package:study/features/auth/data/models/models.dart';
+import 'package:study/features/auth/presentation/utils/role_utils.dart';
+import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/routes/router.dart';
 
-class SelectRoleScreen extends StatelessWidget {
+class SelectRoleScreen extends StatefulWidget {
   const SelectRoleScreen({super.key});
 
   @override
+  State<SelectRoleScreen> createState() => _SelectRoleScreenState();
+}
+
+class _SelectRoleScreenState extends State<SelectRoleScreen>
+    with TickerProviderStateMixin {
+  late final SelectRoleCubit _selectRoleCubit;
+  late final AnimationController _fadeController;
+  late final Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectRoleCubit = SelectRoleCubit(
+      authRepository: diContainer.get<AuthRepository>(),
+    )..loadRoles();
+
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    );
+    _fadeController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _selectRoleCubit.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final navigator = NavigationService.of(context);
-    final args = ModalRoute.of(context)?.settings.arguments;
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
-    if (args is! LoginNeedRole) {
-      return const Scaffold(body: Center(child: Text('Dữ liệu không hợp lệ')));
-    }
-
-    return BlocProvider(
-      create: (_) => AuthAnimationCubit()..startEntrance(),
+    return BlocProvider.value(
+      value: _selectRoleCubit,
       child: Scaffold(
         backgroundColor: cs.surface,
         appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
-        body: BlocListener<LoginBloc, LoginState>(
-          listener: (context, state) {
-            switch (state) {
-              case LoginSuccess(:final response):
-                context.read<AuthBloc>().add(AuthLoggedIn(response));
-                navigator.pushAndRemoveAll(Routes.app);
-              case LoginNeedOrg():
-                navigator.navigateTo(Routes.selectOrg, state, true);
-              case LoginFailure(:final message):
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(message)));
-              case LoginInitial():
-              case LoginInProgress():
-              case LoginNeedRole():
-                break;
-            }
-          },
-          child: SafeArea(
-            top: false,
+        body: SafeArea(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
             child: Column(
               children: [
+                const Spacer(flex: 1),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: AuthHeader(
-                    icon: Icons.badge_outlined,
-                    title: 'Chọn vai trò',
-                    subtitle: 'Bạn có nhiều vai trò, hãy chọn một',
+                  child: Column(
+                    children: [
+                      Text(
+                        'Bạn là ai?',
+                        style: tt.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: cs.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Chọn vai trò phù hợp để bắt đầu',
+                        style: tt.bodyLarge?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 24),
-                Expanded(
-                  child: BlocBuilder<LoginBloc, LoginState>(
-                    builder: (context, state) {
-                      final isLoading = state is LoginInProgress;
-
-                      return ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                        itemCount: args.roles.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final role = args.roles[index];
-                          return _RoleTile(
-                            icon: _roleIcon(role.name),
-                            label: _roleLabel(role.name),
+                const SizedBox(height: 40),
+                BlocBuilder<SelectRoleCubit, SelectRoleState>(
+                  builder: (context, state) {
+                    return switch (state) {
+                      SelectRoleInitial() ||
+                      SelectRoleLoading() =>
+                        const Padding(
+                          padding: EdgeInsets.all(48),
+                          child: CircularProgressIndicator(),
+                        ),
+                      SelectRoleLoaded(:final roles) => _RoleGrid(
+                          roles: roles,
+                          onRoleSelected: (role) {
+                            navigator.navigateTo(
+                              Routes.registerForm,
+                              {'role': role},
+                            );
+                          },
+                        ),
+                      SelectRoleFailure(:final message) => Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                size: 48,
+                                color: cs.error,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                message,
+                                style: TextStyle(color: cs.error),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 24),
+                              FilledButton.icon(
+                                onPressed: _selectRoleCubit.loadRoles,
+                                icon: const Icon(Icons.refresh, size: 18),
+                                label: const Text('Thử lại'),
+                              ),
+                            ],
+                          ),
+                        ),
+                    };
+                  },
+                ),
+                const Spacer(flex: 2),
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Đã có tài khoản? ',
+                        style: TextStyle(
+                          color: cs.onSurfaceVariant,
+                          fontSize: 14,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Text(
+                          'Đăng nhập',
+                          style: TextStyle(
                             color: cs.primary,
-                            isLoading: isLoading,
-                            onTap: () {
-                              context.read<LoginBloc>().add(
-                                LoginRoleSelected(
-                                  sessionToken: args.sessionToken,
-                                  systemRoleId: role.id,
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      );
-                    },
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -97,97 +171,213 @@ class SelectRoleScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  IconData _roleIcon(String name) {
-    switch (name.toUpperCase()) {
-      case 'STUDENT':
-        return Icons.school_outlined;
-      case 'TEACHER':
-        return Icons.person_outlined;
-      case 'PARENT':
-        return Icons.family_restroom_outlined;
-      case 'ORG_OWNER':
-        return Icons.business_outlined;
-      default:
-        return Icons.person_outlined;
+class _RoleGrid extends StatefulWidget {
+  const _RoleGrid({
+    required this.roles,
+    required this.onRoleSelected,
+  });
+
+  final List<RoleModel> roles;
+  final ValueChanged<RoleModel> onRoleSelected;
+
+  @override
+  State<_RoleGrid> createState() => _RoleGridState();
+}
+
+class _RoleGridState extends State<_RoleGrid> with TickerProviderStateMixin {
+  late final List<AnimationController> _controllers;
+  late final List<Animation<double>> _scaleAnimations;
+
+  @override
+  void initState() {
+    super.initState();
+    _initAnimations();
+  }
+
+  void _initAnimations() {
+    _controllers = List.generate(
+      4, // Always 4 slots
+      (index) => AnimationController(
+        duration: const Duration(milliseconds: 500),
+        vsync: this,
+      ),
+    );
+
+    _scaleAnimations = _controllers.map((controller) {
+      return CurvedAnimation(
+        parent: controller,
+        curve: Curves.easeOutBack,
+      );
+    }).toList();
+
+    // Staggered animation: top-left, top-right, bottom-left, bottom-right
+    final delays = [0, 100, 150, 250];
+    for (var i = 0; i < _controllers.length; i++) {
+      Future.delayed(Duration(milliseconds: delays[i]), () {
+        if (mounted) _controllers[i].forward();
+      });
     }
   }
 
-  String _roleLabel(String name) {
-    switch (name.toUpperCase()) {
-      case 'STUDENT':
-        return 'Học sinh';
-      case 'TEACHER':
-        return 'Giáo viên';
-      case 'PARENT':
-        return 'Phụ huynh';
-      case 'ORG_OWNER':
-        return 'Chủ tổ chức';
-      default:
-        return name;
+  @override
+  void dispose() {
+    for (final controller in _controllers) {
+      controller.dispose();
     }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 1.0,
+        ),
+        itemCount: widget.roles.length > 4 ? 4 : widget.roles.length,
+        itemBuilder: (context, index) {
+          final role = widget.roles[index];
+          return ScaleTransition(
+            scale: _scaleAnimations[index],
+            child: _RoleCard(
+              role: role,
+              onTap: () => widget.onRoleSelected(role),
+            ),
+          );
+        },
+      ),
+    );
   }
 }
 
-class _RoleTile extends StatelessWidget {
-  const _RoleTile({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.isLoading,
+class _RoleCard extends StatefulWidget {
+  const _RoleCard({
+    required this.role,
     required this.onTap,
   });
 
-  final IconData icon;
-  final String label;
-  final Color color;
-  final bool isLoading;
+  final RoleModel role;
   final VoidCallback onTap;
+
+  @override
+  State<_RoleCard> createState() => _RoleCardState();
+}
+
+class _RoleCardState extends State<_RoleCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pressController;
+  late final Animation<double> _pressAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pressController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _pressAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
+      CurvedAnimation(parent: _pressController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pressController.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    _pressController.forward();
+  }
+
+  void _onTapUp(TapUpDetails details) {
+    _pressController.reverse();
+    widget.onTap();
+  }
+
+  void _onTapCancel() {
+    _pressController.reverse();
+  }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
-    return Material(
-      color: cs.surfaceContainerLowest,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: isLoading ? null : onTap,
+    return AnimatedBuilder(
+      animation: _pressAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _pressAnimation.value,
+          child: child,
+        );
+      },
+      child: GestureDetector(
+        onTapDown: _onTapDown,
+        onTapUp: _onTapUp,
+        onTapCancel: _onTapCancel,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: cs.outline),
+            color: cs.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: cs.outlineVariant.withValues(alpha: 0.3),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: cs.shadow.withValues(alpha: 0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: Row(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 64,
+                height: 64,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
+                  color: cs.primaryContainer,
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(icon, color: color),
+                child: Icon(
+                  RoleUtils.getIcon(widget.role.name),
+                  size: 32,
+                  color: cs.primary,
+                ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
+              const SizedBox(height: 16),
+              Text(
+                RoleUtils.getLabel(widget.role.name),
+                style: tt.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurface,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
-                  label,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                  RoleUtils.getDescription(widget.role.name),
+                  style: tt.bodySmall?.copyWith(
+                    color: cs.onSurfaceVariant,
+                    height: 1.3,
                   ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-              if (isLoading)
-                const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              else
-                Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
             ],
           ),
         ),

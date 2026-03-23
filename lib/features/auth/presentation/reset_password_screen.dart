@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/auth_animation_cubit.dart';
 import 'package:study/features/auth/bloc/forgot_password/forgot_password_bloc.dart';
+import 'package:study/features/auth/presentation/utils/validators.dart';
 import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
 import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
@@ -158,13 +159,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                   () => _obscurePassword = !_obscurePassword,
                                 );
                               },
-                              validator: (v) {
-                                if (v == null || v.isEmpty) {
-                                  return 'Vui lòng nhập mật khẩu';
-                                }
-                                if (v.length < 8) return 'Tối thiểu 8 ký tự';
-                                return null;
-                              },
+                              validator: AuthValidators.password,
                             ),
                             AuthTextField(
                               controller: _confirmCtrl,
@@ -177,12 +172,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                   () => _obscureConfirm = !_obscureConfirm,
                                 );
                               },
-                              validator: (v) {
-                                if (v != _passwordCtrl.text) {
-                                  return 'Mật khẩu không khớp';
-                                }
-                                return null;
-                              },
+                              validator: AuthValidators.confirmPassword(
+                                _passwordCtrl.text,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             BlocBuilder<

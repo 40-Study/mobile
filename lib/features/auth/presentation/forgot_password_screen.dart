@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/auth_animation_cubit.dart';
 import 'package:study/features/auth/bloc/forgot_password/forgot_password_bloc.dart';
+import 'package:study/features/auth/presentation/utils/validators.dart';
 import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
 import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
@@ -134,15 +135,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               hint: 'Nhập email của bạn',
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.done,
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) {
-                                  return 'Vui lòng nhập email';
-                                }
-                                if (!v.contains('@')) {
-                                  return 'Email không hợp lệ';
-                                }
-                                return null;
-                              },
+                              validator: AuthValidators.email,
                             ),
                             const SizedBox(height: 4),
                             BlocBuilder<

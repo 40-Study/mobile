@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/features/auth/bloc/auth_animation_cubit.dart';
 import 'package:study/features/auth/bloc/login/login_bloc.dart';
+import 'package:study/features/auth/presentation/utils/validators.dart';
 import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
 import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
@@ -77,12 +78,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   context.read<AuthBloc>().add(AuthLoggedIn(response));
                   navigator.pushAndRemoveAll(Routes.app);
                 });
-              case LoginNeedRole():
-                anim.entranceComplete();
-                navigator.navigateTo(Routes.selectRole, state);
-              case LoginNeedOrg():
-                anim.entranceComplete();
-                navigator.navigateTo(Routes.selectOrg, state);
               case LoginFailure(:final message):
                 anim.fail();
                 _bearKey.currentState?.triggerFail();
@@ -143,15 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               hint: 'Nhập email của bạn',
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) {
-                                  return 'Vui lòng nhập email';
-                                }
-                                if (!v.contains('@')) {
-                                  return 'Email không hợp lệ';
-                                }
-                                return null;
-                              },
+                              validator: AuthValidators.email,
                             ),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
@@ -166,15 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   onToggleObscure: () {
                                     setState(() => _obscure = !_obscure);
                                   },
-                                  validator: (v) {
-                                    if (v == null || v.isEmpty) {
-                                      return 'Vui lòng nhập mật khẩu';
-                                    }
-                                    if (v.length < 8) {
-                                      return 'Tối thiểu 8 ký tự';
-                                    }
-                                    return null;
-                                  },
+                                  validator: AuthValidators.password,
                                 ),
                                 const SizedBox(height: 4),
                                 TextButton(
@@ -231,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 GestureDetector(
                                   onTap: () =>
-                                      navigator.navigateTo(Routes.register),
+                                      navigator.navigateTo(Routes.selectRole),
                                   child: Text(
                                     'Đăng ký',
                                     style: TextStyle(

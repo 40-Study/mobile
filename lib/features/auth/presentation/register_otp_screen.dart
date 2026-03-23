@@ -1,9 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/auth_animation_cubit.dart';
 import 'package:study/features/auth/bloc/register/register_bloc.dart';
+import 'package:study/features/auth/presentation/utils/otp_countdown_mixin.dart';
 import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
 import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
@@ -18,45 +17,24 @@ class RegisterOtpScreen extends StatefulWidget {
   State<RegisterOtpScreen> createState() => _RegisterOtpScreenState();
 }
 
-class _RegisterOtpScreenState extends State<RegisterOtpScreen> {
+class _RegisterOtpScreenState extends State<RegisterOtpScreen>
+    with OtpCountdownMixin {
   final _otpKey = GlobalKey<OtpBoxesState>();
   final _animCubit = AuthAnimationCubit();
   final _bearKey = GlobalKey<AuthBearState>();
   String _otp = '';
-  Timer? _timer;
-  int _countdown = 300;
 
   @override
   void initState() {
     super.initState();
     _animCubit.startEntrance();
-    _startCountdown();
+    startCountdown();
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
     _animCubit.close();
     super.dispose();
-  }
-
-  void _startCountdown() {
-    _timer?.cancel();
-    _countdown = 300;
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (_countdown > 0) {
-        setState(() => _countdown--);
-      } else {
-        _timer?.cancel();
-      }
-    });
-  }
-
-  String get _countdownText {
-    final m = _countdown ~/ 60;
-    final s = _countdown % 60;
-    return '${m.toString().padLeft(2, '0')}'
-        ':${s.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -101,7 +79,7 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> {
                 });
               case RegisterOTPSent():
                 anim.entranceComplete();
-                _startCountdown();
+                startCountdown();
                 _otpKey.currentState?.clear();
                 ScaffoldMessenger.of(
                   context,
@@ -112,8 +90,6 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> {
                   context,
                 ).showSnackBar(SnackBar(content: Text(message)));
               case RegisterInitial():
-              case RegisterRolesLoaded():
-              case RegisterRolesFailure():
                 break;
             }
           },
@@ -161,10 +137,10 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> {
                           ),
                           Center(
                             child: Text(
-                              'Hết hạn sau $_countdownText',
+                              'Hết hạn sau $countdownText',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: _countdown > 0 ? cs.primary : cs.error,
+                                color: isCountdownActive ? cs.primary : cs.error,
                               ),
                             ),
                           ),
@@ -207,7 +183,7 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: _countdown > 0
+                                onTap: isCountdownActive
                                     ? null
                                     : () {
                                         context.read<RegisterBloc>().add(
@@ -220,21 +196,18 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> {
                                                     as String,
                                             userName:
                                                 args['userName'] as String,
+                                            roleId: args['roleId'] as String,
                                             fullName:
                                                 args['fullName'] as String?,
-                                            roleIds:
-                                                (args['roleIds']
-                                                        as List<dynamic>?)
-                                                    ?.cast<String>(),
                                           ),
                                         );
                                       },
                                 child: Text(
-                                  _countdown > 0
-                                      ? 'Gửi lại ($_countdownText)'
+                                  isCountdownActive
+                                      ? 'Gửi lại ($countdownText)'
                                       : 'Gửi lại OTP',
                                   style: TextStyle(
-                                    color: _countdown > 0
+                                    color: isCountdownActive
                                         ? cs.onSurfaceVariant
                                         : cs.primary,
                                     fontWeight: FontWeight.w600,
