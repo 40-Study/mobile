@@ -20,14 +20,24 @@ final class TeacherDashboardLoaded extends TeacherDashboardState {
     required this.stats,
     required this.notifications,
     required this.schedules,
+    required this.courses,
+    this.teacherName = 'Giáo viên',
   });
 
   final TeacherStatsModel stats;
   final List<TeacherNotificationModel> notifications;
   final List<TeacherScheduleModel> schedules;
+  final List<CourseModel> courses;
+  final String teacherName;
 
   @override
-  List<Object?> get props => [stats, notifications, schedules];
+  List<Object?> get props => [
+        stats,
+        notifications,
+        schedules,
+        courses,
+        teacherName,
+      ];
 }
 
 final class TeacherDashboardFailure extends TeacherDashboardState {

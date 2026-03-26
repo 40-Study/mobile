@@ -20,12 +20,15 @@ class TeacherDashboardCubit extends Cubit<TeacherDashboardState> {
         _repository.getStats(),
         _repository.getNotifications(),
         _repository.getUpcomingSchedule(),
+        _repository.getCourses(pageSize: 10),
       ]);
 
       emit(TeacherDashboardLoaded(
         stats: results[0] as TeacherStatsModel,
         notifications: results[1] as List<TeacherNotificationModel>,
         schedules: results[2] as List<TeacherScheduleModel>,
+        courses: results[3] as List<CourseModel>,
+        teacherName: 'Nguyễn Văn A', // TODO: Get from auth/profile
       ));
     } catch (e) {
       emit(TeacherDashboardFailure(message: e.toString()));

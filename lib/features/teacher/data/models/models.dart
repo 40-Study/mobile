@@ -1,3 +1,7 @@
+export 'attendance_model.dart';
+export 'class_model.dart';
+export 'class_schedule_model.dart';
+export 'class_teacher_model.dart';
 export 'course_model.dart';
 export 'student_model.dart';
 export 'teacher_notification_model.dart';

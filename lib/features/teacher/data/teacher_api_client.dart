@@ -71,6 +71,30 @@ abstract class TeacherApiClient {
   Future<HttpResponse<dynamic>> deleteClass(@Path('id') String id);
 
   // ==========================================================================
+  // CLASS TEACHERS
+  // ==========================================================================
+
+  /// Lấy danh sách giáo viên trong class.
+  @GET('/api/classes/{classId}/teachers')
+  Future<HttpResponse<dynamic>> getClassTeachers(
+    @Path('classId') String classId,
+  );
+
+  /// Thêm giáo viên vào class.
+  @POST('/api/classes/{classId}/teachers')
+  Future<HttpResponse<dynamic>> addTeacherToClass(
+    @Path('classId') String classId,
+    @Body() Map<String, dynamic> body,
+  );
+
+  /// Xóa giáo viên khỏi class.
+  @DELETE('/api/classes/{classId}/teachers/{teacherId}')
+  Future<HttpResponse<dynamic>> removeTeacherFromClass(
+    @Path('classId') String classId,
+    @Path('teacherId') String teacherId,
+  );
+
+  // ==========================================================================
   // CLASS STUDENTS
   // ==========================================================================
 
@@ -110,6 +134,48 @@ abstract class TeacherApiClient {
   /// Tạo lịch học.
   @POST('/api/classes/{classId}/schedules')
   Future<HttpResponse<dynamic>> createSchedule(
+    @Path('classId') String classId,
+    @Body() Map<String, dynamic> body,
+  );
+
+  /// Cập nhật lịch học.
+  @PUT('/api/classes/{classId}/schedules/{scheduleId}')
+  Future<HttpResponse<dynamic>> updateSchedule(
+    @Path('classId') String classId,
+    @Path('scheduleId') String scheduleId,
+    @Body() Map<String, dynamic> body,
+  );
+
+  /// Xóa lịch học.
+  @DELETE('/api/classes/{classId}/schedules/{scheduleId}')
+  Future<HttpResponse<dynamic>> deleteSchedule(
+    @Path('classId') String classId,
+    @Path('scheduleId') String scheduleId,
+  );
+
+  // ==========================================================================
+  // ATTENDANCES
+  // ==========================================================================
+
+  /// Lấy danh sách điểm danh của class.
+  @GET('/api/classes/{classId}/attendances')
+  Future<HttpResponse<dynamic>> getClassAttendances(
+    @Path('classId') String classId, {
+    @Query('session_date') String? sessionDate,
+    @Query('page') int page = 1,
+    @Query('page_size') int pageSize = 50,
+  });
+
+  /// Tạo/cập nhật điểm danh.
+  @POST('/api/classes/{classId}/attendances')
+  Future<HttpResponse<dynamic>> createAttendance(
+    @Path('classId') String classId,
+    @Body() Map<String, dynamic> body,
+  );
+
+  /// Cập nhật điểm danh hàng loạt.
+  @PUT('/api/classes/{classId}/attendances/batch')
+  Future<HttpResponse<dynamic>> batchUpdateAttendance(
     @Path('classId') String classId,
     @Body() Map<String, dynamic> body,
   );

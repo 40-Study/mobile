@@ -4,6 +4,8 @@ export 'data/repository/teacher_repository.dart';
 export 'data/repository/teacher_repository_impl.dart';
 
 // Bloc
+export 'bloc/classes/teacher_class_detail_cubit.dart';
+export 'bloc/classes/teacher_classes_cubit.dart';
 export 'bloc/courses/teacher_courses_cubit.dart';
 export 'bloc/dashboard/teacher_dashboard_cubit.dart';
 export 'bloc/students/teacher_students_cubit.dart';

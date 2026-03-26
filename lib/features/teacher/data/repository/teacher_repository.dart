@@ -43,4 +43,92 @@ abstract class TeacherRepository {
 
   /// Fetches class schedules.
   Future<List<TeacherScheduleModel>> getClassSchedules(String classId);
+
+  // ==========================================================================
+  // CLASSES
+  // ==========================================================================
+
+  /// Fetches all classes for the teacher.
+  Future<List<ClassModel>> getClasses({
+    String? status,
+    String? searchQuery,
+    int page = 1,
+    int pageSize = 20,
+  });
+
+  /// Fetches a single class detail.
+  Future<ClassModel> getClassDetail(String classId);
+
+  /// Creates a new class.
+  Future<ClassModel> createClass(Map<String, dynamic> data);
+
+  /// Updates an existing class.
+  Future<ClassModel> updateClass(String classId, Map<String, dynamic> data);
+
+  /// Deletes a class.
+  Future<void> deleteClass(String classId);
+
+  // ==========================================================================
+  // CLASS TEACHERS
+  // ==========================================================================
+
+  /// Fetches teachers in a class.
+  Future<List<ClassTeacherModel>> getClassTeachers(String classId);
+
+  /// Adds a teacher to a class.
+  Future<void> addTeacherToClass(
+    String classId,
+    String teacherId, {
+    String role = 'assistant',
+  });
+
+  /// Removes a teacher from a class.
+  Future<void> removeTeacherFromClass(String classId, String teacherId);
+
+  // ==========================================================================
+  // CLASS SCHEDULES
+  // ==========================================================================
+
+  /// Fetches schedules for a class.
+  Future<List<ClassScheduleModel>> getClassScheduleModels(String classId);
+
+  /// Creates a schedule for a class.
+  Future<ClassScheduleModel> createClassSchedule(
+    String classId,
+    Map<String, dynamic> data,
+  );
+
+  /// Updates a schedule.
+  Future<ClassScheduleModel> updateClassSchedule(
+    String classId,
+    String scheduleId,
+    Map<String, dynamic> data,
+  );
+
+  /// Deletes a schedule.
+  Future<void> deleteClassSchedule(String classId, String scheduleId);
+
+  // ==========================================================================
+  // ATTENDANCES
+  // ==========================================================================
+
+  /// Fetches attendance records for a class.
+  Future<List<AttendanceModel>> getClassAttendances(
+    String classId, {
+    String? sessionDate,
+    int page = 1,
+    int pageSize = 50,
+  });
+
+  /// Creates or updates an attendance record.
+  Future<AttendanceModel> createAttendance(
+    String classId,
+    Map<String, dynamic> data,
+  );
+
+  /// Batch updates attendance records.
+  Future<void> batchUpdateAttendance(
+    String classId,
+    List<Map<String, dynamic>> attendances,
+  );
 }

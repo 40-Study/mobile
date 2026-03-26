@@ -354,4 +354,386 @@ class TeacherRepositoryImpl implements TeacherRepository {
     if (data is List<dynamic>) return data;
     return null;
   }
+
+  // ==========================================================================
+  // CLASSES
+  // ==========================================================================
+
+  @override
+  Future<List<ClassModel>> getClasses({
+    String? status,
+    String? searchQuery,
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      final response = await _api.getClasses(
+        page: page,
+        pageSize: pageSize,
+        status: status,
+      );
+
+      final data = response.data;
+      final List<dynamic>? items = _parseList(data, 'classes') ??
+          _parseList(data, 'data');
+
+      if (items == null) return [];
+
+      var classes = items
+          .map((e) => ClassModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      // Filter by search query if provided
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        final query = searchQuery.toLowerCase();
+        classes = classes
+            .where((c) => c.displayName.toLowerCase().contains(query))
+            .toList();
+      }
+
+      return classes;
+    } catch (e) {
+      debugPrint('getClasses error: $e');
+      if (_useMockOnError) return _getMockClasses(status, searchQuery);
+      rethrow;
+    }
+  }
+
+  List<ClassModel> _getMockClasses(String? status, String? searchQuery) {
+    var classes = [
+      const ClassModel(
+        id: '1',
+        name: 'Lop React Native - Khoa 1',
+        description: 'Lop hoc lap trinh React Native cho nguoi moi bat dau',
+        courseId: 'c1',
+        courseName: 'React Native Co Ban',
+        maxStudents: 30,
+        studentCount: 25,
+        startDate: '2024-01-15',
+        endDate: '2024-04-15',
+        status: 'active',
+      ),
+      const ClassModel(
+        id: '2',
+        name: 'Lop UI/UX Design - Khoa 3',
+        description: 'Lop thiet ke giao dien nguoi dung',
+        courseId: 'c2',
+        courseName: 'UI/UX Design Masterclass',
+        maxStudents: 25,
+        studentCount: 20,
+        startDate: '2024-02-01',
+        endDate: '2024-05-01',
+        status: 'active',
+      ),
+      const ClassModel(
+        id: '3',
+        name: 'Lop Flutter - Khoa 2',
+        description: 'Lop hoc lap trinh Flutter',
+        courseId: 'c3',
+        courseName: 'Flutter Development',
+        maxStudents: 30,
+        studentCount: 30,
+        startDate: '2023-10-01',
+        endDate: '2024-01-01',
+        status: 'completed',
+      ),
+    ];
+
+    if (status != null && status.isNotEmpty && status != 'all') {
+      classes = classes
+          .where((c) => c.status.toLowerCase() == status.toLowerCase())
+          .toList();
+    }
+
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      final query = searchQuery.toLowerCase();
+      classes = classes
+          .where((c) => c.displayName.toLowerCase().contains(query))
+          .toList();
+    }
+
+    return classes;
+  }
+
+  @override
+  Future<ClassModel> getClassDetail(String classId) async {
+    try {
+      final response = await _api.getClass(classId);
+      final data = response.data;
+      final result = data['data'] as Map<String, dynamic>? ??
+          data as Map<String, dynamic>;
+      return ClassModel.fromJson(result);
+    } catch (e) {
+      debugPrint('getClassDetail error: $e');
+      if (_useMockOnError) {
+        final classes = _getMockClasses(null, null);
+        return classes.firstWhere(
+          (c) => c.id == classId,
+          orElse: () => classes.first,
+        );
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ClassModel> createClass(Map<String, dynamic> data) async {
+    final response = await _api.createClass(data);
+    final result = response.data['data'] as Map<String, dynamic>? ??
+        response.data as Map<String, dynamic>;
+    return ClassModel.fromJson(result);
+  }
+
+  @override
+  Future<ClassModel> updateClass(
+    String classId,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await _api.updateClass(classId, data);
+    final result = response.data['data'] as Map<String, dynamic>? ??
+        response.data as Map<String, dynamic>;
+    return ClassModel.fromJson(result);
+  }
+
+  @override
+  Future<void> deleteClass(String classId) async {
+    await _api.deleteClass(classId);
+  }
+
+  // ==========================================================================
+  // CLASS TEACHERS
+  // ==========================================================================
+
+  @override
+  Future<List<ClassTeacherModel>> getClassTeachers(String classId) async {
+    try {
+      final response = await _api.getClassTeachers(classId);
+      final data = response.data;
+      final List<dynamic>? items = _parseList(data, 'teachers') ??
+          _parseList(data, 'data');
+
+      if (items == null) return [];
+
+      return items
+          .map((e) => ClassTeacherModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      debugPrint('getClassTeachers error: $e');
+      if (_useMockOnError) return _getMockClassTeachers();
+      rethrow;
+    }
+  }
+
+  List<ClassTeacherModel> _getMockClassTeachers() {
+    return [
+      const ClassTeacherModel(
+        id: '1',
+        teacherId: 't1',
+        fullName: 'Nguyen Van A',
+        email: 'nguyenvana@example.com',
+        role: 'owner',
+      ),
+      const ClassTeacherModel(
+        id: '2',
+        teacherId: 't2',
+        fullName: 'Tran Thi B',
+        email: 'tranthib@example.com',
+        role: 'assistant',
+      ),
+    ];
+  }
+
+  @override
+  Future<void> addTeacherToClass(
+    String classId,
+    String teacherId, {
+    String role = 'assistant',
+  }) async {
+    await _api.addTeacherToClass(classId, {
+      'teacher_id': teacherId,
+      'role': role,
+    });
+  }
+
+  @override
+  Future<void> removeTeacherFromClass(
+    String classId,
+    String teacherId,
+  ) async {
+    await _api.removeTeacherFromClass(classId, teacherId);
+  }
+
+  // ==========================================================================
+  // CLASS SCHEDULES
+  // ==========================================================================
+
+  @override
+  Future<List<ClassScheduleModel>> getClassScheduleModels(
+    String classId,
+  ) async {
+    try {
+      final response = await _api.getClassSchedules(classId);
+      final data = response.data;
+      final List<dynamic>? items = _parseList(data, 'schedules') ??
+          _parseList(data, 'data');
+
+      if (items == null) return [];
+
+      return items
+          .map((e) => ClassScheduleModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      debugPrint('getClassScheduleModels error: $e');
+      if (_useMockOnError) return _getMockClassSchedules();
+      rethrow;
+    }
+  }
+
+  List<ClassScheduleModel> _getMockClassSchedules() {
+    return [
+      const ClassScheduleModel(
+        id: '1',
+        dayOfWeek: 2,
+        startTime: '19:00',
+        endTime: '21:00',
+        room: 'Phong 101',
+      ),
+      const ClassScheduleModel(
+        id: '2',
+        dayOfWeek: 5,
+        startTime: '19:00',
+        endTime: '21:00',
+        room: 'Phong 101',
+      ),
+      const ClassScheduleModel(
+        id: '3',
+        dayOfWeek: 7,
+        startTime: '09:00',
+        endTime: '11:00',
+        room: 'Phong 102',
+      ),
+    ];
+  }
+
+  @override
+  Future<ClassScheduleModel> createClassSchedule(
+    String classId,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await _api.createSchedule(classId, data);
+    final result = response.data['data'] as Map<String, dynamic>? ??
+        response.data as Map<String, dynamic>;
+    return ClassScheduleModel.fromJson(result);
+  }
+
+  @override
+  Future<ClassScheduleModel> updateClassSchedule(
+    String classId,
+    String scheduleId,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await _api.updateSchedule(classId, scheduleId, data);
+    final result = response.data['data'] as Map<String, dynamic>? ??
+        response.data as Map<String, dynamic>;
+    return ClassScheduleModel.fromJson(result);
+  }
+
+  @override
+  Future<void> deleteClassSchedule(
+    String classId,
+    String scheduleId,
+  ) async {
+    await _api.deleteSchedule(classId, scheduleId);
+  }
+
+  // ==========================================================================
+  // ATTENDANCES
+  // ==========================================================================
+
+  @override
+  Future<List<AttendanceModel>> getClassAttendances(
+    String classId, {
+    String? sessionDate,
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    try {
+      final response = await _api.getClassAttendances(
+        classId,
+        sessionDate: sessionDate,
+        page: page,
+        pageSize: pageSize,
+      );
+
+      final data = response.data;
+      final List<dynamic>? items = _parseList(data, 'attendances') ??
+          _parseList(data, 'data');
+
+      if (items == null) return [];
+
+      return items
+          .map((e) => AttendanceModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      debugPrint('getClassAttendances error: $e');
+      if (_useMockOnError) return _getMockAttendances();
+      rethrow;
+    }
+  }
+
+  List<AttendanceModel> _getMockAttendances() {
+    return [
+      const AttendanceModel(
+        id: '1',
+        studentId: 's1',
+        studentName: 'Nguyen Van An',
+        studentCode: 'STU001',
+        status: 'present',
+        sessionDate: '2024-03-20',
+      ),
+      const AttendanceModel(
+        id: '2',
+        studentId: 's2',
+        studentName: 'Le Thi Binh',
+        studentCode: 'STU002',
+        status: 'absent',
+        sessionDate: '2024-03-20',
+      ),
+      const AttendanceModel(
+        id: '3',
+        studentId: 's3',
+        studentName: 'Tran Minh Tam',
+        studentCode: 'STU003',
+        status: 'late',
+        sessionDate: '2024-03-20',
+      ),
+      const AttendanceModel(
+        id: '4',
+        studentId: 's4',
+        studentName: 'Pham Thu Ha',
+        studentCode: 'STU004',
+        status: 'excused',
+        sessionDate: '2024-03-20',
+      ),
+    ];
+  }
+
+  @override
+  Future<AttendanceModel> createAttendance(
+    String classId,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await _api.createAttendance(classId, data);
+    final result = response.data['data'] as Map<String, dynamic>? ??
+        response.data as Map<String, dynamic>;
+    return AttendanceModel.fromJson(result);
+  }
+
+  @override
+  Future<void> batchUpdateAttendance(
+    String classId,
+    List<Map<String, dynamic>> attendances,
+  ) async {
+    await _api.batchUpdateAttendance(classId, {'attendances': attendances});
+  }
 }
