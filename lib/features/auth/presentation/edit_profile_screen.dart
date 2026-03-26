@@ -89,9 +89,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           if (state is AccountUpdateSuccess) {
             context.read<AuthBloc>().add(AuthUserUpdated(state.user));
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Cập nhật thành công'),
-                backgroundColor: Colors.green,
+              SnackBar(
+                content: const Text('Cập nhật thành công'),
+                backgroundColor:
+                    Theme.of(context).colorScheme.tertiary,
               ),
             );
             Navigator.pop(context);
@@ -248,14 +249,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.1),
+                          color: cs.tertiary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Đã xác thực',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.green,
+                            color: cs.tertiary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

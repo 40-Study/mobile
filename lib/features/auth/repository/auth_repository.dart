@@ -102,6 +102,9 @@ abstract class AuthRepository {
   /// Lấy user đã lưu trong local.
   Future<UserModel?> getSavedUser();
 
+  /// Lấy profile đang active từ local.
+  Future<ProfileModel?> getSavedProfile();
+
   /// Xoá toàn bộ session local.
   Future<void> clearSession();
 }

@@ -7,6 +7,8 @@ import 'package:study/features/auth/data/auth_api_client.dart';
 import 'package:study/features/auth/data/auth_interceptor.dart';
 import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/features/auth/data/session_expired_notifier.dart';
+import 'package:study/features/parent/data/parent_api_client.dart';
+import 'package:study/features/student/data/student_api_client.dart';
 import 'package:study/features/teacher/data/teacher_api_client.dart';
 import 'package:talker_dio_logger/talker_dio_logger_interceptor.dart';
 import 'package:talker_dio_logger/talker_dio_logger_settings.dart';
@@ -45,4 +47,10 @@ abstract class NetworkModule {
 
   @lazySingleton
   TeacherApiClient provideTeacherApiClient(Dio dio) => TeacherApiClient(dio);
+
+  @lazySingleton
+  StudentApiClient provideStudentApiClient(Dio dio) => StudentApiClient(dio);
+
+  @lazySingleton
+  ParentApiClient provideParentApiClient(Dio dio) => ParentApiClient(dio);
 }

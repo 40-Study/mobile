@@ -73,7 +73,7 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Đã thêm vai trò ${RoleUtils.getLabel(role.name)}'),
-            backgroundColor: Colors.green,
+            backgroundColor: Theme.of(context).colorScheme.tertiary,
           ),
         );
         Navigator.pop(context, true); // Return true to indicate success
@@ -426,7 +426,7 @@ class _ExistingProfileCard extends StatelessWidget {
           ),
           Icon(
             Icons.check_circle,
-            color: Colors.green.shade400,
+            color: Theme.of(context).colorScheme.tertiary,
             size: 20,
           ),
         ],

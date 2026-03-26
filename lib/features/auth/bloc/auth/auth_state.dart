@@ -35,6 +35,11 @@ final class AuthAuthenticated extends AuthState {
       roleName?.contains('OWNER') == true ||
       roleName?.contains('ORG') == true;
 
+  /// Check if current user is a system admin.
+  bool get isAdmin =>
+      roleName?.contains('ADMIN') == true ||
+      roleName?.contains('SYSTEM') == true;
+
   @override
   List<Object?> get props => [user, activeProfile];
 }

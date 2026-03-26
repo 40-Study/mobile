@@ -54,7 +54,18 @@ class AuthRepositoryImpl implements AuthRepository {
       'device_info': deviceInfo.toJson(),
     });
     final data = response.data['data'] as Map<String, dynamic>;
+
+    // Debug: Print raw API response
+    // ignore: avoid_print
+    print('🔑 Login API response data: $data');
+    // ignore: avoid_print
+    print('🔑 active_profile in response: ${data['active_profile']}');
+
     final authResponse = AuthResponse.fromJson(data);
+
+    // Debug: Print parsed response
+    // ignore: avoid_print
+    print('🔑 Parsed activeProfile: ${authResponse.activeProfile}');
 
     await saveSession(authResponse);
     return authResponse;
@@ -204,7 +215,18 @@ class AuthRepositoryImpl implements AuthRepository {
       'profile_id': profileId,
     });
     final data = response.data['data'] as Map<String, dynamic>;
+
+    // Debug: Print raw API response
+    // ignore: avoid_print
+    print('🔄 Switch profile API response: $data');
+    // ignore: avoid_print
+    print('🔄 active_profile in response: ${data['active_profile']}');
+
     final authResponse = AuthResponse.fromJson(data);
+
+    // Debug: Print parsed response
+    // ignore: avoid_print
+    print('🔄 Parsed activeProfile: ${authResponse.activeProfile}');
 
     await saveSession(authResponse);
     return authResponse;
@@ -260,6 +282,9 @@ class AuthRepositoryImpl implements AuthRepository {
     if (response.entryContext != null) {
       await _storage.saveEntryContext(response.entryContext!);
     }
+    if (response.activeProfile != null) {
+      await _storage.saveActiveProfile(response.activeProfile!);
+    }
   }
 
   @override
@@ -267,6 +292,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<UserModel?> getSavedUser() => _storage.getUser();
+
+  @override
+  Future<ProfileModel?> getSavedProfile() => _storage.getActiveProfile();
 
   @override
   Future<void> clearSession() => _storage.clearAll();
