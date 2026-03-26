@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
+import 'package:study/features/parent/presentation/screens/parent_main_screen.dart';
+import 'package:study/features/student/presentation/screens/student_main_screen.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_main_screen.dart';
 import 'package:study/generated/l10n.dart';
 import 'package:study/index.dart';
@@ -11,17 +13,39 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
+      buildWhen: (previous, current) {
+        debugPrint('🏠 HomeScreen buildWhen: previous=$previous, current=$current');
+        return true;
+      },
       builder: (context, authState) {
-        // Show TeacherMainScreen for any authenticated user (temporarily)
-        // TODO: Add role-based routing when other dashboards are ready
+        debugPrint('🏠 HomeScreen building with state: $authState');
         if (authState is AuthAuthenticated) {
-          return const TeacherMainScreen();
+          return _buildRoleBasedScreen(authState);
         }
-
-        // Default home screen for unauthenticated
         return const _DefaultHomeScreen();
       },
     );
+  }
+
+  Widget _buildRoleBasedScreen(AuthAuthenticated authState) {
+    // Debug: Print current role
+    debugPrint('🔐 Current role: ${authState.roleName}');
+    debugPrint('🔐 isTeacher: ${authState.isTeacher}');
+    debugPrint('🔐 isStudent: ${authState.isStudent}');
+    debugPrint('🔐 isParent: ${authState.isParent}');
+    debugPrint('🔐 isAdmin: ${authState.isAdmin}');
+
+    if (authState.isTeacher || authState.isAdmin) {
+      return const TeacherMainScreen();
+    }
+    if (authState.isStudent) {
+      return const StudentMainScreen();
+    }
+    if (authState.isParent) {
+      return const ParentMainScreen();
+    }
+    // Default to teacher screen if role is unknown
+    return const TeacherMainScreen();
   }
 }
 

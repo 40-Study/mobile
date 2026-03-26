@@ -695,11 +695,11 @@ class CommunityIllustration extends StatelessWidget {
             top: 70,
             child: _CommunityNode(
               size: 48,
-              color: const Color(0xFFF0ABFC), // pink
-              child: const Icon(
+              color: colorScheme.secondaryContainer,
+              child: Icon(
                 Icons.school,
                 size: 22,
-                color: Color(0xFF86198F),
+                color: colorScheme.secondary,
               ),
             ),
           ),
@@ -725,11 +725,11 @@ class CommunityIllustration extends StatelessWidget {
             bottom: 70,
             child: _CommunityNode(
               size: 52,
-              color: const Color(0xFFFED7AA), // orange
-              child: const Icon(
+              color: colorScheme.tertiaryContainer,
+              child: Icon(
                 Icons.person,
                 size: 26,
-                color: Color(0xFFEA580C),
+                color: colorScheme.tertiary,
               ),
             ),
           ),
