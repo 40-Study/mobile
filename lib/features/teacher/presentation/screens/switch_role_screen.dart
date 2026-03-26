@@ -65,7 +65,10 @@ class _SwitchRoleScreenState extends State<SwitchRoleScreen> {
         ),
         body: BlocConsumer<ProfileCubit, ProfileState>(
           listener: (context, state) {
+            debugPrint('🔄 ProfileState changed: $state');
             if (state is ProfileSwitched && state.newProfile != null) {
+              debugPrint('🔄 Switching to profile: ${state.newProfile!.roleName}');
+              debugPrint('🔄 AuthResponse: ${state.authResponse?.activeProfile?.toJson()}');
               context.read<AuthBloc>().add(
                     AuthProfileSwitched(state.authResponse!),
                   );
@@ -74,12 +77,13 @@ class _SwitchRoleScreenState extends State<SwitchRoleScreen> {
                   content: Text(
                     'Đã chuyển sang ${RoleUtils.getLabel(state.newProfile!.roleName)}',
                   ),
-                  backgroundColor: Colors.green,
+                  backgroundColor: Theme.of(context).colorScheme.tertiary,
                 ),
               );
               Navigator.pop(context);
             }
             if (state is ProfileSwitchFailure) {
+              debugPrint('❌ Switch failed: ${state.message}');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),

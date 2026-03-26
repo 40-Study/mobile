@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/di/di_container.dart';
+import 'package:study/features/auth/presentation/account_screen.dart';
 import 'package:study/features/teacher/bloc/courses/teacher_courses_cubit.dart';
 import 'package:study/features/teacher/bloc/dashboard/teacher_dashboard_cubit.dart';
 import 'package:study/features/teacher/bloc/students/teacher_students_cubit.dart';
 import 'package:study/features/teacher/data/repository/teacher_repository.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_courses_screen.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_dashboard_screen.dart';
-import 'package:study/features/teacher/presentation/screens/teacher_settings_screen.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_students_screen.dart';
 
 class TeacherMainScreen extends StatefulWidget {
@@ -25,7 +25,7 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
     TeacherDashboardScreen(),
     TeacherCoursesScreen(),
     TeacherStudentsScreen(),
-    TeacherSettingsScreen(),
+    AccountScreen(roleType: AccountRoleType.teacher),
   ];
 
   @override
@@ -83,9 +83,9 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
                 label: 'Học viên',
               ),
               NavigationDestination(
-                icon: Icon(Icons.settings_outlined),
-                selectedIcon: Icon(Icons.settings),
-                label: 'Cài đặt',
+                icon: Icon(Icons.person_outline),
+                selectedIcon: Icon(Icons.person),
+                label: 'Ho so',
               ),
             ],
           ),
