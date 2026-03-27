@@ -1,3 +1,5 @@
+import 'package:study/features/student/data/models/course_detail_model.dart';
+import 'package:study/features/student/data/models/lesson_detail_model.dart';
 import 'package:study/features/student/data/models/models.dart';
 
 /// Repository interface for student-related data operations.
@@ -36,4 +38,13 @@ abstract class StudentRepository {
 
   /// Enrolls in a new course.
   Future<EnrollmentModel> enrollCourse(String courseId);
+
+  /// Fetches course detail by enrollment and course IDs.
+  Future<CourseDetailModel> getCourseDetail({
+    required String enrollmentId,
+    required String courseId,
+  });
+
+  /// Fetches lesson detail by lesson ID.
+  Future<LessonDetailModel> getLessonDetail(String lessonId);
 }

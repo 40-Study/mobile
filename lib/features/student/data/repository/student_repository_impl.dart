@@ -1,4 +1,8 @@
 import 'package:flutter/foundation.dart';
+import 'package:study/features/student/data/mock/mock_course_detail_data.dart';
+import 'package:study/features/student/data/mock/mock_lesson_detail_data.dart';
+import 'package:study/features/student/data/models/course_detail_model.dart';
+import 'package:study/features/student/data/models/lesson_detail_model.dart';
 import 'package:study/features/student/data/models/models.dart';
 import 'package:study/features/student/data/repository/student_repository.dart';
 import 'package:study/features/student/data/student_api_client.dart';
@@ -517,6 +521,43 @@ class StudentRepositoryImpl implements StudentRepository {
           progress: 0,
           status: 'active',
         );
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<CourseDetailModel> getCourseDetail({
+    required String enrollmentId,
+    required String courseId,
+  }) async {
+    try {
+      final response = await _api.getCourseDetail(courseId);
+      final data = response.data['data'] as Map<String, dynamic>? ??
+          response.data as Map<String, dynamic>;
+      // TODO: Parse from API response when available
+      return MockCourseDetailData.getCourseDetail(courseId);
+    } catch (e) {
+      debugPrint('getCourseDetail error: $e');
+      if (_useMockOnError) {
+        return MockCourseDetailData.getCourseDetail(courseId);
+      }
+      rethrow;
+    }
+  }
+
+  @override
+  Future<LessonDetailModel> getLessonDetail(String lessonId) async {
+    try {
+      final response = await _api.getLessonDetail(lessonId);
+      final data = response.data['data'] as Map<String, dynamic>? ??
+          response.data as Map<String, dynamic>;
+      // TODO: Parse from API response when available
+      return MockLessonDetailData.getLessonDetail(lessonId);
+    } catch (e) {
+      debugPrint('getLessonDetail error: $e');
+      if (_useMockOnError) {
+        return MockLessonDetailData.getLessonDetail(lessonId);
       }
       rethrow;
     }

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/constants/dimens.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_cubit.dart';
 import 'package:study/features/student/data/models/teacher_course_item.dart';
+import 'package:study/features/student/data/repository/student_repository.dart';
 import 'package:study/features/student/presentation/screens/course_detail_screen.dart';
 import 'package:study/theme/app_colors.dart';
 
@@ -425,17 +426,22 @@ class _FeaturedCourseCard extends StatelessWidget {
   final TeacherCourseItem course;
 
   void _openCourseDetail(BuildContext context) {
+    final repository = context.read<StudentRepository>();
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => BlocProvider(
-          create: (_) => CourseDetailCubit(
-            enrollmentId: course.id,
-            courseId: course.id,
-          ),
-          child: CourseDetailScreen(
-            enrollmentId: course.id,
-            courseId: course.id,
-            courseTitle: course.title,
+        builder: (_) => RepositoryProvider.value(
+          value: repository,
+          child: BlocProvider(
+            create: (_) => CourseDetailCubit(
+              repository: repository,
+              enrollmentId: course.id,
+              courseId: course.id,
+            ),
+            child: CourseDetailScreen(
+              enrollmentId: course.id,
+              courseId: course.id,
+              courseTitle: course.title,
+            ),
           ),
         ),
       ),

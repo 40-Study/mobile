@@ -78,10 +78,14 @@ class _LearningScheduleTabState extends State<LearningScheduleTab> {
   }
 
   void _openLesson(StudentScheduleModel schedule) {
+    final repository = context.read<StudentRepository>();
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => LessonDetailCubit(lessonId: schedule.id),
+          create: (_) => LessonDetailCubit(
+            repository: repository,
+            lessonId: schedule.id,
+          ),
           child: LessonDetailScreen(
             lessonId: schedule.id,
             lessonTitle: schedule.title ?? schedule.className ?? '',

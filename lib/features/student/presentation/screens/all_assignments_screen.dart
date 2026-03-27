@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/constants/dimens.dart';
 import 'package:study/features/student/bloc/lesson_detail/lesson_detail_cubit.dart';
 import 'package:study/features/student/data/models/models.dart';
+import 'package:study/features/student/data/repository/student_repository.dart';
 import 'package:study/features/student/presentation/screens/lesson_detail_screen.dart';
 import 'package:study/theme/app_colors.dart';
 
@@ -92,10 +93,14 @@ class AllAssignmentsScreen extends StatelessWidget {
   }
 
   void _openHomework(BuildContext context, EnrollmentModel enrollment) {
+    final repository = context.read<StudentRepository>();
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => LessonDetailCubit(lessonId: 'l1'),
+          create: (_) => LessonDetailCubit(
+            repository: repository,
+            lessonId: 'l1',
+          ),
           child: LessonDetailScreen(
             lessonId: 'l1',
             lessonTitle: enrollment.nextLesson ?? enrollment.courseName ?? '',

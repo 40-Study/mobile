@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/constants/dimens.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_cubit.dart';
 import 'package:study/features/student/bloc/lesson_detail/lesson_detail_cubit.dart';
-import 'package:study/features/student/data/models/models.dart';
+import 'package:study/features/student/data/models/course_detail_model.dart';
+import 'package:study/features/student/data/repository/student_repository.dart';
 import 'package:study/features/student/presentation/screens/lesson_detail_screen.dart';
 import 'package:study/features/student/presentation/widgets/course_detail/course_detail_widgets.dart';
 
@@ -124,10 +125,14 @@ class _CourseDetailBodyState extends State<_CourseDetailBody>
   void _navigateToCurrentLesson() {
     final lesson = widget.detail.currentLesson;
     if (lesson == null) return;
+    final repository = context.read<StudentRepository>();
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => LessonDetailCubit(lessonId: lesson.id),
+          create: (_) => LessonDetailCubit(
+            repository: repository,
+            lessonId: lesson.id,
+          ),
           child: LessonDetailScreen(
             lessonId: lesson.id,
             lessonTitle: lesson.title,

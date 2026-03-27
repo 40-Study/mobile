@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/constants/dimens.dart';
 import 'package:study/features/student/bloc/lesson_detail/lesson_detail_cubit.dart';
-import 'package:study/features/student/data/models/models.dart';
+import 'package:study/features/student/data/models/course_detail_model.dart';
+import 'package:study/features/student/data/repository/student_repository.dart';
 import 'package:study/features/student/presentation/screens/lesson_detail_screen.dart';
 import 'package:study/theme/app_colors.dart';
 
@@ -114,11 +115,14 @@ class LessonTile extends StatelessWidget {
         onTap: isLocked
             ? null
             : () {
+                final repository = context.read<StudentRepository>();
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (_) => BlocProvider(
-                      create: (_) =>
-                          LessonDetailCubit(lessonId: lesson.id),
+                      create: (_) => LessonDetailCubit(
+                        repository: repository,
+                        lessonId: lesson.id,
+                      ),
                       child: LessonDetailScreen(
                         lessonId: lesson.id,
                         lessonTitle: lesson.title,

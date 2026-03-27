@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/constants/dimens.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_cubit.dart';
 import 'package:study/features/student/data/models/models.dart';
+import 'package:study/features/student/data/repository/student_repository.dart';
 import 'package:study/features/student/presentation/screens/course_detail_screen.dart';
 import 'package:study/theme/app_colors.dart';
 
@@ -71,17 +72,22 @@ class CourseCard extends StatelessWidget {
         borderRadius: AppRadius.borderLg,
         child: InkWell(
           onTap: () {
+            final repository = context.read<StudentRepository>();
             Navigator.of(context).push(
               MaterialPageRoute<void>(
-                builder: (_) => BlocProvider(
-                  create: (_) => CourseDetailCubit(
-                    enrollmentId: enrollment.id,
-                    courseId: enrollment.courseId,
-                  ),
-                  child: CourseDetailScreen(
-                    enrollmentId: enrollment.id,
-                    courseId: enrollment.courseId,
-                    courseTitle: enrollment.courseName ?? '',
+                builder: (_) => RepositoryProvider.value(
+                  value: repository,
+                  child: BlocProvider(
+                    create: (_) => CourseDetailCubit(
+                      repository: repository,
+                      enrollmentId: enrollment.id,
+                      courseId: enrollment.courseId,
+                    ),
+                    child: CourseDetailScreen(
+                      enrollmentId: enrollment.id,
+                      courseId: enrollment.courseId,
+                      courseTitle: enrollment.courseName ?? '',
+                    ),
                   ),
                 ),
               ),

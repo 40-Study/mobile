@@ -5,6 +5,7 @@ import 'package:study/features/student/bloc/course_detail/course_detail_cubit.da
 import 'package:study/features/student/bloc/lesson_detail/lesson_detail_cubit.dart';
 import 'package:study/features/student/bloc/student_dashboard/student_dashboard_cubit.dart';
 import 'package:study/features/student/data/models/models.dart';
+import 'package:study/features/student/data/repository/student_repository.dart';
 import 'package:study/features/student/presentation/screens/course_detail_screen.dart';
 import 'package:study/features/student/presentation/screens/lesson_detail_screen.dart';
 import 'package:study/features/student/presentation/screens/student_learning_screen.dart';
@@ -72,17 +73,22 @@ class _DashboardBody extends StatelessWidget {
   final StudentDashboardLoaded state;
 
   void _openCourseDetail(BuildContext context, EnrollmentModel enrollment) {
+    final repository = context.read<StudentRepository>();
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => BlocProvider(
-          create: (_) => CourseDetailCubit(
-            enrollmentId: enrollment.id,
-            courseId: enrollment.courseId,
-          ),
-          child: CourseDetailScreen(
-            enrollmentId: enrollment.id,
-            courseId: enrollment.courseId,
-            courseTitle: enrollment.courseName ?? '',
+        builder: (_) => RepositoryProvider.value(
+          value: repository,
+          child: BlocProvider(
+            create: (_) => CourseDetailCubit(
+              repository: repository,
+              enrollmentId: enrollment.id,
+              courseId: enrollment.courseId,
+            ),
+            child: CourseDetailScreen(
+              enrollmentId: enrollment.id,
+              courseId: enrollment.courseId,
+              courseTitle: enrollment.courseName ?? '',
+            ),
           ),
         ),
       ),
@@ -95,10 +101,14 @@ class _DashboardBody extends StatelessWidget {
     required String lessonTitle,
     int initialTab = 0,
   }) {
+    final repository = context.read<StudentRepository>();
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => LessonDetailCubit(lessonId: lessonId),
+          create: (_) => LessonDetailCubit(
+            repository: repository,
+            lessonId: lessonId,
+          ),
           child: LessonDetailScreen(
             lessonId: lessonId,
             lessonTitle: lessonTitle,

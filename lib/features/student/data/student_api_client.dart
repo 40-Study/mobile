@@ -97,4 +97,12 @@ abstract class StudentApiClient {
   /// Lay chi tiet khoa hoc.
   @GET('/api/courses/{id}')
   Future<HttpResponse<dynamic>> getCourse(@Path('id') String id);
+
+  /// Lay chi tiet khoa hoc day du (bao gom chapters, documents, discussions).
+  @GET('/api/courses/{id}/detail')
+  Future<HttpResponse<dynamic>> getCourseDetail(@Path('id') String id);
+
+  /// Lay chi tiet bai hoc.
+  @GET('/api/lessons/{id}')
+  Future<HttpResponse<dynamic>> getLessonDetail(@Path('id') String id);
 }
