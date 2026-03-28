@@ -9,6 +9,7 @@ import 'package:study/features/student/presentation/screens/student_achievement_
 import 'package:study/features/student/presentation/screens/student_dashboard_screen.dart';
 import 'package:study/features/student/presentation/screens/student_explore_screen.dart';
 import 'package:study/features/student/presentation/screens/student_learning_screen.dart';
+import 'package:study/features/weather/weather.dart';
 
 class StudentMainScreen extends StatefulWidget {
   const StudentMainScreen({super.key});
@@ -72,15 +73,18 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
           ),
         ],
         child: Scaffold(
-          body: IndexedStack(
-            index: _currentIndex,
-            children: [
-              const StudentDashboardScreen(),
-              const StudentExploreScreen(),
-              StudentLearningScreen(key: _learningKey),
-              const StudentAchievementScreen(),
-              const AccountScreen(roleType: AccountRoleType.student),
-            ],
+          backgroundColor: Colors.transparent,
+          body: WeatherBackgroundWrapper(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: [
+                const StudentDashboardScreen(),
+                const StudentExploreScreen(),
+                StudentLearningScreen(key: _learningKey),
+                const StudentAchievementScreen(),
+                const AccountScreen(roleType: AccountRoleType.student),
+              ],
+            ),
           ),
           bottomNavigationBar: NavigationBar(
             selectedIndex: _currentIndex,

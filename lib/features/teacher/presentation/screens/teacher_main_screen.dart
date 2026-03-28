@@ -9,6 +9,7 @@ import 'package:study/features/teacher/data/repository/teacher_repository.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_courses_screen.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_dashboard_screen.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_students_screen.dart';
+import 'package:study/features/weather/weather.dart';
 
 class TeacherMainScreen extends StatefulWidget {
   const TeacherMainScreen({super.key});
@@ -55,9 +56,12 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
           ),
         ],
         child: Scaffold(
-          body: IndexedStack(
-            index: _currentIndex,
-            children: _screens,
+          backgroundColor: Colors.transparent,
+          body: WeatherBackgroundWrapper(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: _screens,
+            ),
           ),
           bottomNavigationBar: NavigationBar(
             selectedIndex: _currentIndex,

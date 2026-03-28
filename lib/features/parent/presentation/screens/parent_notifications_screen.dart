@@ -56,10 +56,10 @@ class ParentNotificationsScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: cs.surface,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Thong bao'),
-        backgroundColor: cs.surface,
+        backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         actions: [
           TextButton(

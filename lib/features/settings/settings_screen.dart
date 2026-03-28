@@ -71,6 +71,15 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           SettingItem(
+            key: const Key('weatherDemo'),
+            title: 'Weather Background Demo',
+            description: 'Preview weather backgrounds with time simulation',
+            icon: Icons.wb_sunny_outlined,
+            onClick: () {
+              NavigationService.of(context).navigateTo(Routes.weatherDemo);
+            },
+          ),
+          SettingItem(
             key: const Key('about'),
             title: context.aboutSettingsItem,
             description: context.aboutSettingsItemDescription,

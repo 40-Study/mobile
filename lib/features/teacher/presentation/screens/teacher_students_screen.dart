@@ -31,7 +31,7 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
     final tt = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: cs.surface,
+      backgroundColor: Colors.transparent,
       appBar: const TeacherAppBar(title: 'Giảng viên'),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

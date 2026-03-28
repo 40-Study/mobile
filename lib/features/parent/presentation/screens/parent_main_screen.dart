@@ -6,6 +6,7 @@ import 'package:study/features/parent/bloc/parent_dashboard/parent_dashboard_cub
 import 'package:study/features/parent/data/repository/parent_repository.dart';
 import 'package:study/features/parent/presentation/screens/parent_dashboard_screen.dart';
 import 'package:study/features/parent/presentation/screens/parent_notifications_screen.dart';
+import 'package:study/features/weather/weather.dart';
 
 class ParentMainScreen extends StatefulWidget {
   const ParentMainScreen({super.key});
@@ -45,9 +46,12 @@ class _ParentMainScreenState extends State<ParentMainScreen> {
           ),
         ],
         child: Scaffold(
-          body: IndexedStack(
-            index: _currentIndex,
-            children: _screens,
+          backgroundColor: Colors.transparent,
+          body: WeatherBackgroundWrapper(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: _screens,
+            ),
           ),
           bottomNavigationBar: NavigationBar(
             selectedIndex: _currentIndex,

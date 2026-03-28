@@ -30,7 +30,7 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
     final tt = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: cs.surface,
+      backgroundColor: Colors.transparent,
       appBar: TeacherAppBar(
         title: 'Kho khóa học',
         showSearch: true,

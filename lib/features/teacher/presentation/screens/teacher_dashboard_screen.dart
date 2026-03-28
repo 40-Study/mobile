@@ -25,7 +25,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: cs.surface,
+      backgroundColor: Colors.transparent,
       body: BlocBuilder<TeacherDashboardCubit, TeacherDashboardState>(
         builder: (context, state) {
           return switch (state) {

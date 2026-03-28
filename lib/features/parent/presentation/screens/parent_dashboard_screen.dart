@@ -26,7 +26,7 @@ class _ParentDashboardScreenState extends State<ParentDashboardScreen> {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: cs.surface,
+      backgroundColor: Colors.transparent,
       body: BlocBuilder<ParentDashboardCubit, ParentDashboardState>(
         builder: (context, state) {
           return switch (state) {

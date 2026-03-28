@@ -62,7 +62,7 @@ class _AccountScreenState extends State<AccountScreen>
     return BlocProvider.value(
       value: _cubit,
       child: Scaffold(
-        backgroundColor: cs.surfaceContainerLowest,
+        backgroundColor: Colors.transparent,
         body: BlocConsumer<AccountCubit, AccountState>(
           listener: (context, state) {
             if (state is AccountUpdateSuccess) {
