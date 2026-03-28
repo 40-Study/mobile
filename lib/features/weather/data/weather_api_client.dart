@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:study/features/weather/data/models/models.dart';
 
 /// OpenWeatherMap API client
@@ -7,7 +8,7 @@ class WeatherApiClient {
     Dio? dio,
     String? apiKey,
   })  : _dio = dio ?? Dio(),
-        _apiKey = apiKey ?? '63e9288d66f634c2b1a4d957ae1688bd';
+        _apiKey = apiKey ?? dotenv.get('WEATHER_API_KEY', fallback: '');
 
   final Dio _dio;
   final String _apiKey;
