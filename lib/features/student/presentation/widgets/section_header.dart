@@ -23,20 +23,21 @@ class StudentSectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
               ),
         ),
         if (actionLabel != null || actionIcon != null)
           TextButton.icon(
             onPressed: onActionTap,
             icon: actionIcon != null
-                ? Icon(actionIcon, size: 16)
+                ? Icon(actionIcon, size: 18)
                 : const SizedBox.shrink(),
             label: Text(
               actionLabel ?? '',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: cs.primary,
+                    fontWeight: FontWeight.w600,
                   ),
             ),
             style: TextButton.styleFrom(

@@ -13,7 +13,7 @@ class WeatherDisplayData extends Equatable {
   /// Default fallback data
   factory WeatherDisplayData.defaultData() => const WeatherDisplayData(
         condition: WeatherCondition.defaultNeutral,
-        timeOfDay: TimeOfDayType.day,
+        timeOfDay: TimeOfDayType.night, // TODO: Remove hardcode
       );
 
   final WeatherCondition condition;

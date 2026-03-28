@@ -4,4 +4,7 @@ export 'dashboard_empty_card.dart';
 export 'dashboard_schedule_card.dart';
 export 'dashboard_section_row.dart';
 export 'greeting_header.dart';
+export 'level_hero_card.dart';
+export 'location_header.dart';
+export 'rank_avatar_frame.dart';
 export 'streak_hero_card.dart';

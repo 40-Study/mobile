@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/constants/dimens.dart';
+import 'package:study/features/weather/weather.dart';
 import 'package:study/theme/app_colors.dart';
 
 class GreetingHeader extends StatelessWidget {
@@ -12,44 +14,54 @@ class GreetingHeader extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Chao mung tro lai,',
-                style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+    return BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
+      builder: (context, state) {
+        final textColor = context.weatherTextColorThemed;
+        final subtitleColor = context.weatherTextColorThemedSecondary;
+
+        return Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Chao mung tro lai,',
+                    style: tt.bodyLarge?.copyWith(
+                      color: subtitleColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xxs),
+                  Text(
+                    'Chao $name!',
+                    style: tt.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: textColor,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.xxs),
-              Text(
-                'Chao $name!',
-                style: tt.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: cs.onSurface,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            ),
+            Container(
+              width: AppIconSize.avatar,
+              height: AppIconSize.avatar,
+              decoration: BoxDecoration(
+                color: context.weatherIconBackgroundColor,
+                borderRadius: AppRadius.borderMd,
+                boxShadow: cs.shadowCard,
               ),
-            ],
-          ),
-        ),
-        Container(
-          width: AppIconSize.avatar,
-          height: AppIconSize.avatar,
-          decoration: BoxDecoration(
-            color: cs.surfaceTintedPrimary,
-            borderRadius: AppRadius.borderMd,
-            boxShadow: cs.shadowCard,
-          ),
-          child: Icon(
-            Icons.notifications_none_rounded,
-            color: cs.primary,
-            size: 22,
-          ),
-        ),
-      ],
+              child: Icon(
+                Icons.notifications_none_rounded,
+                color: context.weatherIconColor,
+                size: 22,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

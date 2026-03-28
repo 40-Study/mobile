@@ -20,10 +20,12 @@ class WeatherMapper {
   }
 
   TimeOfDayType _calculateTimeOfDay(WeatherModel weather) {
-    return TimeOfDayType.calculate(
-      now: DateTime.now(),
-      sunrise: weather.sunrise,
-      sunset: weather.sunset,
-    );
+    // TODO: Remove hardcode - temporarily fixed to night
+    return TimeOfDayType.night;
+    // return TimeOfDayType.calculate(
+    //   now: DateTime.now(),
+    //   sunrise: weather.sunrise,
+    //   sunset: weather.sunset,
+    // );
   }
 }

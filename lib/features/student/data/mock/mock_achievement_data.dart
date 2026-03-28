@@ -113,100 +113,118 @@ class StickerItem {
   const StickerItem({
     required this.emoji,
     required this.title,
-    required this.description,
     this.unlocked = false,
-    this.rarity = 'Common',
   });
   final String emoji;
   final String title;
-  final String description;
   final bool unlocked;
-  final String rarity;
 }
 
-const mockStickers = [
-  StickerItem(
-    emoji: '🔥',
-    title: 'On Fire!',
-    description: 'Streak 7 ngay',
-    unlocked: true,
-    rarity: 'Common',
+class StickerCollection {
+  const StickerCollection({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.coverEmoji,
+    required this.stickers,
+    this.color = const Color(0xff6366f1),
+  });
+  final String id;
+  final String name;
+  final String description;
+  final String coverEmoji;
+  final List<StickerItem> stickers;
+  final Color color;
+
+  int get unlockedCount => stickers.where((s) => s.unlocked).length;
+  bool get isCompleted => unlockedCount == stickers.length;
+}
+
+const mockStickerCollections = [
+  StickerCollection(
+    id: 'code_king',
+    name: 'Vua Code',
+    description: '征服moi thử thach lap trinh',
+    coverEmoji: '👑',
+    color: Color(0xfff59e0b),
+    stickers: [
+      StickerItem(emoji: '💻', title: 'First Code', unlocked: true),
+      StickerItem(emoji: '🐛', title: 'Bug Hunter', unlocked: true),
+      StickerItem(emoji: '⚡', title: 'Speed Coder', unlocked: true),
+      StickerItem(emoji: '🧩', title: 'Problem Solver', unlocked: false),
+      StickerItem(emoji: '👑', title: 'Code King', unlocked: false),
+    ],
   ),
-  StickerItem(
-    emoji: '🚀',
-    title: 'Rocket Start',
-    description: 'Hoan thanh 5 bai\ntrong 1 ngay',
-    unlocked: true,
-    rarity: 'Rare',
+  StickerCollection(
+    id: 'fire_streak',
+    name: 'Ngon Lua',
+    description: 'Duy tri streak hoc tap',
+    coverEmoji: '🔥',
+    color: Color(0xffef4444),
+    stickers: [
+      StickerItem(emoji: '🕯️', title: '3 ngay', unlocked: true),
+      StickerItem(emoji: '🔥', title: '7 ngay', unlocked: true),
+      StickerItem(emoji: '🌋', title: '30 ngay', unlocked: false),
+      StickerItem(emoji: '☄️', title: '100 ngay', unlocked: false),
+    ],
   ),
-  StickerItem(
-    emoji: '🎯',
-    title: 'Bullseye',
-    description: 'Diem tuyet doi\nbai quiz',
-    unlocked: true,
-    rarity: 'Epic',
+  StickerCollection(
+    id: 'brain_power',
+    name: 'Sieu Nao',
+    description: '征服cac bai quiz kho',
+    coverEmoji: '🧠',
+    color: Color(0xff8b5cf6),
+    stickers: [
+      StickerItem(emoji: '💡', title: 'First Quiz', unlocked: true),
+      StickerItem(emoji: '🎯', title: 'Perfect 10', unlocked: true),
+      StickerItem(emoji: '🧠', title: 'Big Brain', unlocked: false),
+      StickerItem(emoji: '🔮', title: 'Genius', unlocked: false),
+      StickerItem(emoji: '🌌', title: 'Galaxy Brain', unlocked: false),
+    ],
   ),
-  StickerItem(
-    emoji: '💎',
-    title: 'Diamond',
-    description: 'Top 1% hoc vien',
-    unlocked: false,
-    rarity: 'Legendary',
+  StickerCollection(
+    id: 'social_star',
+    name: 'Ngoi Sao XH',
+    description: 'Ket noi voi cong dong',
+    coverEmoji: '⭐',
+    color: Color(0xff10b981),
+    stickers: [
+      StickerItem(emoji: '👋', title: 'Say Hi', unlocked: true),
+      StickerItem(emoji: '💬', title: 'Chatterbox', unlocked: true),
+      StickerItem(emoji: '🤝', title: 'Helper', unlocked: true),
+      StickerItem(emoji: '👨‍🏫', title: 'Mentor', unlocked: false),
+      StickerItem(emoji: '⭐', title: 'Superstar', unlocked: false),
+    ],
   ),
-  StickerItem(
-    emoji: '🌟',
-    title: 'Rising Star',
-    description: 'Dat cap 10',
-    unlocked: true,
-    rarity: 'Rare',
+  StickerCollection(
+    id: 'explorer',
+    name: 'Nha Tham Hiem',
+    description: 'Kham pha cac khoa hoc',
+    coverEmoji: '🗺️',
+    color: Color(0xff0ea5e9),
+    stickers: [
+      StickerItem(emoji: '🚀', title: 'First Course', unlocked: true),
+      StickerItem(emoji: '📚', title: '5 Courses', unlocked: false),
+      StickerItem(emoji: '🗺️', title: '10 Courses', unlocked: false),
+      StickerItem(emoji: '🌍', title: 'World Explorer', unlocked: false),
+    ],
   ),
-  StickerItem(
-    emoji: '🏆',
-    title: 'Champion',
-    description: 'Thang cuoc thi\ndau tien',
-    unlocked: false,
-    rarity: 'Epic',
-  ),
-  StickerItem(
-    emoji: '🎨',
-    title: 'Creative Mind',
-    description: 'Hoan thanh khoa\nUI/UX Design',
-    unlocked: true,
-    rarity: 'Common',
-  ),
-  StickerItem(
-    emoji: '⚡',
-    title: 'Speed Demon',
-    description: 'Hoan thanh khoa hoc\ntrong 1 tuan',
-    unlocked: false,
-    rarity: 'Legendary',
-  ),
-  StickerItem(
-    emoji: '🧠',
-    title: 'Big Brain',
-    description: 'Tra loi dung 100\ncau hoi',
-    unlocked: true,
-    rarity: 'Rare',
-  ),
-  StickerItem(
-    emoji: '🤝',
-    title: 'Helper',
-    description: 'Giup 10 ban hoc\ntrong forum',
-    unlocked: true,
-    rarity: 'Common',
-  ),
-  StickerItem(
-    emoji: '📚',
-    title: 'Scholar',
-    description: 'Doc het 100 tai lieu',
-    unlocked: false,
-    rarity: 'Epic',
-  ),
-  StickerItem(
-    emoji: '🎓',
-    title: 'Graduate',
-    description: 'Hoan thanh 10\nkhoa hoc',
-    unlocked: false,
-    rarity: 'Legendary',
+  StickerCollection(
+    id: 'legend',
+    name: 'Huyen Thoai',
+    description: 'Nhung thanh tuu dac biet',
+    coverEmoji: '🏆',
+    color: Color(0xfff97316),
+    stickers: [
+      StickerItem(emoji: '🥉', title: 'Bronze', unlocked: true),
+      StickerItem(emoji: '🥈', title: 'Silver', unlocked: false),
+      StickerItem(emoji: '🥇', title: 'Gold', unlocked: false),
+      StickerItem(emoji: '💎', title: 'Diamond', unlocked: false),
+      StickerItem(emoji: '🏆', title: 'Legend', unlocked: false),
+    ],
   ),
 ];
+
+// Flatten all stickers for counting
+List<StickerItem> get mockStickers =>
+    mockStickerCollections.expand((c) => c.stickers).toList();

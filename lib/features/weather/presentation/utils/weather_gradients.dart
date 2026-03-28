@@ -201,4 +201,33 @@ class WeatherGradients {
       (i) => i / (colorCount - 1),
     );
   }
+
+  /// Check if the gradient is considered "dark" based on luminance
+  /// This calculates the weighted average luminance of the top portion
+  /// of the gradient (where text typically appears)
+  static bool isDarkGradient({
+    required WeatherCondition condition,
+    required TimeOfDayType timeOfDay,
+  }) {
+    final colors = getGradient(condition: condition, timeOfDay: timeOfDay);
+
+    // Calculate weighted luminance - give more weight to top colors
+    // since that's where most text appears
+    double totalLuminance = 0;
+    double totalWeight = 0;
+
+    for (int i = 0; i < colors.length; i++) {
+      // Weight decreases as we go down the gradient
+      // Top colors (index 0, 1) get higher weight
+      final weight = (colors.length - i).toDouble();
+      totalLuminance += colors[i].computeLuminance() * weight;
+      totalWeight += weight;
+    }
+
+    final avgLuminance = totalLuminance / totalWeight;
+
+    // Threshold: if average luminance < 0.4, consider it dark
+    // This value can be tuned based on visual testing
+    return avgLuminance < 0.4;
+  }
 }

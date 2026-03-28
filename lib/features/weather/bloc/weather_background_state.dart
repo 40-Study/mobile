@@ -1,22 +1,55 @@
 part of 'weather_background_cubit.dart';
 
 sealed class WeatherBackgroundState extends Equatable {
-  const WeatherBackgroundState();
+  const WeatherBackgroundState({
+    this.debugTimeOverride,
+    this.debugConditionOverride,
+  });
 
-  /// Always has display data (never null) - fallback to default
-  WeatherCondition get condition => WeatherCondition.defaultNeutral;
-  TimeOfDayType get timeOfDay => TimeOfDayType.day;
+  /// Debug override for time of day testing
+  final TimeOfDayType? debugTimeOverride;
+
+  /// Debug override for weather condition testing
+  final WeatherCondition? debugConditionOverride;
+
+  /// Get condition - uses debug override if set
+  WeatherCondition get condition =>
+      debugConditionOverride ?? WeatherCondition.sunny;
+
+  /// Get time of day - uses debug override if set, otherwise calculates from current time
+  TimeOfDayType get timeOfDay => debugTimeOverride ?? _calculateTimeOfDay();
+
+  /// Calculate time of day based on current hour
+  TimeOfDayType _calculateTimeOfDay() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 8) return TimeOfDayType.dawn;
+    if (hour >= 8 && hour < 17) return TimeOfDayType.day;
+    if (hour >= 17 && hour < 20) return TimeOfDayType.dusk;
+    return TimeOfDayType.night;
+  }
+
+  /// Whether the current background is considered "dark"
+  /// Calculated from the actual gradient luminance
+  bool get isDarkBackground => WeatherGradients.isDarkGradient(
+        condition: condition,
+        timeOfDay: timeOfDay,
+      );
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [debugTimeOverride, debugConditionOverride];
 }
 
 final class WeatherBackgroundInitial extends WeatherBackgroundState {
-  const WeatherBackgroundInitial();
+  const WeatherBackgroundInitial({
+    super.debugTimeOverride,
+    super.debugConditionOverride,
+  });
 }
 
 final class WeatherBackgroundLoading extends WeatherBackgroundState {
   const WeatherBackgroundLoading({
+    super.debugTimeOverride,
+    super.debugConditionOverride,
     this.previousCondition,
     this.previousTimeOfDay,
   });
@@ -24,19 +57,19 @@ final class WeatherBackgroundLoading extends WeatherBackgroundState {
   final WeatherCondition? previousCondition;
   final TimeOfDayType? previousTimeOfDay;
 
-  /// Keep previous background while loading
   @override
-  WeatherCondition get condition => previousCondition ?? super.condition;
-
-  @override
-  TimeOfDayType get timeOfDay => previousTimeOfDay ?? super.timeOfDay;
-
-  @override
-  List<Object?> get props => [previousCondition, previousTimeOfDay];
+  List<Object?> get props => [
+        debugTimeOverride,
+        debugConditionOverride,
+        previousCondition,
+        previousTimeOfDay,
+      ];
 }
 
 final class WeatherBackgroundLoaded extends WeatherBackgroundState {
   const WeatherBackgroundLoaded({
+    super.debugTimeOverride,
+    super.debugConditionOverride,
     required this.displayData,
     this.isFromCache = false,
   });
@@ -45,17 +78,18 @@ final class WeatherBackgroundLoaded extends WeatherBackgroundState {
   final bool isFromCache;
 
   @override
-  WeatherCondition get condition => displayData.condition;
-
-  @override
-  TimeOfDayType get timeOfDay => displayData.timeOfDay;
-
-  @override
-  List<Object?> get props => [displayData, isFromCache];
+  List<Object?> get props => [
+        debugTimeOverride,
+        debugConditionOverride,
+        displayData,
+        isFromCache,
+      ];
 }
 
 final class WeatherBackgroundFailure extends WeatherBackgroundState {
   const WeatherBackgroundFailure({
+    super.debugTimeOverride,
+    super.debugConditionOverride,
     required this.message,
     this.fallbackData,
   });
@@ -63,13 +97,11 @@ final class WeatherBackgroundFailure extends WeatherBackgroundState {
   final String message;
   final WeatherDisplayData? fallbackData;
 
-  /// Fallback when error - never empty
   @override
-  WeatherCondition get condition => fallbackData?.condition ?? super.condition;
-
-  @override
-  TimeOfDayType get timeOfDay => fallbackData?.timeOfDay ?? super.timeOfDay;
-
-  @override
-  List<Object?> get props => [message, fallbackData];
+  List<Object?> get props => [
+        debugTimeOverride,
+        debugConditionOverride,
+        message,
+        fallbackData,
+      ];
 }

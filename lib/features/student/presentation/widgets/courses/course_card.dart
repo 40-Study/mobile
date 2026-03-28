@@ -116,8 +116,8 @@ class CourseCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 enrollment.courseName ?? 'Khoa hoc',
-                                style: tt.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w600,
+                                style: tt.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
                                   color: textColor,
                                   height: 1.3,
                                 ),
@@ -134,15 +134,16 @@ class CourseCard extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.person_outline_rounded,
-                              size: AppIconSize.xs,
+                              size: AppIconSize.sm,
                               color: subColor,
                             ),
-                            SizedBox(width: AppSpacing.xxs),
+                            SizedBox(width: AppSpacing.xs),
                             Expanded(
                               child: Text(
                                 enrollment.instructorName ?? '',
-                                style: tt.bodySmall?.copyWith(
+                                style: tt.bodyMedium?.copyWith(
                                   color: subColor,
+                                  fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -204,9 +205,9 @@ class PendingBadge extends StatelessWidget {
           SizedBox(width: AppSpacing.xxs),
           Text(
             'Doi khai giang',
-            style: tt.labelSmall?.copyWith(
+            style: tt.labelMedium?.copyWith(
               color: cs.tertiary,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -339,16 +340,18 @@ class ProgressSection extends StatelessWidget {
         children: [
           Text(
             '0/${enrollment.totalLessons} Bai hoc',
-            style: tt.labelSmall?.copyWith(
-              color: cs.onSurfaceVariant,
+            style: tt.bodyMedium?.copyWith(
+              color: cs.onSurface.withValues(alpha: 0.6),
+              fontWeight: FontWeight.w500,
             ),
           ),
           const Spacer(),
           Text(
             'Chua bat dau',
-            style: tt.labelSmall?.copyWith(
-              color: cs.onSurfaceVariant.withValues(alpha: 0.6),
+            style: tt.bodyMedium?.copyWith(
+              color: cs.onSurface.withValues(alpha: 0.5),
               fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -370,7 +373,7 @@ class ProgressSection extends StatelessWidget {
               ),
               child: Text(
                 '${enrollment.progress}% Hoan thanh',
-                style: tt.labelSmall?.copyWith(
+                style: tt.labelLarge?.copyWith(
                   color: progressColor,
                   fontWeight: FontWeight.w700,
                 ),
@@ -380,8 +383,9 @@ class ProgressSection extends StatelessWidget {
             Text(
               '${enrollment.completedLessons}/${enrollment.totalLessons}'
               ' Bai hoc',
-              style: tt.labelSmall?.copyWith(
-                color: cs.onSurfaceVariant,
+              style: tt.bodyMedium?.copyWith(
+                color: cs.onSurface.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],

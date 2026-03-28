@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/constants/dimens.dart';
 import 'package:study/features/student/data/mock/mock_explore_data.dart';
 import 'package:study/features/student/presentation/widgets/explore/explore_widgets.dart';
+import 'package:study/features/weather/weather.dart';
 import 'package:study/theme/app_colors.dart';
 
 class StudentExploreScreen extends StatefulWidget {
@@ -61,46 +63,50 @@ class _StudentExploreScreenState
           AppLayout.screenMargin,
           0,
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                gradient: cs.gradientPrimary,
-                borderRadius: AppRadius.borderMd,
-                boxShadow: cs.shadowPrimary,
-              ),
-              child: Icon(Icons.explore_rounded,
-                  color: cs.onPrimary,
-                  size: AppIconSize.lg),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Text(
-                'Explore',
-                style: tt.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: cs.onSurface,
+        child: BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
+          builder: (context, state) {
+            return Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: cs.gradientPrimary,
+                    borderRadius: AppRadius.borderMd,
+                    boxShadow: cs.shadowPrimary,
+                  ),
+                  child: Icon(Icons.explore_rounded,
+                      color: cs.onPrimary,
+                      size: AppIconSize.lg),
                 ),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {},
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: cs.surfaceContainerLowest,
-                  borderRadius: AppRadius.borderMd,
-                  border: Border.all(color: cs.outline),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(
+                    'Explore',
+                    style: tt.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: context.weatherTextColorThemed,
+                    ),
+                  ),
                 ),
-                child: Icon(Icons.search_rounded,
-                    color: cs.primary,
-                    size: AppIconSize.md),
-              ),
-            ),
-          ],
+                GestureDetector(
+                  onTap: () {},
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerLowest,
+                      borderRadius: AppRadius.borderMd,
+                      border: Border.all(color: cs.outline),
+                    ),
+                    child: Icon(Icons.search_rounded,
+                        color: cs.primary,
+                        size: AppIconSize.md),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

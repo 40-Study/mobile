@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/features/weather/weather.dart';
 
 class ExploreSectionHeader extends StatelessWidget {
   const ExploreSectionHeader({
@@ -14,28 +16,32 @@ class ExploreSectionHeader extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            title,
-            style: tt.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: cs.onSurface,
+    return BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
+      builder: (context, state) {
+        return Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: tt.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: context.weatherTextColorThemed,
+                ),
+              ),
             ),
-          ),
-        ),
-        GestureDetector(
-          onTap: onViewAll,
-          child: Text(
-            'Tat ca',
-            style: tt.labelMedium?.copyWith(
-              color: cs.primary,
-              fontWeight: FontWeight.w600,
+            GestureDetector(
+              onTap: onViewAll,
+              child: Text(
+                'Tat ca',
+                style: tt.bodyMedium?.copyWith(
+                  color: cs.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 }

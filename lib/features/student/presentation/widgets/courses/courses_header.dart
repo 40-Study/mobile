@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/constants/dimens.dart';
 import 'package:study/features/student/presentation/widgets/courses/courses_filter_dropdown.dart';
+import 'package:study/features/weather/weather.dart';
 import 'package:study/theme/app_colors.dart';
 
 class CoursesHeader extends StatelessWidget {
@@ -24,133 +26,142 @@ class CoursesHeader extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
+      builder: (context, state) {
+        final textColor = context.weatherTextColorThemed;
+        final textColorSecondary = context.weatherTextColorThemedSecondary;
+        final iconColor = context.weatherIconColor;
+        final iconBgColor = context.weatherIconBackgroundColor;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                gradient: cs.gradientPrimary,
-                borderRadius: AppRadius.borderSm,
-              ),
-              child: Icon(
-                Icons.menu_book_rounded,
-                color: cs.onPrimary,
-                size: AppIconSize.md,
-              ),
-            ),
-            SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Text(
-                'Khoa hoc',
-                style: tt.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: cs.onSurface,
-                ),
-              ),
-            ),
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: cs.surfaceTintedPrimary,
-                borderRadius: AppRadius.borderSm,
-                boxShadow: cs.shadowCard,
-              ),
-              child: Icon(
-                Icons.search_rounded,
-                color: cs.primary,
-                size: AppIconSize.md,
-              ),
-            ),
-            SizedBox(width: AppSpacing.sm),
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: cs.surfaceTintedPrimary,
-                borderRadius: AppRadius.borderSm,
-                boxShadow: cs.shadowCard,
-              ),
-              child: Icon(
-                Icons.tune_rounded,
-                color: cs.primary,
-                size: AppIconSize.md,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: AppSpacing.xxl),
-        Text(
-          'Khoa hoc cua toi',
-          style: tt.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: cs.onSurface,
-          ),
-        ),
-        SizedBox(height: AppSpacing.sm),
-        Row(
-          children: [
-            Expanded(
-              child: RichText(
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                text: TextSpan(
-                  style: tt.bodyMedium?.copyWith(
-                    color: cs.onSurfaceVariant,
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    gradient: cs.gradientPrimary,
+                    borderRadius: AppRadius.borderSm,
                   ),
-                  children: [
-                    const TextSpan(text: 'Ban dang co '),
-                    TextSpan(
-                      text: '$activeCount',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: cs.primary,
-                      ),
-                    ),
-                    const TextSpan(text: ' khoa dang tien hanh'),
-                  ],
+                  child: Icon(
+                    Icons.menu_book_rounded,
+                    color: cs.onPrimary,
+                    size: AppIconSize.md,
+                  ),
                 ),
+                SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(
+                    'Khoa hoc',
+                    style: tt.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: iconBgColor,
+                    borderRadius: AppRadius.borderSm,
+                    boxShadow: cs.shadowCard,
+                  ),
+                  child: Icon(
+                    Icons.search_rounded,
+                    color: iconColor,
+                    size: AppIconSize.md,
+                  ),
+                ),
+                SizedBox(width: AppSpacing.sm),
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: iconBgColor,
+                    borderRadius: AppRadius.borderSm,
+                    boxShadow: cs.shadowCard,
+                  ),
+                  child: Icon(
+                    Icons.tune_rounded,
+                    color: iconColor,
+                    size: AppIconSize.md,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: AppSpacing.xxl),
+            Text(
+              'Khoa hoc cua toi',
+              style: tt.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: textColor,
               ),
             ),
-            SizedBox(width: AppSpacing.sm),
-            CoursesFilterDropdown(
-              selectedFilter: selectedFilter,
-              onFilterChanged: onFilterChanged,
+            SizedBox(height: AppSpacing.sm),
+            Row(
+              children: [
+                Expanded(
+                  child: RichText(
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    text: TextSpan(
+                      style: tt.bodyMedium?.copyWith(
+                        color: textColorSecondary,
+                      ),
+                      children: [
+                        const TextSpan(text: 'Ban dang co '),
+                        TextSpan(
+                          text: '$activeCount',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: cs.primary,
+                          ),
+                        ),
+                        const TextSpan(text: ' khoa dang tien hanh'),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(width: AppSpacing.sm),
+                CoursesFilterDropdown(
+                  selectedFilter: selectedFilter,
+                  onFilterChanged: onFilterChanged,
+                ),
+              ],
+            ),
+            SizedBox(height: AppSpacing.lg),
+            Row(
+              children: [
+                StatChip(
+                  icon: Icons.play_circle_rounded,
+                  label: '$activeCount Dang hoc',
+                  color: cs.primary,
+                  bg: cs.surfaceTintedPrimary,
+                ),
+                SizedBox(width: AppSpacing.sm),
+                if (pendingCount > 0) ...[
+                  StatChip(
+                    icon: Icons.schedule_rounded,
+                    label: '$pendingCount Doi khai giang',
+                    color: cs.secondary,
+                    bg: cs.surfaceTintedSecondary,
+                  ),
+                  SizedBox(width: AppSpacing.sm),
+                ],
+                StatChip(
+                  icon: Icons.check_circle_rounded,
+                  label: '$completedCount Hoan thanh',
+                  color: cs.tertiary,
+                  bg: cs.surfaceTintedTertiary,
+                ),
+              ],
             ),
           ],
-        ),
-        SizedBox(height: AppSpacing.lg),
-        Row(
-          children: [
-            StatChip(
-              icon: Icons.play_circle_rounded,
-              label: '$activeCount Dang hoc',
-              color: cs.primary,
-              bg: cs.surfaceTintedPrimary,
-            ),
-            SizedBox(width: AppSpacing.sm),
-            if (pendingCount > 0) ...[
-              StatChip(
-                icon: Icons.schedule_rounded,
-                label: '$pendingCount Doi khai giang',
-                color: cs.secondary,
-                bg: cs.surfaceTintedSecondary,
-              ),
-              SizedBox(width: AppSpacing.sm),
-            ],
-            StatChip(
-              icon: Icons.check_circle_rounded,
-              label: '$completedCount Hoan thanh',
-              color: cs.tertiary,
-              bg: cs.surfaceTintedTertiary,
-            ),
-          ],
-        ),
-      ],
+        );
+      },
     );
   }
 }

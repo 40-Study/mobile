@@ -72,10 +72,10 @@ class DashboardAssignmentCard extends StatelessWidget {
               const SizedBox(width: AppLayout.gutter),
               Text(
                 'DO AN CUOI KY',
-                style: tt.labelSmall?.copyWith(
-                  color: cs.onSurfaceVariant,
+                style: tt.labelMedium?.copyWith(
+                  color: cs.onSurface.withValues(alpha: 0.7),
                   fontWeight: FontWeight.w700,
-                  letterSpacing: 0.6,
+                  letterSpacing: 0.8,
                 ),
               ),
             ],
@@ -83,7 +83,7 @@ class DashboardAssignmentCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Text(
             title.isNotEmpty ? title : category,
-            style: tt.titleMedium?.copyWith(
+            style: tt.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
               color: cs.onSurface,
             ),
@@ -97,9 +97,9 @@ class DashboardAssignmentCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.xs),
               Text(
                 'Con $daysLeft ngay',
-                style: tt.bodySmall?.copyWith(
+                style: tt.bodyMedium?.copyWith(
                   color: cs.error,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -174,7 +174,8 @@ class DashboardAssignmentCard extends StatelessWidget {
                         'Nop bai',
                         style: TextStyle(
                           color: cs.onPrimary,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
                         ),
                       ),
                     ),
@@ -233,19 +234,19 @@ class MiniAssignmentCard extends StatelessWidget {
               ),
               child: Text(
                 label,
-                style: tt.labelSmall?.copyWith(
+                style: tt.labelMedium?.copyWith(
                   color: cs.primary,
                   fontWeight: FontWeight.w700,
-                  letterSpacing: 0.4,
-                  fontSize: 10,
+                  letterSpacing: 0.5,
+                  fontSize: 11,
                 ),
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               title,
-              style: tt.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
+              style: tt.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
                 color: cs.onSurface,
               ),
               maxLines: 2,
@@ -254,9 +255,9 @@ class MiniAssignmentCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             Text(
               deadline,
-              style: tt.bodySmall?.copyWith(
-                color: cs.onSurfaceVariant,
-                fontSize: 11,
+              style: tt.bodyMedium?.copyWith(
+                color: cs.onSurface.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],

@@ -32,15 +32,15 @@ class StreakHeroCard extends StatelessWidget {
                 Row(
                   children: [
                     Icon(Icons.local_fire_department,
-                        color: cs.tertiary, size: 18),
+                        color: cs.tertiary, size: 20),
                     const SizedBox(width: AppSpacing.xs),
                     Text(
                       'HOC TAP MOI NGAY',
                       style: TextStyle(
-                        color: cs.onPrimary.withValues(alpha: 0.85),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.8,
+                        color: cs.onPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 1.0,
                       ),
                     ),
                   ],
@@ -53,8 +53,8 @@ class StreakHeroCard extends StatelessWidget {
                         text: '$streakDays',
                         style: TextStyle(
                           color: cs.onPrimary,
-                          fontSize: 40,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 48,
+                          fontWeight: FontWeight.w900,
                           height: 1.1,
                         ),
                       ),
@@ -62,8 +62,8 @@ class StreakHeroCard extends StatelessWidget {
                         text: ' Ngay',
                         style: TextStyle(
                           color: cs.onPrimary,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
@@ -74,9 +74,10 @@ class StreakHeroCard extends StatelessWidget {
                   'Dung bo lo! Ban chi can 1 bai hoc\n'
                   'nua de dat moc ${streakDays + 1} ngay.',
                   style: TextStyle(
-                    color: cs.onPrimary.withValues(alpha: 0.8),
-                    fontSize: 13,
-                    height: 1.4,
+                    color: cs.onPrimary.withValues(alpha: 0.95),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    height: 1.5,
                   ),
                 ),
               ],

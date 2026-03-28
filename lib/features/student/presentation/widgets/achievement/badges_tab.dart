@@ -8,8 +8,6 @@ class BadgesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return ListView(
       padding: const EdgeInsets.fromLTRB(
         AppLayout.screenMargin,
@@ -31,20 +29,6 @@ class BadgesTab extends StatelessWidget {
           itemCount: mockBadges.length,
           itemBuilder: (context, index) =>
               _BadgeCard(badge: mockBadges[index]),
-        ),
-        const SizedBox(height: AppSpacing.xxxl),
-        _SummaryStatCard(
-          label: 'TONG THOI GIAN HOC',
-          value: '124h',
-          icon: Icons.schedule_rounded,
-          gradient: cs.gradientPrimary,
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _SummaryStatCard(
-          label: 'CHUNG CHI DA NHAN',
-          value: '15',
-          icon: Icons.verified_rounded,
-          gradient: cs.gradientWarm,
         ),
       ],
     );
@@ -130,73 +114,3 @@ class _BadgeCard extends StatelessWidget {
   }
 }
 
-class _SummaryStatCard extends StatelessWidget {
-  const _SummaryStatCard({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.gradient,
-  });
-  final String label;
-  final String value;
-  final IconData icon;
-  final LinearGradient gradient;
-
-  @override
-  Widget build(BuildContext context) {
-    final tt = Theme.of(context).textTheme;
-
-    return Container(
-      padding: AppLayout.cardPadding,
-      decoration: BoxDecoration(
-        gradient: gradient,
-        borderRadius: AppRadius.borderXl,
-        boxShadow: [
-          BoxShadow(
-            color: gradient.colors.first
-                .withValues(alpha: 0.25),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: tt.labelSmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  value,
-                  style: tt.headlineMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon,
-                size: AppIconSize.xl, color: Colors.white),
-          ),
-        ],
-      ),
-    );
-  }
-}

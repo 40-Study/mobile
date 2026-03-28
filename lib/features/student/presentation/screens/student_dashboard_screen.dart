@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:study/constants/dimens.dart';
-import 'package:study/index.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_cubit.dart';
 import 'package:study/features/student/bloc/lesson_detail/lesson_detail_cubit.dart';
 import 'package:study/features/student/bloc/student_dashboard/student_dashboard_cubit.dart';
@@ -13,6 +11,7 @@ import 'package:study/features/student/presentation/screens/student_learning_scr
 import 'package:study/features/student/presentation/screens/student_main_screen.dart';
 import 'package:study/features/student/presentation/widgets/dashboard/dashboard_widgets.dart';
 import 'package:study/features/weather/weather.dart';
+import 'package:study/index.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -141,26 +140,15 @@ class _DashboardBody extends StatelessWidget {
       padding: AppLayout.dashboardPadding,
       children: [
         SizedBox(height: MediaQuery.of(context).padding.top),
-        Row(
-          children: [
-            Expanded(child: GreetingHeader(name: state.studentName)),
-            IconButton(
-              onPressed: () => _openCityPicker(context),
-              icon: Icon(Icons.location_on_outlined, color: cs.primary),
-              tooltip: 'Chon thanh pho',
-            ),
-            IconButton(
-              onPressed: () =>
-                  NavigationService.of(context).navigateTo(Routes.weatherDemo),
-              icon: Icon(Icons.wb_sunny_outlined, color: cs.primary),
-              tooltip: 'Weather Demo',
-            ),
-          ],
+        LocationHeader(
+          onLocationTap: () => _openCityPicker(context),
+          onWeatherTap: () =>
+              NavigationService.of(context).navigateTo(Routes.weatherDemo),
         ),
         const SizedBox(height: AppSpacing.xl),
-        StreakHeroCard(
-          streakDays: state.stats.overallProgress.toInt(),
-          totalClasses: state.stats.totalClasses,
+        LevelHeroCard(
+          level: state.stats.overallProgress.toInt(),
+          name: state.studentName,
         ),
         const SizedBox(height: AppSpacing.xxl),
         DashboardSectionRow(
@@ -281,12 +269,16 @@ class _DashboardBody extends StatelessWidget {
           ],
         ],
         const SizedBox(height: AppSpacing.xxl),
-        Text(
-          'Tiep tuc hoc',
-          style: tt.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: cs.onSurface,
-          ),
+        BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
+          builder: (context, state) {
+            return Text(
+              'Tiep tuc hoc',
+              style: tt.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: context.weatherTextColorThemed,
+              ),
+            );
+          },
         ),
         const SizedBox(height: AppSpacing.md),
         if (state.enrollments.isEmpty)

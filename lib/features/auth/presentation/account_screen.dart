@@ -10,6 +10,7 @@ import 'package:study/features/auth/presentation/security_screen.dart';
 import 'package:study/features/auth/presentation/utils/role_utils.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/teacher/presentation/screens/switch_role_screen.dart';
+import 'package:study/features/weather/weather.dart';
 
 enum AccountRoleType { teacher, student, parent }
 
@@ -57,8 +58,6 @@ class _AccountScreenState extends State<AccountScreen>
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return BlocProvider.value(
       value: _cubit,
       child: Scaffold(
@@ -119,7 +118,7 @@ class _AccountScreenState extends State<AccountScreen>
     final gradient = _gradientForRole(widget.roleType, cs);
 
     return SliverAppBar(
-      expandedHeight: 300,
+      expandedHeight: 320,
       pinned: true,
       backgroundColor: cs.surface,
       automaticallyImplyLeading: false,
@@ -184,117 +183,157 @@ class _AccountScreenState extends State<AccountScreen>
               ),
             ),
             Positioned(
-              top: 130,
-              left: 0,
-              right: 0,
-              child: Column(
-                children: [
-                  Stack(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: cs.surface, width: 4),
-                          boxShadow: [
-                            BoxShadow(
-                              color: cs.shadow.withValues(alpha: 0.2),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: CircleAvatar(
-                          radius: 50,
-                          backgroundColor: cs.primaryContainer,
-                          backgroundImage: user.avatarUrl != null
-                              ? NetworkImage(user.avatarUrl!)
-                              : null,
-                          child: user.avatarUrl == null
-                              ? Text(
-                                  _getInitials(
-                                      user.fullName ?? user.username),
-                                  style: tt.headlineMedium?.copyWith(
-                                    color: cs.primary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                )
-                              : null,
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: GestureDetector(
-                          onTap: _changeAvatar,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: cs.primary,
-                              shape: BoxShape.circle,
-                              border:
-                                  Border.all(color: cs.surface, width: 2),
-                            ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              size: 16,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    user.fullName ?? user.username,
-                    style: tt.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: cs.onSurface,
+              top: 160,
+              left: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: cs.surface,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: cs.shadow.withValues(alpha: 0.12),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (profile != null) ...[
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Avatar
+                    Stack(
+                      children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
+                          padding: const EdgeInsets.all(3),
                           decoration: BoxDecoration(
-                            color: cs.primaryContainer,
-                            borderRadius: BorderRadius.circular(12),
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [cs.primary, cs.tertiary],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                RoleUtils.getIcon(profile.roleName),
-                                size: 14,
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: cs.surface,
+                            ),
+                            child: CircleAvatar(
+                              radius: 44,
+                              backgroundColor: cs.primaryContainer,
+                              backgroundImage: user.avatarUrl != null
+                                  ? NetworkImage(user.avatarUrl!)
+                                  : null,
+                              child: user.avatarUrl == null
+                                  ? Text(
+                                      _getInitials(
+                                          user.fullName ?? user.username),
+                                      style: tt.headlineMedium?.copyWith(
+                                        color: cs.primary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 4,
+                          right: 4,
+                          child: GestureDetector(
+                            onTap: _changeAvatar,
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
                                 color: cs.primary,
+                                shape: BoxShape.circle,
+                                border:
+                                    Border.all(color: cs.surface, width: 2),
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                RoleUtils.getLabel(profile.roleName),
-                                style: tt.labelSmall?.copyWith(
-                                  color: cs.primary,
-                                  fontWeight: FontWeight.w600,
+                              child: const Icon(
+                                Icons.camera_alt,
+                                size: 12,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 20),
+                    // Info
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Name + verified
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  user.fullName ?? user.username,
+                                  style: tt.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                    color: cs.onSurface,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
+                              const SizedBox(width: 6),
+                              Icon(Icons.verified,
+                                  size: 20, color: cs.primary),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                      Icon(
-                        Icons.verified,
-                        size: 16,
-                        color: cs.primary,
+                          const SizedBox(height: 6),
+                          // Role badge
+                          if (profile != null)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: cs.primaryContainer,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    RoleUtils.getIcon(profile.roleName),
+                                    size: 14,
+                                    color: cs.primary,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    RoleUtils.getLabel(profile.roleName),
+                                    style: tt.labelMedium?.copyWith(
+                                      color: cs.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          const SizedBox(height: 16),
+                          // Stats row
+                          Row(
+                            children: [
+                              _buildStat(tt, cs, '12', 'Khóa học'),
+                              const SizedBox(width: 24),
+                              _buildStat(tt, cs, '2.5k', 'Điểm XP'),
+                              const SizedBox(width: 24),
+                              _buildStat(tt, cs, '7 🔥', 'Streak'),
+                            ],
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -407,6 +446,27 @@ class _AccountScreenState extends State<AccountScreen>
       return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
     }
     return name.isNotEmpty ? name[0].toUpperCase() : '?';
+  }
+
+  Widget _buildStat(TextTheme tt, ColorScheme cs, String value, String label) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          value,
+          style: tt.titleMedium?.copyWith(
+            fontWeight: FontWeight.w800,
+            color: cs.onSurface,
+          ),
+        ),
+        Text(
+          label,
+          style: tt.labelSmall?.copyWith(
+            color: cs.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
   }
 
   void _showOptionsMenu(BuildContext context) {
@@ -766,112 +826,140 @@ class _StudentOverviewTab extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        // Learning progress highlight
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              colors: [cs.secondary, cs.primary],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+    return BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
+      builder: (context, state) {
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+          children: [
+            // ─── BIO ───
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+              child: Column(
                 children: [
-                  Expanded(
-                    child: Text(
-                      'Tiến độ học tập',
-                      style: tt.labelMedium?.copyWith(
-                        color: Colors.white70,
-                        letterSpacing: 0.5,
-                      ),
+                  Text(
+                    '"',
+                    style: tt.displaySmall?.copyWith(
+                      color: cs.primary.withValues(alpha: 0.3),
+                      fontFamily: 'Georgia',
+                      height: 0.5,
                     ),
                   ),
                   Text(
-                    '72%',
-                    style: tt.headlineSmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
+                    'Đam mê học hỏi về công nghệ và thiết kế sáng tạo.\n'
+                    'Hiện đang theo đuổi các khóa học về lập trình di động.',
+                    style: tt.bodyLarge?.copyWith(
+                      color: context.weatherTextColorThemed,
+                      fontStyle: FontStyle.italic,
+                      height: 1.6,
+                      fontWeight: FontWeight.w500,
                     ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.location_on_outlined,
+                          size: 14, color: context.weatherTextColorThemedSecondary),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Hà Nội, Việt Nam',
+                        style: tt.labelMedium?.copyWith(
+                          color: context.weatherTextColorThemedSecondary,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: LinearProgressIndicator(
-                  value: 0.72,
-                  minHeight: 8,
-                  backgroundColor: Colors.white.withValues(alpha: 0.2),
-                  valueColor: const AlwaysStoppedAnimation(Colors.white),
-                ),
+            ),
+            const SizedBox(height: 16),
+
+            // ─── SKILLS & INTERESTS ───
+            _PortfolioSection(
+          title: 'Kỹ năng',
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: const [
+              _SkillTag(label: 'Flutter', level: 3),
+              _SkillTag(label: 'UI/UX Design', level: 2),
+              _SkillTag(label: 'Python', level: 2),
+              _SkillTag(label: 'Data Science', level: 1),
+              _SkillTag(label: 'React', level: 1),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // ─── LEARNING INTERESTS ───
+        _PortfolioSection(
+          title: 'Đang quan tâm',
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _InterestChip(emoji: '🤖', label: 'AI/ML'),
+              _InterestChip(emoji: '📱', label: 'Mobile Dev'),
+              _InterestChip(emoji: '🎨', label: 'Design'),
+              _InterestChip(emoji: '☁️', label: 'Cloud'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // ─── ACHIEVEMENTS SHOWCASE ───
+        _PortfolioSection(
+          title: 'Thành tựu nổi bật',
+          trailing: Text(
+            'Xem tất cả',
+            style: tt.labelSmall?.copyWith(
+              color: cs.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          child: Column(
+            children: const [
+              _AchievementRow(
+                emoji: '🏆',
+                title: 'Top 10 Learner',
+                subtitle: 'Tháng 3/2024',
+                color: Color(0xFFF59E0B),
               ),
-              const SizedBox(height: 8),
-              Text(
-                '48/67 bài học hoàn thành',
-                style: tt.bodySmall?.copyWith(color: Colors.white60),
+              SizedBox(height: 12),
+              _AchievementRow(
+                emoji: '🎓',
+                title: 'Flutter Professional',
+                subtitle: 'Chứng chỉ • 40Study Academy',
+                color: Color(0xFF2563EB),
+              ),
+              SizedBox(height: 12),
+              _AchievementRow(
+                emoji: '🔥',
+                title: '30 Days Streak',
+                subtitle: 'Hoàn thành 15/02/2024',
+                color: Color(0xFFEF4444),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                icon: Icons.class_outlined,
-                value: '5',
-                label: 'Lớp học',
-                color: Colors.indigo,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                icon: Icons.emoji_events,
-                value: '5',
-                label: 'Chứng chỉ',
-                color: Colors.orange,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                icon: Icons.schedule,
-                value: '128h',
-                label: 'Giờ học',
-                color: Colors.teal,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        _SectionCard(
-          title: 'Giới thiệu',
-          icon: Icons.info_outline,
+        const SizedBox(height: 20),
+
+        // ─── CONTACT / SOCIAL ───
+        _PortfolioSection(
+          title: 'Liên hệ',
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Đam mê học hỏi về công nghệ và thiết kế sáng tạo. '
-                'Hiện đang theo đuổi các khóa học về Khoa học dữ liệu.',
-                style: tt.bodyMedium?.copyWith(
-                  color: cs.onSurfaceVariant,
-                  height: 1.6,
-                ),
+              _ContactRow(
+                icon: Icons.email_outlined,
+                text: user.email,
               ),
-              const SizedBox(height: 16),
-              _InfoRow(icon: Icons.email_outlined, text: user.email),
               if (user.phone != null && user.phone!.isNotEmpty)
-                _InfoRow(icon: Icons.phone_outlined, text: user.phone!),
-              _InfoRow(
+                _ContactRow(
+                  icon: Icons.phone_outlined,
+                  text: user.phone!,
+                ),
+              _ContactRow(
                 icon: Icons.calendar_today_outlined,
                 text: _formatJoinDate(user.createdAt),
               ),
@@ -879,7 +967,240 @@ class _StudentOverviewTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 32),
+        ],
+      );
+      },
+    );
+  }
+}
+
+// ─── PORTFOLIO WIDGETS ───
+
+class _PortfolioSection extends StatelessWidget {
+  const _PortfolioSection({
+    required this.title,
+    required this.child,
+    this.trailing,
+  });
+
+  final String title;
+  final Widget child;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: cs.outline.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                title,
+                style: tt.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                ),
+              ),
+              const Spacer(),
+              if (trailing != null) trailing!,
+            ],
+          ),
+          const SizedBox(height: 16),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class _SkillTag extends StatelessWidget {
+  const _SkillTag({required this.label, required this.level});
+
+  final String label;
+  final int level; // 1-3
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    final colors = [
+      const Color(0xFF10B981), // beginner
+      const Color(0xFF3B82F6), // intermediate
+      const Color(0xFF8B5CF6), // advanced
+    ];
+    final color = colors[(level - 1).clamp(0, 2)];
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: tt.labelMedium?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Row(
+            children: List.generate(3, (i) {
+              return Container(
+                width: 6,
+                height: 6,
+                margin: const EdgeInsets.only(left: 2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: i < level
+                      ? color
+                      : color.withValues(alpha: 0.2),
+                ),
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InterestChip extends StatelessWidget {
+  const _InterestChip({required this.emoji, required this.label});
+
+  final String emoji;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 16)),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: tt.labelMedium?.copyWith(
+              color: cs.onSurface,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AchievementRow extends StatelessWidget {
+  const _AchievementRow({
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.color,
+  });
+
+  final String emoji;
+  final String title;
+  final String subtitle;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Row(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: Text(emoji, style: const TextStyle(fontSize: 22)),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: tt.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurface,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: tt.labelSmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: 14,
+          color: cs.onSurfaceVariant.withValues(alpha: 0.5),
+        ),
       ],
+    );
+  }
+}
+
+class _ContactRow extends StatelessWidget {
+  const _ContactRow({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: cs.primary),
+          const SizedBox(width: 12),
+          Text(
+            text,
+            style: tt.bodyMedium?.copyWith(color: cs.onSurface),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study/constants/dimens.dart';
 import 'package:study/features/student/presentation/widgets/achievement/achievement_widgets.dart';
+import 'package:study/features/weather/weather.dart';
 import 'package:study/theme/app_colors.dart';
 
 class StudentAchievementScreen extends StatefulWidget {
@@ -68,7 +69,7 @@ class _StudentAchievementScreenState
                         'Thanh tich hoc tap',
                         style: tt.titleLarge?.copyWith(
                           fontWeight: FontWeight.w800,
-                          color: cs.onSurface,
+                          color: context.weatherTextColorThemed,
                         ),
                       ),
                     ),
@@ -103,6 +104,17 @@ class _StudentAchievementScreenState
                   0,
                 ),
                 child: const ProfileHeroCard(),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppLayout.screenMargin,
+                  AppSpacing.lg,
+                  AppLayout.screenMargin,
+                  0,
+                ),
+                child: const LearningHeatmap(),
               ),
             ),
             SliverPersistentHeader(

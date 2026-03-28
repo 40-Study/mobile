@@ -68,10 +68,10 @@ class DashboardScheduleCard extends StatelessWidget {
                       Flexible(
                         child: Text(
                           label,
-                          style: tt.labelSmall?.copyWith(
+                          style: tt.labelMedium?.copyWith(
                             color: isUpcoming
                                 ? cs.primary
-                                : cs.onSurfaceVariant,
+                                : cs.onSurface.withValues(alpha: 0.7),
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.5,
                           ),
@@ -82,16 +82,17 @@ class DashboardScheduleCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         '• $time',
-                        style: tt.labelSmall?.copyWith(
-                          color: cs.onSurfaceVariant,
+                        style: tt.labelMedium?.copyWith(
+                          color: cs.onSurface.withValues(alpha: 0.7),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       if (isLive) ...[
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2,
+                            horizontal: 8,
+                            vertical: 3,
                           ),
                           decoration: BoxDecoration(
                             color: cs.error,
@@ -101,38 +102,39 @@ class DashboardScheduleCard extends StatelessWidget {
                             'LIVE',
                             style: tt.labelSmall?.copyWith(
                               color: cs.onError,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 10,
                             ),
                           ),
                         ),
                       ],
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Text(
                     title,
-                    style: tt.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
+                    style: tt.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
                       color: cs.onSurface,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Row(
                     children: [
                       Icon(
                         Icons.location_on_outlined,
-                        size: 14,
-                        color: cs.onSurfaceVariant.withValues(alpha: 0.7),
+                        size: 16,
+                        color: cs.onSurface.withValues(alpha: 0.6),
                       ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           location,
-                          style: tt.bodySmall?.copyWith(
-                            color: cs.onSurfaceVariant,
+                          style: tt.bodyMedium?.copyWith(
+                            color: cs.onSurface.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w500,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

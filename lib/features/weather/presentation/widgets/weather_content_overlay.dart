@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/weather/bloc/weather_background_cubit.dart';
-import 'package:study/features/weather/data/models/models.dart';
 
 /// Overlay gradient to ensure content readability on weather background
 class WeatherContentOverlay extends StatelessWidget {
@@ -18,7 +17,7 @@ class WeatherContentOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
       builder: (context, state) {
-        final isDark = _isDarkBackground(state.timeOfDay);
+        final isDark = state.isDarkBackground;
 
         return Stack(
           children: [
@@ -51,35 +50,56 @@ class WeatherContentOverlay extends StatelessWidget {
       },
     );
   }
-
-  bool _isDarkBackground(TimeOfDayType timeOfDay) {
-    return timeOfDay == TimeOfDayType.night || timeOfDay == TimeOfDayType.dusk;
-  }
 }
 
 /// Extension to get appropriate text color for weather background
 extension WeatherTextColor on BuildContext {
-  /// Get text color that contrasts with current weather background
-  Color get weatherTextColor {
+  /// Check if weather background is dark based on gradient luminance
+  /// This automatically handles all weather conditions and times of day
+  bool get isWeatherBackgroundDark {
     try {
       final state = read<WeatherBackgroundCubit>().state;
-      final isDark = state.timeOfDay == TimeOfDayType.night ||
-          state.timeOfDay == TimeOfDayType.dusk;
-      return isDark ? Colors.white : Colors.black87;
+      return state.isDarkBackground;
     } catch (_) {
-      return Colors.black87;
+      return false;
     }
+  }
+
+  /// Get text color that contrasts with current weather background
+  Color get weatherTextColor {
+    return isWeatherBackgroundDark ? Colors.white : Colors.black87;
   }
 
   /// Get secondary text color for weather background
   Color get weatherTextColorSecondary {
-    try {
-      final state = read<WeatherBackgroundCubit>().state;
-      final isDark = state.timeOfDay == TimeOfDayType.night ||
-          state.timeOfDay == TimeOfDayType.dusk;
-      return isDark ? Colors.white70 : Colors.black54;
-    } catch (_) {
-      return Colors.black54;
-    }
+    return isWeatherBackgroundDark ? Colors.white70 : Colors.black54;
+  }
+
+  /// Get themed text color - uses theme's onSurface for light, white for dark
+  Color get weatherTextColorThemed {
+    final cs = Theme.of(this).colorScheme;
+    return isWeatherBackgroundDark ? Colors.white : cs.onSurface;
+  }
+
+  /// Get themed secondary text color with opacity
+  Color get weatherTextColorThemedSecondary {
+    final cs = Theme.of(this).colorScheme;
+    return isWeatherBackgroundDark
+        ? Colors.white.withValues(alpha: 0.7)
+        : cs.onSurface.withValues(alpha: 0.6);
+  }
+
+  /// Get icon color for weather background
+  Color get weatherIconColor {
+    final cs = Theme.of(this).colorScheme;
+    return isWeatherBackgroundDark ? Colors.white : cs.primary;
+  }
+
+  /// Get icon background color for weather background
+  Color get weatherIconBackgroundColor {
+    final cs = Theme.of(this).colorScheme;
+    return isWeatherBackgroundDark
+        ? Colors.white.withValues(alpha: 0.15)
+        : cs.primaryContainer;
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/constants/dimens.dart';
 import 'package:study/features/student/data/mock/mock_explore_data.dart';
 import 'package:study/features/student/presentation/screens/course_preview_screen.dart';
+import 'package:study/features/weather/weather.dart';
 
 class ExploreTrendingCourseCard extends StatelessWidget {
   const ExploreTrendingCourseCard({
@@ -73,7 +75,7 @@ class ExploreTrendingCourseCard extends StatelessWidget {
                       children: [
                         Text(
                           course.title,
-                          style: tt.bodySmall?.copyWith(
+                          style: tt.bodyMedium?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
                             height: 1.3,
@@ -88,28 +90,32 @@ class ExploreTrendingCourseCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: [
-                Text(
-                  course.price,
-                  style: tt.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: cs.primary,
-                  ),
-                ),
-                const Spacer(),
-                Icon(Icons.star_rounded,
-                    size: AppIconSize.xs,
-                    color: cs.tertiary),
-                const SizedBox(width: AppSpacing.xxs),
-                Text(
-                  '${course.rating}',
-                  style: tt.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: cs.onSurface,
-                  ),
-                ),
-              ],
+            BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
+              builder: (context, state) {
+                return Row(
+                  children: [
+                    Text(
+                      course.price,
+                      style: tt.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: cs.primary,
+                      ),
+                    ),
+                    const Spacer(),
+                    Icon(Icons.star_rounded,
+                        size: AppIconSize.sm,
+                        color: cs.tertiary),
+                    const SizedBox(width: AppSpacing.xxs),
+                    Text(
+                      '${course.rating}',
+                      style: tt.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: context.weatherTextColorThemed,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),

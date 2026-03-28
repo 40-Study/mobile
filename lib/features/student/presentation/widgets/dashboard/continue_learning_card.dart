@@ -59,8 +59,8 @@ class ContinueLearningCard extends StatelessWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
+                        horizontal: 12,
+                        vertical: 6,
                       ),
                       decoration: BoxDecoration(
                         color: cs.primary,
@@ -70,26 +70,27 @@ class ContinueLearningCard extends StatelessWidget {
                         'Bai $completedLessons/$totalLessons',
                         style: TextStyle(
                           color: cs.onPrimary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 5,
+                        horizontal: 10,
+                        vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: cs.onPrimary.withValues(alpha: 0.15),
+                        color: cs.onPrimary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         '$progress% da hoan thanh',
                         style: TextStyle(
-                          color: cs.onPrimary.withValues(alpha: 0.9),
-                          fontSize: 11,
+                          color: cs.onPrimary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -125,10 +126,10 @@ class ContinueLearningCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xl),
                 Text(
                   courseName,
-                  style: tt.titleMedium?.copyWith(
+                  style: tt.titleLarge?.copyWith(
                     color: cs.onPrimary,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 20,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,

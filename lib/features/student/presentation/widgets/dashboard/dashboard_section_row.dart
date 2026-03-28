@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/constants/dimens.dart';
+import 'package:study/features/weather/weather.dart';
 
 class DashboardSectionRow extends StatelessWidget {
   const DashboardSectionRow({
@@ -20,34 +22,39 @@ class DashboardSectionRow extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            title,
-            style: tt.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              fontSize: 20,
-              color: cs.onSurface,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        if (action != null) ...[
-          const SizedBox(width: AppSpacing.sm),
-          GestureDetector(
-            onTap: onActionTap,
-            child: Text(
-              action!,
-              style: tt.bodyMedium?.copyWith(
-                color: actionColor ?? cs.primary,
-                fontWeight: FontWeight.w600,
+    return BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
+      builder: (context, state) {
+        final textColor = context.weatherTextColorThemed;
+
+        return Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: tt.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: textColor,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ),
-        ],
-      ],
+            if (action != null) ...[
+              const SizedBox(width: AppSpacing.sm),
+              GestureDetector(
+                onTap: onActionTap,
+                child: Text(
+                  action!,
+                  style: tt.bodyLarge?.copyWith(
+                    color: actionColor ?? cs.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 }

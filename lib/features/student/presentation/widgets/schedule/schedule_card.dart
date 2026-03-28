@@ -43,18 +43,19 @@ class ScheduleCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
             Text(
               schedule.className ?? '',
-              style: tt.titleSmall?.copyWith(
+              style: tt.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: cs.onSurface,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: AppSpacing.xxs),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               schedule.title ?? '',
-              style: tt.bodySmall?.copyWith(
-                color: cs.onSurfaceVariant,
+              style: tt.bodyMedium?.copyWith(
+                color: cs.onSurface.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w500,
                 height: 1.4,
               ),
               maxLines: 2,
@@ -157,11 +158,11 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: tt.labelSmall?.copyWith(
+        style: tt.labelMedium?.copyWith(
           color: textColor,
           fontWeight: FontWeight.w700,
-          fontSize: 10,
-          letterSpacing: 0.3,
+          fontSize: 11,
+          letterSpacing: 0.4,
         ),
       ),
     );
@@ -187,14 +188,15 @@ class _LocationLine extends StatelessWidget {
           schedule.meetingUrl != null
               ? Icons.videocam_outlined
               : Icons.location_on_outlined,
-          size: AppIconSize.xs,
-          color: cs.onSurfaceVariant,
+          size: AppIconSize.sm,
+          color: cs.onSurface.withValues(alpha: 0.6),
         ),
         const SizedBox(width: AppSpacing.xs),
         Text(
           text,
-          style: tt.labelSmall?.copyWith(
-            color: cs.onSurfaceVariant,
+          style: tt.bodyMedium?.copyWith(
+            color: cs.onSurface.withValues(alpha: 0.7),
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
