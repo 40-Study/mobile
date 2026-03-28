@@ -9,6 +9,7 @@ import 'package:study/features/auth/presentation/register_form_screen.dart';
 import 'package:study/features/auth/presentation/register_otp_screen.dart';
 import 'package:study/features/auth/presentation/reset_password_screen.dart';
 import 'package:study/features/auth/presentation/select_role_screen.dart';
+import 'package:study/features/weather/weather.dart';
 import 'package:study/index.dart';
 
 class Routes {
@@ -26,6 +27,9 @@ class Routes {
   static const forgotPassword = 'forgotPassword';
   static const forgotPasswordOtp = 'forgotPasswordOtp';
   static const resetPassword = 'resetPassword';
+
+  // Demo
+  static const weatherDemo = 'weatherDemo';
 }
 
 /// Navigator key from DI. Use after [initDI].
@@ -46,6 +50,7 @@ class NavigationService {
     Routes.forgotPassword: (_) => const ForgotPasswordScreen(),
     Routes.forgotPasswordOtp: (_) => const ForgotPasswordOtpScreen(),
     Routes.resetPassword: (_) => const ResetPasswordScreen(),
+    Routes.weatherDemo: (_) => const WeatherDemoScreen(),
   };
 
   final Set<String> _animatedRoutes = {
