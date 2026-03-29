@@ -6,6 +6,7 @@ import 'package:study/features/parent/bloc/parent_dashboard/parent_dashboard_sta
 import 'package:study/features/parent/data/models/models.dart';
 import 'package:study/features/parent/presentation/screens/child_detail_screen.dart';
 import 'package:study/theme/app_colors.dart';
+import 'package:study/widgets/section_header.dart';
 
 class ParentDashboardScreen extends StatefulWidget {
   const ParentDashboardScreen({super.key});
@@ -154,7 +155,7 @@ class _DashboardContent extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.xxl),
 
-        const _SectionHeader(
+        const SectionHeader(
           title: 'Lop hoc cua con',
           actionLabel: 'Xem tat ca',
         ),
@@ -173,7 +174,7 @@ class _DashboardContent extends StatelessWidget {
           ),
         const SizedBox(height: AppSpacing.xxl),
 
-        const _SectionHeader(title: 'Thong bao moi', actionLabel: 'Xem tat ca'),
+        const SectionHeader(title: 'Thong bao moi', actionLabel: 'Xem tat ca'),
         const SizedBox(height: AppSpacing.sm),
         if (state.notifications.isEmpty)
           const _EmptyCard(message: 'Khong co thong bao moi')
@@ -393,39 +394,6 @@ class _MiniMetricCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, this.actionLabel});
-
-  final String title;
-  final String? actionLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Row(
-      children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-            color: cs.onSurface,
-          ),
-        ),
-        const Spacer(),
-        if (actionLabel != null)
-          Text(
-            actionLabel!,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: cs.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-      ],
     );
   }
 }

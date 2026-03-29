@@ -2,7 +2,6 @@ export 'empty_state_card.dart';
 export 'enrollment_card.dart';
 export 'material_tile.dart';
 export 'schedule_item_card.dart';
-export 'section_header.dart';
 export 'student_app_bar.dart';
 export 'student_class_card.dart';
 export 'student_stats_card.dart';

@@ -5,6 +5,7 @@ import 'package:study/constants/dimens.dart';
 import 'package:study/features/teacher/bloc/dashboard/teacher_dashboard_cubit.dart';
 import 'package:study/features/teacher/data/models/models.dart';
 import 'package:study/theme/app_colors.dart';
+import 'package:study/widgets/section_header.dart';
 
 class TeacherDashboardScreen extends StatefulWidget {
   const TeacherDashboardScreen({super.key});
@@ -125,7 +126,7 @@ class _DashboardContent extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xxl),
 
-          const _SectionHeader(
+          const SectionHeader(
             title: 'Lich day hom nay',
             actionLabel: 'Xem tat ca',
           ),
@@ -141,7 +142,7 @@ class _DashboardContent extends StatelessWidget {
             ),
           const SizedBox(height: AppSpacing.xxl),
 
-          const _SectionHeader(
+          const SectionHeader(
             title: 'Lop hoc cua toi',
             actionLabel: 'Xem tat ca',
           ),
@@ -399,40 +400,6 @@ class _MiniMetricCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, this.actionLabel});
-
-  final String title;
-  final String? actionLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Row(
-      children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-            color: cs.onSurface,
-          ),
-        ),
-        const Spacer(),
-        if (actionLabel != null)
-          Text(
-            actionLabel!,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: cs.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-      ],
     );
   }
 }
