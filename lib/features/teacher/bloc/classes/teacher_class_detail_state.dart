@@ -20,50 +20,60 @@ final class TeacherClassDetailLoaded extends TeacherClassDetailState {
   const TeacherClassDetailLoaded({
     required this.classModel,
     this.students = const [],
-    this.teachers = const [],
     this.schedules = const [],
-    this.attendances = const [],
+    this.assignments = const [],
+    this.documents = const [],
     this.selectedTab = 0,
     this.isLoadingStudents = false,
-    this.isLoadingTeachers = false,
     this.isLoadingSchedules = false,
-    this.isLoadingAttendances = false,
+    this.isLoadingAssignments = false,
+    this.isLoadingDocuments = false,
+    this.selectedStudentDetail,
+    this.isLoadingStudentDetail = false,
   });
 
   final ClassModel classModel;
   final List<StudentModel> students;
-  final List<ClassTeacherModel> teachers;
   final List<ClassScheduleModel> schedules;
-  final List<AttendanceModel> attendances;
+  final List<ClassAssignmentModel> assignments;
+  final List<ClassDocumentModel> documents;
   final int selectedTab;
   final bool isLoadingStudents;
-  final bool isLoadingTeachers;
   final bool isLoadingSchedules;
-  final bool isLoadingAttendances;
+  final bool isLoadingAssignments;
+  final bool isLoadingDocuments;
+  final StudentDetailModel? selectedStudentDetail;
+  final bool isLoadingStudentDetail;
 
   TeacherClassDetailLoaded copyWith({
     ClassModel? classModel,
     List<StudentModel>? students,
-    List<ClassTeacherModel>? teachers,
     List<ClassScheduleModel>? schedules,
-    List<AttendanceModel>? attendances,
+    List<ClassAssignmentModel>? assignments,
+    List<ClassDocumentModel>? documents,
     int? selectedTab,
     bool? isLoadingStudents,
-    bool? isLoadingTeachers,
     bool? isLoadingSchedules,
-    bool? isLoadingAttendances,
+    bool? isLoadingAssignments,
+    bool? isLoadingDocuments,
+    StudentDetailModel? selectedStudentDetail,
+    bool? isLoadingStudentDetail,
+    bool clearStudentDetail = false,
   }) {
     return TeacherClassDetailLoaded(
       classModel: classModel ?? this.classModel,
       students: students ?? List.of(this.students),
-      teachers: teachers ?? List.of(this.teachers),
       schedules: schedules ?? List.of(this.schedules),
-      attendances: attendances ?? List.of(this.attendances),
+      assignments: assignments ?? List.of(this.assignments),
+      documents: documents ?? List.of(this.documents),
       selectedTab: selectedTab ?? this.selectedTab,
       isLoadingStudents: isLoadingStudents ?? this.isLoadingStudents,
-      isLoadingTeachers: isLoadingTeachers ?? this.isLoadingTeachers,
       isLoadingSchedules: isLoadingSchedules ?? this.isLoadingSchedules,
-      isLoadingAttendances: isLoadingAttendances ?? this.isLoadingAttendances,
+      isLoadingAssignments: isLoadingAssignments ?? this.isLoadingAssignments,
+      isLoadingDocuments: isLoadingDocuments ?? this.isLoadingDocuments,
+      selectedStudentDetail:
+          clearStudentDetail ? null : (selectedStudentDetail ?? this.selectedStudentDetail),
+      isLoadingStudentDetail: isLoadingStudentDetail ?? this.isLoadingStudentDetail,
     );
   }
 
@@ -71,14 +81,16 @@ final class TeacherClassDetailLoaded extends TeacherClassDetailState {
   List<Object?> get props => [
         classModel,
         students,
-        teachers,
         schedules,
-        attendances,
+        assignments,
+        documents,
         selectedTab,
         isLoadingStudents,
-        isLoadingTeachers,
         isLoadingSchedules,
-        isLoadingAttendances,
+        isLoadingAssignments,
+        isLoadingDocuments,
+        selectedStudentDetail,
+        isLoadingStudentDetail,
       ];
 }
 

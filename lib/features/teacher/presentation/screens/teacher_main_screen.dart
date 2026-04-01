@@ -2,17 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/auth/presentation/account_screen.dart';
+import 'package:study/features/teacher/bloc/classes/teacher_classes_cubit.dart';
 import 'package:study/features/teacher/bloc/courses/teacher_courses_cubit.dart';
 import 'package:study/features/teacher/bloc/dashboard/teacher_dashboard_cubit.dart';
-import 'package:study/features/teacher/bloc/students/teacher_students_cubit.dart';
 import 'package:study/features/teacher/data/repository/teacher_repository.dart';
+import 'package:study/features/teacher/presentation/screens/teacher_actions_screen.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_courses_screen.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_dashboard_screen.dart';
-import 'package:study/features/teacher/presentation/screens/teacher_students_screen.dart';
+import 'package:study/features/teacher/presentation/screens/teacher_revenue_screen.dart';
 import 'package:study/features/weather/weather.dart';
 
 class TeacherMainScreen extends StatefulWidget {
   const TeacherMainScreen({super.key});
+
+  static const int tabDashboard = 0;
+  static const int tabCourses = 1;
+  static const int tabActions = 2;
+  static const int tabRevenue = 3;
+  static const int tabProfile = 4;
+
+  /// Switch to a specific tab from anywhere in the widget tree
+  static void switchToTab(BuildContext context, int tabIndex) {
+    final state = context.findAncestorStateOfType<_TeacherMainScreenState>();
+    state?._switchTab(tabIndex);
+  }
 
   @override
   State<TeacherMainScreen> createState() => _TeacherMainScreenState();
@@ -25,7 +38,8 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
   final _screens = const [
     TeacherDashboardScreen(),
     TeacherCoursesScreen(),
-    TeacherStudentsScreen(),
+    TeacherActionsScreen(),
+    TeacherRevenueScreen(),
     AccountScreen(roleType: AccountRoleType.teacher),
   ];
 
@@ -33,6 +47,12 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
   void initState() {
     super.initState();
     _repository = diContainer.get<TeacherRepository>();
+  }
+
+  void _switchTab(int index) {
+    if (index >= 0 && index < _screens.length) {
+      setState(() => _currentIndex = index);
+    }
   }
 
   @override
@@ -52,7 +72,7 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
             create: (_) => TeacherCoursesCubit(repository: _repository),
           ),
           BlocProvider(
-            create: (_) => TeacherStudentsCubit(repository: _repository),
+            create: (_) => TeacherClassesCubit(repository: _repository),
           ),
         ],
         child: Scaffold(
@@ -82,14 +102,19 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
                 label: 'Khóa học',
               ),
               NavigationDestination(
-                icon: Icon(Icons.people_outline),
-                selectedIcon: Icon(Icons.people),
-                label: 'Học viên',
+                icon: Icon(Icons.flash_on_outlined),
+                selectedIcon: Icon(Icons.flash_on),
+                label: 'Hành động',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.account_balance_wallet_outlined),
+                selectedIcon: Icon(Icons.account_balance_wallet),
+                label: 'Doanh số',
               ),
               NavigationDestination(
                 icon: Icon(Icons.person_outline),
                 selectedIcon: Icon(Icons.person),
-                label: 'Ho so',
+                label: 'Hồ sơ',
               ),
             ],
           ),

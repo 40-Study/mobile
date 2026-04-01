@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/teacher/data/repository/teacher_repository.dart';
+import 'package:study/features/weather/presentation/widgets/weather_background_wrapper.dart';
 
 class TeacherCreateClassScreen extends StatefulWidget {
   const TeacherCreateClassScreen({super.key, this.classData});
@@ -61,9 +62,10 @@ class _TeacherCreateClassScreenState extends State<TeacherCreateClassScreen> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor: cs.surface,
-      appBar: AppBar(
+    return WeatherBackgroundWrapper(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
         title: Text(_isEditing ? 'Chinh sua lop hoc' : 'Tao lop hoc moi'),
         centerTitle: true,
         actions: [
@@ -225,6 +227,7 @@ class _TeacherCreateClassScreenState extends State<TeacherCreateClassScreen> {
             const SizedBox(height: 16),
           ],
         ),
+      ),
       ),
     );
   }

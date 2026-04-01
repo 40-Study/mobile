@@ -5,6 +5,15 @@ abstract class TeacherRepository {
   /// Fetches dashboard statistics.
   Future<TeacherStatsModel> getStats();
 
+  /// Fetches wallet information.
+  Future<TeacherWalletModel> getWallet();
+
+  /// Fetches pending assignments to grade.
+  Future<List<PendingAssignmentModel>> getPendingAssignments({int limit = 5});
+
+  /// Fetches recent activities.
+  Future<List<TeacherActivityModel>> getActivities({int limit = 10});
+
   /// Fetches recent notifications.
   Future<List<TeacherNotificationModel>> getNotifications({int limit = 5});
 
@@ -131,4 +140,11 @@ abstract class TeacherRepository {
     String classId,
     List<Map<String, dynamic>> attendances,
   );
+
+  // ==========================================================================
+  // STUDENT DETAIL
+  // ==========================================================================
+
+  /// Fetches detailed student information including parent info and assignments.
+  Future<StudentDetailModel> getStudentDetail(String classId, String studentId);
 }

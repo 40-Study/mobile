@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/constants/dimens.dart';
 import 'package:study/features/teacher/bloc/classes/teacher_classes_cubit.dart';
 import 'package:study/features/teacher/data/models/models.dart';
-import 'package:study/features/teacher/presentation/widgets/widgets.dart';
+import 'package:study/features/weather/presentation/widgets/weather_content_overlay.dart';
 
 class TeacherClassesScreen extends StatefulWidget {
   const TeacherClassesScreen({super.key});
@@ -12,15 +13,6 @@ class TeacherClassesScreen extends StatefulWidget {
 }
 
 class _TeacherClassesScreenState extends State<TeacherClassesScreen> {
-  static const _filters = [
-    FilterItem(label: 'Tat ca', value: 'all'),
-    FilterItem(label: 'Dang hoat dong', value: 'active'),
-    FilterItem(label: 'Da hoan thanh', value: 'completed'),
-    FilterItem(label: 'Da huy', value: 'cancelled'),
-  ];
-
-  final _searchController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
@@ -28,224 +20,29 @@ class _TeacherClassesScreenState extends State<TeacherClassesScreen> {
   }
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return Scaffold(
-      backgroundColor: cs.surface,
-      appBar: TeacherAppBar(
-        title: 'Quan ly lop hoc',
-        showSearch: false,
-        actions: [
-          IconButton(
-            onPressed: () {
-              // Navigate to create class
-              Navigator.pushNamed(context, '/teacher/classes/create');
-            },
-            icon: Icon(Icons.add_circle_outline, color: cs.primary),
-          ),
-        ],
+      backgroundColor: Colors.transparent,
+      body: BlocBuilder<TeacherClassesCubit, TeacherClassesState>(
+        builder: (context, state) {
+          return switch (state) {
+            TeacherClassesInitial() ||
+            TeacherClassesLoading() =>
+              const Center(child: CircularProgressIndicator()),
+            TeacherClassesLoaded() => RefreshIndicator(
+                onRefresh: context.read<TeacherClassesCubit>().refresh,
+                child: _ClassesContent(state: state),
+              ),
+            TeacherClassesFailure(:final message) =>
+              _buildErrorState(context, message),
+          };
+        },
       ),
-      body: RefreshIndicator(
-        onRefresh: () => context.read<TeacherClassesCubit>().refresh(),
-        child: Column(
-          children: [
-            // Search bar
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Tim kiem lop hoc...',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          onPressed: () {
-                            _searchController.clear();
-                            context.read<TeacherClassesCubit>().search('');
-                          },
-                          icon: const Icon(Icons.clear),
-                        )
-                      : null,
-                  filled: true,
-                  fillColor: cs.surfaceContainerHighest.withValues(alpha: 0.5),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-                onChanged: (value) {
-                  context.read<TeacherClassesCubit>().search(value);
-                },
-              ),
-            ),
-
-            // Stats card
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [cs.primary, cs.primary.withValues(alpha: 0.8)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: BlocSelector<TeacherClassesCubit, TeacherClassesState,
-                  _ClassStats>(
-                selector: (state) {
-                  if (state is TeacherClassesLoaded) {
-                    return _ClassStats(
-                      total: state.classes.length,
-                      active: state.activeCount,
-                      students: state.totalStudents,
-                    );
-                  }
-                  return const _ClassStats(total: 0, active: 0, students: 0);
-                },
-                builder: (context, stats) {
-                  return Row(
-                    children: [
-                      _StatItem(
-                        label: 'Tong lop',
-                        value: '${stats.total}',
-                        icon: Icons.class_outlined,
-                      ),
-                      const SizedBox(width: 24),
-                      _StatItem(
-                        label: 'Dang hoat dong',
-                        value: '${stats.active}',
-                        icon: Icons.play_circle_outline,
-                      ),
-                      const SizedBox(width: 24),
-                      _StatItem(
-                        label: 'Hoc vien',
-                        value: '${stats.students}',
-                        icon: Icons.people_outline,
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Filter chips
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: BlocSelector<TeacherClassesCubit, TeacherClassesState,
-                  String>(
-                selector: (state) => state.selectedFilter,
-                builder: (context, selectedFilter) {
-                  return FilterChipBar(
-                    filters: _filters,
-                    selectedFilter: selectedFilter,
-                    onFilterChanged:
-                        context.read<TeacherClassesCubit>().changeFilter,
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Classes list
-            Expanded(
-              child: BlocBuilder<TeacherClassesCubit, TeacherClassesState>(
-                builder: (context, state) {
-                  return switch (state) {
-                    TeacherClassesInitial() ||
-                    TeacherClassesLoading() =>
-                      const Center(child: CircularProgressIndicator()),
-                    TeacherClassesLoaded(:final classes) => classes.isEmpty
-                        ? _buildEmptyState(context)
-                        : ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            itemCount: classes.length,
-                            itemBuilder: (context, index) {
-                              final classModel = classes[index];
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: _ClassCard(
-                                  classModel: classModel,
-                                  onTap: () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      '/teacher/classes/detail',
-                                      arguments: classModel.id,
-                                    );
-                                  },
-                                  onEdit: () {
-                                    Navigator.pushNamed(
-                                      context,
-                                      '/teacher/classes/edit',
-                                      arguments: classModel,
-                                    );
-                                  },
-                                  onDelete: () {
-                                    _showDeleteDialog(context, classModel);
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                    TeacherClassesFailure(:final message) =>
-                      _buildErrorState(context, message),
-                  };
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.pushNamed(context, '/teacher/classes/create');
         },
-        icon: const Icon(Icons.add),
-        label: const Text('Tao lop moi'),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.class_outlined,
-            size: 64,
-            color: cs.onSurfaceVariant,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Chua co lop hoc nao',
-            style: tt.titleMedium?.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tao lop hoc dau tien cua ban',
-            style: tt.bodyMedium?.copyWith(
-              color: cs.onSurfaceVariant.withValues(alpha: 0.7),
-            ),
-          ),
-        ],
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -263,35 +60,7 @@ class _TeacherClassesScreenState extends State<TeacherClassesScreen> {
           const SizedBox(height: 16),
           FilledButton(
             onPressed: () => context.read<TeacherClassesCubit>().loadClasses(),
-            child: const Text('Thu lai'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showDeleteDialog(BuildContext context, ClassModel classModel) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Xac nhan xoa'),
-        content: Text(
-          'Ban co chac chan muon xoa lop "${classModel.displayName}"?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Huy'),
-          ),
-          FilledButton(
-            onPressed: () {
-              context.read<TeacherClassesCubit>().deleteClass(classModel.id);
-              Navigator.pop(ctx);
-            },
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: const Text('Xoa'),
+            child: const Text('Thử lại'),
           ),
         ],
       ),
@@ -299,47 +68,193 @@ class _TeacherClassesScreenState extends State<TeacherClassesScreen> {
   }
 }
 
-class _ClassStats {
-  const _ClassStats({
-    required this.total,
-    required this.active,
-    required this.students,
-  });
+class _ClassesContent extends StatelessWidget {
+  const _ClassesContent({required this.state});
 
-  final int total;
-  final int active;
-  final int students;
-}
-
-class _StatItem extends StatelessWidget {
-  const _StatItem({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
+  final TeacherClassesLoaded state;
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
+    final textColor = context.weatherTextColor;
+    final activeClasses =
+        state.classes.where((c) => c.classStatus == ClassStatus.active).toList();
+    final todayClasses = activeClasses.where((c) {
+      if (c.nextScheduleDate == null) return false;
+      final now = DateTime.now();
+      final today =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      return c.nextScheduleDate == today;
+    }).toList();
+    final upcomingClasses = activeClasses.where((c) {
+      if (c.nextScheduleDate == null) return true;
+      final now = DateTime.now();
+      final today =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      return c.nextScheduleDate != today;
+    }).toList();
+
+    return SafeArea(
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(bottom: 100),
         children: [
-          Icon(icon, color: Colors.white, size: 24),
-          const SizedBox(height: 4),
+          // Header greeting
+          _GreetingHeader(
+            todayClassCount: todayClasses.length,
+            textColor: textColor,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          // Stats cards
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: AppLayout.screenMargin),
+            child: _StatsRow(
+              totalClasses: state.classes.length,
+              totalStudents: state.totalStudents,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+
+          // Active classes section
+          if (todayClasses.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppLayout.screenMargin),
+              child: _SectionHeader(
+                title: 'Lớp học đang hoạt động',
+                actionLabel: 'Xem tất cả',
+                onActionTap: () {},
+                textColor: textColor,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // Featured active class (first one)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppLayout.screenMargin),
+              child: _ActiveClassCard(
+                classModel: todayClasses.first,
+                isInProgress: true,
+                onTap: () => _navigateToDetail(context, todayClasses.first),
+                onAttendance: () =>
+                    _navigateToAttendance(context, todayClasses.first),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+
+          // Upcoming classes
+          if (upcomingClasses.isNotEmpty || todayClasses.length > 1) ...[
+            ...todayClasses.skip(1).map(
+                  (c) => Padding(
+                    padding: const EdgeInsets.only(
+                      left: AppLayout.screenMargin,
+                      right: AppLayout.screenMargin,
+                      bottom: AppSpacing.md,
+                    ),
+                    child: _UpcomingClassCard(
+                      classModel: c,
+                      onTap: () => _navigateToDetail(context, c),
+                    ),
+                  ),
+                ),
+            ...upcomingClasses.take(3).map(
+                  (c) => Padding(
+                    padding: const EdgeInsets.only(
+                      left: AppLayout.screenMargin,
+                      right: AppLayout.screenMargin,
+                      bottom: AppSpacing.md,
+                    ),
+                    child: _UpcomingClassCard(
+                      classModel: c,
+                      onTap: () => _navigateToDetail(context, c),
+                    ),
+                  ),
+                ),
+          ],
+
+          const SizedBox(height: AppSpacing.lg),
+
+          // Grading progress card
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: AppLayout.screenMargin),
+            child: _GradingProgressCard(
+              title: 'Tiến độ chấm bài',
+              assignmentName: 'Bài tập Chương 2',
+              progress: 0.75,
+              onContinue: () {},
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToDetail(BuildContext context, ClassModel classModel) {
+    Navigator.pushNamed(
+      context,
+      '/teacher/classes/detail',
+      arguments: classModel.id,
+    );
+  }
+
+  void _navigateToAttendance(BuildContext context, ClassModel classModel) {
+    Navigator.pushNamed(
+      context,
+      '/teacher/attendance',
+      arguments: classModel.id,
+    );
+  }
+}
+
+class _GreetingHeader extends StatelessWidget {
+  const _GreetingHeader({
+    required this.todayClassCount,
+    required this.textColor,
+  });
+
+  final int todayClassCount;
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final hour = DateTime.now().hour;
+    String greeting;
+    if (hour < 12) {
+      greeting = 'Chào buổi sáng';
+    } else if (hour < 18) {
+      greeting = 'Chào buổi chiều';
+    } else {
+      greeting = 'Chào buổi tối';
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        AppLayout.screenMargin,
+        AppSpacing.lg,
+        AppLayout.screenMargin,
+        0,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Text(
-            value,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+            '$greeting, Giảng viên!',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
                 ),
           ),
+          const SizedBox(height: AppSpacing.xs),
           Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.8),
+            todayClassCount > 0
+                ? 'Hôm nay bạn có $todayClassCount lớp học sắp diễn ra.'
+                : 'Hôm nay bạn không có lớp học nào.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: textColor.withValues(alpha: 0.8),
                 ),
           ),
         ],
@@ -348,18 +263,164 @@ class _StatItem extends StatelessWidget {
   }
 }
 
-class _ClassCard extends StatelessWidget {
-  const _ClassCard({
+class _StatsRow extends StatelessWidget {
+  const _StatsRow({
+    required this.totalClasses,
+    required this.totalStudents,
+  });
+
+  final int totalClasses;
+  final int totalStudents;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Row(
+      children: [
+        Expanded(
+          child: _StatCard(
+            icon: Icons.school_outlined,
+            label: 'Tổng số lớp',
+            value: totalClasses.toString(),
+            gradient: LinearGradient(
+              colors: [cs.primary, cs.primary.withValues(alpha: 0.8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: _StatCard(
+            icon: Icons.people_outline,
+            label: 'Học sinh',
+            value: totalStudents.toString(),
+            gradient: LinearGradient(
+              colors: [
+                cs.primary.withValues(alpha: 0.3),
+                cs.primary.withValues(alpha: 0.15),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            isLight: true,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  const _StatCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.gradient,
+    this.isLight = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Gradient gradient;
+  final bool isLight;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final textColor = isLight ? cs.primary : Colors.white;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: textColor, size: 28),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            label,
+            style: TextStyle(
+              color: textColor.withValues(alpha: 0.9),
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            value,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 32,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.title,
+    this.actionLabel,
+    this.onActionTap,
+    required this.textColor,
+  });
+
+  final String title;
+  final String? actionLabel;
+  final VoidCallback? onActionTap;
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: textColor,
+              ),
+        ),
+        if (actionLabel != null)
+          GestureDetector(
+            onTap: onActionTap,
+            child: Text(
+              actionLabel!,
+              style: TextStyle(
+                color: cs.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _ActiveClassCard extends StatelessWidget {
+  const _ActiveClassCard({
     required this.classModel,
+    required this.isInProgress,
     required this.onTap,
-    required this.onEdit,
-    required this.onDelete,
+    required this.onAttendance,
   });
 
   final ClassModel classModel;
+  final bool isInProgress;
   final VoidCallback onTap;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback onAttendance;
 
   @override
   Widget build(BuildContext context) {
@@ -369,107 +430,161 @@ class _ClassCard extends StatelessWidget {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: cs.outlineVariant.withValues(alpha: 0.5),
-        ),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header row
+              // Status badge and icon
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        'ĐANG HỌC',
+                        style: tt.labelSmall?.copyWith(
+                          color: Colors.green,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
                   Container(
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
                       color: cs.primaryContainer,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
-                      Icons.class_outlined,
+                      classModel.isOnline
+                          ? Icons.videocam_outlined
+                          : Icons.calculate_outlined,
                       color: cs.primary,
+                      size: 24,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+
+              // Class name
+              Text(
+                classModel.displayName,
+                style: tt.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // Students and schedule row
+              Row(
+                children: [
+                  // Student avatars
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(
-                          classModel.displayName,
-                          style: tt.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (classModel.courseName != null)
-                          Text(
-                            classModel.courseName!,
-                            style: tt.bodySmall?.copyWith(
-                              color: cs.onSurfaceVariant,
+                        _buildAvatarStack(context),
+                        if (classModel.studentCount > 3) ...[
+                          const SizedBox(width: AppSpacing.xs),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            decoration: BoxDecoration(
+                              color: cs.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '+${classModel.studentCount - 3}',
+                              style: tt.labelSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
+                        ],
                       ],
                     ),
                   ),
-                  _StatusChip(status: classModel.classStatus),
+                  // Schedule
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'LỊCH TIẾP THEO',
+                        style: tt.labelSmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        classModel.nextScheduleTime ?? '—',
+                        style: tt.titleMedium?.copyWith(
+                          color: cs.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-              const SizedBox(height: 16),
 
-              // Info row
-              Row(
-                children: [
-                  _InfoChip(
-                    icon: Icons.people_outline,
-                    label: '${classModel.studentCount}/${classModel.maxStudents}',
-                  ),
-                  const SizedBox(width: 12),
-                  _InfoChip(
-                    icon: Icons.calendar_today_outlined,
-                    label: classModel.dateRange,
-                  ),
-                ],
+              const SizedBox(height: AppSpacing.lg),
+
+              // Divider
+              Container(
+                height: 1,
+                color: cs.outlineVariant.withValues(alpha: 0.3),
               ),
+              const SizedBox(height: AppSpacing.lg),
 
-              // Progress bar
-              if (classModel.maxStudents > 0) ...[
-                const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: classModel.fillPercentage / 100,
-                    backgroundColor: cs.surfaceContainerHighest,
-                    color: classModel.isFull ? cs.error : cs.primary,
-                    minHeight: 4,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 12),
-
-              // Actions
+              // Location and action
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton.icon(
-                    onPressed: onEdit,
-                    icon: const Icon(Icons.edit_outlined, size: 18),
-                    label: const Text('Chinh sua'),
+                  Icon(
+                    Icons.location_on_outlined,
+                    size: 18,
+                    color: cs.onSurfaceVariant,
                   ),
-                  TextButton.icon(
-                    onPressed: onDelete,
-                    icon: Icon(Icons.delete_outline, size: 18, color: cs.error),
-                    label: Text('Xoa', style: TextStyle(color: cs.error)),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: Text(
+                      classModel.nextScheduleRoom ?? 'Chưa xác định',
+                      style: tt.bodyMedium?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  FilledButton(
+                    onPressed: onAttendance,
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.xl,
+                        vertical: AppSpacing.sm,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    child: const Text('Điểm danh'),
                   ),
                 ],
               ),
@@ -479,81 +594,296 @@ class _ClassCard extends StatelessWidget {
       ),
     );
   }
-}
 
-class _StatusChip extends StatelessWidget {
-  const _StatusChip({required this.status});
-
-  final ClassStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    Color backgroundColor;
-    Color textColor;
-    String label;
-
+  Widget _buildAvatarStack(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    switch (status) {
-      case ClassStatus.active:
-        backgroundColor = cs.tertiary.withValues(alpha: 0.1);
-        textColor = cs.tertiary;
-        label = 'Hoat dong';
-      case ClassStatus.inactive:
-        backgroundColor = cs.secondary.withValues(alpha: 0.1);
-        textColor = cs.secondary;
-        label = 'Tam dung';
-      case ClassStatus.completed:
-        backgroundColor = cs.primary.withValues(alpha: 0.1);
-        textColor = cs.primary;
-        label = 'Hoan thanh';
-      case ClassStatus.cancelled:
-        backgroundColor = cs.error.withValues(alpha: 0.1);
-        textColor = cs.error;
-        label = 'Da huy';
-    }
+    final colors = [
+      cs.primary,
+      cs.tertiary,
+      cs.secondary,
+    ];
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: textColor,
-              fontWeight: FontWeight.w500,
+    return SizedBox(
+      width: 76,
+      height: 32,
+      child: Stack(
+        children: List.generate(
+          3,
+          (index) => Positioned(
+            left: index * 22.0,
+            child: CircleAvatar(
+              radius: 16,
+              backgroundColor: colors[index % colors.length],
+              child: Text(
+                ['A', 'B', 'C'][index],
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
+          ),
+        ),
       ),
     );
   }
 }
 
-class _InfoChip extends StatelessWidget {
-  const _InfoChip({
-    required this.icon,
-    required this.label,
+class _UpcomingClassCard extends StatelessWidget {
+  const _UpcomingClassCard({
+    required this.classModel,
+    required this.onTap,
   });
 
-  final IconData icon;
-  final String label;
+  final ClassModel classModel;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 16, color: cs.onSurfaceVariant),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: cs.onSurfaceVariant,
+    String dateLabel = 'SẮP TỚI';
+    if (classModel.nextScheduleDate != null) {
+      final date = DateTime.tryParse(classModel.nextScheduleDate!);
+      if (date != null) {
+        final weekdays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+        final months = [
+          '',
+          'TH 1',
+          'TH 2',
+          'TH 3',
+          'TH 4',
+          'TH 5',
+          'TH 6',
+          'TH 7',
+          'TH 8',
+          'TH 9',
+          'TH 10',
+          'TH 11',
+          'TH 12',
+        ];
+        dateLabel =
+            '${weekdays[date.weekday % 7]}, ${date.day} ${months[date.month]}';
+      }
+    }
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Row(
+            children: [
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Status badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: cs.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'SẮP TỚI',
+                        style: tt.labelSmall?.copyWith(
+                          color: cs.primary,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+
+                    // Class name
+                    Text(
+                      classModel.displayName,
+                      style: tt.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+
+                    // Student count and date
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.people_outline,
+                          size: 16,
+                          color: cs.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${classModel.studentCount} Học sinh',
+                          style: tt.bodySmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                        const Spacer(),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              dateLabel.toUpperCase(),
+                              style: tt.labelSmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                                fontSize: 10,
+                              ),
+                            ),
+                            Text(
+                              classModel.nextScheduleTime ?? '—',
+                              style: tt.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: AppSpacing.md),
+
+              // Icon
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: cs.primaryContainer,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  classModel.isOnline
+                      ? Icons.videocam_outlined
+                      : Icons.science_outlined,
+                  color: cs.primary,
+                  size: 24,
+                ),
+              ),
+            ],
+          ),
         ),
-      ],
+      ),
+    );
+  }
+}
+
+class _GradingProgressCard extends StatelessWidget {
+  const _GradingProgressCard({
+    required this.title,
+    required this.assignmentName,
+    required this.progress,
+    required this.onContinue,
+  });
+
+  final String title;
+  final String assignmentName;
+  final double progress;
+  final VoidCallback onContinue;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF1E3A5F),
+            Color(0xFF2C5282),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: tt.titleMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Icon(
+                Icons.assignment_outlined,
+                color: Colors.white.withValues(alpha: 0.6),
+                size: 32,
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                assignmentName,
+                style: tt.bodyMedium?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
+              ),
+              Text(
+                '${(progress * 100).toInt()}%',
+                style: tt.bodyMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          // Progress bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.white.withValues(alpha: 0.2),
+              color: cs.primary,
+              minHeight: 8,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+
+          // Continue button
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: onContinue,
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Tiếp tục chấm bài'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

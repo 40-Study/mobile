@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/constants/dimens.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/auth/bloc/account/account_cubit.dart';
 import 'package:study/features/auth/bloc/account/account_state.dart';
@@ -11,6 +12,7 @@ import 'package:study/features/auth/presentation/utils/role_utils.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/teacher/presentation/screens/switch_role_screen.dart';
 import 'package:study/features/weather/weather.dart';
+import 'package:study/theme/app_colors.dart';
 
 enum AccountRoleType { teacher, student, parent }
 
@@ -33,6 +35,7 @@ class _AccountScreenState extends State<AccountScreen>
       case AccountRoleType.student:
         return 0;
       case AccountRoleType.teacher:
+        return 0; // Teacher now uses single-page profile design
       case AccountRoleType.parent:
         return 3;
     }
@@ -68,8 +71,7 @@ class _AccountScreenState extends State<AccountScreen>
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: const Text('Cập nhật thành công'),
-                  backgroundColor:
-                      Theme.of(context).colorScheme.tertiary,
+                  backgroundColor: Theme.of(context).colorScheme.tertiary,
                 ),
               );
               context.read<AuthBloc>().add(AuthUserUpdated(state.user));
@@ -94,6 +96,12 @@ class _AccountScreenState extends State<AccountScreen>
                 final user = authState.user;
                 final profile = authState.activeProfile;
 
+                // Teacher uses new beautiful single-page profile
+                if (widget.roleType == AccountRoleType.teacher) {
+                  return _buildTeacherProfile(context, user, profile);
+                }
+
+                // Student and Parent use the original tabbed layout
                 return NestedScrollView(
                   headerSliverBuilder: (context, innerBoxIsScrolled) => [
                     _buildSliverAppBar(context, user, profile),
@@ -107,6 +115,428 @@ class _AccountScreenState extends State<AccountScreen>
       ),
     );
   }
+
+  // ══════════════════════════════════════════════════════════════
+  //  TEACHER PROFILE - New Beautiful Design
+  // ══════════════════════════════════════════════════════════════
+
+  Widget _buildTeacherProfile(
+    BuildContext context,
+    UserModel user,
+    ProfileModel? profile,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    final textColor = context.weatherTextColor;
+    final secondaryColor = context.weatherTextColorSecondary;
+
+    return SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(
+          AppLayout.screenMargin,
+          AppSpacing.md,
+          AppLayout.screenMargin,
+          100,
+        ),
+        children: [
+          // Settings button row
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              onPressed: () => _showOptionsMenu(context),
+              icon: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: cs.surface.withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                  boxShadow: cs.shadowCard,
+                ),
+                child: Icon(
+                  Icons.more_horiz_rounded,
+                  color: cs.onSurface,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+
+          // Avatar Section
+          _buildTeacherAvatarSection(context, user, profile, textColor),
+          const SizedBox(height: AppSpacing.xl),
+
+          // Skills Chips
+          _buildSkillsSection(context),
+          const SizedBox(height: AppSpacing.xxl),
+
+          // Stats Row
+          _buildStatsCard(context),
+          const SizedBox(height: AppSpacing.xxxl),
+
+          // About Me Section
+          _buildAboutSection(context, user, textColor, secondaryColor),
+          const SizedBox(height: AppSpacing.xxxl),
+
+          // Featured Courses Section
+          _buildFeaturedCoursesSection(context, textColor),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTeacherAvatarSection(
+    BuildContext context,
+    UserModel user,
+    ProfileModel? profile,
+    Color textColor,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Column(
+      children: [
+        // Avatar with gradient ring
+        Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [cs.primary, cs.tertiary, cs.primary],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: cs.primary.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: cs.surface,
+                ),
+                child: CircleAvatar(
+                  radius: 56,
+                  backgroundColor: cs.surfaceTintedPrimary,
+                  backgroundImage: user.avatarUrl != null
+                      ? NetworkImage(user.avatarUrl!)
+                      : null,
+                  child: user.avatarUrl == null
+                      ? Text(
+                          _getInitials(user.fullName ?? user.username),
+                          style: tt.headlineMedium?.copyWith(
+                            color: cs.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : null,
+                ),
+              ),
+            ),
+            // Camera button
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: GestureDetector(
+                onTap: _changeAvatar,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: cs.primary,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: cs.surface, width: 3),
+                    boxShadow: cs.shadowCard,
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt_rounded,
+                    size: 16,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+
+        // Verified badge
+        Icon(Icons.verified_rounded, size: 24, color: cs.primary),
+        const SizedBox(height: AppSpacing.md),
+
+        // Name
+        Text(
+          user.fullName ?? user.username,
+          style: tt.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            color: textColor,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.xs),
+
+        // Title / Role
+        Text(
+          'GIẢNG VIÊN CHUYÊN NGHIỆP',
+          style: tt.bodyMedium?.copyWith(
+            color: context.weatherTextColorSecondary,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSkillsSection(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    final skills = ['Flutter', 'UI/UX Design', 'Dart', 'Figma', 'Data Science'];
+
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
+      children: skills.map((skill) {
+        return Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLowest,
+            borderRadius: AppRadius.borderXxl,
+            border: Border.all(color: cs.outline),
+            boxShadow: cs.shadowCard,
+          ),
+          child: Text(
+            skill,
+            style: tt.labelMedium?.copyWith(
+              color: cs.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildStatsCard(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        vertical: AppSpacing.lg,
+        horizontal: AppSpacing.lg,
+      ),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
+        borderRadius: AppRadius.borderXl,
+        border: Border.all(color: cs.outline),
+        boxShadow: cs.shadowCard,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _TeacherStatColumn(
+              value: '5.2k',
+              label: 'HỌC VIÊN',
+              showStar: false,
+            ),
+          ),
+          Container(width: 1, height: 40, color: cs.outlineVariant),
+          Expanded(
+            child: _TeacherStatColumn(
+              value: '14',
+              label: 'KHÓA HỌC',
+              showStar: false,
+            ),
+          ),
+          Container(width: 1, height: 40, color: cs.outlineVariant),
+          Expanded(
+            child: _TeacherStatColumn(
+              value: '4.8',
+              label: 'ĐÁNH GIÁ',
+              showStar: true,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAboutSection(
+    BuildContext context,
+    UserModel user,
+    Color textColor,
+    Color secondaryColor,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 24,
+              decoration: BoxDecoration(
+                color: cs.primary,
+                borderRadius: AppRadius.borderXs,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Text(
+              'Giới thiệu',
+              style: tt.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLowest,
+            borderRadius: AppRadius.borderLg,
+            border: Border.all(color: cs.outline),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Giảng viên chuyên ngành Công nghệ thông tin với hơn 5 năm '
+                'kinh nghiệm giảng dạy UI/UX Design và lập trình Flutter. '
+                'Đam mê chia sẻ kiến thức và giúp học viên phát triển kỹ năng thực tế.',
+                style: tt.bodyMedium?.copyWith(
+                  color: cs.onSurfaceVariant,
+                  height: 1.6,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              _buildInfoRow(context, Icons.email_outlined, user.email),
+              if (user.phone != null && user.phone!.isNotEmpty)
+                _buildInfoRow(context, Icons.phone_outlined, user.phone!),
+              _buildInfoRow(
+                context,
+                Icons.calendar_today_outlined,
+                'Tham gia từ ${_formatJoinDate(user.createdAt)}',
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(BuildContext context, IconData icon, String text) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: cs.primary),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              text,
+              style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeaturedCoursesSection(BuildContext context, Color textColor) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 24,
+              decoration: BoxDecoration(
+                color: cs.primary,
+                borderRadius: AppRadius.borderXs,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                'Khóa học nổi bật',
+                style: tt.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {},
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Xem tất cả',
+                    style: tt.labelMedium?.copyWith(
+                      color: cs.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.arrow_forward, size: 16, color: cs.primary),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        const _FeaturedCourseCard(
+          title: 'Thiết kế UI/UX Nâng cao',
+          duration: '24 bài học',
+          price: '1.200.000đ',
+          rating: 4.9,
+          students: 156,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        const _FeaturedCourseCard(
+          title: 'Flutter từ Zero đến Hero',
+          duration: '36 bài học',
+          price: '1.500.000đ',
+          rating: 4.8,
+          students: 234,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        const _FeaturedCourseCard(
+          title: 'Data Science với Python',
+          duration: '28 bài học',
+          price: '1.800.000đ',
+          rating: 4.7,
+          students: 89,
+        ),
+      ],
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  STUDENT & PARENT PROFILE - Original Design with SliverAppBar
+  // ══════════════════════════════════════════════════════════════
 
   Widget _buildSliverAppBar(
     BuildContext context,
@@ -130,8 +560,7 @@ class _AccountScreenState extends State<AccountScreen>
               color: Colors.black.withValues(alpha: 0.3),
               shape: BoxShape.circle,
             ),
-            child:
-                const Icon(Icons.more_horiz, color: Colors.white, size: 20),
+            child: const Icon(Icons.more_horiz, color: Colors.white, size: 20),
           ),
           onPressed: () => _showOptionsMenu(context),
         ),
@@ -167,13 +596,11 @@ class _AccountScreenState extends State<AccountScreen>
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.camera_alt,
-                              color: Colors.white, size: 16),
+                          Icon(Icons.camera_alt, color: Colors.white, size: 16),
                           SizedBox(width: 4),
                           Text(
                             'Sửa ảnh bìa',
-                            style:
-                                TextStyle(color: Colors.white, fontSize: 12),
+                            style: TextStyle(color: Colors.white, fontSize: 12),
                           ),
                         ],
                       ),
@@ -249,8 +676,7 @@ class _AccountScreenState extends State<AccountScreen>
                               decoration: BoxDecoration(
                                 color: cs.primary,
                                 shape: BoxShape.circle,
-                                border:
-                                    Border.all(color: cs.surface, width: 2),
+                                border: Border.all(color: cs.surface, width: 2),
                               ),
                               child: const Icon(
                                 Icons.camera_alt,
@@ -268,7 +694,6 @@ class _AccountScreenState extends State<AccountScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Name + verified
                           Row(
                             children: [
                               Flexible(
@@ -283,12 +708,10 @@ class _AccountScreenState extends State<AccountScreen>
                                 ),
                               ),
                               const SizedBox(width: 6),
-                              Icon(Icons.verified,
-                                  size: 20, color: cs.primary),
+                              Icon(Icons.verified, size: 20, color: cs.primary),
                             ],
                           ),
                           const SizedBox(height: 6),
-                          // Role badge
                           if (profile != null)
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -319,7 +742,6 @@ class _AccountScreenState extends State<AccountScreen>
                               ),
                             ),
                           const SizedBox(height: 16),
-                          // Stats row
                           Row(
                             children: [
                               _buildStat(tt, cs, '12', 'Khóa học'),
@@ -414,10 +836,7 @@ class _AccountScreenState extends State<AccountScreen>
     }
   }
 
-  static List<Widget> _tabViewsForRole(
-    AccountRoleType role,
-    UserModel user,
-  ) {
+  List<Widget> _tabViewsForRole(AccountRoleType role, UserModel user) {
     switch (role) {
       case AccountRoleType.teacher:
         return [
@@ -448,6 +867,16 @@ class _AccountScreenState extends State<AccountScreen>
     return name.isNotEmpty ? name[0].toUpperCase() : '?';
   }
 
+  String _formatJoinDate(String? dateStr) {
+    if (dateStr == null) return 'N/A';
+    try {
+      final date = DateTime.parse(dateStr);
+      return 'tháng ${date.month}/${date.year}';
+    } catch (_) {
+      return dateStr;
+    }
+  }
+
   Widget _buildStat(TextTheme tt, ColorScheme cs, String value, String label) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -461,9 +890,7 @@ class _AccountScreenState extends State<AccountScreen>
         ),
         Text(
           label,
-          style: tt.labelSmall?.copyWith(
-            color: cs.onSurfaceVariant,
-          ),
+          style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
         ),
       ],
     );
@@ -476,7 +903,7 @@ class _AccountScreenState extends State<AccountScreen>
       context: context,
       backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => SafeArea(
         child: Column(
@@ -491,9 +918,9 @@ class _AccountScreenState extends State<AccountScreen>
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             ListTile(
-              leading: const Icon(Icons.edit_outlined),
+              leading: _buildMenuIcon(context, Icons.edit_outlined),
               title: const Text('Chỉnh sửa trang cá nhân'),
               onTap: () {
                 Navigator.pop(context);
@@ -501,13 +928,13 @@ class _AccountScreenState extends State<AccountScreen>
               },
             ),
             ListTile(
-              leading: const Icon(Icons.share_outlined),
+              leading: _buildMenuIcon(context, Icons.share_outlined),
               title: const Text('Chia sẻ trang cá nhân'),
               onTap: () => Navigator.pop(context),
             ),
-            const Divider(height: 1),
+            const Divider(height: 1, indent: 16, endIndent: 16),
             ListTile(
-              leading: const Icon(Icons.swap_horiz),
+              leading: _buildMenuIcon(context, Icons.swap_horiz),
               title: const Text('Chuyển đổi vai trò'),
               onTap: () {
                 Navigator.pop(context);
@@ -520,7 +947,7 @@ class _AccountScreenState extends State<AccountScreen>
               },
             ),
             ListTile(
-              leading: const Icon(Icons.security),
+              leading: _buildMenuIcon(context, Icons.security),
               title: const Text('Bảo mật tài khoản'),
               onTap: () {
                 Navigator.pop(context);
@@ -533,28 +960,49 @@ class _AccountScreenState extends State<AccountScreen>
               },
             ),
             ListTile(
-              leading: const Icon(Icons.qr_code),
+              leading: _buildMenuIcon(context, Icons.qr_code),
               title: const Text('Mã QR của tôi'),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(Icons.link),
+              leading: _buildMenuIcon(context, Icons.link),
               title: const Text('Sao chép liên kết'),
               onTap: () => Navigator.pop(context),
             ),
-            const Divider(height: 1),
+            const Divider(height: 1, indent: 16, endIndent: 16),
             ListTile(
-              leading: Icon(Icons.logout, color: cs.error),
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: cs.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.logout, color: cs.error, size: 20),
+              ),
               title: Text('Đăng xuất', style: TextStyle(color: cs.error)),
               onTap: () {
                 Navigator.pop(context);
                 _confirmLogout(context);
               },
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMenuIcon(BuildContext context, IconData icon) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: cs.primaryContainer,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(icon, color: cs.primary, size: 20),
     );
   }
 
@@ -599,7 +1047,351 @@ class _AccountScreenState extends State<AccountScreen>
 }
 
 // ══════════════════════════════════════════════════════════════
-//  TEACHER TABS
+//  TEACHER WIDGETS
+// ══════════════════════════════════════════════════════════════
+
+class _TeacherStatColumn extends StatelessWidget {
+  const _TeacherStatColumn({
+    required this.value,
+    required this.label,
+    required this.showStar,
+  });
+
+  final String value;
+  final String label;
+  final bool showStar;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              value,
+              style: tt.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: cs.onSurface,
+              ),
+            ),
+            if (showStar) ...[
+              const SizedBox(width: AppSpacing.xxs),
+              Icon(Icons.star_rounded, size: 18, color: cs.tertiary),
+            ],
+          ],
+        ),
+        const SizedBox(height: AppSpacing.xxs),
+        Text(
+          label,
+          style: tt.labelSmall?.copyWith(
+            color: cs.onSurfaceVariant,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FeaturedCourseCard extends StatelessWidget {
+  const _FeaturedCourseCard({
+    required this.title,
+    required this.duration,
+    required this.price,
+    required this.rating,
+    required this.students,
+  });
+
+  final String title;
+  final String duration;
+  final String price;
+  final double rating;
+  final int students;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Container(
+      padding: AppLayout.cardPaddingCompact,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(color: cs.outline),
+        boxShadow: cs.shadowCard,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [cs.primary, cs.primary.withValues(alpha: 0.7)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: AppRadius.borderMd,
+            ),
+            child: const Icon(
+              Icons.play_circle_filled_rounded,
+              size: 32,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: tt.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Row(
+                  children: [
+                    Icon(Icons.access_time_rounded,
+                        size: 14, color: cs.onSurfaceVariant),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text(duration,
+                        style: tt.labelSmall
+                            ?.copyWith(color: cs.onSurfaceVariant)),
+                    const SizedBox(width: AppSpacing.md),
+                    Icon(Icons.people_outline_rounded,
+                        size: 14, color: cs.onSurfaceVariant),
+                    const SizedBox(width: AppSpacing.xs),
+                    Text('$students',
+                        style: tt.labelSmall
+                            ?.copyWith(color: cs.onSurfaceVariant)),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Text(
+                      price,
+                      style: tt.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: cs.primary,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xxs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: cs.surfaceTintedPrimary,
+                        borderRadius: AppRadius.borderSm,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.star_rounded, size: 14, color: cs.tertiary),
+                          const SizedBox(width: AppSpacing.xxs),
+                          Text(
+                            '$rating',
+                            style: tt.labelSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  STUDENT TABS (Original)
+// ══════════════════════════════════════════════════════════════
+
+class _StudentOverviewTab extends StatelessWidget {
+  const _StudentOverviewTab({required this.user});
+
+  final UserModel user;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
+      builder: (context, state) {
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+          children: [
+            // BIO
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+              child: Column(
+                children: [
+                  Text(
+                    '"',
+                    style: tt.displaySmall?.copyWith(
+                      color: cs.primary.withValues(alpha: 0.3),
+                      fontFamily: 'Georgia',
+                      height: 0.5,
+                    ),
+                  ),
+                  Text(
+                    'Đam mê học hỏi về công nghệ và thiết kế sáng tạo.\n'
+                    'Hiện đang theo đuổi các khóa học về lập trình di động.',
+                    style: tt.bodyLarge?.copyWith(
+                      color: context.weatherTextColorThemed,
+                      fontStyle: FontStyle.italic,
+                      height: 1.6,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.location_on_outlined,
+                          size: 14, color: context.weatherTextColorThemedSecondary),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Hà Nội, Việt Nam',
+                        style: tt.labelMedium?.copyWith(
+                          color: context.weatherTextColorThemedSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // SKILLS
+            _PortfolioSection(
+              title: 'Kỹ năng',
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: const [
+                  _SkillTag(label: 'Flutter', level: 3),
+                  _SkillTag(label: 'UI/UX Design', level: 2),
+                  _SkillTag(label: 'Python', level: 2),
+                  _SkillTag(label: 'Data Science', level: 1),
+                  _SkillTag(label: 'React', level: 1),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // INTERESTS
+            _PortfolioSection(
+              title: 'Đang quan tâm',
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: const [
+                  _InterestChip(emoji: '🤖', label: 'AI/ML'),
+                  _InterestChip(emoji: '📱', label: 'Mobile Dev'),
+                  _InterestChip(emoji: '🎨', label: 'Design'),
+                  _InterestChip(emoji: '☁️', label: 'Cloud'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // ACHIEVEMENTS
+            _PortfolioSection(
+              title: 'Thành tựu nổi bật',
+              trailing: Text(
+                'Xem tất cả',
+                style: tt.labelSmall?.copyWith(
+                  color: cs.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              child: const Column(
+                children: [
+                  _AchievementRow(
+                    emoji: '🏆',
+                    title: 'Top 10 Learner',
+                    subtitle: 'Tháng 3/2024',
+                    color: Color(0xFFF59E0B),
+                  ),
+                  SizedBox(height: 12),
+                  _AchievementRow(
+                    emoji: '🎓',
+                    title: 'Flutter Professional',
+                    subtitle: 'Chứng chỉ • 40Study Academy',
+                    color: Color(0xFF2563EB),
+                  ),
+                  SizedBox(height: 12),
+                  _AchievementRow(
+                    emoji: '🔥',
+                    title: '30 Days Streak',
+                    subtitle: 'Hoàn thành 15/02/2024',
+                    color: Color(0xFFEF4444),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // CONTACT
+            _PortfolioSection(
+              title: 'Liên hệ',
+              child: Column(
+                children: [
+                  _ContactRow(icon: Icons.email_outlined, text: user.email),
+                  if (user.phone != null && user.phone!.isNotEmpty)
+                    _ContactRow(icon: Icons.phone_outlined, text: user.phone!),
+                  _ContactRow(
+                    icon: Icons.calendar_today_outlined,
+                    text: _formatJoinDate(user.createdAt),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+          ],
+        );
+      },
+    );
+  }
+
+  String _formatJoinDate(String? dateStr) {
+    if (dateStr == null) return 'Chưa cập nhật';
+    try {
+      final date = DateTime.parse(dateStr);
+      return 'Tham gia tháng ${date.month}/${date.year}';
+    } catch (_) {
+      return dateStr;
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TEACHER TABS (Original - for fallback)
 // ══════════════════════════════════════════════════════════════
 
 class _TeacherOverviewTab extends StatelessWidget {
@@ -615,7 +1407,6 @@ class _TeacherOverviewTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        // Revenue highlight card
         Container(
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
@@ -670,101 +1461,6 @@ class _TeacherOverviewTab extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                icon: Icons.school,
-                value: '8',
-                label: 'Khóa học',
-                color: Colors.blue,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                icon: Icons.people,
-                value: '156',
-                label: 'Học viên',
-                color: Colors.teal,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                icon: Icons.star,
-                value: '4.9',
-                label: 'Đánh giá',
-                color: Colors.amber,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        _SectionCard(
-          title: 'Giới thiệu',
-          icon: Icons.info_outline,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Giảng viên chuyên ngành Công nghệ thông tin. '
-                'Hơn 5 năm kinh nghiệm giảng dạy UI/UX và lập trình Flutter.',
-                style: tt.bodyMedium?.copyWith(
-                  color: cs.onSurfaceVariant,
-                  height: 1.6,
-                ),
-              ),
-              const SizedBox(height: 16),
-              _InfoRow(icon: Icons.email_outlined, text: user.email),
-              if (user.phone != null && user.phone!.isNotEmpty)
-                _InfoRow(icon: Icons.phone_outlined, text: user.phone!),
-              _InfoRow(
-                icon: Icons.calendar_today_outlined,
-                text: _formatJoinDate(user.createdAt),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        _SectionCard(
-          title: 'Chuyên môn',
-          icon: Icons.workspace_premium,
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: const [
-              _SkillChip(label: 'Flutter'),
-              _SkillChip(label: 'UI/UX Design'),
-              _SkillChip(label: 'Dart'),
-              _SkillChip(label: 'Figma'),
-              _SkillChip(label: 'Data Science'),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        _SectionCard(
-          title: 'Đánh giá từ học viên',
-          icon: Icons.rate_review_outlined,
-          child: Column(
-            children: [
-              _ReviewItem(
-                name: 'Nguyễn Văn A',
-                rating: 5,
-                comment: 'Giảng viên rất tận tâm, bài giảng dễ hiểu!',
-                time: '2 ngày trước',
-              ),
-              const Divider(height: 24),
-              _ReviewItem(
-                name: 'Trần Thị B',
-                rating: 5,
-                comment: 'Khóa Flutter rất hay, học xong làm được project thực tế.',
-                time: '1 tuần trước',
-              ),
-            ],
-          ),
-        ),
         const SizedBox(height: 32),
       ],
     );
@@ -774,207 +1470,64 @@ class _TeacherOverviewTab extends StatelessWidget {
 class _TeacherCoursesTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return ListView(
       padding: const EdgeInsets.all(16),
-      children: [
+      children: const [
         _CourseItem(
           title: 'Thiết kế UI/UX Nâng cao',
           progress: 1.0,
           subtitle: '32 học viên • 24 bài học',
         ),
-        const SizedBox(height: 12),
-        _CourseItem(
-          title: 'Nguyên lý Hệ điều hành',
-          progress: 0.7,
-          subtitle: '45 học viên • 18 bài học',
-        ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         _CourseItem(
           title: 'Flutter từ Zero đến Hero',
           progress: 0.45,
           subtitle: '78 học viên • 36 bài học',
         ),
-        const SizedBox(height: 12),
-        Center(
-          child: TextButton(
-            onPressed: () {},
-            child: Text(
-              'Xem tất cả khóa học',
-              style: TextStyle(color: cs.primary),
-            ),
-          ),
-        ),
-        const SizedBox(height: 32),
+        SizedBox(height: 32),
       ],
     );
   }
 }
 
+class _AchievementsTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Text('Thành tích'));
+  }
+}
+
 // ══════════════════════════════════════════════════════════════
-//  STUDENT TABS
+//  PARENT TABS
 // ══════════════════════════════════════════════════════════════
 
-class _StudentOverviewTab extends StatelessWidget {
-  const _StudentOverviewTab({required this.user});
-
+class _ParentOverviewTab extends StatelessWidget {
+  const _ParentOverviewTab({required this.user});
   final UserModel user;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
-      builder: (context, state) {
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-          children: [
-            // ─── BIO ───
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-              child: Column(
-                children: [
-                  Text(
-                    '"',
-                    style: tt.displaySmall?.copyWith(
-                      color: cs.primary.withValues(alpha: 0.3),
-                      fontFamily: 'Georgia',
-                      height: 0.5,
-                    ),
-                  ),
-                  Text(
-                    'Đam mê học hỏi về công nghệ và thiết kế sáng tạo.\n'
-                    'Hiện đang theo đuổi các khóa học về lập trình di động.',
-                    style: tt.bodyLarge?.copyWith(
-                      color: context.weatherTextColorThemed,
-                      fontStyle: FontStyle.italic,
-                      height: 1.6,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.location_on_outlined,
-                          size: 14, color: context.weatherTextColorThemedSecondary),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Hà Nội, Việt Nam',
-                        style: tt.labelMedium?.copyWith(
-                          color: context.weatherTextColorThemedSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // ─── SKILLS & INTERESTS ───
-            _PortfolioSection(
-          title: 'Kỹ năng',
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: const [
-              _SkillTag(label: 'Flutter', level: 3),
-              _SkillTag(label: 'UI/UX Design', level: 2),
-              _SkillTag(label: 'Python', level: 2),
-              _SkillTag(label: 'Data Science', level: 1),
-              _SkillTag(label: 'React', level: 1),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        // ─── LEARNING INTERESTS ───
-        _PortfolioSection(
-          title: 'Đang quan tâm',
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _InterestChip(emoji: '🤖', label: 'AI/ML'),
-              _InterestChip(emoji: '📱', label: 'Mobile Dev'),
-              _InterestChip(emoji: '🎨', label: 'Design'),
-              _InterestChip(emoji: '☁️', label: 'Cloud'),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        // ─── ACHIEVEMENTS SHOWCASE ───
-        _PortfolioSection(
-          title: 'Thành tựu nổi bật',
-          trailing: Text(
-            'Xem tất cả',
-            style: tt.labelSmall?.copyWith(
-              color: cs.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          child: Column(
-            children: const [
-              _AchievementRow(
-                emoji: '🏆',
-                title: 'Top 10 Learner',
-                subtitle: 'Tháng 3/2024',
-                color: Color(0xFFF59E0B),
-              ),
-              SizedBox(height: 12),
-              _AchievementRow(
-                emoji: '🎓',
-                title: 'Flutter Professional',
-                subtitle: 'Chứng chỉ • 40Study Academy',
-                color: Color(0xFF2563EB),
-              ),
-              SizedBox(height: 12),
-              _AchievementRow(
-                emoji: '🔥',
-                title: '30 Days Streak',
-                subtitle: 'Hoàn thành 15/02/2024',
-                color: Color(0xFFEF4444),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        // ─── CONTACT / SOCIAL ───
-        _PortfolioSection(
-          title: 'Liên hệ',
-          child: Column(
-            children: [
-              _ContactRow(
-                icon: Icons.email_outlined,
-                text: user.email,
-              ),
-              if (user.phone != null && user.phone!.isNotEmpty)
-                _ContactRow(
-                  icon: Icons.phone_outlined,
-                  text: user.phone!,
-                ),
-              _ContactRow(
-                icon: Icons.calendar_today_outlined,
-                text: _formatJoinDate(user.createdAt),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 32),
-        ],
-      );
-      },
-    );
+    return const Center(child: Text('Tổng quan phụ huynh'));
   }
 }
 
-// ─── PORTFOLIO WIDGETS ───
+class _ParentChildrenTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Text('Con em'));
+  }
+}
+
+class _ParentNotificationsTab extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Text('Thông báo'));
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SHARED WIDGETS
+// ══════════════════════════════════════════════════════════════
 
 class _PortfolioSection extends StatelessWidget {
   const _PortfolioSection({
@@ -997,7 +1550,7 @@ class _PortfolioSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outline.withValues(alpha: 0.1)),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1015,7 +1568,7 @@ class _PortfolioSection extends StatelessWidget {
               if (trailing != null) trailing!,
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           child,
         ],
       ),
@@ -1027,26 +1580,19 @@ class _SkillTag extends StatelessWidget {
   const _SkillTag({required this.label, required this.level});
 
   final String label;
-  final int level; // 1-3
+  final int level;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    final colors = [
-      const Color(0xFF10B981), // beginner
-      const Color(0xFF3B82F6), // intermediate
-      const Color(0xFF8B5CF6), // advanced
-    ];
-    final color = colors[(level - 1).clamp(0, 2)];
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: cs.primaryContainer.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1054,25 +1600,23 @@ class _SkillTag extends StatelessWidget {
           Text(
             label,
             style: tt.labelMedium?.copyWith(
-              color: color,
+              color: cs.primary,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(width: 6),
-          Row(
-            children: List.generate(3, (i) {
-              return Container(
-                width: 6,
-                height: 6,
-                margin: const EdgeInsets.only(left: 2),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: i < level
-                      ? color
-                      : color.withValues(alpha: 0.2),
-                ),
-              );
-            }),
+          ...List.generate(
+            3,
+            (i) => Padding(
+              padding: const EdgeInsets.only(left: 2),
+              child: Icon(
+                Icons.circle,
+                size: 6,
+                color: i < level
+                    ? cs.primary
+                    : cs.primary.withValues(alpha: 0.2),
+              ),
+            ),
           ),
         ],
       ),
@@ -1092,16 +1636,16 @@ class _InterestChip extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(24),
+        color: cs.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(emoji, style: const TextStyle(fontSize: 16)),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           Text(
             label,
             style: tt.labelMedium?.copyWith(
@@ -1139,11 +1683,11 @@ class _AchievementRow extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
+            color: color.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
-            child: Text(emoji, style: const TextStyle(fontSize: 22)),
+            child: Text(emoji, style: const TextStyle(fontSize: 20)),
           ),
         ),
         const SizedBox(width: 12),
@@ -1158,20 +1702,12 @@ class _AchievementRow extends StatelessWidget {
                   color: cs.onSurface,
                 ),
               ),
-              const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: tt.labelSmall?.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
+                style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
               ),
             ],
           ),
-        ),
-        Icon(
-          Icons.arrow_forward_ios_rounded,
-          size: 14,
-          color: cs.onSurfaceVariant.withValues(alpha: 0.5),
         ),
       ],
     );
@@ -1190,337 +1726,15 @@ class _ContactRow extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
           Icon(icon, size: 18, color: cs.primary),
-          const SizedBox(width: 12),
-          Text(
-            text,
-            style: tt.bodyMedium?.copyWith(color: cs.onSurface),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ══════════════════════════════════════════════════════════════
-//  PARENT TABS
-// ══════════════════════════════════════════════════════════════
-
-class _ParentOverviewTab extends StatelessWidget {
-  const _ParentOverviewTab({required this.user});
-
-  final UserModel user;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                icon: Icons.child_care,
-                value: '2',
-                label: 'Con em',
-                color: Colors.teal,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                icon: Icons.class_,
-                value: '5',
-                label: 'Lớp học',
-                color: Colors.blue,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                icon: Icons.trending_up,
-                value: '92%',
-                label: 'Chuyên cần',
-                color: Colors.green,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        _SectionCard(
-          title: 'Thông tin phụ huynh',
-          icon: Icons.info_outline,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Phụ huynh đang theo dõi tiến độ học tập và '
-                'chuyên cần của con em tại hệ thống.',
-                style: tt.bodyMedium?.copyWith(
-                  color: cs.onSurfaceVariant,
-                  height: 1.6,
-                ),
-              ),
-              const SizedBox(height: 16),
-              _InfoRow(icon: Icons.email_outlined, text: user.email),
-              if (user.phone != null && user.phone!.isNotEmpty)
-                _InfoRow(icon: Icons.phone_outlined, text: user.phone!),
-              _InfoRow(
-                icon: Icons.calendar_today_outlined,
-                text: _formatJoinDate(user.createdAt),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 32),
-      ],
-    );
-  }
-}
-
-class _ParentChildrenTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        _ChildSummaryCard(
-          name: 'Nguyễn Văn A',
-          grade: 'Lớp 10',
-          attendance: '95%',
-          avgScore: '8.5',
-        ),
-        const SizedBox(height: 12),
-        _ChildSummaryCard(
-          name: 'Nguyễn Văn B',
-          grade: 'Lớp 7',
-          attendance: '88%',
-          avgScore: '7.2',
-        ),
-        const SizedBox(height: 32),
-      ],
-    );
-  }
-}
-
-class _ParentNotificationsTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: const [
-        _ActivityItem(
-          icon: Icons.assignment,
-          iconColor: Colors.blue,
-          title: 'Nguyễn Văn A đã nộp bài tập Toán',
-          time: '1 giờ trước',
-        ),
-        _ActivityItem(
-          icon: Icons.event_available,
-          iconColor: Colors.green,
-          title: 'Nguyễn Văn B có mặt buổi học hôm nay',
-          time: '3 giờ trước',
-        ),
-        _ActivityItem(
-          icon: Icons.warning_amber,
-          iconColor: Colors.orange,
-          title: 'Nguyễn Văn A vắng buổi học Lý',
-          time: 'Hôm qua',
-        ),
-        _ActivityItem(
-          icon: Icons.grade,
-          iconColor: Colors.purple,
-          title: 'Nguyễn Văn B đạt 9.0 bài kiểm tra Anh văn',
-          time: '2 ngày trước',
-        ),
-      ],
-    );
-  }
-}
-
-// ══════════════════════════════════════════════════════════════
-//  SHARED / REUSABLE WIDGETS
-// ══════════════════════════════════════════════════════════════
-
-class _PatternPainter extends CustomPainter {
-  _PatternPainter({required this.color});
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1
-      ..style = PaintingStyle.stroke;
-
-    const spacing = 30.0;
-    for (var i = 0.0; i < size.width + size.height; i += spacing) {
-      canvas.drawLine(Offset(i, 0), Offset(0, i), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-String _formatJoinDate(String? dateStr) {
-  if (dateStr == null) return 'Tham gia gần đây';
-  final date = DateTime.tryParse(dateStr);
-  if (date == null) return 'Tham gia gần đây';
-
-  const months = [
-    '', 'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
-    'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
-    'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
-  ];
-  return 'Tham gia ${months[date.month]} ${date.year}';
-}
-
-class _StatCard extends StatelessWidget {
-  const _StatCard({
-    required this.icon,
-    required this.value,
-    required this.label,
-    required this.color,
-  });
-
-  final IconData icon;
-  final String value;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: tt.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: cs.onSurface,
-            ),
-          ),
-          Text(
-            label,
-            style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.icon,
-    required this.child,
-    this.trailing,
-  });
-
-  final String title;
-  final IconData icon;
-  final Widget child;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: cs.primary, size: 20),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  title,
-                  style: tt.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: cs.onSurface,
-                  ),
-                ),
-              ),
-              if (trailing != null) trailing!,
-            ],
-          ),
-          const SizedBox(height: 16),
-          child,
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.icon, required this.text});
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: cs.onSurfaceVariant),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               text,
-              style: tt.bodyMedium?.copyWith(color: cs.onSurface),
+              style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
             ),
           ),
         ],
@@ -1533,12 +1747,12 @@ class _CourseItem extends StatelessWidget {
   const _CourseItem({
     required this.title,
     required this.progress,
-    this.subtitle,
+    required this.subtitle,
   });
 
   final String title;
   final double progress;
-  final String? subtitle;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -1546,253 +1760,33 @@ class _CourseItem extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: cs.primaryContainer,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(Icons.play_arrow, color: cs.primary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: tt.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: cs.onSurface,
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle!,
-                    style: tt.bodySmall
-                        ?.copyWith(color: cs.onSurfaceVariant),
-                  ),
-                ],
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          backgroundColor: cs.surfaceContainerHighest,
-                          minHeight: 6,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${(progress * 100).toInt()}%',
-                      style: tt.labelSmall?.copyWith(
-                        color: cs.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ActivityItem extends StatelessWidget {
-  const _ActivityItem({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.time,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String time;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: tt.bodyMedium?.copyWith(color: cs.onSurface),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  time,
-                  style:
-                      tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AchievementsTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: 3,
-      padding: const EdgeInsets.all(16),
-      mainAxisSpacing: 16,
-      crossAxisSpacing: 16,
-      children: const [
-        _AchievementBadge(
-          icon: Icons.local_fire_department,
-          label: '7 ngày liên tiếp',
-          color: Colors.orange,
-          unlocked: true,
-        ),
-        _AchievementBadge(
-          icon: Icons.school,
-          label: 'Học viên xuất sắc',
-          color: Colors.blue,
-          unlocked: true,
-        ),
-        _AchievementBadge(
-          icon: Icons.speed,
-          label: 'Nhanh như chớp',
-          color: Colors.purple,
-          unlocked: true,
-        ),
-        _AchievementBadge(
-          icon: Icons.star,
-          label: 'Ngôi sao mới',
-          color: Colors.amber,
-          unlocked: true,
-        ),
-        _AchievementBadge(
-          icon: Icons.emoji_events,
-          label: 'Vô địch quiz',
-          color: Colors.green,
-          unlocked: false,
-        ),
-        _AchievementBadge(
-          icon: Icons.rocket_launch,
-          label: 'Tiên phong',
-          color: Colors.red,
-          unlocked: false,
-        ),
-      ],
-    );
-  }
-}
-
-class _AchievementBadge extends StatelessWidget {
-  const _AchievementBadge({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.unlocked,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-  final bool unlocked;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.surface,
+        color: cs.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
-        border: unlocked
-            ? Border.all(color: color.withValues(alpha: 0.3), width: 2)
-            : null,
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: unlocked
-                  ? color.withValues(alpha: 0.1)
-                  : cs.surfaceContainerHighest,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              color: unlocked
-                  ? color
-                  : cs.onSurfaceVariant.withValues(alpha: 0.5),
-              size: 28,
-            ),
-          ),
-          const SizedBox(height: 8),
           Text(
-            label,
-            style: tt.labelSmall?.copyWith(
-              color: unlocked ? cs.onSurface : cs.onSurfaceVariant,
-              fontWeight: unlocked ? FontWeight.w600 : FontWeight.normal,
+            title,
+            style: tt.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: cs.onSurface,
             ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+          ),
+          const SizedBox(height: 12),
+          LinearProgressIndicator(
+            value: progress,
+            backgroundColor: cs.outlineVariant,
+            color: cs.primary,
+            borderRadius: BorderRadius.circular(4),
           ),
         ],
       ),
@@ -1800,173 +1794,27 @@ class _AchievementBadge extends StatelessWidget {
   }
 }
 
-class _SkillChip extends StatelessWidget {
-  const _SkillChip({required this.label});
+class _PatternPainter extends CustomPainter {
+  _PatternPainter({required this.color});
 
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: cs.primaryContainer.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: cs.primary,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-}
-
-class _ReviewItem extends StatelessWidget {
-  const _ReviewItem({
-    required this.name,
-    required this.rating,
-    required this.comment,
-    required this.time,
-  });
-
-  final String name;
-  final int rating;
-  final String comment;
-  final String time;
+  final Color color;
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CircleAvatar(
-          radius: 18,
-          backgroundColor: cs.primaryContainer,
-          child: Text(
-            name.isNotEmpty ? name[0] : '?',
-            style: TextStyle(
-              color: cs.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    name,
-                    style: tt.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    time,
-                    style: tt.labelSmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: List.generate(
-                  5,
-                  (i) => Icon(
-                    i < rating ? Icons.star : Icons.star_border,
-                    size: 14,
-                    color: Colors.amber,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                comment,
-                style: tt.bodySmall?.copyWith(
-                  color: cs.onSurfaceVariant,
-                  height: 1.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+    const spacing = 30.0;
+    const radius = 3.0;
+
+    for (var x = 0.0; x < size.width; x += spacing) {
+      for (var y = 0.0; y < size.height; y += spacing) {
+        canvas.drawCircle(Offset(x, y), radius, paint);
+      }
+    }
   }
-}
-
-class _ChildSummaryCard extends StatelessWidget {
-  const _ChildSummaryCard({
-    required this.name,
-    required this.grade,
-    required this.attendance,
-    required this.avgScore,
-  });
-
-  final String name;
-  final String grade;
-  final String attendance;
-  final String avgScore;
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: cs.primaryContainer,
-            child: Icon(Icons.person, color: cs.primary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '$grade • Chuyên cần $attendance • TB $avgScore',
-                  style:
-                      tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
-        ],
-      ),
-    );
-  }
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

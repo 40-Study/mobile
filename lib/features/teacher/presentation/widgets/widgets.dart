@@ -5,4 +5,5 @@ export 'revenue_chart_card.dart';
 export 'schedule_card.dart';
 export 'stats_card.dart';
 export 'student_card.dart';
+export 'student_detail_bottom_sheet.dart';
 export 'teacher_app_bar.dart';

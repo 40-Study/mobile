@@ -23,7 +23,8 @@ class TeacherClassDetailCubit extends Cubit<TeacherClassDetailState> {
       // Load related data in parallel
       await Future.wait([
         loadStudents(classId),
-        loadTeachers(classId),
+        loadAssignments(classId),
+        loadDocuments(classId),
         loadSchedules(classId),
       ]);
     } catch (e) {
@@ -55,26 +56,54 @@ class TeacherClassDetailCubit extends Cubit<TeacherClassDetailState> {
     }
   }
 
-  Future<void> loadTeachers(String classId) async {
+  Future<void> loadAssignments(String classId) async {
     final currentState = state;
     if (currentState is! TeacherClassDetailLoaded) return;
 
-    emit(currentState.copyWith(isLoadingTeachers: true));
+    emit(currentState.copyWith(isLoadingAssignments: true));
 
     try {
-      final teachers = await _repository.getClassTeachers(classId);
+      // TODO: Replace with actual API call
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      final assignments = _getMockAssignments();
       final newState = state;
       if (newState is TeacherClassDetailLoaded) {
         emit(newState.copyWith(
-          teachers: teachers,
-          isLoadingTeachers: false,
+          assignments: assignments,
+          isLoadingAssignments: false,
         ));
       }
     } catch (e) {
-      debugPrint('loadTeachers error: $e');
+      debugPrint('loadAssignments error: $e');
       final newState = state;
       if (newState is TeacherClassDetailLoaded) {
-        emit(newState.copyWith(isLoadingTeachers: false));
+        emit(newState.copyWith(isLoadingAssignments: false));
+      }
+    }
+  }
+
+  Future<void> loadDocuments(String classId) async {
+    final currentState = state;
+    if (currentState is! TeacherClassDetailLoaded) return;
+
+    emit(currentState.copyWith(isLoadingDocuments: true));
+
+    try {
+      // TODO: Replace with actual API call
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      final documents = _getMockDocuments();
+      final newState = state;
+      if (newState is TeacherClassDetailLoaded) {
+        emit(newState.copyWith(
+          documents: documents,
+          isLoadingDocuments: false,
+        ));
+      }
+    } catch (e) {
+      debugPrint('loadDocuments error: $e');
+      final newState = state;
+      if (newState is TeacherClassDetailLoaded) {
+        emit(newState.copyWith(isLoadingDocuments: false));
       }
     }
   }
@@ -103,33 +132,6 @@ class TeacherClassDetailCubit extends Cubit<TeacherClassDetailState> {
     }
   }
 
-  Future<void> loadAttendances(String classId, {String? sessionDate}) async {
-    final currentState = state;
-    if (currentState is! TeacherClassDetailLoaded) return;
-
-    emit(currentState.copyWith(isLoadingAttendances: true));
-
-    try {
-      final attendances = await _repository.getClassAttendances(
-        classId,
-        sessionDate: sessionDate,
-      );
-      final newState = state;
-      if (newState is TeacherClassDetailLoaded) {
-        emit(newState.copyWith(
-          attendances: attendances,
-          isLoadingAttendances: false,
-        ));
-      }
-    } catch (e) {
-      debugPrint('loadAttendances error: $e');
-      final newState = state;
-      if (newState is TeacherClassDetailLoaded) {
-        emit(newState.copyWith(isLoadingAttendances: false));
-      }
-    }
-  }
-
   void changeTab(int index) {
     final currentState = state;
     if (currentState is! TeacherClassDetailLoaded) return;
@@ -151,70 +153,145 @@ class TeacherClassDetailCubit extends Cubit<TeacherClassDetailState> {
     }
   }
 
-  Future<void> removeTeacher(String classId, String teacherId) async {
+  Future<void> loadStudentDetail(String classId, String studentId) async {
     final currentState = state;
     if (currentState is! TeacherClassDetailLoaded) return;
 
+    emit(currentState.copyWith(isLoadingStudentDetail: true));
+
     try {
-      await _repository.removeTeacherFromClass(classId, teacherId);
-      final updatedTeachers =
-          currentState.teachers.where((t) => t.id != teacherId).toList();
-      emit(currentState.copyWith(teachers: updatedTeachers));
+      final detail = await _repository.getStudentDetail(classId, studentId);
+      final newState = state;
+      if (newState is TeacherClassDetailLoaded) {
+        emit(newState.copyWith(
+          selectedStudentDetail: detail,
+          isLoadingStudentDetail: false,
+        ));
+      }
     } catch (e) {
-      debugPrint('removeTeacher error: $e');
+      debugPrint('loadStudentDetail error: $e');
+      final newState = state;
+      if (newState is TeacherClassDetailLoaded) {
+        emit(newState.copyWith(isLoadingStudentDetail: false));
+      }
     }
   }
 
-  Future<void> updateAttendance(
-    String classId,
-    String studentId,
-    String status,
-  ) async {
+  void clearStudentDetail() {
     final currentState = state;
     if (currentState is! TeacherClassDetailLoaded) return;
 
-    try {
-      final updatedAttendances = currentState.attendances.map((a) {
-        if (a.studentId == studentId) {
-          return AttendanceModel(
-            id: a.id,
-            classId: a.classId,
-            studentId: a.studentId,
-            studentName: a.studentName,
-            studentCode: a.studentCode,
-            avatarUrl: a.avatarUrl,
-            sessionDate: a.sessionDate,
-            status: status,
-            note: a.note,
-          );
-        }
-        return a;
-      }).toList();
-
-      emit(currentState.copyWith(attendances: updatedAttendances));
-    } catch (e) {
-      debugPrint('updateAttendance error: $e');
-    }
+    emit(currentState.copyWith(clearStudentDetail: true));
   }
 
-  Future<void> saveAttendances(String classId) async {
-    final currentState = state;
-    if (currentState is! TeacherClassDetailLoaded) return;
+  List<ClassAssignmentModel> _getMockAssignments() {
+    return const [
+      ClassAssignmentModel(
+        id: 'a1',
+        title: 'Bài tập 1: Thiết kế Landing Page',
+        description: 'Thiết kế một landing page cho sản phẩm công nghệ',
+        dueDate: '2026-04-05',
+        maxScore: 100,
+        submittedCount: 18,
+        totalStudents: 22,
+        gradedCount: 15,
+        status: ClassAssignmentStatus.active,
+        createdAt: '2026-03-20',
+      ),
+      ClassAssignmentModel(
+        id: 'a2',
+        title: 'Bài tập 2: Wireframe Mobile App',
+        description: 'Vẽ wireframe cho ứng dụng di động e-commerce',
+        dueDate: '2026-04-12',
+        maxScore: 100,
+        submittedCount: 10,
+        totalStudents: 22,
+        gradedCount: 0,
+        status: ClassAssignmentStatus.active,
+        createdAt: '2026-03-25',
+      ),
+      ClassAssignmentModel(
+        id: 'a3',
+        title: 'Bài tập 3: Design System',
+        description: 'Xây dựng design system hoàn chỉnh',
+        dueDate: '2026-04-20',
+        maxScore: 150,
+        submittedCount: 0,
+        totalStudents: 22,
+        gradedCount: 0,
+        status: ClassAssignmentStatus.active,
+        createdAt: '2026-03-28',
+      ),
+      ClassAssignmentModel(
+        id: 'a4',
+        title: 'Đồ án cuối khóa',
+        description: 'Thiết kế UI/UX hoàn chỉnh cho một dự án thực tế',
+        dueDate: '2026-05-15',
+        maxScore: 200,
+        submittedCount: 0,
+        totalStudents: 22,
+        gradedCount: 0,
+        status: ClassAssignmentStatus.draft,
+        createdAt: '2026-03-28',
+      ),
+    ];
+  }
 
-    try {
-      final attendanceData = currentState.attendances
-          .map((a) => {
-                'student_id': a.studentId,
-                'status': a.status,
-                'session_date': a.sessionDate,
-                'note': a.note,
-              })
-          .toList();
-
-      await _repository.batchUpdateAttendance(classId, attendanceData);
-    } catch (e) {
-      debugPrint('saveAttendances error: $e');
-      rethrow;
-    }
+  List<ClassDocumentModel> _getMockDocuments() {
+    return const [
+      ClassDocumentModel(
+        id: 'd1',
+        title: 'Slide bài giảng - Chương 1: Giới thiệu UI/UX',
+        type: DocumentType.ppt,
+        description: 'Tổng quan về UI/UX Design',
+        fileSize: '15.2 MB',
+        downloadCount: 45,
+        uploadedAt: '2026-03-01',
+      ),
+      ClassDocumentModel(
+        id: 'd2',
+        title: 'Slide bài giảng - Chương 2: Figma cơ bản',
+        type: DocumentType.ppt,
+        description: 'Hướng dẫn sử dụng Figma từ cơ bản',
+        fileSize: '22.8 MB',
+        downloadCount: 42,
+        uploadedAt: '2026-03-08',
+      ),
+      ClassDocumentModel(
+        id: 'd3',
+        title: 'Tài liệu tham khảo - Design Principles',
+        type: DocumentType.pdf,
+        description: 'Các nguyên tắc thiết kế cơ bản',
+        fileSize: '5.4 MB',
+        downloadCount: 38,
+        uploadedAt: '2026-03-10',
+      ),
+      ClassDocumentModel(
+        id: 'd4',
+        title: 'Video hướng dẫn - Auto Layout',
+        type: DocumentType.video,
+        description: 'Cách sử dụng Auto Layout trong Figma',
+        fileSize: '125 MB',
+        downloadCount: 30,
+        uploadedAt: '2026-03-15',
+      ),
+      ClassDocumentModel(
+        id: 'd5',
+        title: 'Template Design System',
+        type: DocumentType.link,
+        description: 'Link Figma Community template',
+        downloadCount: 28,
+        uploadedAt: '2026-03-20',
+      ),
+      ClassDocumentModel(
+        id: 'd6',
+        title: 'Bảng điểm mẫu',
+        type: DocumentType.xls,
+        description: 'Template chấm điểm bài tập',
+        fileSize: '245 KB',
+        downloadCount: 12,
+        uploadedAt: '2026-03-22',
+      ),
+    ];
   }
 }

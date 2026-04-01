@@ -9,6 +9,10 @@ import 'package:study/features/auth/presentation/register_form_screen.dart';
 import 'package:study/features/auth/presentation/register_otp_screen.dart';
 import 'package:study/features/auth/presentation/reset_password_screen.dart';
 import 'package:study/features/auth/presentation/select_role_screen.dart';
+import 'package:study/features/teacher/bloc/classes/teacher_class_detail_cubit.dart';
+import 'package:study/features/teacher/data/repository/teacher_repository.dart';
+import 'package:study/features/teacher/presentation/screens/create_course_screen.dart';
+import 'package:study/features/teacher/presentation/screens/teacher_class_detail_screen.dart';
 import 'package:study/features/weather/weather.dart';
 import 'package:study/index.dart';
 
@@ -30,6 +34,10 @@ class Routes {
 
   // Demo
   static const weatherDemo = 'weatherDemo';
+
+  // Teacher
+  static const teacherClassDetail = '/teacher/classes/detail';
+  static const teacherCreateCourse = '/teacher/courses/create';
 }
 
 /// Navigator key from DI. Use after [initDI].
@@ -51,6 +59,13 @@ class NavigationService {
     Routes.forgotPasswordOtp: (_) => const ForgotPasswordOtpScreen(),
     Routes.resetPassword: (_) => const ResetPasswordScreen(),
     Routes.weatherDemo: (_) => const WeatherDemoScreen(),
+    Routes.teacherClassDetail: (args) => BlocProvider(
+          create: (context) => TeacherClassDetailCubit(
+            repository: diContainer.get<TeacherRepository>(),
+          ),
+          child: TeacherClassDetailScreen(classId: args as String? ?? ''),
+        ),
+    Routes.teacherCreateCourse: (_) => const CreateCourseScreen(),
   };
 
   final Set<String> _animatedRoutes = {
@@ -63,6 +78,8 @@ class NavigationService {
     Routes.forgotPassword,
     Routes.forgotPasswordOtp,
     Routes.resetPassword,
+    Routes.teacherClassDetail,
+    Routes.teacherCreateCourse,
   };
 
   /// Full-screen dialog routes (iOS style; no effect on Android).

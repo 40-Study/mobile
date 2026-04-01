@@ -26,6 +26,12 @@ abstract class CourseModel with _$CourseModel {
     @JsonKey(name: 'end_date') String? endDate,
     @JsonKey(name: 'created_at') String? createdAt,
     @JsonKey(name: 'updated_at') String? updatedAt,
+    @Default(0.0) double price,
+    @JsonKey(name: 'original_price') double? originalPrice,
+    @JsonKey(name: 'discount_percent') @Default(0) int discountPercent,
+    @JsonKey(name: 'class_count') @Default(0) int classCount,
+    @JsonKey(name: 'progress_percent') @Default(0) int progressPercent,
+    @JsonKey(name: 'is_on_sale') @Default(false) bool isOnSale,
   }) = _CourseModel;
 
   factory CourseModel.fromJson(Map<String, dynamic> json) =>

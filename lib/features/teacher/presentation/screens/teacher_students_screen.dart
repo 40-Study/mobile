@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/teacher/bloc/students/teacher_students_cubit.dart';
 import 'package:study/features/teacher/presentation/widgets/widgets.dart';
+import 'package:study/features/weather/presentation/widgets/weather_content_overlay.dart';
 
 class TeacherStudentsScreen extends StatefulWidget {
   const TeacherStudentsScreen({super.key});
@@ -45,34 +46,42 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
           // Header
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Danh sách học viên',
-                  style: tt.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: cs.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                BlocSelector<TeacherStudentsCubit, TeacherStudentsState, int>(
-                  selector: (state) {
-                    if (state is TeacherStudentsLoaded) {
-                      return state.totalStudents;
-                    }
-                    return 0;
-                  },
-                  builder: (context, count) {
-                    return Text(
-                      'Quản lý và theo dõi tiến độ của $count học viên.',
-                      style: tt.bodyMedium?.copyWith(
-                        color: cs.onSurfaceVariant,
+            child: Builder(
+              builder: (context) {
+                final textColor = context.weatherTextColor;
+                final secondaryColor = context.weatherTextColorSecondary;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Danh sách học viên',
+                      style: tt.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
                       ),
-                    );
-                  },
-                ),
-              ],
+                    ),
+                    const SizedBox(height: 4),
+                    BlocSelector<TeacherStudentsCubit, TeacherStudentsState,
+                        int>(
+                      selector: (state) {
+                        if (state is TeacherStudentsLoaded) {
+                          return state.totalStudents;
+                        }
+                        return 0;
+                      },
+                      builder: (context, count) {
+                        return Text(
+                          'Quản lý và theo dõi tiến độ của $count học viên.',
+                          style: tt.bodyMedium?.copyWith(
+                            color: secondaryColor,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                );
+              },
             ),
           ),
 

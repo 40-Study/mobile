@@ -22,6 +22,11 @@ abstract class ClassModel with _$ClassModel {
     @JsonKey(name: 'thumbnail_url') String? thumbnailUrl,
     @JsonKey(name: 'created_at') String? createdAt,
     @JsonKey(name: 'updated_at') String? updatedAt,
+    // Schedule info for next class
+    @JsonKey(name: 'next_schedule_date') String? nextScheduleDate,
+    @JsonKey(name: 'next_schedule_time') String? nextScheduleTime,
+    @JsonKey(name: 'next_schedule_room') String? nextScheduleRoom,
+    @JsonKey(name: 'is_online') @Default(false) bool isOnline,
   }) = _ClassModel;
 
   factory ClassModel.fromJson(Map<String, dynamic> json) =>
