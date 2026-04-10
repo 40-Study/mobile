@@ -33,4 +33,19 @@ abstract class ParentRepository {
 
   /// Fetches a specific child's details.
   Future<ChildModel> getChildDetail(String childId);
+
+  /// Fetches tracking overview for a child (focus, assignments, performance, attendance).
+  Future<TrackingOverviewModel> getTrackingOverview(String childId);
+
+  /// Fetches finance overview for the parent.
+  Future<ParentFinanceOverviewModel> getFinanceOverview({String? childId});
+
+  /// Fetches portfolio for a specific child.
+  Future<PortfolioModel> getPortfolio(String childId);
+
+  /// Creates a payment for a pending payment.
+  Future<PaymentHistoryModel> createPayment(CreatePaymentRequest request);
+
+  /// Fetches available payment methods.
+  Future<List<PaymentMethodModel>> getPaymentMethods();
 }

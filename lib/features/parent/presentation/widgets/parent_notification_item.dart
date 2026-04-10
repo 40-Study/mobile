@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/parent/data/models/models.dart';
+import 'package:study/theme/app_colors.dart';
 
 class ParentNotificationItem extends StatelessWidget {
   const ParentNotificationItem({
@@ -12,27 +13,35 @@ class ParentNotificationItem extends StatelessWidget {
   final VoidCallback? onTap;
 
   IconData _getIcon() {
-    switch (notification.type?.toLowerCase()) {
-      case 'attendance':
+    switch (notification.type) {
+      case NotificationType.attendance:
         return Icons.event_busy;
-      case 'grade':
+      case NotificationType.performance:
         return Icons.star;
-      case 'event':
-        return Icons.calendar_today;
-      default:
+      case NotificationType.assignment:
+        return Icons.assignment;
+      case NotificationType.finance:
+        return Icons.account_balance_wallet;
+      case NotificationType.liveClass:
+        return Icons.videocam;
+      case NotificationType.general:
         return Icons.notifications;
     }
   }
 
   Color _getIconColor(ColorScheme cs) {
-    switch (notification.type?.toLowerCase()) {
-      case 'attendance':
+    switch (notification.type) {
+      case NotificationType.attendance:
         return cs.error;
-      case 'grade':
+      case NotificationType.performance:
         return cs.tertiary;
-      case 'event':
+      case NotificationType.assignment:
         return cs.primary;
-      default:
+      case NotificationType.finance:
+        return Colors.green;
+      case NotificationType.liveClass:
+        return Colors.red;
+      case NotificationType.general:
         return cs.secondary;
     }
   }
@@ -86,7 +95,7 @@ class ParentNotificationItem extends StatelessWidget {
                       Text(
                         notification.createdAt!,
                         style: textTheme.labelSmall?.copyWith(
-                          color: cs.onSurfaceVariant,
+                          color: cs.textSecondary,
                         ),
                       ),
                     ],

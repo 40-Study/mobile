@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/parent/data/models/models.dart';
+import 'package:study/theme/app_colors.dart';
 
 class AttendanceListItem extends StatelessWidget {
   const AttendanceListItem({
@@ -96,7 +97,7 @@ class AttendanceListItem extends StatelessWidget {
                     Text(
                       _formatDate(attendance.date),
                       style: textTheme.bodySmall?.copyWith(
-                        color: cs.onSurfaceVariant,
+                        color: cs.textSecondary,
                       ),
                     ),
                   ],
@@ -127,7 +128,7 @@ class AttendanceListItem extends StatelessWidget {
                     Text(
                       attendance.note!,
                       style: textTheme.labelSmall?.copyWith(
-                        color: cs.onSurfaceVariant,
+                        color: cs.textSecondary,
                       ),
                     ),
                   ],

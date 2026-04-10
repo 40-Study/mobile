@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/parent/data/models/models.dart';
+import 'package:study/theme/app_colors.dart';
 
 class EnrollmentCard extends StatelessWidget {
   const EnrollmentCard({
@@ -60,7 +61,7 @@ class EnrollmentCard extends StatelessWidget {
                 Text(
                   enrollment.courseDescription!,
                   style: textTheme.bodySmall?.copyWith(
-                    color: cs.onSurfaceVariant,
+                    color: cs.textSecondary,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -79,7 +80,7 @@ class EnrollmentCard extends StatelessWidget {
                             Text(
                               'Tien do',
                               style: textTheme.labelSmall?.copyWith(
-                                color: cs.onSurfaceVariant,
+                                color: cs.textSecondary,
                               ),
                             ),
                             Text(

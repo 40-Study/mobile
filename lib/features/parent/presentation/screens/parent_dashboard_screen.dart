@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:study/constants/dimens.dart';
+import 'package:study/features/parent/bloc/children/children_selector_cubit.dart';
+import 'package:study/features/parent/bloc/children/children_selector_state.dart';
 import 'package:study/features/parent/bloc/parent_dashboard/parent_dashboard_cubit.dart';
 import 'package:study/features/parent/bloc/parent_dashboard/parent_dashboard_state.dart';
 import 'package:study/features/parent/data/models/models.dart';
-import 'package:study/features/parent/presentation/screens/child_detail_screen.dart';
+import 'package:study/features/parent/presentation/screens/parent_main_screen.dart';
+import 'package:study/features/parent/presentation/widgets/widgets.dart';
 import 'package:study/theme/app_colors.dart';
 import 'package:study/widgets/section_header.dart';
 
@@ -70,28 +74,10 @@ class _DashboardContent extends StatelessWidget {
 
   final ParentDashboardLoaded state;
 
-  void _navigateToChildDetail(BuildContext context, ChildModel child) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (context) => ChildDetailScreen(child: child),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final totalClasses = state.children.fold<int>(
-      0,
-      (sum, child) => sum + child.classCount,
-    );
-    final averageAttendance = state.children.isEmpty
-        ? 0
-        : state.children
-                  .map((child) => child.attendanceRate)
-                  .reduce((a, b) => a + b) /
-              state.children.length;
     final unreadNotifications = state.notifications
         .where((n) => !n.isRead)
         .length;
@@ -122,56 +108,48 @@ class _DashboardContent extends StatelessWidget {
           'Hom nay ban co ${state.children.length} con dang theo doi '
           'va $unreadNotifications thong bao moi.',
           style: textTheme.bodyMedium?.copyWith(
-            color: cs.onSurfaceVariant,
+            color: cs.onSurface.withValues(alpha: 0.7),
             height: 1.4,
           ),
         ),
-        const SizedBox(height: AppSpacing.xxl),
-        _HeroMetricCard(
-          title: 'CHUYEN CAN TRUNG BINH',
-          value: '${(averageAttendance * 100).toStringAsFixed(0)}%',
-          delta: '+${unreadNotifications.toString()}',
-          subtitle: 'thong bao chua doc',
-        ),
-        const SizedBox(height: AppSpacing.md),
-        Row(
-          children: [
-            Expanded(
-              child: _MiniMetricCard(
-                icon: Icons.child_care_outlined,
-                title: 'HOC SINH',
-                value: state.children.length.toString(),
-              ),
-            ),
-            const SizedBox(width: AppLayout.gutter),
-            Expanded(
-              child: _MiniMetricCard(
-                icon: Icons.class_outlined,
-                title: 'LOP HOC',
-                value: totalClasses.toString(),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.xxl),
+        const SizedBox(height: AppSpacing.lg),
 
-        const SectionHeader(
-          title: 'Lop hoc cua con',
-          actionLabel: 'Xem tat ca',
+        // Student Selector
+        const StudentSelectorDropdown(),
+        const SizedBox(height: AppSpacing.xl),
+
+        // Student Overview Card
+        BlocBuilder<ChildrenSelectorCubit, ChildrenSelectorState>(
+          builder: (context, selectorState) {
+            if (selectorState is ChildrenSelectorLoaded &&
+                selectorState.selectedChild != null) {
+              final child = selectorState.selectedChild!;
+              return _StudentOverviewCard(child: child);
+            }
+            return const SizedBox.shrink();
+          },
         ),
-        const SizedBox(height: AppSpacing.md),
-        if (state.children.isEmpty)
-          const _EmptyCard(message: 'Chua co du lieu hoc sinh')
-        else
-          ...state.children.map(
-            (child) => Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.md),
-              child: _ChildOverviewCard(
-                child: child,
-                onTap: () => _navigateToChildDetail(context, child),
-              ),
-            ),
-          ),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Tuition Summary Card
+        _TuitionSummaryCard(
+          totalTuition: 15000000,
+          paidAmount: 10000000,
+          remainingAmount: 5000000,
+        ),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Focus Chart
+        const FocusChartCompact(),
+        const SizedBox(height: AppSpacing.lg),
+
+        // Schedule - tap to go to schedule tab
+        GestureDetector(
+          onTap: () {
+            ParentMainScreen.switchToTab(context, ParentMainScreen.tabTracking);
+          },
+          child: const ChildScheduleCompact(),
+        ),
         const SizedBox(height: AppSpacing.xxl),
 
         const SectionHeader(title: 'Thong bao moi', actionLabel: 'Xem tat ca'),
@@ -222,7 +200,7 @@ class _DashboardTopRow extends StatelessWidget {
               Text(
                 '${DateTime.now().day.toString().padLeft(2, '0')}/${DateTime.now().month.toString().padLeft(2, '0')}/${DateTime.now().year}',
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: cs.onSurfaceVariant,
+                  color: cs.textSecondary,
                 ),
               ),
             ],
@@ -252,221 +230,7 @@ class _TopIconButton extends StatelessWidget {
         borderRadius: AppRadius.borderMd,
         boxShadow: cs.shadowCard,
       ),
-      child: Icon(icon, color: cs.onSurfaceVariant, size: AppIconSize.md),
-    );
-  }
-}
-
-class _HeroMetricCard extends StatelessWidget {
-  const _HeroMetricCard({
-    required this.title,
-    required this.value,
-    required this.delta,
-    required this.subtitle,
-  });
-
-  final String title;
-  final String value;
-  final String delta;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.borderXxxl,
-        gradient: cs.gradientRich,
-        boxShadow: cs.shadowPrimary,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: cs.onPrimary.withValues(alpha: 0.7),
-                    fontSize: 12,
-                    letterSpacing: 1,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  value,
-                  style: TextStyle(
-                    color: cs.onPrimary,
-                    fontSize: 34,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: cs.onPrimary.withValues(alpha: 0.7),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.xs,
-            ),
-            decoration: BoxDecoration(
-              color: cs.onPrimary.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(AppRadius.full),
-            ),
-            child: Text(
-              delta,
-              style: TextStyle(
-                color: cs.onPrimary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MiniMetricCard extends StatelessWidget {
-  const _MiniMetricCard({
-    required this.icon,
-    required this.title,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String title;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: AppLayout.cardPadding,
-      decoration: BoxDecoration(
-        color: cs.surfaceTintedPrimary,
-        borderRadius: AppRadius.borderXxl,
-        border: Border.all(color: cs.outline.withValues(alpha: 0.4)),
-        boxShadow: cs.shadowCard,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  cs.primaryContainer,
-                  cs.primary.withValues(alpha: 0.15),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: AppRadius.borderMd,
-            ),
-            child: Icon(icon, size: AppIconSize.md, color: cs.primary),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: cs.onSurfaceVariant,
-              letterSpacing: 0.4,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            value,
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ChildOverviewCard extends StatelessWidget {
-  const _ChildOverviewCard({required this.child, required this.onTap});
-
-  final ChildModel child;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return InkWell(
-      borderRadius: AppRadius.borderXxl,
-      onTap: onTap,
-      child: Container(
-        padding: AppLayout.cardPadding,
-        decoration: BoxDecoration(
-          color: cs.surfaceTintedPrimary,
-          borderRadius: AppRadius.borderXxl,
-          border: Border.all(color: cs.outline.withValues(alpha: 0.4)),
-          boxShadow: cs.shadowCard,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: AppIconSize.hero,
-              height: AppIconSize.hero,
-              decoration: BoxDecoration(
-                gradient: cs.gradientPrimary,
-                borderRadius: AppRadius.borderMd,
-                boxShadow: [
-                  BoxShadow(
-                    color: cs.primary.withValues(alpha: 0.2),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Icon(Icons.person_outline, color: cs.onPrimary),
-            ),
-            const SizedBox(width: AppLayout.gutter),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    child.name,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    '${child.displayGrade} • ${child.classCount} lop',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Text(
-              child.attendancePercentage,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: cs.primary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ),
+      child: Icon(icon, color: cs.textSecondary, size: AppIconSize.md),
     );
   }
 }
@@ -528,7 +292,7 @@ class _NotificationCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: cs.onSurfaceVariant,
+                      color: cs.textSecondary,
                     ),
                   ),
                 ],
@@ -568,8 +332,258 @@ class _EmptyCard extends StatelessWidget {
         textAlign: TextAlign.center,
         style: Theme.of(
           context,
-        ).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+        ).textTheme.bodyMedium?.copyWith(color: cs.textSecondary),
       ),
     );
   }
 }
+
+class _StudentOverviewCard extends StatelessWidget {
+  const _StudentOverviewCard({required this.child});
+
+  final ChildModel child;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
+        borderRadius: AppRadius.borderXxl,
+        border: Border.all(color: cs.outline.withValues(alpha: 0.3)),
+        boxShadow: cs.shadowCard,
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: cs.primaryContainer,
+                backgroundImage: child.avatarUrl != null
+                    ? NetworkImage(child.avatarUrl!)
+                    : null,
+                child: child.avatarUrl == null
+                    ? Icon(Icons.person, color: cs.primary)
+                    : null,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      child.name,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    Text(
+                      '${child.displayGrade} • ${child.displaySchool}',
+                      style: TextStyle(
+                        color: cs.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Row(
+            children: [
+              Expanded(
+                child: _StatColumn(
+                  label: 'Bài hoàn thành',
+                  value: '12',
+                  color: Colors.green,
+                ),
+              ),
+              Expanded(
+                child: _StatColumn(
+                  label: 'Chưa hoàn thành',
+                  value: '3',
+                  color: Colors.orange,
+                ),
+              ),
+              Expanded(
+                child: _StatColumn(
+                  label: 'Chuyên cần',
+                  value: child.attendancePercentage,
+                  color: cs.primary,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatColumn extends StatelessWidget {
+  const _StatColumn({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            color: color,
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: cs.onSurface.withValues(alpha: 0.7),
+            fontSize: 12,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+}
+
+class _TuitionSummaryCard extends StatelessWidget {
+  const _TuitionSummaryCard({
+    required this.totalTuition,
+    required this.paidAmount,
+    required this.remainingAmount,
+  });
+
+  final double totalTuition;
+  final double paidAmount;
+  final double remainingAmount;
+
+  String _formatCurrency(double amount) {
+    final normalized = amount.round();
+    return '${NumberFormat.decimalPattern('vi_VN').format(normalized)}đ';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final progress = totalTuition > 0 ? paidAmount / totalTuition : 0.0;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
+        borderRadius: AppRadius.borderXxl,
+        border: Border.all(color: cs.outline.withValues(alpha: 0.3)),
+        boxShadow: cs.shadowCard,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Học phí',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: cs.primaryContainer,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${(progress * 100).toStringAsFixed(0)}%',
+                  style: TextStyle(
+                    color: cs.primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: cs.surfaceContainerHighest,
+              valueColor: AlwaysStoppedAnimation(cs.primary),
+              minHeight: 8,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Đã thanh toán',
+                      style: TextStyle(
+                        color: cs.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      _formatCurrency(paidAmount),
+                      style: TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Còn lại',
+                      style: TextStyle(
+                        color: cs.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      _formatCurrency(remainingAmount),
+                      style: TextStyle(
+                        color: Colors.orange,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+

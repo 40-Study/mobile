@@ -35,29 +35,41 @@ class ParentRepositoryImpl implements ParentRepository {
     }
   }
 
+  /// Mock children theo API DOCS - GET /me/children
+  /// Response: { children: [ChildDto], total, page, page_size }
   List<ChildModel> _getMockChildren() {
     return const [
       ChildModel(
-        id: '1',
+        // API fields theo API_DOCS.md
+        id: 'child-001',
+        username: 'nguyenvanb',
+        fullName: 'Nguyen Van B',
+        avatarUrl: 'https://i.pravatar.cc/150?u=child1',
+        relationship: 'parent', // parent|guardian|grandparent
+        // Extended fields for app
         name: 'Nguyen Van B',
         grade: 'Lop 10A1',
         school: 'Truong THPT ABC',
         attendanceRate: 0.90,
         averageScore: 8.5,
         classCount: 3,
-        studentId: 'student-1',
-        userId: 'user-1',
+        studentId: 'student-001',
+        userId: 'user-child-001',
       ),
       ChildModel(
-        id: '2',
+        id: 'child-002',
+        username: 'nguyenthic',
+        fullName: 'Nguyen Thi C',
+        avatarUrl: 'https://i.pravatar.cc/150?u=child2',
+        relationship: 'parent',
         name: 'Nguyen Thi C',
         grade: 'Lop 8A2',
         school: 'Truong THCS XYZ',
         attendanceRate: 0.95,
         averageScore: 9.0,
         classCount: 2,
-        studentId: 'student-2',
-        userId: 'user-2',
+        studentId: 'student-002',
+        userId: 'user-child-002',
       ),
     ];
   }
@@ -72,7 +84,7 @@ class ParentRepositoryImpl implements ParentRepository {
       const ParentNotificationModel(
         id: '1',
         title: 'Nguyen Van B vang buoi hoc ngay 23/03/2024',
-        type: 'attendance',
+        type: NotificationType.attendance,
         childId: '1',
         childName: 'Nguyen Van B',
         createdAt: '2 gio truoc',
@@ -80,7 +92,7 @@ class ParentRepositoryImpl implements ParentRepository {
       const ParentNotificationModel(
         id: '2',
         title: 'Nguyen Thi C dat diem 10 bai kiem tra Toan',
-        type: 'grade',
+        type: NotificationType.performance,
         childId: '2',
         childName: 'Nguyen Thi C',
         createdAt: 'Hom qua',
@@ -88,7 +100,7 @@ class ParentRepositoryImpl implements ParentRepository {
       const ParentNotificationModel(
         id: '3',
         title: 'Lich hop phu huynh: 30/03/2024',
-        type: 'event',
+        type: NotificationType.general,
         createdAt: '2 ngay truoc',
       ),
     ].take(limit).toList();
@@ -344,6 +356,290 @@ class ParentRepositoryImpl implements ParentRepository {
       }
       rethrow;
     }
+  }
+
+  @override
+  Future<TrackingOverviewModel> getTrackingOverview(String childId) async {
+    // TODO: Replace with actual API when available
+    return _getMockTrackingOverview();
+  }
+
+  TrackingOverviewModel _getMockTrackingOverview() {
+    return TrackingOverviewModel(
+      focusTracking: FocusTrackingModel(
+        averageFocus: 78.5,
+        totalSessions: 24,
+        sessions: [
+          FocusSessionModel(
+            id: '1',
+            date: '2024-03-25',
+            className: 'Toán 10A1',
+            focusScore: 85.0,
+            durationMinutes: 90,
+          ),
+          FocusSessionModel(
+            id: '2',
+            date: '2024-03-24',
+            className: 'Anh Văn',
+            focusScore: 72.0,
+            durationMinutes: 60,
+          ),
+          FocusSessionModel(
+            id: '3',
+            date: '2024-03-23',
+            className: 'Vật Lý',
+            focusScore: 90.0,
+            durationMinutes: 75,
+          ),
+        ],
+        bestSession: const FocusSessionModel(
+          id: '3',
+          date: '2024-03-23',
+          className: 'Vật Lý',
+          focusScore: 90.0,
+          durationMinutes: 75,
+        ),
+        worstSession: const FocusSessionModel(
+          id: '2',
+          date: '2024-03-24',
+          className: 'Anh Văn',
+          focusScore: 72.0,
+          durationMinutes: 60,
+        ),
+      ),
+      assignmentProgress: AssignmentProgressModel(
+        totalAssignments: 15,
+        completedCount: 12,
+        missingCount: 1,
+        lateCount: 2,
+        pendingCount: 0,
+        assignments: [
+          ChildAssignmentModel(
+            id: '1',
+            title: 'Bài tập Toán Chương 3',
+            className: 'Toán 10A1',
+            status: AssignmentStatus.completed,
+            score: 9.5,
+            maxScore: 10,
+            dueDate: '2024-03-20',
+            teacherFeedback: 'Làm bài rất tốt!',
+          ),
+          ChildAssignmentModel(
+            id: '2',
+            title: 'Essay Writing',
+            className: 'Anh Văn',
+            status: AssignmentStatus.late,
+            score: 8.0,
+            maxScore: 10,
+            dueDate: '2024-03-18',
+          ),
+          ChildAssignmentModel(
+            id: '3',
+            title: 'Thí nghiệm Vật Lý',
+            className: 'Vật Lý',
+            status: AssignmentStatus.missing,
+            dueDate: '2024-03-15',
+          ),
+        ],
+      ),
+      performanceOverview: PerformanceOverviewModel(
+        averageScore: 8.5,
+        highestScore: 10.0,
+        lowestScore: 7.0,
+        performances: [
+          ChildPerformanceModel(
+            id: '1',
+            title: 'Kiểm tra 15 phút - Toán',
+            score: 10.0,
+            maxScore: 10.0,
+            className: 'Toán 10A1',
+            date: '2024-03-22',
+          ),
+          ChildPerformanceModel(
+            id: '2',
+            title: 'Kiểm tra 1 tiết - Anh Văn',
+            score: 8.0,
+            maxScore: 10.0,
+            className: 'Anh Văn',
+            date: '2024-03-20',
+          ),
+          ChildPerformanceModel(
+            id: '3',
+            title: 'Kiểm tra giữa kỳ - Vật Lý',
+            score: 7.5,
+            maxScore: 10.0,
+            className: 'Vật Lý',
+            date: '2024-03-15',
+          ),
+        ],
+      ),
+      attendanceSummary: const AttendanceSummaryModel(
+        totalSessions: 40,
+        presentCount: 35,
+        absentCount: 2,
+        lateCount: 2,
+        excusedCount: 1,
+        attendanceRate: 0.875,
+      ),
+      teacherInfo: const TeacherInfoModel(
+        id: '1',
+        name: 'Nguyễn Văn A',
+        email: 'nguyenvana@school.edu.vn',
+        phone: '0901234567',
+        yearsOfExperience: 10,
+        specialization: 'Toán học - Đại số & Giải tích',
+      ),
+    );
+  }
+
+  @override
+  Future<ParentFinanceOverviewModel> getFinanceOverview({
+    String? childId,
+  }) async {
+    // TODO: Replace with actual API when available
+    return _getMockFinanceOverview();
+  }
+
+  ParentFinanceOverviewModel _getMockFinanceOverview() {
+    return ParentFinanceOverviewModel(
+      totalTuition: 15000000,
+      paidAmount: 10000000,
+      remainingAmount: 5000000,
+      nextDueDate: '2024-04-15',
+      pendingPayments: [
+        PendingPaymentModel(
+          id: '1',
+          amount: 3000000,
+          dueDate: '2024-04-15',
+          childName: 'Nguyễn Văn B',
+          courseName: 'Học phí tháng 4/2024',
+        ),
+        PendingPaymentModel(
+          id: '2',
+          amount: 2000000,
+          dueDate: '2024-03-25',
+          childName: 'Nguyễn Thị C',
+          courseName: 'Khóa học Tiếng Anh',
+          isOverdue: true,
+        ),
+      ],
+      paymentHistory: [
+        PaymentHistoryModel(
+          id: '1',
+          amount: 3000000,
+          paymentDate: '2024-03-15',
+          status: PaymentStatus.completed,
+          paymentMethod: 'Chuyển khoản ngân hàng',
+          childName: 'Nguyễn Văn B',
+          courseName: 'Học phí tháng 3/2024',
+          transactionId: 'TXN123456',
+        ),
+        PaymentHistoryModel(
+          id: '2',
+          amount: 2000000,
+          paymentDate: '2024-03-10',
+          status: PaymentStatus.completed,
+          paymentMethod: 'Ví MoMo',
+          childName: 'Nguyễn Thị C',
+          courseName: 'Học phí tháng 3/2024',
+          transactionId: 'TXN123457',
+        ),
+        PaymentHistoryModel(
+          id: '3',
+          amount: 5000000,
+          paymentDate: '2024-02-15',
+          status: PaymentStatus.completed,
+          paymentMethod: 'Thẻ tín dụng',
+          childName: 'Nguyễn Văn B',
+          courseName: 'Học phí tháng 2/2024',
+          transactionId: 'TXN123458',
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<PortfolioModel> getPortfolio(String childId) async {
+    // TODO: Replace with actual API when available
+    return _getMockPortfolio(childId);
+  }
+
+  PortfolioModel _getMockPortfolio(String childId) {
+    return PortfolioModel(
+      childId: childId,
+      childName: 'Nguyễn Văn B',
+      totalItems: 8,
+      highlightedCount: 3,
+      items: [
+        PortfolioItemModel(
+          id: '1',
+          title: 'Bài tập Toán - Chương 3',
+          type: PortfolioItemType.assignment,
+          score: 9.5,
+          maxScore: 10,
+          teacherFeedback: 'Làm bài rất tốt, trình bày rõ ràng',
+          className: 'Toán 10A1',
+          createdAt: '2024-03-20',
+          isHighlighted: true,
+        ),
+        PortfolioItemModel(
+          id: '2',
+          title: 'Dự án Web App',
+          type: PortfolioItemType.project,
+          score: 95,
+          maxScore: 100,
+          teacherFeedback: 'Dự án sáng tạo, code sạch',
+          className: 'Lập trình Web',
+          createdAt: '2024-03-15',
+          isHighlighted: true,
+        ),
+        PortfolioItemModel(
+          id: '3',
+          title: 'Bài kiểm tra giữa kỳ',
+          type: PortfolioItemType.test,
+          score: 8.5,
+          maxScore: 10,
+          teacherFeedback: 'Cần cải thiện phần lý thuyết',
+          className: 'Vật lý 10',
+          createdAt: '2024-03-10',
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<PaymentHistoryModel> createPayment(CreatePaymentRequest request) async {
+    // TODO: Replace with actual API when available
+    return PaymentHistoryModel(
+      id: 'new-payment',
+      amount: request.amount,
+      paymentDate: DateTime.now().toString(),
+      status: PaymentStatus.completed,
+      transactionId: 'TXN${DateTime.now().millisecondsSinceEpoch}',
+    );
+  }
+
+  @override
+  Future<List<PaymentMethodModel>> getPaymentMethods() async {
+    // TODO: Replace with actual API when available
+    return [
+      const PaymentMethodModel(
+        id: '1',
+        name: 'Chuyển khoản ngân hàng',
+        type: PaymentMethodType.bankTransfer,
+        isDefault: true,
+      ),
+      const PaymentMethodModel(
+        id: '2',
+        name: 'Ví MoMo',
+        type: PaymentMethodType.eWallet,
+      ),
+      const PaymentMethodModel(
+        id: '3',
+        name: 'Thẻ tín dụng/Ghi nợ',
+        type: PaymentMethodType.creditCard,
+      ),
+    ];
   }
 
   /// Helper to parse list from response data.

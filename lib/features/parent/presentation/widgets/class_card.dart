@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/parent/data/models/models.dart';
+import 'package:study/theme/app_colors.dart';
 
 class ClassCard extends StatelessWidget {
   const ClassCard({
@@ -60,7 +61,7 @@ class ClassCard extends StatelessWidget {
                           Text(
                             classModel.teacherName!,
                             style: textTheme.bodySmall?.copyWith(
-                              color: cs.onSurfaceVariant,
+                              color: cs.textSecondary,
                             ),
                           ),
                         ],
@@ -75,7 +76,7 @@ class ClassCard extends StatelessWidget {
                 Text(
                   classModel.description!,
                   style: textTheme.bodySmall?.copyWith(
-                    color: cs.onSurfaceVariant,
+                    color: cs.textSecondary,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -87,13 +88,13 @@ class ClassCard extends StatelessWidget {
                   Icon(
                     Icons.people_outline,
                     size: 16,
-                    color: cs.onSurfaceVariant,
+                    color: cs.textSecondary,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     '${classModel.studentCount}/${classModel.maxStudents} hoc sinh',
                     style: textTheme.labelSmall?.copyWith(
-                      color: cs.onSurfaceVariant,
+                      color: cs.textSecondary,
                     ),
                   ),
                 ],
@@ -131,7 +132,7 @@ class _StatusBadge extends StatelessWidget {
             width: 6,
             height: 6,
             decoration: BoxDecoration(
-              color: isActive ? Colors.green : cs.onSurfaceVariant,
+              color: isActive ? Colors.green : cs.textSecondary,
               shape: BoxShape.circle,
             ),
           ),
@@ -139,7 +140,7 @@ class _StatusBadge extends StatelessWidget {
           Text(
             isActive ? 'Dang hoc' : status,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: isActive ? Colors.green : cs.onSurfaceVariant,
+                  color: isActive ? Colors.green : cs.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
           ),

@@ -6,6 +6,7 @@ import 'package:study/features/parent/bloc/child_detail/child_detail_state.dart'
 import 'package:study/features/parent/data/models/models.dart';
 import 'package:study/features/parent/data/repository/parent_repository.dart';
 import 'package:study/features/parent/presentation/widgets/widgets.dart';
+import 'package:study/theme/app_colors.dart';
 
 class ChildDetailScreen extends StatelessWidget {
   const ChildDetailScreen({
@@ -147,13 +148,13 @@ class _ChildDetailContentState extends State<_ChildDetailContent>
                             Text(
                               'Hoc sinh ${child.displayGrade}',
                               style: textTheme.bodyMedium?.copyWith(
-                                color: cs.onSurfaceVariant,
+                                color: cs.textSecondary,
                               ),
                             ),
                             Text(
                               child.displaySchool,
                               style: textTheme.bodyMedium?.copyWith(
-                                color: cs.onSurfaceVariant,
+                                color: cs.textSecondary,
                               ),
                             ),
                           ],
@@ -269,7 +270,7 @@ class _StatCard extends StatelessWidget {
             Text(
               label,
               style: textTheme.labelSmall?.copyWith(
-                color: cs.onSurfaceVariant,
+                color: cs.textSecondary,
               ),
             ),
           ],
@@ -411,20 +412,20 @@ class _ResultsTab extends StatelessWidget {
           Icon(
             Icons.assignment_outlined,
             size: 64,
-            color: cs.onSurfaceVariant.withOpacity(0.5),
+            color: cs.textSecondary.withOpacity(0.5),
           ),
           const SizedBox(height: 16),
           Text(
             'Tinh nang dang phat trien',
             style: textTheme.titleMedium?.copyWith(
-              color: cs.onSurfaceVariant,
+              color: cs.textSecondary,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Ket qua hoc tap se duoc hien thi o day',
             style: textTheme.bodyMedium?.copyWith(
-              color: cs.onSurfaceVariant,
+              color: cs.textSecondary,
             ),
           ),
         ],

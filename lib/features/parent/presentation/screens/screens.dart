@@ -1,4 +1,11 @@
+export 'assignment_detail_screen.dart';
 export 'child_detail_screen.dart';
+export 'focus_detail_screen.dart';
 export 'parent_dashboard_screen.dart';
+export 'parent_finance_screen.dart';
 export 'parent_main_screen.dart';
+export 'parent_more_screen.dart';
 export 'parent_notifications_screen.dart';
+export 'parent_portfolio_screen.dart';
+export 'parent_settings_screen.dart';
+export 'parent_tracking_screen.dart';

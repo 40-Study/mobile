@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/parent/data/models/models.dart';
+import 'package:study/theme/app_colors.dart';
 
 class ChildCard extends StatelessWidget {
   const ChildCard({
@@ -70,7 +71,7 @@ class ChildCard extends StatelessWidget {
                         Text(
                           '${child.displayGrade} - ${child.displaySchool}',
                           style: textTheme.bodyMedium?.copyWith(
-                            color: cs.onSurfaceVariant,
+                            color: cs.textSecondary,
                           ),
                         ),
                       ],
