@@ -101,15 +101,13 @@ class LocationHeader extends StatelessWidget {
                 vertical: AppSpacing.xs,
               ),
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.15)
-                    : cs.primaryContainer,
+                color: cs.primaryContainer,
                 borderRadius: AppRadius.borderSm,
               ),
               child: Text(
                 _getConditionLabel(state.condition),
                 style: tt.labelSmall?.copyWith(
-                  color: isDark ? Colors.white : cs.primary,
+                  color: cs.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -125,15 +123,13 @@ class LocationHeader extends StatelessWidget {
                 vertical: AppSpacing.xs,
               ),
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.15)
-                    : cs.primaryContainer,
+                color: cs.primaryContainer,
                 borderRadius: AppRadius.borderSm,
               ),
               child: Text(
                 _getTimeLabel(state.timeOfDay),
                 style: tt.labelSmall?.copyWith(
-                  color: isDark ? Colors.white : cs.primary,
+                  color: cs.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
