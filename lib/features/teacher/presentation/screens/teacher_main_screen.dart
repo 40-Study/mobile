@@ -10,7 +10,7 @@ import 'package:study/features/teacher/presentation/screens/teacher_actions_scre
 import 'package:study/features/teacher/presentation/screens/teacher_courses_screen.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_dashboard_screen.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_revenue_screen.dart';
-import 'package:study/features/weather/weather.dart';
+import 'package:study/widgets/simple_gradient_background.dart';
 
 class TeacherMainScreen extends StatefulWidget {
   const TeacherMainScreen({super.key});
@@ -77,7 +77,7 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
         ],
         child: Scaffold(
           backgroundColor: Colors.transparent,
-          body: WeatherBackgroundWrapper(
+          body: SimpleGradientBackground(
             child: IndexedStack(
               index: _currentIndex,
               children: _screens,

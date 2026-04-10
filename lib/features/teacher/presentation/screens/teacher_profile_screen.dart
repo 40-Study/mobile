@@ -4,7 +4,7 @@ import 'package:study/constants/dimens.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/features/auth/presentation/edit_profile_screen.dart';
 import 'package:study/features/teacher/presentation/screens/switch_role_screen.dart';
-import 'package:study/features/weather/presentation/widgets/weather_background_wrapper.dart';
+import 'package:study/widgets/simple_gradient_background.dart';
 
 class TeacherProfileScreen extends StatelessWidget {
   const TeacherProfileScreen({super.key});
@@ -13,7 +13,7 @@ class TeacherProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return WeatherBackgroundWrapper(
+    return SimpleGradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: BlocBuilder<AuthBloc, AuthState>(
@@ -35,7 +35,7 @@ class TeacherProfileScreen extends StatelessWidget {
               ),
               children: [
                 _ProfileHeader(
-                  name: profile?.displayName ?? user.fullName ?? user.username,
+                  name: profile?.displayName ?? user.fullName ?? user.username ?? 'User',
                   email: user.email,
                   avatarUrl: user.avatarUrl,
                   roleLabel: 'Giang vien',

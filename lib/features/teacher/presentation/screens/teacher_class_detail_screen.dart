@@ -4,7 +4,7 @@ import 'package:study/constants/dimens.dart';
 import 'package:study/features/teacher/bloc/classes/teacher_class_detail_cubit.dart';
 import 'package:study/features/teacher/data/models/models.dart';
 import 'package:study/features/teacher/presentation/widgets/widgets.dart';
-import 'package:study/features/weather/presentation/widgets/weather_background_wrapper.dart';
+import 'package:study/widgets/simple_gradient_background.dart';
 
 class TeacherClassDetailScreen extends StatefulWidget {
   const TeacherClassDetailScreen({
@@ -42,7 +42,7 @@ class _TeacherClassDetailScreenState extends State<TeacherClassDetailScreen>
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return WeatherBackgroundWrapper(
+    return SimpleGradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: BlocBuilder<TeacherClassDetailCubit, TeacherClassDetailState>(

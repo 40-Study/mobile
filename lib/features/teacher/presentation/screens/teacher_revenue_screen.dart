@@ -55,7 +55,7 @@ class _TeacherRevenueScreenState extends State<TeacherRevenueScreen> {
     try {
       final authState = context.read<AuthBloc>().state;
       if (authState is AuthAuthenticated) {
-        userName = authState.user.fullName ?? authState.user.username;
+        userName = authState.user.fullName ?? authState.user.username ?? 'User';
       }
     } catch (_) {}
 

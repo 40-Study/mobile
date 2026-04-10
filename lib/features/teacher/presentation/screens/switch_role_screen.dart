@@ -8,7 +8,8 @@ import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/presentation/add_profile_screen.dart';
 import 'package:study/features/auth/presentation/utils/role_utils.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
-import 'package:study/features/weather/presentation/widgets/weather_background_wrapper.dart';
+import 'package:study/widgets/simple_gradient_background.dart';
+import 'package:study/routes/router.dart';
 
 class SwitchRoleScreen extends StatefulWidget {
   const SwitchRoleScreen({super.key});
@@ -56,7 +57,7 @@ class _SwitchRoleScreenState extends State<SwitchRoleScreen> {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return WeatherBackgroundWrapper(
+    return SimpleGradientBackground(
       child: BlocProvider.value(
         value: _profileCubit,
         child: Scaffold(
@@ -65,7 +66,7 @@ class _SwitchRoleScreenState extends State<SwitchRoleScreen> {
             backgroundColor: Colors.transparent,
             title: const Text('Chuyển đổi vai trò'),
           ),
-        body: BlocConsumer<ProfileCubit, ProfileState>(
+          body: BlocConsumer<ProfileCubit, ProfileState>(
           listener: (context, state) {
             debugPrint('🔄 ProfileState changed: $state');
             if (state is ProfileSwitched && state.newProfile != null) {
@@ -82,7 +83,15 @@ class _SwitchRoleScreenState extends State<SwitchRoleScreen> {
                   backgroundColor: Theme.of(context).colorScheme.tertiary,
                 ),
               );
-              Navigator.pop(context);
+              // Navigate to home with fresh state instead of just popping
+              // This ensures the role-based screen is rebuilt properly
+              Future.delayed(const Duration(milliseconds: 100), () {
+                if (!mounted) return;
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  Routes.app,
+                  (route) => false,
+                );
+              });
             }
             if (state is ProfileSwitchFailure) {
               debugPrint('❌ Switch failed: ${state.message}');
@@ -201,12 +210,7 @@ class _SwitchRoleScreenState extends State<SwitchRoleScreen> {
                         isLoading: isSwitching,
                         onTap: isCurrentProfile || isSwitching
                             ? null
-                            : () async {
-                                await _profileCubit.switchProfile(
-                                  profileType: profile.type,
-                                  profileId: profile.id,
-                                );
-                              },
+                            : () => _profileCubit.switchProfile(profile),
                       ),
                     );
                   }),

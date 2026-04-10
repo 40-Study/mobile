@@ -106,8 +106,8 @@ class TeacherCoursesCubit extends Cubit<TeacherCoursesState> {
         sorted.sort((a, b) => b.studentCount.compareTo(a.studentCount));
       case CourseSortBy.highestRevenue:
         sorted.sort((a, b) {
-          final revenueA = a.studentCount * a.price;
-          final revenueB = b.studentCount * b.price;
+          final revenueA = a.studentCount * a.priceValue;
+          final revenueB = b.studentCount * b.priceValue;
           return revenueB.compareTo(revenueA);
         });
       case CourseSortBy.highestRating:

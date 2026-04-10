@@ -595,9 +595,9 @@ class _CourseCard extends StatelessWidget {
             letterSpacing: 0.5,
           ),
         ),
-        if (course.price > 0)
+        if (course.priceValue > 0)
           Text(
-            _formatPrice(course.price),
+            _formatPrice(course.priceValue),
             style: tt.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
               color: cs.onSurface,

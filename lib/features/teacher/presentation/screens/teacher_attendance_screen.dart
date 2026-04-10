@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/teacher/bloc/classes/teacher_class_detail_cubit.dart';
 import 'package:study/features/teacher/data/models/models.dart';
-import 'package:study/features/weather/presentation/widgets/weather_background_wrapper.dart';
+import 'package:study/widgets/simple_gradient_background.dart';
 
 class TeacherAttendanceScreen extends StatefulWidget {
   const TeacherAttendanceScreen({
@@ -41,7 +41,7 @@ class _TeacherAttendanceScreenState extends State<TeacherAttendanceScreen> {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return WeatherBackgroundWrapper(
+    return SimpleGradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(

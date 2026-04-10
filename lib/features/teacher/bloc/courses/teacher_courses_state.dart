@@ -76,7 +76,7 @@ final class TeacherCoursesLoaded extends TeacherCoursesState {
       courses.where((c) => c.status == 'on_sale' || c.isPublished).length;
 
   double get totalRevenue =>
-      courses.fold(0.0, (sum, c) => sum + (c.price * c.studentCount));
+      courses.fold(0.0, (sum, c) => sum + (c.priceValue * c.studentCount));
 
   TeacherCoursesLoaded copyWith({
     List<CourseModel>? courses,
