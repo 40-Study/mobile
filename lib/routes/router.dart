@@ -2,8 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/di/di_container.dart';
+import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/presentation/forgot_password_otp_screen.dart';
 import 'package:study/features/auth/presentation/forgot_password_screen.dart';
+import 'package:study/features/auth/presentation/login_role_picker_screen.dart';
 import 'package:study/features/auth/presentation/login_screen.dart';
 import 'package:study/features/auth/presentation/register_form_screen.dart';
 import 'package:study/features/auth/presentation/register_otp_screen.dart';
@@ -25,6 +27,7 @@ class Routes {
 
   // Auth
   static const login = 'login';
+  static const loginRolePicker = 'loginRolePicker';
   static const selectRole = 'selectRole';
   static const registerForm = 'registerForm';
   static const registerOtp = 'registerOtp';
@@ -52,6 +55,13 @@ class NavigationService {
     Routes.darkTheme: (_) => const DarkThemeScreen(),
     Routes.settings: (_) => const SettingsScreen(),
     Routes.login: (_) => const LoginScreen(),
+    Routes.loginRolePicker: (Object? args) {
+      final data = args as Map<String, dynamic>;
+      return LoginRolePickerScreen(
+        sessionToken: data['sessionToken'] as String,
+        roles: data['roles'] as List<RoleModel>,
+      );
+    },
     Routes.selectRole: (_) => const SelectRoleScreen(),
     Routes.registerForm: (_) => const RegisterFormScreen(),
     Routes.registerOtp: (_) => const RegisterOtpScreen(),
@@ -72,6 +82,7 @@ class NavigationService {
     Routes.appearance,
     Routes.darkTheme,
     Routes.settings,
+    Routes.loginRolePicker,
     Routes.selectRole,
     Routes.registerForm,
     Routes.registerOtp,
