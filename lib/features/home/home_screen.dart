@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
+import 'package:study/features/organization/presentation/screens/organization_main_screen.dart';
 import 'package:study/features/parent/presentation/screens/parent_main_screen.dart';
 import 'package:study/features/student/presentation/screens/student_main_screen.dart';
+import 'package:study/features/system_admin/presentation/screens/bi_main_screen.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_main_screen.dart';
 import 'package:study/generated/l10n.dart';
 import 'package:study/index.dart';
@@ -33,9 +35,16 @@ class HomeScreen extends StatelessWidget {
     debugPrint('🔐 isTeacher: ${authState.isTeacher}');
     debugPrint('🔐 isStudent: ${authState.isStudent}');
     debugPrint('🔐 isParent: ${authState.isParent}');
+    debugPrint('🔐 isOrganizationOwner: ${authState.isOrganizationOwner}');
     debugPrint('🔐 isAdmin: ${authState.isAdmin}');
 
-    if (authState.isTeacher || authState.isAdmin) {
+    if (authState.isAdmin) {
+      return const BIMainScreen();
+    }
+    if (authState.isOrganizationOwner) {
+      return const OrganizationMainScreen();
+    }
+    if (authState.isTeacher) {
       return const TeacherMainScreen();
     }
     if (authState.isStudent) {
