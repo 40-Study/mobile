@@ -24,6 +24,8 @@ import 'package:study/features/auth/data/auth_storage.dart' as _i450;
 import 'package:study/features/auth/data/session_expired_notifier.dart'
     as _i785;
 import 'package:study/features/auth/repository/auth_repository.dart' as _i584;
+import 'package:study/features/organization/data/repository/organization_repository.dart'
+    as _i443;
 import 'package:study/features/parent/data/parent_api_client.dart' as _i698;
 import 'package:study/features/parent/data/repository/parent_repository.dart'
     as _i243;
@@ -45,10 +47,13 @@ extension GetItInjectableX on _i174.GetIt {
     _i526.EnvironmentFilter? environmentFilter,
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
+    final repositoryModule = _$RepositoryModule();
     final dIAppModule = _$DIAppModule();
     final dIDataModule = _$DIDataModule();
     final networkModule = _$NetworkModule();
-    final repositoryModule = _$RepositoryModule();
+    gh.factory<_i443.OrganizationRepository>(
+      () => repositoryModule.provideOrganizationRepository(),
+    );
     gh.lazySingleton<_i409.GlobalKey<_i409.NavigatorState>>(
       () => dIAppModule.navigatorKey,
     );
@@ -118,10 +123,10 @@ extension GetItInjectableX on _i174.GetIt {
   }
 }
 
+class _$RepositoryModule extends _i169.RepositoryModule {}
+
 class _$DIAppModule extends _i183.DIAppModule {}
 
 class _$DIDataModule extends _i207.DIDataModule {}
 
 class _$NetworkModule extends _i541.NetworkModule {}
-
-class _$RepositoryModule extends _i169.RepositoryModule {}

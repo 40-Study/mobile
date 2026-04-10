@@ -5,6 +5,8 @@ import 'package:study/features/auth/data/auth_api_client.dart';
 import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/auth/repository/auth_repository_impl.dart';
+import 'package:study/features/organization/data/repository/organization_repository.dart';
+import 'package:study/features/organization/data/repository/organization_repository_impl.dart';
 import 'package:study/features/parent/data/parent_api_client.dart';
 import 'package:study/features/parent/data/repository/parent_repository.dart';
 import 'package:study/features/parent/data/repository/parent_repository_impl.dart';
@@ -60,4 +62,8 @@ abstract class RepositoryModule {
         storage: storage,
         locationService: locationService,
       );
+
+  @factoryMethod
+  OrganizationRepository provideOrganizationRepository() =>
+      OrganizationRepositoryImpl();
 }
