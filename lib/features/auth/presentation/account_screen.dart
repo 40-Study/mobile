@@ -14,7 +14,7 @@ import 'package:study/features/teacher/presentation/screens/switch_role_screen.d
 import 'package:study/features/weather/weather.dart';
 import 'package:study/theme/app_colors.dart';
 
-enum AccountRoleType { teacher, student, parent }
+enum AccountRoleType { teacher, student, parent, organization }
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key, this.roleType = AccountRoleType.teacher});
@@ -38,6 +38,8 @@ class _AccountScreenState extends State<AccountScreen>
         return 0; // Teacher now uses single-page profile design
       case AccountRoleType.parent:
         return 3;
+      case AccountRoleType.organization:
+        return 0; // Organization uses single-page profile design
     }
   }
 
@@ -101,7 +103,12 @@ class _AccountScreenState extends State<AccountScreen>
                   return _buildTeacherProfile(context, user, profile);
                 }
 
-                // Student and Parent use the original tabbed layout
+                // Parent uses beautiful single-page profile
+                if (widget.roleType == AccountRoleType.parent) {
+                  return _buildParentProfile(context, user, profile);
+                }
+
+                // Student uses the original tabbed layout
                 return NestedScrollView(
                   headerSliverBuilder: (context, innerBoxIsScrolled) => [
                     _buildSliverAppBar(context, user, profile),
@@ -228,7 +235,7 @@ class _AccountScreenState extends State<AccountScreen>
                       : null,
                   child: user.avatarUrl == null
                       ? Text(
-                          _getInitials(user.fullName ?? user.username),
+                          _getInitials(user.fullName ?? user.username ?? 'User'),
                           style: tt.headlineMedium?.copyWith(
                             color: cs.primary,
                             fontWeight: FontWeight.bold,
@@ -270,7 +277,7 @@ class _AccountScreenState extends State<AccountScreen>
 
         // Name
         Text(
-          user.fullName ?? user.username,
+          user.fullName ?? user.username ?? 'User',
           style: tt.headlineSmall?.copyWith(
             fontWeight: FontWeight.w800,
             color: textColor,
@@ -656,7 +663,7 @@ class _AccountScreenState extends State<AccountScreen>
                               child: user.avatarUrl == null
                                   ? Text(
                                       _getInitials(
-                                          user.fullName ?? user.username),
+                                          user.fullName ?? user.username ?? 'User'),
                                       style: tt.headlineMedium?.copyWith(
                                         color: cs.primary,
                                         fontWeight: FontWeight.bold,
@@ -698,7 +705,7 @@ class _AccountScreenState extends State<AccountScreen>
                             children: [
                               Flexible(
                                 child: Text(
-                                  user.fullName ?? user.username,
+                                  user.fullName ?? user.username ?? 'User',
                                   style: tt.titleLarge?.copyWith(
                                     fontWeight: FontWeight.w800,
                                     color: cs.onSurface,
@@ -812,6 +819,12 @@ class _AccountScreenState extends State<AccountScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
+      case AccountRoleType.organization:
+        return LinearGradient(
+          colors: [cs.primary, cs.tertiary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
     }
   }
 
@@ -833,6 +846,10 @@ class _AccountScreenState extends State<AccountScreen>
           Tab(text: 'Con em'),
           Tab(text: 'Thông báo'),
         ];
+      case AccountRoleType.organization:
+        return const [
+          Tab(text: 'Tổng quan'),
+        ];
     }
   }
 
@@ -853,6 +870,10 @@ class _AccountScreenState extends State<AccountScreen>
           _ParentOverviewTab(user: user),
           _ParentChildrenTab(),
           _ParentNotificationsTab(),
+        ];
+      case AccountRoleType.organization:
+        return [
+          _TeacherOverviewTab(user: user), // Reuse teacher overview for now
         ];
     }
   }
@@ -1042,6 +1063,453 @@ class _AccountScreenState extends State<AccountScreen>
           child: const EditProfileScreen(),
         ),
       ),
+    );
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  PARENT PROFILE - Beautiful Single Page Design
+  // ══════════════════════════════════════════════════════════════
+
+  Widget _buildParentProfile(
+    BuildContext context,
+    UserModel user,
+    ProfileModel? profile,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final textColor = context.weatherTextColor;
+    final secondaryColor = context.weatherTextColorSecondary;
+
+    return SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(
+          AppLayout.screenMargin,
+          AppSpacing.md,
+          AppLayout.screenMargin,
+          100,
+        ),
+        children: [
+          // Settings button row
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              onPressed: () => _showOptionsMenu(context),
+              icon: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: cs.surface.withValues(alpha: 0.9),
+                  shape: BoxShape.circle,
+                  boxShadow: cs.shadowCard,
+                ),
+                child: Icon(
+                  Icons.more_horiz_rounded,
+                  color: cs.onSurface,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+
+          // Avatar Section
+          _buildParentAvatarSection(context, user, profile, textColor),
+          const SizedBox(height: AppSpacing.xxl),
+
+          // Stats Card
+          _buildParentStatsCard(context),
+          const SizedBox(height: AppSpacing.xxxl),
+
+          // Account Info Section
+          _buildParentAccountInfo(context, user, textColor, secondaryColor),
+          const SizedBox(height: AppSpacing.xxxl),
+
+          // Quick Actions
+          _buildParentQuickActions(context, textColor),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildParentAvatarSection(
+    BuildContext context,
+    UserModel user,
+    ProfileModel? profile,
+    Color textColor,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Column(
+      children: [
+        // Avatar with gradient ring (tertiary for parent)
+        Stack(
+          alignment: Alignment.bottomCenter,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [cs.tertiary, cs.tertiaryContainer, cs.tertiary],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: cs.tertiary.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: cs.surface,
+                ),
+                child: CircleAvatar(
+                  radius: 56,
+                  backgroundColor: cs.tertiaryContainer.withValues(alpha: 0.3),
+                  backgroundImage: user.avatarUrl != null
+                      ? NetworkImage(user.avatarUrl!)
+                      : null,
+                  child: user.avatarUrl == null
+                      ? Text(
+                          _getInitials(user.fullName ?? user.username ?? 'User'),
+                          style: tt.headlineMedium?.copyWith(
+                            color: cs.tertiary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : null,
+                ),
+              ),
+            ),
+            // Camera button
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: GestureDetector(
+                onTap: _changeAvatar,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: cs.tertiary,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: cs.surface, width: 3),
+                    boxShadow: cs.shadowCard,
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt_rounded,
+                    size: 16,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+
+        // Family icon badge
+        Icon(Icons.family_restroom_rounded, size: 24, color: cs.tertiary),
+        const SizedBox(height: AppSpacing.md),
+
+        // Name
+        Text(
+          user.fullName ?? user.username ?? 'User',
+          style: tt.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            color: textColor,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.xs),
+
+        // Role label
+        Text(
+          'PHU HUYNH',
+          style: tt.bodyMedium?.copyWith(
+            color: context.weatherTextColorSecondary,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildParentStatsCard(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
+        borderRadius: AppRadius.borderXxl,
+        border: Border.all(color: cs.outline.withValues(alpha: 0.3)),
+        boxShadow: cs.shadowCard,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _ParentStatItem(
+            icon: Icons.child_care,
+            value: '2',
+            label: 'Con em',
+            color: cs.tertiary,
+          ),
+          Container(
+            width: 1,
+            height: 40,
+            color: cs.outline.withValues(alpha: 0.3),
+          ),
+          _ParentStatItem(
+            icon: Icons.school,
+            value: '5',
+            label: 'Lop hoc',
+            color: cs.primary,
+          ),
+          Container(
+            width: 1,
+            height: 40,
+            color: cs.outline.withValues(alpha: 0.3),
+          ),
+          _ParentStatItem(
+            icon: Icons.notifications_active,
+            value: '12',
+            label: 'Thong bao',
+            color: cs.secondary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildParentAccountInfo(
+    BuildContext context,
+    UserModel user,
+    Color textColor,
+    Color secondaryColor,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Thong tin tai khoan',
+          style: tt.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: textColor,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLowest,
+            borderRadius: AppRadius.borderXxl,
+            border: Border.all(color: cs.outline.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            children: [
+              _buildParentInfoRow(
+                context,
+                Icons.email_outlined,
+                'Email',
+                user.email ?? 'Chua cap nhat',
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _buildParentInfoRow(
+                context,
+                Icons.phone_outlined,
+                'So dien thoai',
+                user.phone ?? 'Chua cap nhat',
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _buildParentInfoRow(
+                context,
+                Icons.calendar_today_outlined,
+                'Ngay tham gia',
+                _formatJoinDate(user.createdAt),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildParentInfoRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: cs.tertiaryContainer.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 20, color: cs.tertiary),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+              ),
+              Text(
+                value,
+                style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildParentQuickActions(BuildContext context, Color textColor) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Tuy chon',
+          style: tt.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: textColor,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Container(
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLowest,
+            borderRadius: AppRadius.borderXxl,
+            border: Border.all(color: cs.outline.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            children: [
+              _buildParentActionTile(
+                context,
+                icon: Icons.edit_outlined,
+                title: 'Chinh sua ho so',
+                onTap: _navigateToEditProfile,
+              ),
+              Divider(height: 1, color: cs.outline.withValues(alpha: 0.2)),
+              _buildParentActionTile(
+                context,
+                icon: Icons.lock_outline,
+                title: 'Bao mat',
+                onTap: _navigateToSecurity,
+              ),
+              Divider(height: 1, color: cs.outline.withValues(alpha: 0.2)),
+              _buildParentActionTile(
+                context,
+                icon: Icons.swap_horiz,
+                title: 'Chuyen doi vai tro',
+                onTap: _navigateToSwitchRole,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildParentActionTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return ListTile(
+      leading: Icon(icon, color: cs.tertiary),
+      title: Text(
+        title,
+        style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+      ),
+      trailing: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
+      onTap: onTap,
+    );
+  }
+
+  void _navigateToSecurity() {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => const SecurityScreen(),
+      ),
+    );
+  }
+
+  void _navigateToSwitchRole() {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => const SwitchRoleScreen(),
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PARENT STAT ITEM
+// ══════════════════════════════════════════════════════════════
+
+class _ParentStatItem extends StatelessWidget {
+  const _ParentStatItem({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String value;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 24),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: tt.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: cs.onSurface,
+          ),
+        ),
+        Text(
+          label,
+          style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+        ),
+      ],
     );
   }
 }

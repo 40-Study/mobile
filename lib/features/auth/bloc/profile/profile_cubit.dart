@@ -23,31 +23,51 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  Future<void> switchProfile({
-    required String profileType,
-    required String profileId,
-  }) async {
+  /// Switch to a different profile/role
+  ///
+  /// Theo API DOCS:
+  /// - POST /auth/switch-role cần role_id, role_type, organization_id (nếu org)
+  /// - role_id là system_role_id từ ProfileDto, KHÔNG phải profile.id
+  Future<void> switchProfile(ProfileModel profile) async {
     final currentProfiles = _getCurrentProfiles();
 
     emit(ProfileSwitching(
       profiles: currentProfiles,
-      switchingProfileId: profileId,
+      switchingProfileId: profile.id,
     ));
 
     try {
-      final response = await _authRepository.switchProfile(
-        profileType: profileType,
-        profileId: profileId,
+      // API cần system_role_id, không phải profile.id
+      // Nếu không có system_role_id thì không thể switch
+      final roleId = profile.systemRoleId;
+      if (roleId == null || roleId.isEmpty) {
+        emit(ProfileSwitchFailure(
+          profiles: currentProfiles,
+          message: 'Không thể chuyển vai trò: thiếu thông tin role',
+        ));
+        return;
+      }
+
+      final response = await _authRepository.switchRole(
+        roleId: roleId,
+        roleType: profile.type,
+        organizationId: profile.organizationId,
       );
+
       emit(ProfileSwitched(
         profiles: currentProfiles,
-        newProfile: response.activeProfile,
+        newProfile: response.activeProfile ?? profile,
         authResponse: response,
       ));
     } on DioException catch (e) {
       emit(ProfileSwitchFailure(
         profiles: currentProfiles,
         message: AuthErrorHandler.extractMessage(e),
+      ));
+    } catch (e) {
+      emit(ProfileSwitchFailure(
+        profiles: currentProfiles,
+        message: 'Lỗi: $e',
       ));
     }
   }

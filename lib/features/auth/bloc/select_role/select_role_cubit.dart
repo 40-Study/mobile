@@ -17,14 +17,20 @@ class SelectRoleCubit extends Cubit<SelectRoleState> {
 
   Future<void> loadRoles() async {
     emit(const SelectRoleLoading());
+    // ignore: avoid_print
+    print('🎭 SelectRoleCubit: Loading roles...');
 
     try {
       final allRoles = await _authRepository.getSystemRoles();
+      // ignore: avoid_print
+      print('🎭 SelectRoleCubit: Got ${allRoles.length} roles');
 
       // Filter only allowed roles using RoleUtils
       final filteredRoles = allRoles
           .where((role) => RoleUtils.isAllowedRole(role.name))
           .toList();
+      // ignore: avoid_print
+      print('🎭 SelectRoleCubit: Filtered to ${filteredRoles.length} roles');
 
       // Sort roles using RoleUtils
       filteredRoles.sort(
@@ -33,8 +39,20 @@ class SelectRoleCubit extends Cubit<SelectRoleState> {
       );
 
       emit(SelectRoleLoaded(roles: filteredRoles));
+      // ignore: avoid_print
+      print('🎭 SelectRoleCubit: Emitted SelectRoleLoaded');
     } on DioException catch (e) {
+      // ignore: avoid_print
+      print('🎭 SelectRoleCubit: DioException: ${e.message}');
+      // ignore: avoid_print
+      print('🎭 SelectRoleCubit: Response: ${e.response?.data}');
       emit(SelectRoleFailure(message: AuthErrorHandler.extractMessage(e)));
+    } catch (e, stack) {
+      // ignore: avoid_print
+      print('🎭 SelectRoleCubit: Unexpected error: $e');
+      // ignore: avoid_print
+      print('🎭 SelectRoleCubit: Stack: $stack');
+      emit(SelectRoleFailure(message: 'Lỗi: $e'));
     }
   }
 }

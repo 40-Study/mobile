@@ -67,7 +67,7 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
 
     try {
       final authRepo = diContainer.get<AuthRepository>();
-      await authRepo.addSystemProfile(systemRoleId: role.id);
+      await authRepo.createProfile(systemRoleId: role.id);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

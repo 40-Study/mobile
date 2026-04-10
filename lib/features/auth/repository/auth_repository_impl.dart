@@ -7,69 +7,51 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
     required AuthApiClient apiClient,
     required AuthStorage authStorage,
-  }) : _api = apiClient,
-       _storage = authStorage;
+  })  : _api = apiClient,
+        _storage = authStorage;
 
   final AuthApiClient _api;
   final AuthStorage _storage;
 
-  // ==========================================================================
-  // PUBLIC APIs
-  // ==========================================================================
+  // ============================================================================
+  // HELPER: Extract data from response
+  // API có thể trả về { data: {...} } hoặc trực tiếp {...}
+  // ============================================================================
 
-  @override
-  Future<List<RoleModel>> getSystemRoles() async {
-    final response = await _api.getSystemRoles();
-    final data = response.data['data'];
+  dynamic _extractData(dynamic responseData) {
+    if (responseData is Map<String, dynamic> && responseData.containsKey('data')) {
+      return responseData['data'];
+    }
+    return responseData;
+  }
 
-    // Handle both List and Map structures
+  List<T> _parseList<T>(
+    dynamic data,
+    T Function(Map<String, dynamic>) fromJson, {
+    List<String> possibleKeys = const [],
+  }) {
+    // Nếu data là List trực tiếp
     if (data is List<dynamic>) {
-      return data
-          .map((e) => RoleModel.fromJson(e as Map<String, dynamic>))
-          .toList();
+      return data.map((e) => fromJson(e as Map<String, dynamic>)).toList();
     }
 
-    // If data is a Map, try to find roles inside
+    // Nếu data là Map, tìm list bên trong
     if (data is Map<String, dynamic>) {
-      final roles = data['roles'] ?? data['items'] ?? data['system_roles'];
-      if (roles is List<dynamic>) {
-        return roles
-            .map((e) => RoleModel.fromJson(e as Map<String, dynamic>))
-            .toList();
+      for (final key in possibleKeys) {
+        if (data[key] is List<dynamic>) {
+          return (data[key] as List<dynamic>)
+              .map((e) => fromJson(e as Map<String, dynamic>))
+              .toList();
+        }
       }
     }
 
     return [];
   }
 
-  @override
-  Future<AuthResponse> login({
-    required String email,
-    required String password,
-    required DeviceInfoModel deviceInfo,
-  }) async {
-    final response = await _api.login({
-      'email': email,
-      'password': password,
-      'device_info': deviceInfo.toJson(),
-    });
-    final data = response.data['data'] as Map<String, dynamic>;
-
-    // Debug: Print raw API response
-    // ignore: avoid_print
-    print('🔑 Login API response data: $data');
-    // ignore: avoid_print
-    print('🔑 active_profile in response: ${data['active_profile']}');
-
-    final authResponse = AuthResponse.fromJson(data);
-
-    // Debug: Print parsed response
-    // ignore: avoid_print
-    print('🔑 Parsed activeProfile: ${authResponse.activeProfile}');
-
-    await saveSession(authResponse);
-    return authResponse;
-  }
+  // ============================================================================
+  // PUBLIC APIs (không cần token)
+  // ============================================================================
 
   @override
   Future<void> registerRequest({
@@ -77,7 +59,6 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String confirmPassword,
     required String userName,
-    required String roleId,
     String? fullName,
   }) async {
     final body = <String, dynamic>{
@@ -85,12 +66,10 @@ class AuthRepositoryImpl implements AuthRepository {
       'password': password,
       'confirm_password': confirmPassword,
       'user_name': userName,
-      'role_id': roleId,
     };
     if (fullName != null && fullName.isNotEmpty) {
       body['full_name'] = fullName;
     }
-
     await _api.registerRequest(body);
   }
 
@@ -100,8 +79,118 @@ class AuthRepositoryImpl implements AuthRepository {
     required String otp,
   }) async {
     final response = await _api.registerVerify({'email': email, 'otp': otp});
-    final data = response.data['data'] as Map<String, dynamic>;
-    return RegisterResponse.fromJson(data);
+    final data = _extractData(response.data);
+
+    // API có thể trả về { user: {...} } hoặc trực tiếp user data
+    final userData = data is Map && data.containsKey('user') ? data['user'] : data;
+    return RegisterResponse.fromJson(userData as Map<String, dynamic>);
+  }
+
+  @override
+  Future<LoginResponse> login({
+    required String email,
+    required String password,
+    required DeviceInfoModel deviceInfo,
+  }) async {
+    final response = await _api.login({
+      'email': email,
+      'password': password,
+      'device_info': deviceInfo.toJson(),
+    });
+
+    final data = _extractData(response.data) as Map<String, dynamic>;
+    final loginResponse = LoginResponse.fromJson(data);
+
+    // Nếu login hoàn tất (1 role), lưu session
+    if (loginResponse.completed && loginResponse.accessToken != null) {
+      await saveSession(AuthResponse(
+        accessToken: loginResponse.accessToken,
+        refreshToken: loginResponse.refreshToken,
+        user: loginResponse.user,
+        activeRole: loginResponse.activeRole,
+        entryContext: loginResponse.entryContext,
+        currentDevice: loginResponse.currentDevice,
+      ));
+    }
+
+    return loginResponse;
+  }
+
+  @override
+  Future<AuthResponse> selectRole({
+    required String sessionToken,
+    required String roleId,
+    required String roleType,
+    String? organizationId,
+  }) async {
+    final body = <String, dynamic>{
+      'session_token': sessionToken,
+      'role_id': roleId,
+      'role_type': roleType,
+    };
+    if (organizationId != null) {
+      body['organization_id'] = organizationId;
+    }
+
+    final response = await _api.selectRole(body);
+    final data = _extractData(response.data) as Map<String, dynamic>;
+    var authResponse = AuthResponse.fromJson(data);
+
+    // Lưu session trước
+    await saveSession(authResponse);
+
+    // Nếu không có user trong response, fetch từ /auth/me
+    if (authResponse.user == null && authResponse.accessToken != null) {
+      try {
+        final user = await getMe();
+        authResponse = authResponse.copyWith(user: user);
+      } catch (_) {}
+    }
+
+    // Fetch full profile data để có role_name
+    try {
+      final profiles = await getProfiles();
+      // ignore: avoid_print
+      print('🔄 selectRole: fetched ${profiles.length} profiles');
+      // Tìm profile khớp với roleId
+      final activeProfile = profiles.firstWhere(
+        (p) => p.systemRoleId == roleId || p.id == roleId,
+        orElse: () => profiles.isNotEmpty ? profiles.first : authResponse.activeProfile!,
+      );
+      // ignore: avoid_print
+      print('🔄 selectRole: selected profile with roleName=${activeProfile.roleName}');
+      authResponse = authResponse.copyWith(activeProfile: activeProfile);
+    } catch (_) {}
+
+    await saveSession(authResponse);
+    return authResponse;
+  }
+
+  @override
+  Future<List<RoleModel>> getSystemRoles() async {
+    final response = await _api.getSystemRoles();
+    final data = _extractData(response.data);
+
+    return _parseList<RoleModel>(
+      data,
+      RoleModel.fromJson,
+      possibleKeys: ['system_roles', 'roles', 'items'],
+    );
+  }
+
+  @override
+  Future<TokenPair> refreshToken() async {
+    final rt = await _storage.getRefreshToken();
+    final response = await _api.refreshToken({'refresh_token': rt ?? ''});
+    final data = _extractData(response.data) as Map<String, dynamic>;
+    final pair = TokenPair.fromJson(data);
+
+    await _storage.saveTokens(
+      accessToken: pair.accessToken,
+      refreshToken: pair.refreshToken,
+    );
+
+    return pair;
   }
 
   @override
@@ -124,45 +213,36 @@ class AuthRepositoryImpl implements AuthRepository {
     });
   }
 
-  @override
-  Future<TokenPair> refreshToken() async {
-    final rt = await _storage.getRefreshToken();
-    final response = await _api.refreshToken({'refresh_token': rt ?? ''});
-    final data = response.data['data'] as Map<String, dynamic>;
-    final pair = TokenPair.fromJson(data);
-
-    await _storage.saveTokens(
-      accessToken: pair.accessToken,
-      refreshToken: pair.refreshToken,
-    );
-
-    return pair;
-  }
-
-  // ==========================================================================
-  // PROTECTED APIs
-  // ==========================================================================
+  // ============================================================================
+  // PROTECTED APIs (cần token)
+  // ============================================================================
 
   @override
   Future<UserModel> getMe() async {
     final response = await _api.getMe();
-    final data = response.data['data'] as Map<String, dynamic>;
+    final data = _extractData(response.data) as Map<String, dynamic>;
     return UserModel.fromJson(data);
   }
 
   @override
   Future<UserModel> updateMe({
     String? username,
+    String? fullName,
     String? phone,
     String? dateOfBirth,
+    String? bio,
+    String? avatarUrl,
   }) async {
     final body = <String, dynamic>{};
     if (username != null) body['username'] = username;
+    if (fullName != null) body['full_name'] = fullName;
     if (phone != null) body['phone'] = phone;
     if (dateOfBirth != null) body['date_of_birth'] = dateOfBirth;
+    if (bio != null) body['bio'] = bio;
+    if (avatarUrl != null) body['avatar_url'] = avatarUrl;
 
     final response = await _api.updateMe(body);
-    final data = response.data['data'] as Map<String, dynamic>;
+    final data = _extractData(response.data) as Map<String, dynamic>;
     final user = UserModel.fromJson(data);
 
     await _storage.saveUser(user);
@@ -170,76 +250,114 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> changePassword({
-    required String oldPassword,
-    required String newPassword,
-    required String confirmPassword,
-    required DeviceInfoModel deviceInfo,
-    bool revokeOthers = false,
+  Future<List<RoleModel>> getMyRoles() async {
+    final response = await _api.getMyRoles();
+    final data = _extractData(response.data);
+
+    return _parseList<RoleModel>(
+      data,
+      RoleModel.fromJson,
+      possibleKeys: ['roles', 'items'],
+    );
+  }
+
+  @override
+  Future<AuthResponse> switchRole({
+    required String roleId,
+    required String roleType,
+    String? organizationId,
   }) async {
-    await _api.changePassword({
-      'old_password': oldPassword,
-      'new_password': newPassword,
-      'confirm_password': confirmPassword,
-      'device_info': deviceInfo.toJson(),
-      'revoke_others': revokeOthers,
-    });
-  }
+    final body = <String, dynamic>{
+      'role_id': roleId,
+      'role_type': roleType,
+    };
+    if (organizationId != null) {
+      body['organization_id'] = organizationId;
+    }
 
-  @override
-  Future<List<ProfileModel>> getProfiles() async {
-    final response = await _api.getProfiles();
-    final data = response.data['data'] as List<dynamic>;
-    return data
-        .map((e) => ProfileModel.fromJson(e as Map<String, dynamic>))
-        .toList();
-  }
+    final response = await _api.switchRole(body);
+    final data = _extractData(response.data) as Map<String, dynamic>;
+    var authResponse = AuthResponse.fromJson(data);
 
-  @override
-  Future<ProfileModel> addSystemProfile({required String systemRoleId}) async {
-    final response = await _api.addSystemProfile({
-      'system_role_id': systemRoleId,
-    });
-    final data = response.data['data'] as Map<String, dynamic>;
-    final profile = data['profile'] as Map<String, dynamic>;
-    return ProfileModel.fromJson(profile);
-  }
+    // Lưu tokens trước
+    await saveSession(authResponse);
 
-  @override
-  Future<AuthResponse> switchProfile({
-    required String profileType,
-    required String profileId,
-  }) async {
-    final response = await _api.switchProfile({
-      'profile_type': profileType,
-      'profile_id': profileId,
-    });
-    final data = response.data['data'] as Map<String, dynamic>;
+    // API switch-role không trả về user, cần fetch
+    if (authResponse.user == null && authResponse.accessToken != null) {
+      try {
+        final user = await getMe();
+        authResponse = authResponse.copyWith(user: user);
+      } catch (_) {}
+    }
 
-    // Debug: Print raw API response
-    // ignore: avoid_print
-    print('🔄 Switch profile API response: $data');
-    // ignore: avoid_print
-    print('🔄 active_profile in response: ${data['active_profile']}');
-
-    final authResponse = AuthResponse.fromJson(data);
-
-    // Debug: Print parsed response
-    // ignore: avoid_print
-    print('🔄 Parsed activeProfile: ${authResponse.activeProfile}');
+    // Fetch full profile data để có role_name
+    // API switch-role có thể trả về active_profile không đầy đủ
+    try {
+      final profiles = await getProfiles();
+      // ignore: avoid_print
+      print('🔄 switchRole: fetched ${profiles.length} profiles');
+      for (final p in profiles) {
+        // ignore: avoid_print
+        print('🔄 Profile: id=${p.id}, systemRoleId=${p.systemRoleId}, roleName=${p.roleName}');
+      }
+      // Tìm profile đang active (match với roleId hoặc systemRoleId)
+      final activeProfile = profiles.firstWhere(
+        (p) => p.systemRoleId == roleId || p.id == roleId,
+        orElse: () => profiles.isNotEmpty ? profiles.first : authResponse.activeProfile!,
+      );
+      // ignore: avoid_print
+      print('🔄 Selected activeProfile: roleName=${activeProfile.roleName}');
+      authResponse = authResponse.copyWith(activeProfile: activeProfile);
+    } catch (e) {
+      // ignore: avoid_print
+      print('🔄 Error fetching profiles: $e');
+    }
 
     await saveSession(authResponse);
     return authResponse;
   }
 
   @override
+  Future<List<ProfileModel>> getProfiles() async {
+    final response = await _api.getProfiles();
+    final data = _extractData(response.data);
+
+    return _parseList<ProfileModel>(
+      data,
+      ProfileModel.fromJson,
+      possibleKeys: ['profiles', 'items'],
+    );
+  }
+
+  @override
+  Future<ProfileModel> createProfile({required String systemRoleId}) async {
+    final response = await _api.createProfile({
+      'system_role_id': systemRoleId,
+    });
+    final data = _extractData(response.data) as Map<String, dynamic>;
+
+    // API trả về { profile: {...}, profiles: [...] }
+    if (data.containsKey('profile')) {
+      return ProfileModel.fromJson(data['profile'] as Map<String, dynamic>);
+    }
+    return ProfileModel.fromJson(data);
+  }
+
+  @override
+  Future<void> deleteProfile({required String profileId}) async {
+    await _api.deleteProfile(profileId);
+  }
+
+  @override
   Future<List<DeviceModel>> getDevices() async {
     final response = await _api.getDevices();
-    final data = response.data['data'] as Map<String, dynamic>;
-    final devices = data['devices'] as List<dynamic>;
-    return devices
-        .map((e) => DeviceModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    final data = _extractData(response.data);
+
+    return _parseList<DeviceModel>(
+      data,
+      DeviceModel.fromJson,
+      possibleKeys: ['devices', 'items'],
+    );
   }
 
   @override
@@ -260,9 +378,26 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  // ==========================================================================
+  @override
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+    required String confirmPassword,
+    required DeviceInfoModel deviceInfo,
+    bool revokeOthers = false,
+  }) async {
+    await _api.changePassword({
+      'old_password': oldPassword,
+      'new_password': newPassword,
+      'confirm_password': confirmPassword,
+      'device_info': deviceInfo.toJson(),
+      'revoke_others': revokeOthers,
+    });
+  }
+
+  // ============================================================================
   // LOCAL STORAGE
-  // ==========================================================================
+  // ============================================================================
 
   @override
   Future<void> saveSession(AuthResponse response) async {
@@ -279,9 +414,6 @@ class AuthRepositoryImpl implements AuthRepository {
       await _storage.saveActiveRole(response.activeRole!);
     }
     await _storage.saveActiveOrg(response.activeOrg);
-    if (response.entryContext != null) {
-      await _storage.saveEntryContext(response.entryContext!);
-    }
     if (response.activeProfile != null) {
       await _storage.saveActiveProfile(response.activeProfile!);
     }
@@ -295,6 +427,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<ProfileModel?> getSavedProfile() => _storage.getActiveProfile();
+
+  @override
+  Future<RoleModel?> getSavedRole() => _storage.getActiveRole();
 
   @override
   Future<void> clearSession() => _storage.clearAll();

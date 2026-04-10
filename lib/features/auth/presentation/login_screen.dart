@@ -76,8 +76,30 @@ class _LoginScreenState extends State<LoginScreen> {
                 Future.delayed(const Duration(milliseconds: 800), () {
                   if (!mounted) return;
                   context.read<AuthBloc>().add(AuthLoggedIn(response));
-                  navigator.pushAndRemoveAll(Routes.app);
+                  // Small delay to let AuthBloc process the event
+                  Future.delayed(const Duration(milliseconds: 100), () {
+                    if (!mounted) return;
+                    navigator.pushAndRemoveAll(Routes.app);
+                  });
                 });
+              case LoginNeedsRoleSelection(:final sessionToken, :final roles):
+                anim.succeed();
+                _bearKey.currentState?.triggerSuccess();
+                Future.delayed(const Duration(milliseconds: 600), () {
+                  if (!mounted) return;
+                  navigator.navigateTo(Routes.loginRolePicker, {
+                    'sessionToken': sessionToken,
+                    'roles': roles,
+                  });
+                });
+              case LoginNeedsRoleRegistration(:final sessionToken):
+                anim.succeed();
+                // TODO: Navigate to role registration screen
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Bạn chưa có vai trò, vui lòng đăng ký'),
+                  ),
+                );
               case LoginFailure(:final message):
                 anim.fail();
                 _bearKey.currentState?.triggerFail();

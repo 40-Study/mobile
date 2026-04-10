@@ -36,6 +36,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onLoggedIn(AuthLoggedIn event, Emitter<AuthState> emit) async {
     if (event.response.user != null) {
       var activeProfile = event.response.activeProfile;
+      final activeRole = event.response.activeRole;
 
       // If no activeProfile in response, try to fetch from profiles API
       if (activeProfile == null) {
@@ -45,22 +46,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           print('📋 Fetched ${profiles.length} profiles after login');
           for (final p in profiles) {
             // ignore: avoid_print
-            print('📋 Profile: ${p.roleName} - ${p.type}');
+            print('📋 Profile: ${p.roleName} - ${p.type} - systemRoleId: ${p.systemRoleId}');
           }
+
           if (profiles.isNotEmpty) {
-            activeProfile = profiles.first;
+            // Tìm profile khớp với activeRole (nếu có)
+            if (activeRole != null) {
+              // ignore: avoid_print
+              print('📋 Looking for profile matching activeRole: ${activeRole.name} (id: ${activeRole.id})');
+              activeProfile = profiles.firstWhere(
+                (p) => p.systemRoleId == activeRole.id ||
+                       p.roleName.toUpperCase() == activeRole.name.toUpperCase(),
+                orElse: () => profiles.first,
+              );
+            } else {
+              activeProfile = profiles.first;
+            }
             // ignore: avoid_print
-            print('📋 Using first profile: ${activeProfile.roleName}');
+            print('📋 Selected profile: ${activeProfile.roleName}');
             // Save the profile to storage
             await _authRepository.saveSession(
               AuthResponse(
                 user: event.response.user,
                 activeProfile: activeProfile,
+                activeRole: activeRole,
               ),
             );
           }
-        } catch (_) {
-          // Ignore error, continue without profile
+        } catch (e) {
+          // ignore: avoid_print
+          print('📋 Error fetching profiles: $e');
         }
       }
 
@@ -95,12 +110,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         (currentState is AuthAuthenticated ? currentState.user : null);
 
     if (user != null) {
-      emit(AuthAuthenticated(
+      final newState = AuthAuthenticated(
         user: user,
         activeProfile: event.response.activeProfile,
-      ));
+      );
       // ignore: avoid_print
-      print('🔐 AuthBloc: Emitted AuthAuthenticated with role: ${event.response.activeProfile?.roleName}');
+      print('🔐 AuthBloc: Emitting new state...');
+      // ignore: avoid_print
+      print('🔐 AuthBloc: roleName = ${newState.roleName}');
+      // ignore: avoid_print
+      print('🔐 AuthBloc: isOrganizationOwner = ${newState.isOrganizationOwner}');
+      // ignore: avoid_print
+      print('🔐 AuthBloc: isTeacher = ${newState.isTeacher}');
+      emit(newState);
+      // ignore: avoid_print
+      print('🔐 AuthBloc: State emitted successfully');
     } else {
       // ignore: avoid_print
       print('🔐 AuthBloc: Cannot emit - no user available');

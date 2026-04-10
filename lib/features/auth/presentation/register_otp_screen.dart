@@ -196,7 +196,6 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen>
                                                     as String,
                                             userName:
                                                 args['userName'] as String,
-                                            roleId: args['roleId'] as String,
                                             fullName:
                                                 args['fullName'] as String?,
                                           ),

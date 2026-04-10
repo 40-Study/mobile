@@ -79,7 +79,6 @@ class _RegisterFormScreenState extends State<RegisterFormScreen> {
         password: _passwordCtrl.text,
         confirmPassword: _confirmCtrl.text,
         userName: _userNameCtrl.text.trim(),
-        roleId: _selectedRole!.id,
         fullName: _fullNameCtrl.text.trim().isNotEmpty
             ? _fullNameCtrl.text.trim()
             : null,
@@ -135,7 +134,6 @@ class _RegisterFormScreenState extends State<RegisterFormScreen> {
                   'confirmPassword': _confirmCtrl.text,
                   'userName': _userNameCtrl.text.trim(),
                   'fullName': _fullNameCtrl.text.trim(),
-                  'roleId': _selectedRole!.id,
                 });
               case RegisterFailure(:final message):
                 anim.fail();

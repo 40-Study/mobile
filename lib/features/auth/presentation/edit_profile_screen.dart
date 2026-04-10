@@ -35,7 +35,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
       final user = authState.user;
-      _nameController.text = user.fullName ?? user.username;
+      _nameController.text = user.fullName ?? user.username ?? '';
       _phoneController.text = user.phone ?? '';
       _dobController.text = user.dateOfBirth ?? '';
     }
@@ -122,7 +122,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                       if (state is AuthAuthenticated) {
                         avatarUrl = state.user.avatarUrl;
-                        final name = state.user.fullName ?? state.user.username;
+                        final name = state.user.fullName ?? state.user.username ?? 'User';
                         initials = _getInitials(name);
                       }
 
