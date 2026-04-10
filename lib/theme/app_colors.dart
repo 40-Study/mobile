@@ -77,6 +77,16 @@ extension AppColorsX on ColorScheme {
     end: Alignment.bottomCenter,
   );
 
+  /// Full-screen background gradient for main screens.
+  LinearGradient get gradientBackground => LinearGradient(
+    colors: [
+      surfaceContainerLowest,
+      Color.lerp(surfaceContainerLowest, primaryContainer, 0.05)!,
+    ],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
   // ── Tinted Surfaces ────────────────────────────────────────────
 
   /// Card background with subtle primary tint — richer than plain white.
@@ -174,4 +184,13 @@ extension AppColorsX on ColorScheme {
 
   /// Light scrim for subtle separation.
   Color get lightScrim => scrim.withValues(alpha: 0.08);
+
+  // ── Text Colors ──────────────────────────────────────────────────
+
+  /// Secondary text color with better contrast than onSurfaceVariant.
+  /// Use for labels, subtitles, and descriptions that need to be readable.
+  Color get textSecondary => onSurface.withValues(alpha: 0.7);
+
+  /// Tertiary text color for hints and less important information.
+  Color get textTertiary => onSurface.withValues(alpha: 0.5);
 }
