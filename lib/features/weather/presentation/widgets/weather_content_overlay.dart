@@ -52,54 +52,47 @@ class WeatherContentOverlay extends StatelessWidget {
   }
 }
 
-/// Extension to get appropriate text color for weather background
+/// Extension to get appropriate text color for background
+/// Now uses system theme (light/dark mode) instead of weather state
 extension WeatherTextColor on BuildContext {
-  /// Check if weather background is dark based on gradient luminance
-  /// This automatically handles all weather conditions and times of day
+  /// Check if current theme is dark mode
   bool get isWeatherBackgroundDark {
-    try {
-      final state = read<WeatherBackgroundCubit>().state;
-      return state.isDarkBackground;
-    } catch (_) {
-      return false;
-    }
+    return Theme.of(this).brightness == Brightness.dark;
   }
 
-  /// Get text color that contrasts with current weather background
+  /// Get text color that contrasts with background
   Color get weatherTextColor {
-    return isWeatherBackgroundDark ? Colors.white : Colors.black87;
+    final cs = Theme.of(this).colorScheme;
+    return cs.onSurface;
   }
 
-  /// Get secondary text color for weather background
+  /// Get secondary text color
   Color get weatherTextColorSecondary {
-    return isWeatherBackgroundDark ? Colors.white70 : Colors.black54;
+    final cs = Theme.of(this).colorScheme;
+    return cs.onSurfaceVariant;
   }
 
-  /// Get themed text color - uses theme's onSurface for light, white for dark
+  /// Get themed text color
   Color get weatherTextColorThemed {
     final cs = Theme.of(this).colorScheme;
-    return isWeatherBackgroundDark ? Colors.white : cs.onSurface;
+    return cs.onSurface;
   }
 
   /// Get themed secondary text color with opacity
   Color get weatherTextColorThemedSecondary {
     final cs = Theme.of(this).colorScheme;
-    return isWeatherBackgroundDark
-        ? Colors.white.withValues(alpha: 0.7)
-        : cs.onSurface.withValues(alpha: 0.6);
+    return cs.onSurfaceVariant;
   }
 
-  /// Get icon color for weather background
+  /// Get icon color
   Color get weatherIconColor {
     final cs = Theme.of(this).colorScheme;
-    return isWeatherBackgroundDark ? Colors.white : cs.primary;
+    return cs.primary;
   }
 
-  /// Get icon background color for weather background
+  /// Get icon background color
   Color get weatherIconBackgroundColor {
     final cs = Theme.of(this).colorScheme;
-    return isWeatherBackgroundDark
-        ? Colors.white.withValues(alpha: 0.15)
-        : cs.primaryContainer;
+    return cs.primaryContainer;
   }
 }
