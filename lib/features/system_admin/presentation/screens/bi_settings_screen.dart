@@ -1,125 +1,124 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/constants/dimens.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/features/auth/presentation/edit_profile_screen.dart';
 import 'package:study/features/auth/presentation/security_screen.dart';
 import 'package:study/features/teacher/presentation/screens/switch_role_screen.dart';
+import 'package:study/widgets/together_settings.dart';
 
-/// Man hinh Cai dat cho System Admin
+/// System Admin Settings Screen - Together AI Design
 class BISettingsScreen extends StatelessWidget {
   const BISettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          'Cai dat he thong',
-          style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(AppLayout.screenMargin),
           children: [
-            _buildSection(
-              context,
-              'Tai khoan',
-              [
-                _SettingItem(
-                  icon: Icons.person,
+            // Header
+            Text(
+              'Cai dat',
+              style: tt.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: cs.onSurface,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+
+            // Profile Header
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                if (state is AuthAuthenticated) {
+                  return TogetherProfileHeader(
+                    name: state.user.fullName ?? state.user.username ?? 'User',
+                    email: state.user.email,
+                    avatarUrl: state.user.avatarUrl,
+                    role: 'Quan tri he thong',
+                    onEditTap: () => _navigateTo(context, const EditProfileScreen()),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+            const SizedBox(height: AppSpacing.xl),
+
+            // Account Section
+            TogetherSettingsSection(
+              title: 'Tai khoan',
+              children: [
+                TogetherSettingsTile(
+                  icon: Icons.person_outline,
                   title: 'Thong tin ca nhan',
                   subtitle: 'Chinh sua ten, email, avatar',
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const EditProfileScreen(),
-                      ),
-                    );
-                  },
+                  onTap: () => _navigateTo(context, const EditProfileScreen()),
                 ),
-                _SettingItem(
-                  icon: Icons.lock,
+                TogetherSettingsTile(
+                  icon: Icons.lock_outline,
                   title: 'Bao mat',
                   subtitle: 'Mat khau, xac thuc 2 lop',
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const SecurityScreen(),
-                      ),
-                    );
-                  },
+                  onTap: () => _navigateTo(context, const SecurityScreen()),
                 ),
-                _SettingItem(
+                TogetherSettingsTile(
                   icon: Icons.swap_horiz,
                   title: 'Chuyen doi vai tro',
                   subtitle: 'Chuyen sang vai tro khac',
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const SwitchRoleScreen(),
-                      ),
-                    );
-                  },
+                  onTap: () => _navigateTo(context, const SwitchRoleScreen()),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            _buildSection(
-              context,
-              'Nen tang',
-              [
-                _SettingItem(
+            const SizedBox(height: AppSpacing.xl),
+
+            // Platform Section
+            TogetherSettingsSection(
+              title: 'Nen tang',
+              children: [
+                TogetherSettingsTile(
                   icon: Icons.domain,
                   title: 'Thong tin nen tang',
                   subtitle: 'Ten, mo ta, logo nen tang',
                   onTap: () => _showPlatformInfo(context),
                 ),
-                _SettingItem(
-                  icon: Icons.notifications,
-                  title: 'Thong bao',
-                  subtitle: 'Cau hinh thong bao he thong',
-                  onTap: () => _showNotificationSettings(context),
-                ),
-                _SettingItem(
-                  icon: Icons.admin_panel_settings,
+                TogetherSettingsTile(
+                  icon: Icons.admin_panel_settings_outlined,
                   title: 'Quan ly trung tam',
                   subtitle: 'Cau hinh quy tac cho trung tam',
                   onTap: () => _showCenterSettings(context),
                 ),
-                _SettingItem(
-                  icon: Icons.payment,
+                TogetherSettingsTile(
+                  icon: Icons.payment_outlined,
                   title: 'Thanh toan & Chia se',
-                  subtitle: 'Cau hinh ti le chia se doanh thu',
+                  subtitle: 'Ti le chia se doanh thu',
                   onTap: () => _showPaymentSettings(context),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            _buildSection(
-              context,
-              'Du lieu & Bao cao',
-              [
-                _SettingItem(
-                  icon: Icons.download,
+            const SizedBox(height: AppSpacing.xl),
+
+            // Data & Reports Section
+            TogetherSettingsSection(
+              title: 'Du lieu & Bao cao',
+              children: [
+                TogetherSettingsTile(
+                  icon: Icons.download_outlined,
                   title: 'Xuat bao cao',
                   subtitle: 'Tai xuong du lieu Excel, PDF',
                   onTap: () => _showExportOptions(context),
                 ),
-                _SettingItem(
-                  icon: Icons.schedule,
+                TogetherSettingsTile(
+                  icon: Icons.schedule_outlined,
                   title: 'Bao cao tu dong',
                   subtitle: 'Len lich gui bao cao qua email',
                   onTap: () => _showScheduledReports(context),
                 ),
-                _SettingItem(
+                TogetherSettingsTile(
                   icon: Icons.sync,
                   title: 'Dong bo du lieu',
                   subtitle: 'Cap nhat lan cuoi: Hom nay, 14:30',
@@ -127,37 +126,94 @@ class BISettingsScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            _buildSection(
-              context,
-              'Khac',
-              [
-                _SettingItem(
-                  icon: Icons.help,
-                  title: 'Tro giup',
-                  subtitle: 'Tai lieu huong dan',
+            const SizedBox(height: AppSpacing.xl),
+
+            // Notifications Section
+            TogetherSettingsSection(
+              title: 'Thong bao',
+              children: [
+                TogetherSettingsToggle(
+                  icon: Icons.domain_add_outlined,
+                  title: 'Trung tam moi',
+                  subtitle: 'Thong bao khi co trung tam dang ky',
+                  value: true,
+                  onChanged: (_) {},
+                ),
+                TogetherSettingsToggle(
+                  icon: Icons.warning_amber_outlined,
+                  title: 'Canh bao hieu suat',
+                  subtitle: 'Thong bao khi trung tam giam hieu suat',
+                  value: true,
+                  onChanged: (_) {},
+                ),
+                TogetherSettingsToggle(
+                  icon: Icons.attach_money,
+                  title: 'Bao cao doanh thu',
+                  subtitle: 'Thong bao doanh thu hang ngay',
+                  value: true,
+                  onChanged: (_) {},
+                ),
+                TogetherSettingsToggle(
+                  icon: Icons.summarize_outlined,
+                  title: 'Bao cao hang tuan',
+                  subtitle: 'Nhan email tong hop moi tuan',
+                  value: false,
+                  onChanged: (_) {},
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xl),
+
+            // Support Section
+            TogetherSettingsSection(
+              title: 'Ho tro',
+              children: [
+                TogetherSettingsTile(
+                  icon: Icons.help_outline,
+                  title: 'Tai lieu huong dan',
+                  subtitle: 'Huong dan su dung he thong',
                   onTap: () => _showHelp(context),
                 ),
-                _SettingItem(
-                  icon: Icons.info,
+                TogetherSettingsTile(
+                  icon: Icons.headset_mic_outlined,
+                  title: 'Lien he ho tro',
+                  subtitle: 'Hotline: 1900-xxxx',
+                  onTap: () {},
+                ),
+                TogetherSettingsTile(
+                  icon: Icons.info_outline,
                   title: 'Phien ban',
                   subtitle: 'v1.0.0 (Build 100)',
+                  showChevron: false,
                   onTap: () => _showAbout(context),
                 ),
-                _SettingItem(
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xl),
+
+            // Danger Zone
+            TogetherDangerSection(
+              children: [
+                TogetherSettingsTile(
                   icon: Icons.logout,
                   title: 'Dang xuat',
-                  subtitle: '',
-                  iconColor: Colors.red,
-                  titleColor: Colors.red,
+                  iconColor: cs.error,
+                  titleColor: cs.error,
+                  showChevron: false,
                   onTap: () => _showLogoutDialog(context),
                 ),
               ],
             ),
-            const SizedBox(height: 100),
+            const SizedBox(height: AppSpacing.xxl),
           ],
         ),
       ),
+    );
+  }
+
+  void _navigateTo(BuildContext context, Widget screen) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => screen),
     );
   }
 
@@ -167,125 +223,59 @@ class BISettingsScreen extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
       ),
       builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom,
+        padding: EdgeInsets.fromLTRB(
+          20,
+          20,
+          20,
+          20 + MediaQuery.of(ctx).viewInsets.bottom,
         ),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Thong tin nen tang',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Ten nen tang',
-                  hintText: 'Nhap ten nen tang',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Mo ta',
-                  hintText: 'Nhap mo ta nen tang',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Email ho tro',
-                  hintText: 'Nhap email lien he',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Da luu thong tin nen tang'),
-                        backgroundColor: cs.primary,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  child: const Text('Luu thay doi'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showNotificationSettings(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    showModalBottomSheet<void>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Cai dat thong bao',
+              'Thong tin nen tang',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.3,
+              ),
             ),
             const SizedBox(height: 20),
-            SwitchListTile(
-              title: const Text('Trung tam moi'),
-              subtitle: const Text('Thong bao khi co trung tam dang ky'),
-              value: true,
-              onChanged: (_) {},
-            ),
-            SwitchListTile(
-              title: const Text('Canh bao hieu suat'),
-              subtitle: const Text('Thong bao khi trung tam giam hieu suat'),
-              value: true,
-              onChanged: (_) {},
-            ),
-            SwitchListTile(
-              title: const Text('Bao cao doanh thu'),
-              subtitle: const Text('Thong bao doanh thu hang ngay'),
-              value: true,
-              onChanged: (_) {},
-            ),
-            SwitchListTile(
-              title: const Text('Bao cao hang tuan'),
-              subtitle: const Text('Nhan email tong hop moi tuan'),
-              value: false,
-              onChanged: (_) {},
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Ten nen tang',
+                hintText: 'Nhap ten nen tang',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
             ),
             const SizedBox(height: 16),
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Mo ta',
+                hintText: 'Nhap mo ta nen tang',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Email ho tro',
+                hintText: 'Nhap email lien he',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              keyboardType: TextInputType.emailAddress,
+            ),
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: FilledButton(
@@ -293,13 +283,16 @@ class BISettingsScreen extends StatelessWidget {
                   Navigator.pop(ctx);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Da luu cai dat thong bao'),
+                      content: const Text('Da luu thong tin nen tang'),
                       backgroundColor: cs.primary,
                       behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   );
                 },
-                child: const Text('Luu'),
+                child: const Text('Luu thay doi'),
               ),
             ),
           ],
@@ -313,9 +306,9 @@ class BISettingsScreen extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
       ),
-      builder: (ctx) => Container(
+      builder: (ctx) => Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -324,10 +317,11 @@ class BISettingsScreen extends StatelessWidget {
             Text(
               'Quy tac trung tam',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.3,
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             SwitchListTile(
               title: const Text('Tu dong phe duyet'),
               subtitle: const Text('Trung tam moi duoc phe duyet tu dong'),
@@ -338,12 +332,6 @@ class BISettingsScreen extends StatelessWidget {
               title: const Text('Yeu cau xac minh'),
               subtitle: const Text('Trung tam phai xac minh tai lieu'),
               value: true,
-              onChanged: (_) {},
-            ),
-            SwitchListTile(
-              title: const Text('Gioi han khoa hoc'),
-              subtitle: const Text('Ap dung gioi han so luong khoa hoc'),
-              value: false,
               onChanged: (_) {},
             ),
             SwitchListTile(
@@ -363,6 +351,9 @@ class BISettingsScreen extends StatelessWidget {
                       content: const Text('Da luu quy tac trung tam'),
                       backgroundColor: cs.primary,
                       behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   );
                 },
@@ -376,10 +367,12 @@ class BISettingsScreen extends StatelessWidget {
   }
 
   void _showPaymentSettings(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
         title: const Text('Cau hinh thanh toan'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -398,22 +391,14 @@ class BISettingsScreen extends StatelessWidget {
             ),
             const Divider(),
             ListTile(
-              leading: Icon(Icons.percent, color: cs.primary),
+              leading: Icon(Icons.percent, color: Theme.of(context).colorScheme.primary),
               title: const Text('Ti le chia se mac dinh'),
               subtitle: const Text('Nen tang: 15% - Trung tam: 85%'),
-              trailing: IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () {},
-              ),
             ),
             ListTile(
-              leading: Icon(Icons.timer, color: cs.tertiary),
+              leading: Icon(Icons.timer, color: Theme.of(context).colorScheme.tertiary),
               title: const Text('Chu ky thanh toan'),
               subtitle: const Text('Hang thang (ngay 15)'),
-              trailing: IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () {},
-              ),
             ),
           ],
         ),
@@ -432,9 +417,9 @@ class BISettingsScreen extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
       ),
-      builder: (ctx) => Container(
+      builder: (ctx) => Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -443,8 +428,9 @@ class BISettingsScreen extends StatelessWidget {
             Text(
               'Xuat bao cao',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.3,
+              ),
             ),
             const SizedBox(height: 20),
             ListTile(
@@ -466,6 +452,9 @@ class BISettingsScreen extends StatelessWidget {
                     content: const Text('Dang xuat file Excel...'),
                     backgroundColor: cs.primary,
                     behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                   ),
                 );
               },
@@ -489,6 +478,9 @@ class BISettingsScreen extends StatelessWidget {
                     content: const Text('Dang xuat file PDF...'),
                     backgroundColor: cs.primary,
                     behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                   ),
                 );
               },
@@ -512,6 +504,9 @@ class BISettingsScreen extends StatelessWidget {
                     content: const Text('Dang xuat du lieu...'),
                     backgroundColor: cs.primary,
                     behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                   ),
                 );
               },
@@ -527,9 +522,9 @@ class BISettingsScreen extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
       ),
-      builder: (ctx) => Container(
+      builder: (ctx) => Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -538,8 +533,9 @@ class BISettingsScreen extends StatelessWidget {
             Text(
               'Bao cao tu dong',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.3,
+              ),
             ),
             const SizedBox(height: 20),
             SwitchListTile(
@@ -566,7 +562,7 @@ class BISettingsScreen extends StatelessWidget {
                 labelText: 'Email nhan bao cao',
                 hintText: 'Nhap email',
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
               keyboardType: TextInputType.emailAddress,
@@ -582,6 +578,9 @@ class BISettingsScreen extends StatelessWidget {
                       content: const Text('Da luu cai dat bao cao'),
                       backgroundColor: cs.primary,
                       behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   );
                 },
@@ -599,20 +598,23 @@ class BISettingsScreen extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
         title: const Text('Dong bo du lieu'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: Icon(Icons.check_circle, color: Colors.green),
+              leading: const Icon(Icons.check_circle, color: Colors.green),
               title: const Text('Trang thai'),
               subtitle: const Text('Da dong bo'),
             ),
             ListTile(
               leading: Icon(Icons.access_time, color: cs.primary),
               title: const Text('Lan cuoi'),
-              subtitle: const Text('10/04/2026 14:30'),
+              subtitle: const Text('17/04/2026 14:30'),
             ),
             ListTile(
               leading: Icon(Icons.storage, color: cs.tertiary),
@@ -631,6 +633,9 @@ class BISettingsScreen extends StatelessWidget {
                       content: const Text('Dang dong bo du lieu...'),
                       backgroundColor: cs.primary,
                       behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
                   );
                 },
@@ -654,27 +659,30 @@ class BISettingsScreen extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
         title: const Text('Tro giup'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.book),
+              leading: const Icon(Icons.book_outlined),
               title: const Text('Huong dan su dung'),
               onTap: () {},
             ),
             ListTile(
-              leading: const Icon(Icons.video_library),
+              leading: const Icon(Icons.video_library_outlined),
               title: const Text('Video huong dan'),
               onTap: () {},
             ),
             ListTile(
-              leading: const Icon(Icons.headset_mic),
+              leading: const Icon(Icons.headset_mic_outlined),
               title: const Text('Lien he ho tro'),
               onTap: () {},
             ),
             ListTile(
-              leading: const Icon(Icons.chat),
+              leading: const Icon(Icons.chat_bubble_outline),
               title: const Text('Chat voi ho tro'),
               onTap: () {},
             ),
@@ -699,38 +707,44 @@ class BISettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.primaryContainer,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
           Icons.admin_panel_settings,
-          size: 48,
+          size: 40,
           color: Theme.of(context).colorScheme.primary,
         ),
       ),
-      children: [
-        const Text('Quan ly nen tang giao duc 40Study'),
-        const SizedBox(height: 8),
-        const Text('© 2026 40Study. All rights reserved.'),
+      children: const [
+        Text('Quan ly nen tang giao duc 40Study'),
+        SizedBox(height: 8),
+        Text('(c) 2026 40Study. All rights reserved.'),
       ],
     );
   }
 
   void _showLogoutDialog(BuildContext context) {
+    final authBloc = context.read<AuthBloc>();
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
         title: const Text('Dang xuat'),
-        content: const Text('Ban co chac chan muon dang xuat?'),
+        content: const Text('Ban co chac chan muon dang xuat khoi tai khoan?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Huy'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
             onPressed: () {
               Navigator.pop(ctx);
-              context.read<AuthBloc>().add(AuthLoggedOut());
+              authBloc.add(AuthLoggedOut());
             },
             child: const Text('Dang xuat'),
           ),
@@ -738,101 +752,4 @@ class BISettingsScreen extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildSection(
-      BuildContext context, String title, List<_SettingItem> items) {
-    final textTheme = Theme.of(context).textTheme;
-    final cs = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 12),
-          child: Text(
-            title,
-            style: textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: cs.onSurface.withValues(alpha: 0.7),
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            color: cs.surface,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: items.asMap().entries.map((entry) {
-              final index = entry.key;
-              final item = entry.value;
-              return Column(
-                children: [
-                  ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color:
-                            (item.iconColor ?? cs.primary).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        item.icon,
-                        color: item.iconColor ?? cs.primary,
-                        size: 20,
-                      ),
-                    ),
-                    title: Text(
-                      item.title,
-                      style: textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                        color: item.titleColor,
-                      ),
-                    ),
-                    subtitle: item.subtitle.isNotEmpty
-                        ? Text(
-                            item.subtitle,
-                            style: textTheme.bodySmall?.copyWith(
-                              color: cs.onSurface.withValues(alpha: 0.5),
-                            ),
-                          )
-                        : null,
-                    trailing: Icon(
-                      Icons.chevron_right,
-                      color: cs.onSurface.withValues(alpha: 0.3),
-                    ),
-                    onTap: item.onTap,
-                  ),
-                  if (index < items.length - 1)
-                    Divider(
-                      height: 1,
-                      indent: 56,
-                      color: cs.outline.withValues(alpha: 0.2),
-                    ),
-                ],
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SettingItem {
-  const _SettingItem({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-    this.iconColor,
-    this.titleColor,
-  });
-
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-  final Color? iconColor;
-  final Color? titleColor;
 }
