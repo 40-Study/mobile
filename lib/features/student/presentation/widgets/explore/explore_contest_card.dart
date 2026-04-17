@@ -72,22 +72,28 @@ class ExploreContestCard extends StatelessWidget {
                           size: AppIconSize.xs,
                           color: cs.onSurfaceVariant),
                       const SizedBox(width: AppSpacing.xs),
-                      Text(
-                        contest.participants,
-                        style: tt.labelSmall?.copyWith(
-                          color: cs.onSurfaceVariant,
+                      Flexible(
+                        child: Text(
+                          contest.participants,
+                          style: tt.labelSmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: AppSpacing.lg),
+                      const SizedBox(width: AppSpacing.sm),
                       Icon(Icons.schedule_rounded,
                           size: AppIconSize.xs,
                           color: cs.error),
                       const SizedBox(width: AppSpacing.xs),
-                      Text(
-                        contest.deadline,
-                        style: tt.labelSmall?.copyWith(
-                          color: cs.error,
-                          fontWeight: FontWeight.w600,
+                      Flexible(
+                        child: Text(
+                          contest.deadline,
+                          style: tt.labelSmall?.copyWith(
+                            color: cs.error,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],

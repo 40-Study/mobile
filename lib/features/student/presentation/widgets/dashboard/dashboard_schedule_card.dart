@@ -80,11 +80,14 @@ class DashboardScheduleCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        '• $time',
-                        style: tt.labelMedium?.copyWith(
-                          color: cs.onSurface.withValues(alpha: 0.7),
-                          fontWeight: FontWeight.w500,
+                      Flexible(
+                        child: Text(
+                          '• $time',
+                          style: tt.labelMedium?.copyWith(
+                            color: cs.onSurface.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       if (isLive) ...[
