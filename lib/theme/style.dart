@@ -1,75 +1,96 @@
 import 'package:flutter/material.dart';
 
+/// Together AI Design System
+/// Pastel gradients + sharp geometry + midnight blue dark mode
 class MaterialTheme {
   const MaterialTheme(this.textTheme);
 
   final TextTheme textTheme;
 
-  /// Light scheme — blue + white, clean & modern
+  // ══════════════════════════════════════════════════════════════════════════
+  // TOGETHER AI COLORS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Brand Magenta - for illustrations only
+  static const brandMagenta = Color(0xFFEF2CC1);
+
+  /// Brand Orange - for illustrations only
+  static const brandOrange = Color(0xFFFC4C02);
+
+  /// Dark Blue - primary dark surface (midnight blue)
+  static const darkBlue = Color(0xFF010120);
+
+  /// Soft Lavender - accent
+  static const softLavender = Color(0xFFBDBBFF);
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // LIGHT SCHEME - Together AI
+  // ══════════════════════════════════════════════════════════════════════════
+
   static ColorScheme lightScheme() {
     return const ColorScheme(
       brightness: Brightness.light,
 
-      // ── Primary: Blue-600 ──
-      primary: Color(0xff2563eb), // blue-600 — vivid, confident
-      surfaceTint: Color(0xff2563eb),
-      onPrimary: Color(0xffffffff),
-      primaryContainer: Color(0xffdbeafe), // blue-100
-      onPrimaryContainer: Color(0xff1e3a5f), // blue-950
-      inversePrimary: Color(0xff60a5fa), // blue-400
+      // Primary: Dark Blue (CTA buttons)
+      primary: darkBlue,
+      surfaceTint: darkBlue,
+      onPrimary: Color(0xFFFFFFFF),
+      primaryContainer: Color(0xFFEDE9FE), // pastel lavender
+      onPrimaryContainer: darkBlue,
+      inversePrimary: softLavender,
 
-      // ── Secondary: Emerald-500 ──
-      secondary: Color(0xff10b981), // emerald-500 — fresh, growth
-      onSecondary: Color(0xffffffff),
-      secondaryContainer: Color(0xffd1fae5), // emerald-100
-      onSecondaryContainer: Color(0xff064e3b), // emerald-900
+      // Secondary: Soft Lavender
+      secondary: softLavender,
+      onSecondary: darkBlue,
+      secondaryContainer: Color(0xFFF5F3FF),
+      onSecondaryContainer: darkBlue,
 
-      // ── Tertiary: Amber-500 ──
-      tertiary: Color(0xfff59e0b), // amber-500 — warm accent
-      onTertiary: Color(0xffffffff),
-      tertiaryContainer: Color(0xfffef3c7), // amber-100
-      onTertiaryContainer: Color(0xff451a03), // amber-950
+      // Tertiary: Brand Magenta (subtle use)
+      tertiary: brandMagenta,
+      onTertiary: Color(0xFFFFFFFF),
+      tertiaryContainer: Color(0xFFFCE7F3), // pastel pink
+      onTertiaryContainer: Color(0xFF4A0E2C),
 
-      // ── Error: Red-500 ──
-      error: Color(0xffef4444),
-      onError: Color(0xffffffff),
-      errorContainer: Color(0xfffee2e2),
-      onErrorContainer: Color(0xff7f1d1d),
+      // Error
+      error: Color(0xFFEF4444),
+      onError: Color(0xFFFFFFFF),
+      errorContainer: Color(0xFFFEE2E2),
+      onErrorContainer: Color(0xFF7F1D1D),
 
-      // ── Surfaces: Blue-tinted white for depth ──
-      surface: Color(0xfff6f9ff), // blue-tinted white
-      onSurface: Color(0xff111827), // gray-900
-      onSurfaceVariant: Color(0xff4b5563), // gray-600
-      outline: Color(0xffdce5f5), // blue-tinted border
-      outlineVariant: Color(0xffc4d1e8), // deeper blue-tint
+      // Surfaces: Pure White
+      surface: Color(0xFFFFFFFF),
+      onSurface: Color(0xFF000000),
+      onSurfaceVariant: Color(0xFF6B7280), // gray-500
+      outline: Color(0x14000000), // 8% black border
+      outlineVariant: Color(0x0A000000), // 4% black
 
-      // ── System ──
-      shadow: Color(0xff0c1929), // deep blue shadow
-      scrim: Color(0xff081422),
-      inverseSurface: Color(0xff172554), // blue-950
+      // System
+      shadow: darkBlue, // dark-blue tinted shadow
+      scrim: darkBlue,
+      inverseSurface: darkBlue,
 
-      // ── Fixed variants ──
-      primaryFixed: Color(0xffdbeafe),
-      onPrimaryFixed: Color(0xff1e3a5f),
-      primaryFixedDim: Color(0xff2563eb),
-      onPrimaryFixedVariant: Color(0xffffffff),
-      secondaryFixed: Color(0xffd1fae5),
-      onSecondaryFixed: Color(0xff064e3b),
-      secondaryFixedDim: Color(0xff10b981),
-      onSecondaryFixedVariant: Color(0xffffffff),
-      tertiaryFixed: Color(0xfffef3c7),
-      onTertiaryFixed: Color(0xff451a03),
-      tertiaryFixedDim: Color(0xfff59e0b),
-      onTertiaryFixedVariant: Color(0xffffffff),
+      // Surface containers
+      surfaceDim: Color(0xFFF9FAFB),
+      surfaceBright: Color(0xFFFFFFFF),
+      surfaceContainerLowest: Color(0xFFFFFFFF),
+      surfaceContainerLow: Color(0xFFFAFAFA),
+      surfaceContainer: Color(0xFFF5F5F5),
+      surfaceContainerHigh: Color(0xFFEFEFEF),
+      surfaceContainerHighest: Color(0xFFE5E5E5),
 
-      // ── Surface containers: layered blue tints ──
-      surfaceDim: Color(0xffdce5f5), // tinted dim
-      surfaceBright: Color(0xfff6f9ff), // tinted bright
-      surfaceContainerLowest: Color(0xffffffff), // card bg — pure white
-      surfaceContainerLow: Color(0xffeef3fc), // subtle blue wash
-      surfaceContainer: Color(0xffe3ebf7), // medium tint
-      surfaceContainerHigh: Color(0xffd0dbee), // stronger tint
-      surfaceContainerHighest: Color(0xff94a3b8), // muted blue-gray
+      // Fixed variants
+      primaryFixed: Color(0xFFEDE9FE),
+      onPrimaryFixed: darkBlue,
+      primaryFixedDim: darkBlue,
+      onPrimaryFixedVariant: Color(0xFFFFFFFF),
+      secondaryFixed: softLavender,
+      onSecondaryFixed: darkBlue,
+      secondaryFixedDim: Color(0xFF9997E6),
+      onSecondaryFixedVariant: Color(0xFFFFFFFF),
+      tertiaryFixed: Color(0xFFFCE7F3),
+      onTertiaryFixed: Color(0xFF4A0E2C),
+      tertiaryFixedDim: brandMagenta,
+      onTertiaryFixedVariant: Color(0xFFFFFFFF),
     );
   }
 
@@ -77,77 +98,84 @@ class MaterialTheme {
     return theme(lightScheme());
   }
 
-  /// Dark scheme — matching blue palette for dark mode
+  // ══════════════════════════════════════════════════════════════════════════
+  // DARK SCHEME - Together AI (Midnight Blue)
+  // ══════════════════════════════════════════════════════════════════════════
+
   static ColorScheme darkScheme() {
     return const ColorScheme(
       brightness: Brightness.dark,
 
-      // ── Primary: Blue ──
-      primary: Color(0xff60a5fa), // blue-400
-      surfaceTint: Color(0xff60a5fa),
-      onPrimary: Color(0xffffffff),
-      primaryContainer: Color(0xff1e40af), // blue-800
-      onPrimaryContainer: Color(0xffdbeafe),
-      inversePrimary: Color(0xff2563eb), // blue-600
+      // Primary: Soft Lavender on dark
+      primary: softLavender,
+      surfaceTint: softLavender,
+      onPrimary: darkBlue,
+      primaryContainer: Color(0xFF1A1A40),
+      onPrimaryContainer: softLavender,
+      inversePrimary: darkBlue,
 
-      // ── Secondary: Emerald ──
-      secondary: Color(0xff34d399), // emerald-400
-      onSecondary: Color(0xffffffff),
-      secondaryContainer: Color(0xff065f46), // emerald-800
-      onSecondaryContainer: Color(0xffd1fae5),
+      // Secondary
+      secondary: Color(0xFFD4D2FF),
+      onSecondary: darkBlue,
+      secondaryContainer: Color(0xFF2A2A50),
+      onSecondaryContainer: Color(0xFFEDE9FE),
 
-      // ── Tertiary: Amber ──
-      tertiary: Color(0xfffbbf24), // amber-400
-      onTertiary: Color(0xff1c1917),
-      tertiaryContainer: Color(0xff92400e), // amber-800
-      onTertiaryContainer: Color(0xfffef3c7),
+      // Tertiary: Brand Magenta
+      tertiary: Color(0xFFF472B6), // lighter magenta
+      onTertiary: darkBlue,
+      tertiaryContainer: Color(0xFF4A0E2C),
+      onTertiaryContainer: Color(0xFFFCE7F3),
 
-      // ── Error ──
-      error: Color(0xffef4444),
-      onError: Color(0xffffffff),
-      errorContainer: Color(0xff7f1d1d),
-      onErrorContainer: Color(0xfffee2e2),
+      // Error
+      error: Color(0xFFF87171),
+      onError: Color(0xFF7F1D1D),
+      errorContainer: Color(0xFF7F1D1D),
+      onErrorContainer: Color(0xFFFEE2E2),
 
-      // ── Surfaces: Deep blue-tinted ──
-      surface: Color(0xff0b1120), // deep blue-black
-      onSurface: Color(0xfff0f4ff), // warm white with blue tint
-      onSurfaceVariant: Color(0xff94a3b8), // muted blue-gray
-      outline: Color(0xff1c2840), // blue-tinted border
-      outlineVariant: Color(0xff2a3a55), // deeper tint
+      // Surfaces: Dark Blue (NOT gray-black)
+      surface: darkBlue,
+      onSurface: Color(0xFFFFFFFF),
+      onSurfaceVariant: Color(0xFF9CA3AF), // gray-400
+      outline: Color(0x1FFFFFFF), // 12% white border
+      outlineVariant: Color(0x14FFFFFF), // 8% white
 
-      // ── System ──
-      shadow: Color(0xff040a15),
-      scrim: Color(0xff040a15),
-      inverseSurface: Color(0xffdbeafe), // blue-100
+      // System
+      shadow: Color(0xFF000010),
+      scrim: Color(0xFF000010),
+      inverseSurface: Color(0xFFFFFFFF),
 
-      // ── Fixed variants ──
-      primaryFixed: Color(0xff60a5fa),
-      onPrimaryFixed: Color(0xff1e3a5f),
-      primaryFixedDim: Color(0xff3b82f6), // blue-500
-      onPrimaryFixedVariant: Color(0xffdbeafe),
-      secondaryFixed: Color(0xff34d399),
-      onSecondaryFixed: Color(0xff064e3b),
-      secondaryFixedDim: Color(0xff059669), // emerald-600
-      onSecondaryFixedVariant: Color(0xffd1fae5),
-      tertiaryFixed: Color(0xfffbbf24),
-      onTertiaryFixed: Color(0xff451a03),
-      tertiaryFixedDim: Color(0xffd97706), // amber-600
-      onTertiaryFixedVariant: Color(0xfffef3c7),
+      // Surface containers: layered midnight blue
+      surfaceDim: darkBlue,
+      surfaceBright: Color(0xFF0A0A30),
+      surfaceContainerLowest: Color(0xFF000015),
+      surfaceContainerLow: Color(0xFF050525),
+      surfaceContainer: Color(0xFF0A0A35),
+      surfaceContainerHigh: Color(0xFF151545),
+      surfaceContainerHighest: Color(0xFF202055),
 
-      // ── Surface containers: layered deep blue ──
-      surfaceDim: Color(0xff0b1120),
-      surfaceBright: Color(0xff101828),
-      surfaceContainerLowest: Color(0xff0b1120),
-      surfaceContainerLow: Color(0xff121d30), // subtle lift
-      surfaceContainer: Color(0xff1a2742), // medium depth
-      surfaceContainerHigh: Color(0xff243352), // elevated
-      surfaceContainerHighest: Color(0xff354766), // highest
+      // Fixed variants
+      primaryFixed: softLavender,
+      onPrimaryFixed: darkBlue,
+      primaryFixedDim: Color(0xFF9997E6),
+      onPrimaryFixedVariant: Color(0xFFEDE9FE),
+      secondaryFixed: Color(0xFFD4D2FF),
+      onSecondaryFixed: darkBlue,
+      secondaryFixedDim: Color(0xFFB0ADFF),
+      onSecondaryFixedVariant: Color(0xFFEDE9FE),
+      tertiaryFixed: Color(0xFFF472B6),
+      onTertiaryFixed: Color(0xFF4A0E2C),
+      tertiaryFixedDim: brandMagenta,
+      onTertiaryFixedVariant: Color(0xFFFCE7F3),
     );
   }
 
   ThemeData dark() {
     return theme(darkScheme());
   }
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // THEME BUILDER
+  // ══════════════════════════════════════════════════════════════════════════
 
   ThemeData theme(ColorScheme colorScheme) => ThemeData(
     useMaterial3: true,
@@ -160,6 +188,8 @@ class MaterialTheme {
     scaffoldBackgroundColor: colorScheme.surface,
     canvasColor: colorScheme.surface,
     dividerColor: colorScheme.outline,
+
+    // AppBar - clean, minimal
     appBarTheme: AppBarTheme(
       backgroundColor: colorScheme.surface,
       foregroundColor: colorScheme.onSurface,
@@ -167,100 +197,148 @@ class MaterialTheme {
       surfaceTintColor: Colors.transparent,
       titleTextStyle: textTheme.titleLarge?.copyWith(
         color: colorScheme.onSurface,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w500,
+        letterSpacing: -0.5,
       ),
     ),
+
+    // Cards - sharp radius (8px), dark-blue shadow
     cardTheme: CardThemeData(
       color: colorScheme.surfaceContainerLowest,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8), // comfortable radius
         side: BorderSide(color: colorScheme.outline),
       ),
     ),
+
+    // Dialog
     dialogTheme: DialogThemeData(
       backgroundColor: colorScheme.surfaceContainerLowest,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8),
       ),
       titleTextStyle: textTheme.titleLarge?.copyWith(
         color: colorScheme.onSurface,
-        fontWeight: FontWeight.w600,
-      ),
-      contentTextStyle: textTheme.bodyMedium?.copyWith(
-        color: colorScheme.onSurface,
+        fontWeight: FontWeight.w500,
+        letterSpacing: -0.5,
       ),
     ),
+
+    // Input - sharp radius (4px)
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: colorScheme.surfaceContainerLow,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4), // sharp radius
         borderSide: BorderSide(color: colorScheme.outline),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         borderSide: BorderSide(color: colorScheme.outline),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         borderSide: BorderSide(color: colorScheme.error),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(4),
         borderSide: BorderSide(color: colorScheme.error, width: 1.5),
       ),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: 16,
-        vertical: 14,
+        vertical: 12,
       ),
     ),
+
+    // Buttons - sharp radius (4px)
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         minimumSize: const Size(44, 44),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(4),
         ),
         textStyle: textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
         ),
       ),
     ),
+
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(44, 44),
         side: BorderSide(color: colorScheme.outline),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(4),
         ),
         textStyle: textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
         ),
       ),
     ),
+
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         minimumSize: const Size(44, 44),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(4),
         ),
         textStyle: textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
         ),
       ),
     ),
+
+    // FilledButton - dark solid
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(44, 44),
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(4),
+        ),
+      ),
+    ),
+
+    // Chips/Badges - sharp radius (4px)
+    chipTheme: ChipThemeData(
+      backgroundColor: colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+        side: BorderSide(color: colorScheme.outline),
+      ),
+    ),
+
+    // Snackbar
     snackBarTheme: SnackBarThemeData(
       backgroundColor: colorScheme.inverseSurface,
       contentTextStyle: textTheme.bodyMedium?.copyWith(
         color: colorScheme.surface,
       ),
       behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(4),
+      ),
+    ),
+
+    // Bottom Navigation
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: colorScheme.surface,
+      indicatorColor: colorScheme.primaryContainer,
+      labelTextStyle: WidgetStateProperty.all(
+        textTheme.labelSmall?.copyWith(
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     ),
   );
 }

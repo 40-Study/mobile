@@ -1,196 +1,233 @@
 import 'package:flutter/material.dart';
 
-/// Extended color utilities that build on top of [ColorScheme].
+/// Together AI Design System - Color Extensions
 ///
-/// Provides gradient presets, tinted surfaces, glow shadows, and
-/// semantic helpers to create visual depth beyond flat color tokens.
-extension AppColorsX on ColorScheme {
-  // ── Gradient Presets ───────────────────────────────────────────
+/// Pastel gradients, dark-blue-tinted shadows, glass effects.
+/// Sharp geometry (4px, 8px radius).
+extension TogetherColorsX on ColorScheme {
+  // ══════════════════════════════════════════════════════════════════════════
+  // BRAND COLORS (illustrations only, NOT UI chrome)
+  // ══════════════════════════════════════════════════════════════════════════
 
-  /// Hero gradient: bold primary diagonal.
-  LinearGradient get gradientPrimary => LinearGradient(
-    colors: [primary, inversePrimary],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
+  /// Brand Magenta - for illustrations only
+  Color get brandMagenta => const Color(0xFFEF2CC1);
 
-  /// Warm gradient: secondary to primary (emerald → blue).
-  LinearGradient get gradientWarm => LinearGradient(
-    colors: [secondary, primary],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
+  /// Brand Orange - for illustrations only
+  Color get brandOrange => const Color(0xFFFC4C02);
 
-  /// Sunset gradient: tertiary to secondary (amber → emerald).
-  LinearGradient get gradientSunset => LinearGradient(
-    colors: [tertiary, secondary],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
+  /// Soft Lavender accent
+  Color get softLavender => const Color(0xFFBDBBFF);
 
-  /// Cool gradient: primary to tertiary (blue → amber).
-  LinearGradient get gradientCool => LinearGradient(
-    colors: [primary, tertiary],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
+  /// Dark Blue (midnight blue)
+  Color get darkBlue => const Color(0xFF010120);
 
-  /// Multi-stop rich gradient within the blue family for hero surfaces.
-  LinearGradient get gradientRich => LinearGradient(
+  // ══════════════════════════════════════════════════════════════════════════
+  // PASTEL COLORS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  Color get pastelPink => const Color(0xFFFCE7F3);
+  Color get pastelLavender => const Color(0xFFEDE9FE);
+  Color get pastelBlue => const Color(0xFFDBEAFE);
+  Color get pastelCyan => const Color(0xFFCFFAFE);
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // PASTEL GRADIENTS (decorative backgrounds)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Hero pastel gradient - pink to lavender to blue
+  LinearGradient get gradientPastelCloud => const LinearGradient(
     colors: [
-      primary,
-      Color.lerp(primary, inversePrimary, 0.45)!,
-      inversePrimary,
+      Color(0xFFFCE7F3), // pastel pink
+      Color(0xFFEDE9FE), // pastel lavender
+      Color(0xFFDBEAFE), // pastel blue
     ],
-    stops: const [0.0, 0.55, 1.0],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// Subtle surface gradient for section backgrounds.
+  /// Vertical pastel gradient for page backgrounds
+  LinearGradient get gradientPastelVertical => LinearGradient(
+    colors: brightness == Brightness.light
+        ? const [
+            Color(0xFFFFFFFF),
+            Color(0xFFFDF4F9), // subtle pink
+            Color(0xFFF5F0FF), // subtle lavender
+            Color(0xFFEEF5FF), // subtle blue
+          ]
+        : const [
+            Color(0xFF010120),
+            Color(0xFF0A0A30),
+            Color(0xFF010120),
+          ],
+    stops: const [0.0, 0.3, 0.6, 1.0],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  /// Dawn gradient - soft pink tint
+  LinearGradient get gradientDawn => const LinearGradient(
+    colors: [
+      Color(0xFFFFFFFF),
+      Color(0xFFFDF4F9),
+      Color(0xFFF5F0FF),
+    ],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  /// Brand gradient - magenta to orange (illustrations only)
+  LinearGradient get gradientBrand => const LinearGradient(
+    colors: [
+      Color(0xFFEF2CC1),
+      Color(0xFFFC4C02),
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  /// Primary gradient (legacy support)
+  LinearGradient get gradientPrimary => LinearGradient(
+    colors: [primary, softLavender],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  /// Surface gradient - subtle pastel tint
   LinearGradient get gradientSurfacePrimary => LinearGradient(
     colors: [
-      primaryContainer.withValues(alpha: 0.4),
+      primaryContainer.withValues(alpha: 0.3),
       surface,
     ],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
-  /// Secondary tinted surface gradient.
-  LinearGradient get gradientSurfaceSecondary => LinearGradient(
-    colors: [
-      secondaryContainer.withValues(alpha: 0.3),
-      surface,
-    ],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-  );
+  // ══════════════════════════════════════════════════════════════════════════
+  // DARK-BLUE-TINTED SHADOWS (not generic black)
+  // ══════════════════════════════════════════════════════════════════════════
 
-  /// Tertiary tinted surface gradient.
-  LinearGradient get gradientSurfaceTertiary => LinearGradient(
-    colors: [
-      tertiaryContainer.withValues(alpha: 0.3),
-      surface,
-    ],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-  );
-
-  /// Full-screen background gradient for main screens.
-  LinearGradient get gradientBackground => LinearGradient(
-    colors: [
-      surfaceContainerLowest,
-      Color.lerp(surfaceContainerLowest, primaryContainer, 0.05)!,
-    ],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-  );
-
-  // ── Tinted Surfaces ────────────────────────────────────────────
-
-  /// Card background with subtle primary tint — richer than plain white.
-  Color get surfaceTintedPrimary =>
-      Color.lerp(surfaceContainerLowest, primaryContainer, 0.08)!;
-
-  /// Card background with subtle secondary tint.
-  Color get surfaceTintedSecondary =>
-      Color.lerp(surfaceContainerLowest, secondaryContainer, 0.10)!;
-
-  /// Card background with subtle tertiary tint.
-  Color get surfaceTintedTertiary =>
-      Color.lerp(surfaceContainerLowest, tertiaryContainer, 0.10)!;
-
-  // ── Glow Shadows ───────────────────────────────────────────────
-
-  /// Primary glow shadow for elevated hero cards.
-  List<BoxShadow> get shadowPrimary => [
-    BoxShadow(
-      color: primary.withValues(alpha: 0.18),
-      blurRadius: 24,
-      offset: const Offset(0, 8),
-    ),
-    BoxShadow(
-      color: primary.withValues(alpha: 0.08),
-      blurRadius: 48,
-      offset: const Offset(0, 16),
-    ),
-  ];
-
-  /// Secondary glow shadow.
-  List<BoxShadow> get shadowSecondary => [
-    BoxShadow(
-      color: secondary.withValues(alpha: 0.16),
-      blurRadius: 20,
-      offset: const Offset(0, 6),
-    ),
-    BoxShadow(
-      color: secondary.withValues(alpha: 0.06),
-      blurRadius: 40,
-      offset: const Offset(0, 12),
-    ),
-  ];
-
-  /// Tertiary glow shadow.
-  List<BoxShadow> get shadowTertiary => [
-    BoxShadow(
-      color: tertiary.withValues(alpha: 0.16),
-      blurRadius: 20,
-      offset: const Offset(0, 6),
-    ),
-    BoxShadow(
-      color: tertiary.withValues(alpha: 0.06),
-      blurRadius: 40,
-      offset: const Offset(0, 12),
-    ),
-  ];
-
-  /// Subtle neutral elevation for standard cards.
+  /// Standard card shadow - dark blue tinted
   List<BoxShadow> get shadowCard => [
     BoxShadow(
-      color: shadow.withValues(alpha: 0.04),
-      blurRadius: 12,
-      offset: const Offset(0, 2),
-    ),
-    BoxShadow(
-      color: shadow.withValues(alpha: 0.02),
-      blurRadius: 24,
-      offset: const Offset(0, 8),
+      color: const Color(0xFF010120).withValues(alpha: 0.1),
+      blurRadius: 10,
+      offset: const Offset(0, 4),
     ),
   ];
 
-  /// Soft elevated shadow for floating elements.
-  List<BoxShadow> get shadowElevated => [
+  /// Primary glow shadow
+  List<BoxShadow> get shadowPrimary => [
     BoxShadow(
-      color: shadow.withValues(alpha: 0.06),
+      color: const Color(0xFF010120).withValues(alpha: 0.12),
       blurRadius: 16,
-      offset: const Offset(0, 4),
+      offset: const Offset(0, 6),
     ),
     BoxShadow(
-      color: primary.withValues(alpha: 0.04),
+      color: const Color(0xFF010120).withValues(alpha: 0.06),
       blurRadius: 32,
       offset: const Offset(0, 12),
     ),
   ];
 
-  // ── Overlays & Scrims ──────────────────────────────────────────
+  /// Elevated shadow for floating elements
+  List<BoxShadow> get shadowElevated => [
+    BoxShadow(
+      color: const Color(0xFF010120).withValues(alpha: 0.08),
+      blurRadius: 12,
+      offset: const Offset(0, 4),
+    ),
+    BoxShadow(
+      color: const Color(0xFF010120).withValues(alpha: 0.04),
+      blurRadius: 24,
+      offset: const Offset(0, 8),
+    ),
+  ];
 
-  /// Light frosted overlay for stacked cards / overlapping content.
-  Color get frostedOverlay =>
-      surfaceContainerLowest.withValues(alpha: 0.85);
+  /// Lavender accent shadow
+  List<BoxShadow> get shadowLavender => [
+    BoxShadow(
+      color: const Color(0xFFBDBBFF).withValues(alpha: 0.3),
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+    ),
+  ];
 
-  /// Dark scrim for content on image/gradient backgrounds.
-  Color get darkScrim => scrim.withValues(alpha: 0.55);
+  /// Magenta accent shadow (for special elements)
+  List<BoxShadow> get shadowMagenta => [
+    BoxShadow(
+      color: const Color(0xFFEF2CC1).withValues(alpha: 0.2),
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+    ),
+  ];
 
-  /// Light scrim for subtle separation.
-  Color get lightScrim => scrim.withValues(alpha: 0.08);
+  // Legacy shadows (mapped to new system)
+  List<BoxShadow> get shadowSecondary => shadowLavender;
+  List<BoxShadow> get shadowTertiary => shadowMagenta;
 
-  // ── Text Colors ──────────────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════════════
+  // GLASS EFFECTS
+  // ══════════════════════════════════════════════════════════════════════════
 
-  /// Secondary text color with better contrast than onSurfaceVariant.
-  /// Use for labels, subtitles, and descriptions that need to be readable.
+  /// Glass Light - frosted glass on dark surfaces
+  Color get glassLight => const Color(0xFFFFFFFF).withValues(alpha: 0.12);
+
+  /// Glass Dark - subtle tint on light surfaces
+  Color get glassDark => const Color(0xFF000000).withValues(alpha: 0.08);
+
+  /// Frosted overlay
+  Color get frostedOverlay => brightness == Brightness.light
+      ? const Color(0xFFFFFFFF).withValues(alpha: 0.85)
+      : const Color(0xFF010120).withValues(alpha: 0.85);
+
+  /// Dark scrim
+  Color get darkScrim => const Color(0xFF010120).withValues(alpha: 0.55);
+
+  /// Light scrim
+  Color get lightScrim => const Color(0xFF010120).withValues(alpha: 0.08);
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TEXT COLORS
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Secondary text color
   Color get textSecondary => onSurface.withValues(alpha: 0.7);
 
-  /// Tertiary text color for hints and less important information.
+  /// Tertiary text color
   Color get textTertiary => onSurface.withValues(alpha: 0.5);
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // TINTED SURFACES
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Card with subtle lavender tint
+  Color get surfaceTintedPrimary =>
+      Color.lerp(surfaceContainerLowest, pastelLavender, 0.08)!;
+
+  /// Card with subtle pink tint
+  Color get surfaceTintedSecondary =>
+      Color.lerp(surfaceContainerLowest, pastelPink, 0.08)!;
+
+  /// Card with subtle blue tint
+  Color get surfaceTintedTertiary =>
+      Color.lerp(surfaceContainerLowest, pastelBlue, 0.08)!;
+
+  // Legacy gradients (mapped to new system)
+  LinearGradient get gradientWarm => gradientPastelCloud;
+  LinearGradient get gradientSunset => gradientBrand;
+  LinearGradient get gradientCool => gradientPastelCloud;
+  LinearGradient get gradientRich => gradientPastelVertical;
+  LinearGradient get gradientBackground => gradientPastelVertical;
+  LinearGradient get gradientSurfaceSecondary => gradientSurfacePrimary;
+  LinearGradient get gradientSurfaceTertiary => gradientSurfacePrimary;
+}
+
+/// Together AI Semantic Colors
+class TogetherSemanticColors {
+  TogetherSemanticColors._();
+
+  static const success = Color(0xFF10B981);
+  static const warning = Color(0xFFF59E0B);
+  static const error = Color(0xFFEF4444);
+  static const info = Color(0xFF3B82F6);
 }

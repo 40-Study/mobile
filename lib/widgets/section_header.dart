@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:study/features/weather/presentation/widgets/weather_content_overlay.dart';
 
 class SectionHeader extends StatelessWidget {
   const SectionHeader({
@@ -16,7 +15,7 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final textColor = context.weatherTextColor;
+    final textColor = cs.onSurface;
 
     return Row(
       children: [
