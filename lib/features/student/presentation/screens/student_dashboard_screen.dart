@@ -5,12 +5,13 @@ import 'package:study/features/student/bloc/lesson_detail/lesson_detail_cubit.da
 import 'package:study/features/student/bloc/student_dashboard/student_dashboard_cubit.dart';
 import 'package:study/features/student/data/models/models.dart';
 import 'package:study/features/student/data/repository/student_repository.dart';
+import 'package:study/features/student/presentation/screens/cart_screen.dart';
 import 'package:study/features/student/presentation/screens/course_detail_screen.dart';
 import 'package:study/features/student/presentation/screens/lesson_detail_screen.dart';
+import 'package:study/features/student/presentation/screens/notifications_screen.dart';
 import 'package:study/features/student/presentation/screens/student_learning_screen.dart';
 import 'package:study/features/student/presentation/screens/student_main_screen.dart';
 import 'package:study/features/student/presentation/widgets/dashboard/dashboard_widgets.dart';
-import 'package:study/features/weather/weather.dart';
 import 'package:study/index.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
@@ -73,13 +74,27 @@ class _DashboardBody extends StatelessWidget {
 
   final StudentDashboardLoaded state;
 
-  void _openCityPicker(BuildContext context) {
-    final cubit = context.read<WeatherBackgroundCubit>();
-    CityPickerSheet.show(
-      context,
-      selectedCity: cubit.selectedCity,
-      onCitySelected: cubit.selectCity,
-      onUseGPS: cubit.useGPS,
+  void _openNotifications(BuildContext context) {
+    final repository = context.read<StudentRepository>();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => RepositoryProvider.value(
+          value: repository,
+          child: const NotificationsScreen(),
+        ),
+      ),
+    );
+  }
+
+  void _openCart(BuildContext context) {
+    final repository = context.read<StudentRepository>();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => RepositoryProvider.value(
+          value: repository,
+          child: const CartScreen(),
+        ),
+      ),
     );
   }
 
@@ -141,9 +156,10 @@ class _DashboardBody extends StatelessWidget {
       children: [
         SizedBox(height: MediaQuery.of(context).padding.top),
         LocationHeader(
-          onLocationTap: () => _openCityPicker(context),
-          onWeatherTap: () =>
-              NavigationService.of(context).navigateTo(Routes.weatherDemo),
+          onNotificationTap: () => _openNotifications(context),
+          onCartTap: () => _openCart(context),
+          notificationCount: state.stats.totalCourses > 0 ? 3 : 0,
+          cartCount: 0,
         ),
         const SizedBox(height: AppSpacing.xl),
         LevelHeroCard(
@@ -193,12 +209,11 @@ class _DashboardBody extends StatelessWidget {
             );
           }),
         const SizedBox(height: AppSpacing.xxl),
+        // Pending assignments section with real data
         DashboardSectionRow(
-          title: 'Bai tap can hoan thien',
-          action:
-              '${state.enrollments.where((e) => e.progress < 100).length}'
-              ' Can nop',
-          actionColor: cs.primary,
+          title: 'Bai tap can lam',
+          action: '${state.pendingAssignments.length} bai tap',
+          actionColor: const Color(0xFFEF4444),
           onActionTap: () => StudentMainScreen.switchToTab(
             context,
             StudentMainScreen.tabLearning,
@@ -206,79 +221,30 @@ class _DashboardBody extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.md),
-        if (state.enrollments.isEmpty)
-          const DashboardEmptyCard(message: 'Khong co bai tap nao')
-        else ...[
-          DashboardAssignmentCard(
-            category: state.enrollments.first.courseName ?? 'Khoa hoc',
-            title: state.enrollments.first.nextLesson ?? 'Bai tap',
-            daysLeft: 2,
-            avatarCount: state.enrollments.first.completedLessons,
-            onTap: () => _openLessonDetail(
-              context,
-              lessonId: 'l1',
-              lessonTitle:
-                  state.enrollments.first.nextLesson ?? 'Bai tap',
-              initialTab: 2,
-            ),
-            onSubmit: () => _openLessonDetail(
-              context,
-              lessonId: 'l1',
-              lessonTitle:
-                  state.enrollments.first.nextLesson ?? 'Bai tap',
-              initialTab: 2,
-            ),
-          ),
-          if (state.enrollments.length > 1) ...[
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: MiniAssignmentCard(
-                    label: 'LY THUYET',
-                    title: state.enrollments[1].courseName ?? 'Bai tap',
-                    deadline: 'Het han: Hom nay',
-                    onTap: () => _openLessonDetail(
-                      context,
-                      lessonId: 'l1',
-                      lessonTitle: state.enrollments[1].courseName ??
-                          'Bai tap',
-                      initialTab: 2,
-                    ),
+        if (state.pendingAssignments.isEmpty)
+          const DashboardEmptyCard(message: 'Khong co bai tap nao can lam')
+        else
+          ...state.pendingAssignments.take(3).map((assignment) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: PendingAssignmentCard(
+                  assignment: assignment,
+                  onTap: () => _openLessonDetail(
+                    context,
+                    lessonId: assignment.id,
+                    lessonTitle: assignment.title,
+                    initialTab: 2,
                   ),
                 ),
-                if (state.enrollments.length > 2) ...[
-                  const SizedBox(width: AppLayout.gutter),
-                  Expanded(
-                    child: MiniAssignmentCard(
-                      label: 'THUC HANH',
-                      title: state.enrollments[2].courseName ?? 'Bai tap',
-                      deadline: 'Het han: 15 Thg 10',
-                      onTap: () => _openLessonDetail(
-                        context,
-                        lessonId: 'l1',
-                        lessonTitle: state.enrollments[2].courseName ??
-                            'Bai tap',
-                        initialTab: 2,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ],
-        ],
+              )),
         const SizedBox(height: AppSpacing.xxl),
-        BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
-          builder: (context, state) {
-            return Text(
-              'Tiep tuc hoc',
-              style: tt.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: context.weatherTextColorThemed,
-              ),
-            );
-          },
+        // Continue learning section
+        Text(
+          'Tiep tuc hoc',
+          style: tt.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: cs.onSurface,
+            letterSpacing: -0.5,
+          ),
         ),
         const SizedBox(height: AppSpacing.md),
         if (state.enrollments.isEmpty)
@@ -294,6 +260,77 @@ class _DashboardBody extends StatelessWidget {
                 _openCourseDetail(context, state.enrollments.first),
           ),
         const SizedBox(height: AppSpacing.xxl),
+        // Featured posts section
+        if (state.featuredPosts.isNotEmpty) ...[
+          DashboardSectionRow(
+            title: 'Bai viet noi bat',
+            action: 'Xem tat ca',
+            onActionTap: () {},
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ...state.featuredPosts.take(3).map((post) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: FeaturedPostCard(
+                  post: post,
+                  onTap: () {},
+                ),
+              )),
+          const SizedBox(height: AppSpacing.xxl),
+        ],
+        // Trending courses section
+        if (state.trendingCourses.isNotEmpty) ...[
+          DashboardSectionRow(
+            title: 'Khoa hoc xu huong',
+            action: 'Xem tat ca',
+            onActionTap: () {},
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            height: 280,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: state.trendingCourses.length,
+              separatorBuilder: (_, __) =>
+                  const SizedBox(width: AppSpacing.md),
+              itemBuilder: (context, index) {
+                final course = state.trendingCourses[index];
+                return TrendingCourseCard(
+                  course: course,
+                  onTap: () {},
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+        ],
+        // Competitions section
+        if (state.competitions.isNotEmpty) ...[
+          DashboardSectionRow(
+            title: 'Cuoc thi',
+            action: '${state.competitions.length} cuoc thi',
+            actionColor: const Color(0xFF8B5CF6),
+            onActionTap: () {},
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            height: 220,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: state.competitions.length,
+              separatorBuilder: (_, __) =>
+                  const SizedBox(width: AppSpacing.md),
+              itemBuilder: (context, index) {
+                final competition = state.competitions[index];
+                return CompetitionCard(
+                  competition: competition,
+                  onTap: () {},
+                  onJoin: () {},
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+        ],
       ],
     );
   }
