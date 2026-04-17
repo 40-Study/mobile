@@ -22,15 +22,35 @@ final class StudentDashboardLoaded extends StudentDashboardState {
     required this.todaySchedules,
     required this.enrollments,
     this.studentName = 'Hoc sinh',
+    this.trendingCourses = const [],
+    this.competitions = const [],
+    this.featuredPosts = const [],
+    this.pendingAssignments = const [],
+    this.weekSchedules = const [],
   });
 
   final StudentStatsModel stats;
   final List<StudentScheduleModel> todaySchedules;
   final List<EnrollmentModel> enrollments;
   final String studentName;
+  final List<CourseModel> trendingCourses;
+  final List<CompetitionModel> competitions;
+  final List<ForumPostModel> featuredPosts;
+  final List<AssignmentModel> pendingAssignments;
+  final List<StudentScheduleModel> weekSchedules;
 
   @override
-  List<Object?> get props => [stats, todaySchedules, enrollments, studentName];
+  List<Object?> get props => [
+        stats,
+        todaySchedules,
+        enrollments,
+        studentName,
+        trendingCourses,
+        competitions,
+        featuredPosts,
+        pendingAssignments,
+        weekSchedules,
+      ];
 }
 
 final class StudentDashboardFailure extends StudentDashboardState {

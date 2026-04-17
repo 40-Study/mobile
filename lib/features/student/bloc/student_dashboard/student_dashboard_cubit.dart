@@ -21,6 +21,11 @@ class StudentDashboardCubit extends Cubit<StudentDashboardState> {
         _repository.getStats(),
         _repository.getTodaySchedule(),
         _repository.getEnrollments(pageSize: 5),
+        _repository.getTrendingCourses(limit: 10),
+        _repository.getCompetitions(pageSize: 5),
+        _repository.getFeaturedDiscussions(limit: 5),
+        _repository.getPendingAssignments(limit: 10),
+        _repository.getWeekSchedules(),
       ]);
 
       emit(StudentDashboardLoaded(
@@ -28,6 +33,11 @@ class StudentDashboardCubit extends Cubit<StudentDashboardState> {
         todaySchedules: results[1] as List<StudentScheduleModel>,
         enrollments: results[2] as List<EnrollmentModel>,
         studentName: 'Nguyen Van Hoc Sinh', // TODO: Get from auth/profile
+        trendingCourses: results[3] as List<CourseModel>,
+        competitions: results[4] as List<CompetitionModel>,
+        featuredPosts: results[5] as List<ForumPostModel>,
+        pendingAssignments: results[6] as List<AssignmentModel>,
+        weekSchedules: results[7] as List<StudentScheduleModel>,
       ));
     } catch (e) {
       emit(StudentDashboardFailure(message: e.toString()));
