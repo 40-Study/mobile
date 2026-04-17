@@ -16,7 +16,6 @@ import 'package:study/features/student/data/student_api_client.dart';
 import 'package:study/features/teacher/data/repository/teacher_repository.dart';
 import 'package:study/features/teacher/data/repository/teacher_repository_impl.dart';
 import 'package:study/features/teacher/data/teacher_api_client.dart';
-import 'package:study/features/weather/weather.dart';
 import 'package:study/repository/onboarding_repository.dart';
 import 'package:study/repository/theme_repository.dart';
 
@@ -51,17 +50,6 @@ abstract class RepositoryModule {
   ParentRepository provideParentRepository(
     ParentApiClient apiClient,
   ) => ParentRepositoryImpl(apiClient: apiClient);
-
-  @factoryMethod
-  WeatherRepository provideWeatherRepository(
-    WeatherApiClient apiClient,
-    WeatherStorage storage,
-    LocationService locationService,
-  ) => WeatherRepositoryImpl(
-        apiClient: apiClient,
-        storage: storage,
-        locationService: locationService,
-      );
 
   @factoryMethod
   OrganizationRepository provideOrganizationRepository() =>

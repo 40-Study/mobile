@@ -5,7 +5,6 @@ import 'package:study/data/theme_storage.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/features/auth/data/session_expired_notifier.dart';
-import 'package:study/features/weather/weather.dart';
 
 @module
 abstract class DIDataModule {
@@ -23,15 +22,4 @@ abstract class DIDataModule {
 
   @lazySingleton
   SessionExpiredNotifier get sessionExpiredNotifier => SessionExpiredNotifier();
-
-  // Weather
-  @lazySingleton
-  WeatherStorage get weatherStorage =>
-      WeatherStorage(diContainer.get<SharedPreferences>());
-
-  @lazySingleton
-  LocationService get locationService => LocationService();
-
-  @lazySingleton
-  WeatherApiClient get weatherApiClient => WeatherApiClient();
 }

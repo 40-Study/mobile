@@ -96,12 +96,6 @@ class _DefaultHomeScreen extends StatelessWidget {
               icon: const Icon(Icons.palette_outlined),
               label: Text(S.of(context).themeTitle),
             ),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: () => navigator.navigateTo(Routes.weatherDemo),
-              icon: const Icon(Icons.wb_sunny_outlined),
-              label: const Text('Weather Demo'),
-            ),
           ],
         ),
       ),

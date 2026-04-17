@@ -47,7 +47,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>App needs your location to display accurate weather for your area</string>
 </dict>
 </plist>

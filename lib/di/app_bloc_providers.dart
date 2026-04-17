@@ -9,7 +9,6 @@ import 'package:study/features/auth/bloc/register/register_bloc.dart';
 import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/features/auth/data/device_info_helper.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
-import 'package:study/features/weather/weather.dart';
 import 'package:study/repository/onboarding_repository.dart';
 import 'package:study/repository/theme_repository.dart';
 
@@ -42,12 +41,6 @@ abstract class AppBlocProviders {
       ),
       BlocProvider<ForgotPasswordBloc>(
         create: (_) => ForgotPasswordBloc(authRepository: authRepo),
-      ),
-      BlocProvider<WeatherBackgroundCubit>(
-        create: (_) => WeatherBackgroundCubit(
-          repository: diContainer.get<WeatherRepository>(),
-          storage: diContainer.get<WeatherStorage>(),
-        )..load(),
       ),
     ];
   }

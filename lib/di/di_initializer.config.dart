@@ -35,7 +35,6 @@ import 'package:study/features/student/data/student_api_client.dart' as _i583;
 import 'package:study/features/teacher/data/repository/teacher_repository.dart'
     as _i1041;
 import 'package:study/features/teacher/data/teacher_api_client.dart' as _i437;
-import 'package:study/features/weather/weather.dart' as _i798;
 import 'package:study/repository/onboarding_repository.dart' as _i812;
 import 'package:study/repository/theme_repository.dart' as _i354;
 import 'package:talker/talker.dart' as _i993;
@@ -66,11 +65,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i785.SessionExpiredNotifier>(
       () => dIDataModule.sessionExpiredNotifier,
     );
-    gh.lazySingleton<_i798.WeatherStorage>(() => dIDataModule.weatherStorage);
-    gh.lazySingleton<_i798.LocationService>(() => dIDataModule.locationService);
-    gh.lazySingleton<_i798.WeatherApiClient>(
-      () => dIDataModule.weatherApiClient,
-    );
     gh.lazySingleton<_i361.Dio>(() => networkModule.provideDio());
     gh.factory<_i354.ThemeRepository>(
       () => repositoryModule.provideThemeRepository(gh<_i1013.ThemeStorage>()),
@@ -86,13 +80,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i698.ParentApiClient>(
       () => networkModule.provideParentApiClient(gh<_i361.Dio>()),
-    );
-    gh.factory<_i798.WeatherRepository>(
-      () => repositoryModule.provideWeatherRepository(
-        gh<_i798.WeatherApiClient>(),
-        gh<_i798.WeatherStorage>(),
-        gh<_i798.LocationService>(),
-      ),
     );
     gh.factory<_i243.ParentRepository>(
       () =>

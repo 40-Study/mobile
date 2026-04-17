@@ -15,7 +15,6 @@ import 'package:study/features/teacher/bloc/classes/teacher_class_detail_cubit.d
 import 'package:study/features/teacher/data/repository/teacher_repository.dart';
 import 'package:study/features/teacher/presentation/screens/create_course_screen.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_class_detail_screen.dart';
-import 'package:study/features/weather/weather.dart';
 import 'package:study/index.dart';
 
 class Routes {
@@ -34,9 +33,6 @@ class Routes {
   static const forgotPassword = 'forgotPassword';
   static const forgotPasswordOtp = 'forgotPasswordOtp';
   static const resetPassword = 'resetPassword';
-
-  // Demo
-  static const weatherDemo = 'weatherDemo';
 
   // Teacher
   static const teacherClassDetail = '/teacher/classes/detail';
@@ -68,7 +64,6 @@ class NavigationService {
     Routes.forgotPassword: (_) => const ForgotPasswordScreen(),
     Routes.forgotPasswordOtp: (_) => const ForgotPasswordOtpScreen(),
     Routes.resetPassword: (_) => const ResetPasswordScreen(),
-    Routes.weatherDemo: (_) => const WeatherDemoScreen(),
     Routes.teacherClassDetail: (args) => BlocProvider(
           create: (context) => TeacherClassDetailCubit(
             repository: diContainer.get<TeacherRepository>(),
