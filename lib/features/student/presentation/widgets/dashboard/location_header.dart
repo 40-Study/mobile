@@ -1,185 +1,142 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/constants/dimens.dart';
-import 'package:study/features/weather/weather.dart';
 
+/// Simple header with greeting and action icons
+/// Together AI Design - clean, minimal
 class LocationHeader extends StatelessWidget {
   const LocationHeader({
     super.key,
-    this.onLocationTap,
-    this.onWeatherTap,
+    this.greeting,
+    this.onNotificationTap,
+    this.onCartTap,
+    this.notificationCount = 0,
+    this.cartCount = 0,
   });
 
-  final VoidCallback? onLocationTap;
-  final VoidCallback? onWeatherTap;
+  final String? greeting;
+  final VoidCallback? onNotificationTap;
+  final VoidCallback? onCartTap;
+  final int notificationCount;
+  final int cartCount;
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Chao buoi sang';
+    if (hour < 18) return 'Chao buoi chieu';
+    return 'Chao buoi toi';
+  }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final cubit = context.watch<WeatherBackgroundCubit>();
-    final state = cubit.state;
-
-    final cityName = cubit.selectedCity?.name ?? 'Chon thanh pho';
-    final isLoading = state is WeatherBackgroundLoading;
-
-    // Use extension for adaptive colors
-    final isDark = context.isWeatherBackgroundDark;
-    final textColor = context.weatherTextColorThemed;
-    final subtitleColor = context.weatherTextColorThemedSecondary;
-    final iconColor = context.weatherIconColor;
-    final iconBgColor = context.weatherIconBackgroundColor;
 
     return Row(
       children: [
         Expanded(
-          child: GestureDetector(
-            onTap: onLocationTap,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.location_on,
-                  color: iconColor,
-                  size: 24,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                greeting ?? _getGreeting(),
+                style: tt.bodyMedium?.copyWith(
+                  color: cs.onSurface.withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w500,
                 ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Vi tri hien tai',
-                        style: tt.bodyMedium?.copyWith(
-                          color: subtitleColor,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              cityName,
-                              style: tt.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: textColor,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.xs),
-                          Icon(
-                            Icons.keyboard_arrow_down,
-                            color: subtitleColor,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Chuc ban hoc tot!',
+                style: tt.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                  letterSpacing: -0.3,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-        if (isLoading)
-          SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: textColor,
-            ),
-          )
-        else ...[
-          // Debug button to cycle weather condition
-          GestureDetector(
-            onTap: () => cubit.cycleDebugCondition(),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: AppSpacing.xs,
-              ),
-              decoration: BoxDecoration(
-                color: cs.primaryContainer,
-                borderRadius: AppRadius.borderSm,
-              ),
-              child: Text(
-                _getConditionLabel(state.condition),
-                style: tt.labelSmall?.copyWith(
-                  color: cs.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+        // Cart icon
+        GestureDetector(
+          onTap: onCartTap,
+          child: _IconWithBadge(
+            icon: Icons.shopping_cart_outlined,
+            count: cartCount,
           ),
-          const SizedBox(width: AppSpacing.xs),
-          // Debug button to cycle time of day
-          GestureDetector(
-            onTap: () => cubit.cycleDebugTime(),
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.sm,
-                vertical: AppSpacing.xs,
-              ),
-              decoration: BoxDecoration(
-                color: cs.primaryContainer,
-                borderRadius: AppRadius.borderSm,
-              ),
-              child: Text(
-                _getTimeLabel(state.timeOfDay),
-                style: tt.labelSmall?.copyWith(
-                  color: cs.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        // Notification icon
+        GestureDetector(
+          onTap: onNotificationTap,
+          child: _IconWithBadge(
+            icon: Icons.notifications_none_rounded,
+            count: notificationCount,
           ),
-          const SizedBox(width: AppSpacing.xs),
-          Container(
-            width: AppIconSize.avatar,
-            height: AppIconSize.avatar,
-            decoration: BoxDecoration(
-              color: iconBgColor,
-              borderRadius: AppRadius.borderMd,
-            ),
-            child: Icon(
-              Icons.notifications_none_rounded,
-              color: iconColor,
-              size: 22,
-            ),
-          ),
-        ],
+        ),
       ],
     );
   }
+}
 
-  IconData _getWeatherIcon(WeatherCondition condition) {
-    return switch (condition) {
-      WeatherCondition.sunny => Icons.wb_sunny,
-      WeatherCondition.cloudy => Icons.cloud,
-      WeatherCondition.rainy => Icons.water_drop,
-      WeatherCondition.snowy => Icons.ac_unit,
-      WeatherCondition.defaultNeutral => Icons.wb_cloudy,
-    };
-  }
+class _IconWithBadge extends StatelessWidget {
+  const _IconWithBadge({
+    required this.icon,
+    required this.count,
+  });
 
-  String _getTimeLabel(TimeOfDayType time) {
-    return switch (time) {
-      TimeOfDayType.dawn => '🌅',
-      TimeOfDayType.day => '☀️',
-      TimeOfDayType.dusk => '🌆',
-      TimeOfDayType.night => '🌙',
-    };
-  }
+  final IconData icon;
+  final int count;
 
-  String _getConditionLabel(WeatherCondition condition) {
-    return switch (condition) {
-      WeatherCondition.sunny => '☀️',
-      WeatherCondition.cloudy => '☁️',
-      WeatherCondition.rainy => '🌧️',
-      WeatherCondition.snowy => '❄️',
-      WeatherCondition.defaultNeutral => '🌤️',
-    };
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: AppIconSize.avatar,
+          height: AppIconSize.avatar,
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(8), // Together AI: comfortable radius
+            border: Border.all(
+              color: cs.outline,
+              width: 1,
+            ),
+          ),
+          child: Icon(
+            icon,
+            color: cs.onSurface,
+            size: 22,
+          ),
+        ),
+        if (count > 0)
+          Positioned(
+            right: -4,
+            top: -4,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: cs.error,
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(
+                minWidth: 18,
+                minHeight: 18,
+              ),
+              child: Text(
+                count > 99 ? '99+' : '$count',
+                style: TextStyle(
+                  color: cs.onError,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+      ],
+    );
   }
 }

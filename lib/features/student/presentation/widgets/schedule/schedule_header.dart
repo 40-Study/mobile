@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/constants/dimens.dart';
-import 'package:study/features/weather/weather.dart';
 import 'package:study/theme/app_colors.dart';
 
 class ScheduleHeader extends StatelessWidget {
@@ -37,16 +35,12 @@ class ScheduleHeader extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
-              builder: (context, state) {
-                return Text(
-                  'Lich hoc cua toi',
-                  style: tt.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: context.weatherTextColorThemed,
-                  ),
-                );
-              },
+            child: Text(
+              'Lich hoc cua toi',
+              style: tt.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: cs.onSurface,
+              ),
             ),
           ),
           Container(

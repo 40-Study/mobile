@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/constants/dimens.dart';
 import 'package:study/features/student/presentation/widgets/learning/learning_widgets.dart';
-import 'package:study/features/weather/weather.dart';
 
 class StudentLearningScreen extends StatefulWidget {
   const StudentLearningScreen({super.key, this.initialSegment = 0});
@@ -34,6 +32,7 @@ class StudentLearningScreenState extends State<StudentLearningScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
     return Scaffold(
@@ -49,16 +48,13 @@ class StudentLearningScreenState extends State<StudentLearningScreen> {
                 AppLayout.screenMargin,
                 0,
               ),
-              child: BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
-                builder: (context, state) {
-                  return Text(
-                    'Hoc tap',
-                    style: tt.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: context.weatherTextColorThemed,
-                    ),
-                  );
-                },
+              child: Text(
+                'Hoc tap',
+                style: tt.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                  letterSpacing: -0.5,
+                ),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),

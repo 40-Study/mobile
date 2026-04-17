@@ -1,10 +1,14 @@
+export 'competition_card.dart';
 export 'continue_learning_card.dart';
 export 'dashboard_assignment_card.dart';
 export 'dashboard_empty_card.dart';
 export 'dashboard_schedule_card.dart';
 export 'dashboard_section_row.dart';
+export 'featured_post_card.dart';
 export 'greeting_header.dart';
 export 'level_hero_card.dart';
 export 'location_header.dart';
+export 'pending_assignment_card.dart';
 export 'rank_avatar_frame.dart';
 export 'streak_hero_card.dart';
+export 'trending_course_card.dart';
