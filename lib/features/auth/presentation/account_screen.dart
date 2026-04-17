@@ -10,8 +10,10 @@ import 'package:study/features/auth/presentation/edit_profile_screen.dart';
 import 'package:study/features/auth/presentation/security_screen.dart';
 import 'package:study/features/auth/presentation/utils/role_utils.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
+import 'package:study/features/student/data/repository/student_repository.dart';
+import 'package:study/features/student/presentation/screens/orders_screen.dart';
+import 'package:study/features/student/presentation/screens/vouchers_screen.dart';
 import 'package:study/features/teacher/presentation/screens/switch_role_screen.dart';
-import 'package:study/features/weather/weather.dart';
 import 'package:study/theme/app_colors.dart';
 
 enum AccountRoleType { teacher, student, parent, organization }
@@ -133,8 +135,8 @@ class _AccountScreenState extends State<AccountScreen>
     ProfileModel? profile,
   ) {
     final cs = Theme.of(context).colorScheme;
-    final textColor = context.weatherTextColor;
-    final secondaryColor = context.weatherTextColorSecondary;
+    final textColor = cs.onSurface;
+    final secondaryColor = cs.onSurface.withValues(alpha: 0.6);
 
     return SafeArea(
       child: ListView(
@@ -290,7 +292,7 @@ class _AccountScreenState extends State<AccountScreen>
         Text(
           'GIẢNG VIÊN CHUYÊN NGHIỆP',
           style: tt.bodyMedium?.copyWith(
-            color: context.weatherTextColorSecondary,
+            color: cs.onSurface.withValues(alpha: 0.6),
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
           ),
@@ -991,6 +993,25 @@ class _AccountScreenState extends State<AccountScreen>
               onTap: () => Navigator.pop(context),
             ),
             const Divider(height: 1, indent: 16, endIndent: 16),
+            if (widget.roleType == AccountRoleType.student) ...[
+              ListTile(
+                leading: _buildMenuIcon(context, Icons.receipt_long),
+                title: const Text('Đơn hàng của tôi'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _navigateToOrders(context);
+                },
+              ),
+              ListTile(
+                leading: _buildMenuIcon(context, Icons.local_offer),
+                title: const Text('Mã giảm giá'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _navigateToVouchers(context);
+                },
+              ),
+              const Divider(height: 1, indent: 16, endIndent: 16),
+            ],
             ListTile(
               leading: Container(
                 width: 40,
@@ -1028,6 +1049,8 @@ class _AccountScreenState extends State<AccountScreen>
   }
 
   void _confirmLogout(BuildContext context) {
+    // Store bloc reference before showing dialog to avoid context issues
+    final authBloc = context.read<AuthBloc>();
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -1041,7 +1064,8 @@ class _AccountScreenState extends State<AccountScreen>
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              context.read<AuthBloc>().add(AuthLoggedOut());
+              // Use stored bloc reference to avoid deactivated widget issue
+              authBloc.add(AuthLoggedOut());
             },
             child: const Text('Đăng xuất'),
           ),
@@ -1066,6 +1090,32 @@ class _AccountScreenState extends State<AccountScreen>
     );
   }
 
+  void _navigateToOrders(BuildContext ctx) {
+    final repository = diContainer.get<StudentRepository>();
+    Navigator.push(
+      ctx,
+      MaterialPageRoute<void>(
+        builder: (_) => RepositoryProvider.value(
+          value: repository,
+          child: const OrdersScreen(),
+        ),
+      ),
+    );
+  }
+
+  void _navigateToVouchers(BuildContext ctx) {
+    final repository = diContainer.get<StudentRepository>();
+    Navigator.push(
+      ctx,
+      MaterialPageRoute<void>(
+        builder: (_) => RepositoryProvider.value(
+          value: repository,
+          child: const VouchersScreen(),
+        ),
+      ),
+    );
+  }
+
   // ══════════════════════════════════════════════════════════════
   //  PARENT PROFILE - Beautiful Single Page Design
   // ══════════════════════════════════════════════════════════════
@@ -1077,8 +1127,8 @@ class _AccountScreenState extends State<AccountScreen>
   ) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final textColor = context.weatherTextColor;
-    final secondaryColor = context.weatherTextColorSecondary;
+    final textColor = cs.onSurface;
+    final secondaryColor = cs.onSurface.withValues(alpha: 0.6);
 
     return SafeArea(
       child: ListView(
@@ -1230,7 +1280,7 @@ class _AccountScreenState extends State<AccountScreen>
         Text(
           'PHU HUYNH',
           style: tt.bodyMedium?.copyWith(
-            color: context.weatherTextColorSecondary,
+            color: cs.onSurface.withValues(alpha: 0.6),
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
           ),
@@ -1706,53 +1756,51 @@ class _StudentOverviewTab extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return BlocBuilder<WeatherBackgroundCubit, WeatherBackgroundState>(
-      builder: (context, state) {
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-          children: [
-            // BIO
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-              child: Column(
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+      children: [
+        // BIO
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+          child: Column(
+            children: [
+              Text(
+                '"',
+                style: tt.displaySmall?.copyWith(
+                  color: cs.primary.withValues(alpha: 0.3),
+                  fontFamily: 'Georgia',
+                  height: 0.5,
+                ),
+              ),
+              Text(
+                'Đam mê học hỏi về công nghệ và thiết kế sáng tạo.\n'
+                'Hiện đang theo đuổi các khóa học về lập trình di động.',
+                style: tt.bodyLarge?.copyWith(
+                  color: cs.onSurface,
+                  fontStyle: FontStyle.italic,
+                  height: 1.6,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Icon(Icons.location_on_outlined,
+                      size: 14, color: cs.onSurface.withValues(alpha: 0.6)),
+                  const SizedBox(width: 4),
                   Text(
-                    '"',
-                    style: tt.displaySmall?.copyWith(
-                      color: cs.primary.withValues(alpha: 0.3),
-                      fontFamily: 'Georgia',
-                      height: 0.5,
+                    'Hà Nội, Việt Nam',
+                    style: tt.labelMedium?.copyWith(
+                      color: cs.onSurface.withValues(alpha: 0.6),
                     ),
-                  ),
-                  Text(
-                    'Đam mê học hỏi về công nghệ và thiết kế sáng tạo.\n'
-                    'Hiện đang theo đuổi các khóa học về lập trình di động.',
-                    style: tt.bodyLarge?.copyWith(
-                      color: context.weatherTextColorThemed,
-                      fontStyle: FontStyle.italic,
-                      height: 1.6,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.location_on_outlined,
-                          size: 14, color: context.weatherTextColorThemedSecondary),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Hà Nội, Việt Nam',
-                        style: tt.labelMedium?.copyWith(
-                          color: context.weatherTextColorThemedSecondary,
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
-            ),
+            ],
+          ),
+        ),
             const SizedBox(height: 16),
 
             // SKILLS
@@ -1840,10 +1888,8 @@ class _StudentOverviewTab extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 32),
-          ],
-        );
-      },
+        const SizedBox(height: 32),
+      ],
     );
   }
 

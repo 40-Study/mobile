@@ -395,6 +395,97 @@ class AuthRepositoryImpl implements AuthRepository {
     });
   }
 
+  @override
+  Future<void> deleteAccount({required String password}) async {
+    await _api.deleteAccount({'password': password});
+    await _storage.clearAll();
+  }
+
+  @override
+  Future<List<LinkedAccountModel>> getLinkedAccounts() async {
+    final response = await _api.getLinkedAccounts();
+    final data = _extractData(response.data);
+
+    return _parseList<LinkedAccountModel>(
+      data,
+      LinkedAccountModel.fromJson,
+      possibleKeys: ['accounts', 'linked_accounts', 'items'],
+    );
+  }
+
+  @override
+  Future<void> unlinkAccount({required String provider}) async {
+    await _api.unlinkAccount(provider);
+  }
+
+  @override
+  Future<List<UserModel>> getChildren({int page = 1, int pageSize = 10}) async {
+    final response = await _api.getChildren(page: page, pageSize: pageSize);
+    final data = _extractData(response.data);
+
+    return _parseList<UserModel>(
+      data,
+      UserModel.fromJson,
+      possibleKeys: ['children', 'items'],
+    );
+  }
+
+  @override
+  Future<List<OrganizationModel>> getMyOrganizations({
+    int page = 1,
+    int pageSize = 10,
+  }) async {
+    final response = await _api.getMyOrganizations(page: page, pageSize: pageSize);
+    final data = _extractData(response.data);
+
+    return _parseList<OrganizationModel>(
+      data,
+      OrganizationModel.fromJson,
+      possibleKeys: ['organizations', 'items'],
+    );
+  }
+
+  // ============================================================================
+  // OAuth APIs
+  // ============================================================================
+
+  @override
+  Future<String> getOAuthUrl({required String provider}) async {
+    final response = await _api.getOAuthUrl(provider);
+    final data = _extractData(response.data);
+
+    // Backend trả về URL redirect hoặc thông tin để build URL
+    if (data is String) return data;
+    if (data is Map<String, dynamic>) {
+      return data['url'] as String? ??
+          data['redirect_url'] as String? ??
+          data['oauth_url'] as String? ??
+          '';
+    }
+    throw Exception('Invalid OAuth URL response');
+  }
+
+  @override
+  Future<LoginResponse> handleOAuthCallback({
+    required String provider,
+    required String code,
+    String? state,
+  }) async {
+    final response = await _api.oauthCallback(provider, code, state);
+    final data = _extractData(response.data);
+
+    // Parse response giống như login thường
+    return LoginResponse.fromJson(data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<void> linkOAuthAccount({
+    required String provider,
+    required String code,
+  }) async {
+    await _api.linkAccount(provider, {'code': code});
+  }
+
   // ============================================================================
   // LOCAL STORAGE
   // ============================================================================

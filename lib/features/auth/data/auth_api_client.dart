@@ -126,4 +126,69 @@ abstract class AuthApiClient {
   Future<HttpResponse<dynamic>> changePassword(
     @Body() Map<String, dynamic> body,
   );
+
+  /// 2.13 Xóa tài khoản
+  /// DELETE /auth/me
+  @DELETE('/api/auth/me')
+  Future<HttpResponse<dynamic>> deleteAccount(
+    @Body() Map<String, dynamic> body,
+  );
+
+  /// 2.14 Lấy danh sách tài khoản OAuth đã liên kết
+  /// GET /auth/linked-accounts
+  @GET('/api/auth/linked-accounts')
+  Future<HttpResponse<dynamic>> getLinkedAccounts();
+
+  /// 2.15 Hủy liên kết tài khoản OAuth
+  /// DELETE /auth/linked-accounts/:provider
+  @DELETE('/api/auth/linked-accounts/{provider}')
+  Future<HttpResponse<dynamic>> unlinkAccount(@Path('provider') String provider);
+
+  // ============================================================================
+  // OAuth APIs
+  // ============================================================================
+
+  /// 2.16 OAuth Login - Get redirect URL
+  /// GET /auth/oauth/:provider
+  /// Providers: google, facebook, github
+  /// Returns redirect URL to OAuth provider
+  @GET('/api/auth/oauth/{provider}')
+  Future<HttpResponse<dynamic>> getOAuthUrl(@Path('provider') String provider);
+
+  /// 2.17 OAuth Callback - Exchange code for tokens
+  /// GET /auth/oauth/:provider/callback
+  @GET('/api/auth/oauth/{provider}/callback')
+  Future<HttpResponse<dynamic>> oauthCallback(
+    @Path('provider') String provider,
+    @Query('code') String code,
+    @Query('state') String? state,
+  );
+
+  /// 2.18 Link OAuth account (for logged-in users)
+  /// POST /auth/link-account/:provider
+  @POST('/api/auth/link-account/{provider}')
+  Future<HttpResponse<dynamic>> linkAccount(
+    @Path('provider') String provider,
+    @Body() Map<String, dynamic> body,
+  );
+
+  // ============================================================================
+  // CHILDREN APIs (for parent role)
+  // ============================================================================
+
+  /// Lấy danh sách con của phụ huynh
+  /// GET /me/children
+  @GET('/api/me/children')
+  Future<HttpResponse<dynamic>> getChildren({
+    @Query('page') int page = 1,
+    @Query('page_size') int pageSize = 10,
+  });
+
+  /// Lấy danh sách organizations của user
+  /// GET /me/organizations
+  @GET('/api/me/organizations')
+  Future<HttpResponse<dynamic>> getMyOrganizations({
+    @Query('page') int page = 1,
+    @Query('page_size') int pageSize = 10,
+  });
 }

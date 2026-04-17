@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/features/auth/bloc/security/security_cubit.dart';
@@ -7,6 +8,7 @@ import 'package:study/features/auth/bloc/security/security_state.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/presentation/change_password_screen.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SecurityScreen extends StatefulWidget {
   const SecurityScreen({super.key});
@@ -17,6 +19,7 @@ class SecurityScreen extends StatefulWidget {
 
 class _SecurityScreenState extends State<SecurityScreen> {
   late final SecurityCubit _cubit;
+  AuthBloc? _authBloc;
 
   @override
   void initState() {
@@ -24,6 +27,13 @@ class _SecurityScreenState extends State<SecurityScreen> {
     _cubit = SecurityCubit(
       authRepository: diContainer.get<AuthRepository>(),
     )..loadDevices();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Store AuthBloc reference early to avoid deactivated widget issues
+    _authBloc ??= context.read<AuthBloc>();
   }
 
   @override
@@ -58,7 +68,15 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   content: Text('Đã đăng xuất tất cả thiết bị'),
                 ),
               );
-              context.read<AuthBloc>().add(AuthLoggedOut());
+              // Use stored bloc reference to avoid deactivated widget issue
+              _authBloc?.add(AuthLoggedOut());
+            }
+            if (state is SecurityAccountUnlinked) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Đã hủy liên kết ${_getProviderName(state.provider)}'),
+                ),
+              );
             }
             if (state is SecurityFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -68,6 +86,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
           },
           builder: (context, state) {
             List<DeviceModel> devices = _getDevices(state);
+            List<LinkedAccountModel> linkedAccounts = _getLinkedAccounts(state);
 
             return ListView(
               padding: const EdgeInsets.all(16),
@@ -84,6 +103,20 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       onTap: () => _showChangePasswordDialog(),
                     ),
                   ],
+                ),
+                const SizedBox(height: 24),
+
+                // Linked accounts section
+                _SectionHeader(title: 'Tài khoản liên kết'),
+                const SizedBox(height: 12),
+                _LinkedAccountsList(
+                  linkedAccounts: linkedAccounts,
+                  isLoading: state is SecurityLoading,
+                  unlinkingProvider: state is SecurityUnlinkingAccount
+                      ? state.provider
+                      : null,
+                  onUnlink: (provider) => _showUnlinkDialog(provider),
+                  onLink: (provider) => _linkAccount(provider),
                 ),
                 const SizedBox(height: 24),
 
@@ -181,8 +214,32 @@ class _SecurityScreenState extends State<SecurityScreen> {
       SecurityChangingPassword(:final devices) => devices,
       SecurityPasswordChanged(:final devices) => devices,
       SecurityLoggingOutAll(:final devices) => devices,
+      SecurityUnlinkingAccount(:final devices) => devices,
+      SecurityAccountUnlinked(:final devices) => devices,
       SecurityFailure(:final devices) => devices,
       _ => [],
+    };
+  }
+
+  List<LinkedAccountModel> _getLinkedAccounts(SecurityState state) {
+    return switch (state) {
+      SecurityLoaded(:final linkedAccounts) => linkedAccounts,
+      SecurityChangingPassword(:final linkedAccounts) => linkedAccounts,
+      SecurityPasswordChanged(:final linkedAccounts) => linkedAccounts,
+      SecurityLoggingOutAll(:final linkedAccounts) => linkedAccounts,
+      SecurityUnlinkingAccount(:final linkedAccounts) => linkedAccounts,
+      SecurityAccountUnlinked(:final linkedAccounts) => linkedAccounts,
+      SecurityFailure(:final linkedAccounts) => linkedAccounts,
+      _ => [],
+    };
+  }
+
+  String _getProviderName(String provider) {
+    return switch (provider.toLowerCase()) {
+      'google' => 'Google',
+      'facebook' => 'Facebook',
+      'github' => 'GitHub',
+      _ => provider,
     };
   }
 
@@ -224,6 +281,80 @@ class _SecurityScreenState extends State<SecurityScreen> {
         ],
       ),
     );
+  }
+
+  void _showUnlinkDialog(String provider) {
+    final cs = Theme.of(context).colorScheme;
+    final providerName = _getProviderName(provider);
+
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Hủy liên kết $providerName'),
+        content: Text(
+          'Bạn sẽ không thể đăng nhập bằng $providerName sau khi hủy liên kết. '
+          'Bạn có chắc chắn?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _cubit.unlinkAccount(provider);
+            },
+            style: FilledButton.styleFrom(
+              backgroundColor: cs.error,
+            ),
+            child: const Text('Hủy liên kết'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _linkAccount(String provider) async {
+    final providerName = _getProviderName(provider);
+    final baseUrl = dotenv.get('BASE_URL', fallback: '');
+
+    // Check if running on localhost (dev environment)
+    if (baseUrl.contains('127.0.0.1') || baseUrl.contains('localhost')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Liên kết $providerName chỉ khả dụng trên môi trường production',
+          ),
+        ),
+      );
+      return;
+    }
+
+    try {
+      if (baseUrl.isEmpty) {
+        throw Exception('Server chưa được cấu hình');
+      }
+
+      // OAuth link endpoint: GET /api/auth/oauth/:provider (with link mode)
+      final oauthUrl = '$baseUrl/api/auth/oauth/$provider?mode=link';
+      final uri = Uri.parse(oauthUrl);
+
+      // Open URL in browser - backend will redirect to OAuth provider
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw Exception('Không thể mở trình duyệt');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Không thể liên kết với $providerName'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
   }
 }
 
@@ -537,6 +668,189 @@ class _DeviceItem extends StatelessWidget {
     if (diff.inDays < 7) return '${diff.inDays} ngày trước';
 
     return '${date.day}/${date.month}/${date.year}';
+  }
+}
+
+class _LinkedAccountsList extends StatelessWidget {
+  const _LinkedAccountsList({
+    required this.linkedAccounts,
+    required this.isLoading,
+    required this.unlinkingProvider,
+    required this.onUnlink,
+    required this.onLink,
+  });
+
+  final List<LinkedAccountModel> linkedAccounts;
+  final bool isLoading;
+  final String? unlinkingProvider;
+  final void Function(String provider) onUnlink;
+  final void Function(String provider) onLink;
+
+  // Supported OAuth providers
+  static const _providers = ['google', 'facebook', 'github'];
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    if (isLoading) {
+      return Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: _providers.asMap().entries.map((entry) {
+          final index = entry.key;
+          final provider = entry.value;
+          final linkedAccount = linkedAccounts.cast<LinkedAccountModel?>().firstWhere(
+            (a) => a?.provider.toLowerCase() == provider,
+            orElse: () => null,
+          );
+          final isLinked = linkedAccount != null;
+          final isUnlinking = unlinkingProvider == provider;
+
+          return Column(
+            children: [
+              _LinkedAccountItem(
+                provider: provider,
+                email: linkedAccount?.email,
+                isLinked: isLinked,
+                isLoading: isUnlinking,
+                onTap: () => isLinked ? onUnlink(provider) : onLink(provider),
+              ),
+              if (index < _providers.length - 1)
+                Divider(
+                  height: 1,
+                  indent: 72,
+                  color: cs.outlineVariant.withValues(alpha: 0.5),
+                ),
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _LinkedAccountItem extends StatelessWidget {
+  const _LinkedAccountItem({
+    required this.provider,
+    required this.email,
+    required this.isLinked,
+    required this.isLoading,
+    required this.onTap,
+  });
+
+  final String provider;
+  final String? email;
+  final bool isLinked;
+  final bool isLoading;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return ListTile(
+      onTap: isLoading ? null : onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      leading: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: _getProviderColor(provider).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          _getProviderIcon(provider),
+          color: _getProviderColor(provider),
+          size: 24,
+        ),
+      ),
+      title: Text(
+        _getProviderName(provider),
+        style: tt.bodyLarge?.copyWith(
+          fontWeight: FontWeight.w500,
+          color: cs.onSurface,
+        ),
+      ),
+      subtitle: Text(
+        isLinked ? (email ?? 'Đã liên kết') : 'Chưa liên kết',
+        style: tt.bodySmall?.copyWith(
+          color: isLinked ? cs.primary : cs.onSurfaceVariant,
+        ),
+      ),
+      trailing: isLoading
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: isLinked
+                    ? cs.errorContainer
+                    : cs.primaryContainer,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                isLinked ? 'Hủy' : 'Liên kết',
+                style: tt.labelSmall?.copyWith(
+                  color: isLinked
+                      ? cs.onErrorContainer
+                      : cs.onPrimaryContainer,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+    );
+  }
+
+  String _getProviderName(String provider) {
+    return switch (provider.toLowerCase()) {
+      'google' => 'Google',
+      'facebook' => 'Facebook',
+      'github' => 'GitHub',
+      _ => provider,
+    };
+  }
+
+  IconData _getProviderIcon(String provider) {
+    return switch (provider.toLowerCase()) {
+      'google' => Icons.g_mobiledata,
+      'facebook' => Icons.facebook,
+      'github' => Icons.code,
+      _ => Icons.link,
+    };
+  }
+
+  Color _getProviderColor(String provider) {
+    return switch (provider.toLowerCase()) {
+      'google' => const Color(0xFFDB4437),
+      'facebook' => const Color(0xFF4267B2),
+      'github' => const Color(0xFF333333),
+      _ => Colors.grey,
+    };
   }
 }
 

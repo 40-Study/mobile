@@ -13,8 +13,13 @@ class SecurityCubit extends Cubit<SecurityState> {
   Future<void> loadDevices() async {
     emit(const SecurityLoading());
     try {
-      final devices = await _authRepository.getDevices();
-      emit(SecurityLoaded(devices: devices));
+      final results = await Future.wait([
+        _authRepository.getDevices(),
+        _authRepository.getLinkedAccounts(),
+      ]);
+      final devices = results[0] as List<DeviceModel>;
+      final linkedAccounts = results[1] as List<LinkedAccountModel>;
+      emit(SecurityLoaded(devices: devices, linkedAccounts: linkedAccounts));
     } catch (e) {
       emit(SecurityFailure(message: _parseError(e)));
     }
@@ -28,7 +33,11 @@ class SecurityCubit extends Cubit<SecurityState> {
     bool revokeOthers = false,
   }) async {
     final currentDevices = _getCurrentDevices();
-    emit(SecurityChangingPassword(devices: currentDevices));
+    final currentLinkedAccounts = _getCurrentLinkedAccounts();
+    emit(SecurityChangingPassword(
+      devices: currentDevices,
+      linkedAccounts: currentLinkedAccounts,
+    ));
 
     try {
       await _authRepository.changePassword(
@@ -38,21 +47,64 @@ class SecurityCubit extends Cubit<SecurityState> {
         deviceInfo: deviceInfo,
         revokeOthers: revokeOthers,
       );
-      emit(SecurityPasswordChanged(devices: currentDevices));
+      emit(SecurityPasswordChanged(
+        devices: currentDevices,
+        linkedAccounts: currentLinkedAccounts,
+      ));
     } catch (e) {
-      emit(SecurityFailure(message: _parseError(e), devices: currentDevices));
+      emit(SecurityFailure(
+        message: _parseError(e),
+        devices: currentDevices,
+        linkedAccounts: currentLinkedAccounts,
+      ));
+    }
+  }
+
+  Future<void> unlinkAccount(String provider) async {
+    final currentDevices = _getCurrentDevices();
+    final currentLinkedAccounts = _getCurrentLinkedAccounts();
+    emit(SecurityUnlinkingAccount(
+      devices: currentDevices,
+      linkedAccounts: currentLinkedAccounts,
+      provider: provider,
+    ));
+
+    try {
+      await _authRepository.unlinkAccount(provider: provider);
+      final updatedAccounts = currentLinkedAccounts
+          .where((a) => a.provider != provider)
+          .toList();
+      emit(SecurityAccountUnlinked(
+        devices: currentDevices,
+        linkedAccounts: updatedAccounts,
+        provider: provider,
+      ));
+    } catch (e) {
+      emit(SecurityFailure(
+        message: _parseError(e),
+        devices: currentDevices,
+        linkedAccounts: currentLinkedAccounts,
+      ));
     }
   }
 
   Future<void> logoutAllDevices() async {
     final currentDevices = _getCurrentDevices();
-    emit(SecurityLoggingOutAll(devices: currentDevices));
+    final currentLinkedAccounts = _getCurrentLinkedAccounts();
+    emit(SecurityLoggingOutAll(
+      devices: currentDevices,
+      linkedAccounts: currentLinkedAccounts,
+    ));
 
     try {
       await _authRepository.logoutAll();
       emit(const SecurityLoggedOutAll());
     } catch (e) {
-      emit(SecurityFailure(message: _parseError(e), devices: currentDevices));
+      emit(SecurityFailure(
+        message: _parseError(e),
+        devices: currentDevices,
+        linkedAccounts: currentLinkedAccounts,
+      ));
     }
   }
 
@@ -62,7 +114,22 @@ class SecurityCubit extends Cubit<SecurityState> {
       SecurityChangingPassword(:final devices) => devices,
       SecurityPasswordChanged(:final devices) => devices,
       SecurityLoggingOutAll(:final devices) => devices,
+      SecurityUnlinkingAccount(:final devices) => devices,
+      SecurityAccountUnlinked(:final devices) => devices,
       SecurityFailure(:final devices) => devices,
+      _ => [],
+    };
+  }
+
+  List<LinkedAccountModel> _getCurrentLinkedAccounts() {
+    return switch (state) {
+      SecurityLoaded(:final linkedAccounts) => linkedAccounts,
+      SecurityChangingPassword(:final linkedAccounts) => linkedAccounts,
+      SecurityPasswordChanged(:final linkedAccounts) => linkedAccounts,
+      SecurityLoggingOutAll(:final linkedAccounts) => linkedAccounts,
+      SecurityUnlinkingAccount(:final linkedAccounts) => linkedAccounts,
+      SecurityAccountUnlinked(:final linkedAccounts) => linkedAccounts,
+      SecurityFailure(:final linkedAccounts) => linkedAccounts,
       _ => [],
     };
   }

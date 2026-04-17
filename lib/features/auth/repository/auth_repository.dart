@@ -111,6 +111,44 @@ abstract class AuthRepository {
     bool revokeOthers = false,
   });
 
+  /// 2.13 Xóa tài khoản
+  Future<void> deleteAccount({required String password});
+
+  /// 2.14 Lấy danh sách tài khoản OAuth đã liên kết
+  Future<List<LinkedAccountModel>> getLinkedAccounts();
+
+  /// 2.15 Hủy liên kết tài khoản OAuth
+  Future<void> unlinkAccount({required String provider});
+
+  // ============================================================================
+  // OAuth APIs
+  // ============================================================================
+
+  /// 2.16 Lấy OAuth URL để mở browser
+  Future<String> getOAuthUrl({required String provider});
+
+  /// 2.17 Xử lý OAuth callback (exchange code for tokens)
+  Future<LoginResponse> handleOAuthCallback({
+    required String provider,
+    required String code,
+    String? state,
+  });
+
+  /// 2.18 Liên kết OAuth account (cho user đã đăng nhập)
+  Future<void> linkOAuthAccount({
+    required String provider,
+    required String code,
+  });
+
+  /// Lấy danh sách con của phụ huynh
+  Future<List<UserModel>> getChildren({int page = 1, int pageSize = 10});
+
+  /// Lấy danh sách organizations của user
+  Future<List<OrganizationModel>> getMyOrganizations({
+    int page = 1,
+    int pageSize = 10,
+  });
+
   // ============================================================================
   // LOCAL STORAGE
   // ============================================================================
