@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:study/features/weather/presentation/widgets/weather_content_overlay.dart';
 
 class TeacherAppBar extends StatelessWidget implements PreferredSizeWidget {
   const TeacherAppBar({
@@ -27,9 +26,9 @@ class TeacherAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final textColor = context.weatherTextColor;
-    final secondaryColor = context.weatherTextColorSecondary;
-    final iconBgColor = context.weatherIconBackgroundColor;
+    final textColor = cs.onSurface;
+    final secondaryColor = cs.onSurface.withValues(alpha: 0.6);
+    final iconBgColor = cs.surfaceContainerHighest;
 
     return AppBar(
       backgroundColor: Colors.transparent,

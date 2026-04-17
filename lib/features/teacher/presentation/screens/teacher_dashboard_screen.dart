@@ -5,7 +5,6 @@ import 'package:study/constants/dimens.dart';
 import 'package:study/features/teacher/bloc/dashboard/teacher_dashboard_cubit.dart';
 import 'package:study/features/teacher/data/models/models.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_main_screen.dart';
-import 'package:study/features/weather/presentation/widgets/weather_content_overlay.dart';
 import 'package:study/theme/app_colors.dart';
 import 'package:study/widgets/section_header.dart';
 
@@ -192,8 +191,9 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = context.weatherTextColor;
-    final iconBgColor = context.weatherIconBackgroundColor;
+    final cs = Theme.of(context).colorScheme;
+    final textColor = cs.onSurface;
+    final iconBgColor = cs.surfaceContainerHighest;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(

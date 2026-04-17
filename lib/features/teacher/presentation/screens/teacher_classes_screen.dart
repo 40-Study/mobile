@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/constants/dimens.dart';
 import 'package:study/features/teacher/bloc/classes/teacher_classes_cubit.dart';
 import 'package:study/features/teacher/data/models/models.dart';
-import 'package:study/features/weather/presentation/widgets/weather_content_overlay.dart';
 
 class TeacherClassesScreen extends StatefulWidget {
   const TeacherClassesScreen({super.key});
@@ -75,7 +74,8 @@ class _ClassesContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = context.weatherTextColor;
+    final cs = Theme.of(context).colorScheme;
+    final textColor = cs.onSurface;
     final activeClasses =
         state.classes.where((c) => c.classStatus == ClassStatus.active).toList();
     final todayClasses = activeClasses.where((c) {

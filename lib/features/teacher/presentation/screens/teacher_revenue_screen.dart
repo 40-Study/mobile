@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:study/constants/dimens.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
-import 'package:study/features/weather/presentation/widgets/weather_content_overlay.dart';
 
 class TeacherRevenueScreen extends StatefulWidget {
   const TeacherRevenueScreen({super.key});
@@ -45,10 +44,10 @@ class _TeacherRevenueScreenState extends State<TeacherRevenueScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final textColor = context.weatherTextColor;
-    final secondaryColor = context.weatherTextColorSecondary;
-    final iconBgColor = context.weatherIconBackgroundColor;
     final cs = Theme.of(context).colorScheme;
+    final textColor = cs.onSurface;
+    final secondaryColor = cs.onSurface.withValues(alpha: 0.6);
+    final iconBgColor = cs.surfaceContainerHighest;
 
     // Get user name from auth state
     String userName = 'Bạn';
@@ -451,7 +450,7 @@ class _TeacherRevenueScreenState extends State<TeacherRevenueScreen> {
 
   Widget _buildCourseRevenueSection(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final textColor = context.weatherTextColor;
+    final textColor = cs.onSurface;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -521,7 +520,7 @@ class _TeacherRevenueScreenState extends State<TeacherRevenueScreen> {
 
   Widget _buildRecentTransactions(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final textColor = context.weatherTextColor;
+    final textColor = cs.onSurface;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

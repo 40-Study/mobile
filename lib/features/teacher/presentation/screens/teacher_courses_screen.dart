@@ -11,7 +11,6 @@ import 'package:study/features/teacher/data/repository/teacher_repository.dart';
 import 'package:study/features/teacher/presentation/screens/create_course_screen.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_class_detail_screen.dart';
 import 'package:study/features/teacher/presentation/screens/teacher_course_detail_screen.dart';
-import 'package:study/features/weather/presentation/widgets/weather_content_overlay.dart';
 import 'package:study/theme/app_colors.dart';
 
 class TeacherCoursesScreen extends StatefulWidget {
@@ -101,9 +100,10 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final textColor = context.weatherTextColor;
-    final secondaryColor = context.weatherTextColorSecondary;
-    final iconBgColor = context.weatherIconBackgroundColor;
+    final cs = Theme.of(context).colorScheme;
+    final textColor = cs.onSurface;
+    final secondaryColor = cs.onSurface.withValues(alpha: 0.6);
+    final iconBgColor = cs.surfaceContainerHighest;
 
     return Padding(
       padding: const EdgeInsets.all(AppLayout.screenMargin),
@@ -141,7 +141,8 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
   }
 
   Widget _buildTitle(BuildContext context) {
-    final textColor = context.weatherTextColor;
+    final cs = Theme.of(context).colorScheme;
+    final textColor = cs.onSurface;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppLayout.screenMargin),
@@ -156,7 +157,7 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
   }
 
   Widget _buildTabSwitcher(BuildContext context) {
-    final isDark = context.isWeatherBackgroundDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.all(AppLayout.screenMargin),
@@ -189,7 +190,7 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
 
   Widget _buildFilterChips(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = context.isWeatherBackgroundDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SizedBox(
       height: 40,
@@ -254,8 +255,8 @@ class _TeacherCoursesScreenState extends State<TeacherCoursesScreen> {
 
   Widget _buildSortRow(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = context.isWeatherBackgroundDark;
-    final textColor = context.weatherTextColorSecondary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = cs.onSurface.withValues(alpha: 0.6);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppLayout.screenMargin),
@@ -400,7 +401,7 @@ class _TabButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = context.isWeatherBackgroundDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: onTap,
@@ -807,7 +808,8 @@ class _ClassesTabContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = context.weatherTextColor;
+    final cs = Theme.of(context).colorScheme;
+    final textColor = cs.onSurface;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -855,7 +857,7 @@ class _ClassesFilterChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = context.isWeatherBackgroundDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1050,8 +1052,8 @@ class _ClassesSortRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = context.isWeatherBackgroundDark;
-    final textColor = context.weatherTextColorSecondary;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = cs.onSurface.withValues(alpha: 0.6);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppLayout.screenMargin),
@@ -1403,8 +1405,9 @@ class _ClassesHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconBgColor = context.weatherIconBackgroundColor;
-    final secondaryColor = context.weatherTextColorSecondary;
+    final cs = Theme.of(context).colorScheme;
+    final iconBgColor = cs.surfaceContainerHighest;
+    final secondaryColor = cs.onSurface.withValues(alpha: 0.6);
 
     return Padding(
       padding: const EdgeInsets.all(AppLayout.screenMargin),
@@ -1448,7 +1451,7 @@ class _ClassesTabSwitcher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = context.isWeatherBackgroundDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppLayout.screenMargin),
@@ -1494,7 +1497,7 @@ class _ClassesTabButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = context.isWeatherBackgroundDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: onTap,

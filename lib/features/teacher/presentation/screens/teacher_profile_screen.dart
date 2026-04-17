@@ -114,6 +114,7 @@ class TeacherProfileScreen extends StatelessWidget {
   }
 
   void _confirmLogout(BuildContext context) {
+    final authBloc = context.read<AuthBloc>();
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -127,7 +128,7 @@ class TeacherProfileScreen extends StatelessWidget {
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              context.read<AuthBloc>().add(AuthLoggedOut());
+              authBloc.add(AuthLoggedOut());
             },
             child: const Text('Dang xuat'),
           ),

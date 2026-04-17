@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:study/constants/dimens.dart';
-import 'package:study/features/weather/presentation/widgets/weather_content_overlay.dart';
 
 class TeacherActionsScreen extends StatefulWidget {
   const TeacherActionsScreen({super.key});
@@ -34,9 +33,10 @@ class _TeacherActionsScreenState extends State<TeacherActionsScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final textColor = context.weatherTextColor;
-    final secondaryColor = context.weatherTextColorSecondary;
-    final iconBgColor = context.weatherIconBackgroundColor;
+    final cs = Theme.of(context).colorScheme;
+    final textColor = cs.onSurface;
+    final secondaryColor = cs.onSurface.withValues(alpha: 0.6);
+    final iconBgColor = cs.surfaceContainerHighest;
 
     return Padding(
       padding: const EdgeInsets.all(AppLayout.screenMargin),
@@ -74,7 +74,8 @@ class _TeacherActionsScreenState extends State<TeacherActionsScreen> {
   }
 
   Widget _buildTitle(BuildContext context) {
-    final textColor = context.weatherTextColor;
+    final cs = Theme.of(context).colorScheme;
+    final textColor = cs.onSurface;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppLayout.screenMargin),
@@ -89,7 +90,7 @@ class _TeacherActionsScreenState extends State<TeacherActionsScreen> {
   }
 
   Widget _buildTabSwitcher(BuildContext context) {
-    final isDark = context.isWeatherBackgroundDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.all(AppLayout.screenMargin),
@@ -149,7 +150,7 @@ class _TabButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = context.isWeatherBackgroundDark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: onTap,
@@ -255,7 +256,7 @@ class _LivestreamTab extends StatelessWidget {
           'Lịch phát sắp tới',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
-                color: context.weatherTextColor,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -547,8 +548,8 @@ class _GradingTabState extends State<_GradingTab> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final textColor = context.weatherTextColor;
-    final secondaryColor = context.weatherTextColorSecondary;
+    final textColor = cs.onSurface;
+    final secondaryColor = cs.onSurface.withValues(alpha: 0.6);
 
     return ListView(
       padding: const EdgeInsets.only(
@@ -839,7 +840,7 @@ class _ScheduleTabState extends State<_ScheduleTab> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final textColor = context.weatherTextColor;
+    final textColor = cs.onSurface;
 
     return ListView(
       padding: const EdgeInsets.only(
@@ -1025,7 +1026,7 @@ class _ScheduleTabState extends State<_ScheduleTab> {
 
   List<Widget> _buildScheduleForDate() {
     final cs = Theme.of(context).colorScheme;
-    final secondaryColor = context.weatherTextColorSecondary;
+    final secondaryColor = cs.onSurface.withValues(alpha: 0.6);
     final now = DateTime.now();
     final isToday = _isSameDay(_selectedDate, now);
     final isTomorrow = _isSameDay(_selectedDate, now.add(const Duration(days: 1)));

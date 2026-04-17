@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/teacher/bloc/students/teacher_students_cubit.dart';
 import 'package:study/features/teacher/presentation/widgets/widgets.dart';
-import 'package:study/features/weather/presentation/widgets/weather_content_overlay.dart';
 
 class TeacherStudentsScreen extends StatefulWidget {
   const TeacherStudentsScreen({super.key});
@@ -48,8 +47,9 @@ class _TeacherStudentsScreenState extends State<TeacherStudentsScreen> {
             padding: const EdgeInsets.all(16),
             child: Builder(
               builder: (context) {
-                final textColor = context.weatherTextColor;
-                final secondaryColor = context.weatherTextColorSecondary;
+                final cs = Theme.of(context).colorScheme;
+                final textColor = cs.onSurface;
+                final secondaryColor = cs.onSurface.withValues(alpha: 0.6);
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
