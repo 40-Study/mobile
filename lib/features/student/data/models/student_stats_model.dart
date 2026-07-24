@@ -6,12 +6,17 @@ part 'student_stats_model.g.dart';
 @freezed
 abstract class StudentStatsModel with _$StudentStatsModel {
   const factory StudentStatsModel({
-    @JsonKey(name: 'total_classes') @Default(0) int totalClasses,
+    @Default(0) int level,
+    @JsonKey(name: 'current_xp') @Default(0) int currentXp,
+    @JsonKey(name: 'next_level_xp') @Default(100) int nextLevelXp,
+    @JsonKey(name: 'streak_days') @Default(0) int streakDays,
     @JsonKey(name: 'total_courses') @Default(0) int totalCourses,
-    @JsonKey(name: 'today_livestreams') @Default(0) int todayLivestreams,
-    @JsonKey(name: 'overall_progress') @Default(0) double overallProgress,
-    @JsonKey(name: 'attendance_rate') @Default(0) double attendanceRate,
-    @JsonKey(name: 'average_score') @Default(0) double averageScore,
+    @JsonKey(name: 'completed_courses') @Default(0) int completedCourses,
+    @JsonKey(name: 'total_lessons') @Default(0) int totalLessons,
+    @JsonKey(name: 'completed_lessons') @Default(0) int completedLessons,
+    @JsonKey(name: 'total_quiz_score') @Default(0) double totalQuizScore,
+    @JsonKey(name: 'total_study_hours') @Default(0) double totalStudyHours,
+    @JsonKey(name: 'weekly_study_hours') List<double>? weeklyStudyHours,
   }) = _StudentStatsModel;
 
   factory StudentStatsModel.fromJson(Map<String, dynamic> json) =>
