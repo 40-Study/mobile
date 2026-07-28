@@ -1,6 +1,7 @@
-part of 'course_detail_cubit.dart';
+import 'package:equatable/equatable.dart';
+import 'package:study/features/course/data/models/enrollment_model.dart';
+import 'package:study/features/course/data/models/course_model.dart';
 
-@immutable
 sealed class CourseDetailState extends Equatable {
   const CourseDetailState();
 
@@ -12,21 +13,38 @@ final class CourseDetailInitial extends CourseDetailState {
   const CourseDetailInitial();
 }
 
-final class CourseDetailLoading extends CourseDetailState {
-  const CourseDetailLoading();
+final class CourseDetailInProgress extends CourseDetailState {
+  const CourseDetailInProgress();
 }
 
-final class CourseDetailLoaded extends CourseDetailState {
-  const CourseDetailLoaded({required this.detail});
+final class CourseDetailSuccess extends CourseDetailState {
+  const CourseDetailSuccess({
+    required this.enrollment,
+    this.expandedSections = const {},
+  });
 
-  final CourseDetailModel detail;
+  final EnrollmentModel enrollment;
+  final Set<String> expandedSections;
+
+  CourseModel? get course => enrollment.course;
+  List<SectionModel> get sections => course?.sections ?? [];
 
   @override
-  List<Object?> get props => [detail];
+  List<Object?> get props => [enrollment, expandedSections];
+
+  CourseDetailSuccess copyWith({
+    EnrollmentModel? enrollment,
+    Set<String>? expandedSections,
+  }) {
+    return CourseDetailSuccess(
+      enrollment: enrollment ?? this.enrollment,
+      expandedSections: expandedSections ?? this.expandedSections,
+    );
+  }
 }
 
 final class CourseDetailFailure extends CourseDetailState {
-  const CourseDetailFailure({required this.message});
+  const CourseDetailFailure(this.message);
 
   final String message;
 
