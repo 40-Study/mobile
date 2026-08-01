@@ -1,6 +1,6 @@
-part of 'notification_cubit.dart';
+import 'package:equatable/equatable.dart';
+import 'package:study/features/student/data/models/models.dart';
 
-@immutable
 sealed class NotificationState extends Equatable {
   const NotificationState();
 
@@ -12,43 +12,52 @@ final class NotificationInitial extends NotificationState {
   const NotificationInitial();
 }
 
-final class NotificationLoading extends NotificationState {
-  const NotificationLoading();
+final class NotificationInProgress extends NotificationState {
+  const NotificationInProgress();
 }
 
-final class NotificationLoaded extends NotificationState {
-  const NotificationLoaded({
+final class NotificationSuccess extends NotificationState {
+  const NotificationSuccess({
     required this.notifications,
-    this.unreadCount = 0,
-    this.total = 0,
-    this.hasMore = false,
+    required this.unreadCount,
   });
 
-  final List<NotificationItemModel> notifications;
+  final List<NotificationModel> notifications;
   final int unreadCount;
-  final int total;
-  final bool hasMore;
 
-  NotificationLoaded copyWith({
-    List<NotificationItemModel>? notifications,
-    int? unreadCount,
-    int? total,
-    bool? hasMore,
-  }) {
-    return NotificationLoaded(
-      notifications: notifications ?? this.notifications,
-      unreadCount: unreadCount ?? this.unreadCount,
-      total: total ?? this.total,
-      hasMore: hasMore ?? this.hasMore,
-    );
+  // Group by day
+  List<NotificationModel> get todayList => notifications
+      .where((n) => _isToday(n.createdAt))
+      .toList();
+
+  List<NotificationModel> get yesterdayList => notifications
+      .where((n) => _isYesterday(n.createdAt))
+      .toList();
+
+  List<NotificationModel> get olderList => notifications
+      .where((n) => !_isToday(n.createdAt) && !_isYesterday(n.createdAt))
+      .toList();
+
+  bool _isToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
+  }
+
+  bool _isYesterday(DateTime date) {
+    final yesterday = DateTime.now().subtract(const Duration(days: 1));
+    return date.year == yesterday.year &&
+        date.month == yesterday.month &&
+        date.day == yesterday.day;
   }
 
   @override
-  List<Object?> get props => [notifications, unreadCount, total, hasMore];
+  List<Object?> get props => [notifications, unreadCount];
 }
 
 final class NotificationFailure extends NotificationState {
-  const NotificationFailure({required this.message});
+  const NotificationFailure(this.message);
 
   final String message;
 
