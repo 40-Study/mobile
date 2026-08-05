@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:study/di/di_container.dart';
+import 'package:study/constants/durations.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/presentation/forgot_password_otp_screen.dart';
 import 'package:study/features/auth/presentation/forgot_password_screen.dart';
@@ -11,18 +11,13 @@ import 'package:study/features/auth/presentation/register_form_screen.dart';
 import 'package:study/features/auth/presentation/register_otp_screen.dart';
 import 'package:study/features/auth/presentation/reset_password_screen.dart';
 import 'package:study/features/auth/presentation/select_role_screen.dart';
-import 'package:study/features/teacher/bloc/classes/teacher_class_detail_cubit.dart';
-import 'package:study/features/teacher/data/repository/teacher_repository.dart';
-import 'package:study/features/teacher/presentation/screens/create_course_screen.dart';
-import 'package:study/features/teacher/presentation/screens/teacher_class_detail_screen.dart';
-import 'package:study/index.dart';
+import 'package:study/features/main_screen.dart';
+import 'package:study/features/onboarding/onboarding_screen.dart';
+import 'package:study/features/splash_view.dart';
 
 class Routes {
   static const app = 'home';
   static const onboarding = 'onboarding';
-  static const appearance = 'appearance';
-  static const darkTheme = 'darkTheme';
-  static const settings = 'settings';
 
   // Auth
   static const login = 'login';
@@ -33,23 +28,16 @@ class Routes {
   static const forgotPassword = 'forgotPassword';
   static const forgotPasswordOtp = 'forgotPasswordOtp';
   static const resetPassword = 'resetPassword';
-
-  // Teacher
-  static const teacherClassDetail = '/teacher/classes/detail';
-  static const teacherCreateCourse = '/teacher/courses/create';
 }
 
-/// Navigator key from DI. Use after [initDI].
-GlobalKey<NavigatorState> get appNavigatorKey =>
-    diContainer.get<GlobalKey<NavigatorState>>();
-
 class NavigationService {
+  NavigationService({required this.navigatorKey});
+
+  final GlobalKey<NavigatorState> navigatorKey;
+
   final _appRoutes = {
-    Routes.app: (_) => const HomeScreen(),
+    Routes.app: (_) => const MainScreen(),
     Routes.onboarding: (_) => const OnboardingScreen(),
-    Routes.appearance: (_) => const AppearanceScreen(),
-    Routes.darkTheme: (_) => const DarkThemeScreen(),
-    Routes.settings: (_) => const SettingsScreen(),
     Routes.login: (_) => const LoginScreen(),
     Routes.loginRolePicker: (Object? args) {
       final data = args as Map<String, dynamic>;
@@ -64,19 +52,9 @@ class NavigationService {
     Routes.forgotPassword: (_) => const ForgotPasswordScreen(),
     Routes.forgotPasswordOtp: (_) => const ForgotPasswordOtpScreen(),
     Routes.resetPassword: (_) => const ResetPasswordScreen(),
-    Routes.teacherClassDetail: (args) => BlocProvider(
-          create: (context) => TeacherClassDetailCubit(
-            repository: diContainer.get<TeacherRepository>(),
-          ),
-          child: TeacherClassDetailScreen(classId: args as String? ?? ''),
-        ),
-    Routes.teacherCreateCourse: (_) => const CreateCourseScreen(),
   };
 
   final Set<String> _animatedRoutes = {
-    Routes.appearance,
-    Routes.darkTheme,
-    Routes.settings,
     Routes.loginRolePicker,
     Routes.selectRole,
     Routes.registerForm,
@@ -84,8 +62,6 @@ class NavigationService {
     Routes.forgotPassword,
     Routes.forgotPasswordOtp,
     Routes.resetPassword,
-    Routes.teacherClassDetail,
-    Routes.teacherCreateCourse,
   };
 
   /// Full-screen dialog routes (iOS style; no effect on Android).
@@ -104,11 +80,11 @@ class NavigationService {
   ]) async {
     if (_appRoutes[routeName] != null) {
       return replace
-          ? appNavigatorKey.currentState?.pushReplacementNamed(
+          ? navigatorKey.currentState?.pushReplacementNamed(
               routeName,
               arguments: arguments,
             )
-          : appNavigatorKey.currentState?.pushNamed(
+          : navigatorKey.currentState?.pushNamed(
               routeName,
               arguments: arguments,
             );
@@ -143,7 +119,7 @@ class NavigationService {
 
           return SlideTransition(position: offsetAnimation, child: child);
         },
-        transitionDuration: const Duration(milliseconds: 400),
+        transitionDuration: AppDurations.pageTransition,
       );
     }
 
@@ -166,7 +142,7 @@ class NavigationService {
     String routeName, [
     Object? arguments,
   ]) async {
-    return appNavigatorKey.currentState?.pushNamedAndRemoveUntil(
+    return navigatorKey.currentState?.pushNamedAndRemoveUntil(
       routeName,
       (route) => false,
     );
