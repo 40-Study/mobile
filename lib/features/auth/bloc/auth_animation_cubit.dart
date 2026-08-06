@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:study/constants/durations.dart';
 
 enum AuthScreenAnimStatus {
   initial,
@@ -69,7 +70,7 @@ class AuthAnimationCubit extends Cubit<AuthAnimationState> {
 
   void fail() {
     emit(state.copyWith(status: AuthScreenAnimStatus.error));
-    Future<void>.delayed(const Duration(milliseconds: 100), () {
+    Future<void>.delayed(AppDurations.authErrorReset, () {
       if (!isClosed) {
         emit(state.copyWith(status: AuthScreenAnimStatus.ready));
       }

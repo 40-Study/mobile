@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/l10n/app_localizations.dart';
 import 'package:study/features/auth/bloc/auth_animation_cubit.dart';
 import 'package:study/features/auth/bloc/forgot_password/forgot_password_bloc.dart';
 import 'package:study/features/auth/presentation/utils/validators.dart';
@@ -8,7 +9,9 @@ import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
 import 'package:study/features/auth/presentation/widgets/auth_text_field.dart';
 import 'package:study/features/auth/presentation/widgets/login_bear.dart';
+import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/routes/router.dart';
+import 'package:study/theme/theme.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -21,12 +24,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _emailFocus = FocusNode();
+  late final ForgotPasswordBloc _forgotPasswordBloc;
   final _animCubit = AuthAnimationCubit();
   final _bearKey = GlobalKey<AuthBearState>();
 
   @override
   void initState() {
     super.initState();
+    _forgotPasswordBloc = ForgotPasswordBloc(
+      authRepository: context.read<AuthRepository>(),
+    );
     _animCubit.startEntrance();
   }
 
@@ -34,13 +41,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   void dispose() {
     _emailCtrl.dispose();
     _emailFocus.dispose();
+    _forgotPasswordBloc.close();
     _animCubit.close();
     super.dispose();
   }
 
   void _onSubmit() {
     if (!_formKey.currentState!.validate()) return;
-    context.read<ForgotPasswordBloc>().add(
+    _forgotPasswordBloc.add(
       ForgotPasswordSubmitted(email: _emailCtrl.text.trim()),
     );
   }
@@ -50,9 +58,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final navigator = NavigationService.of(context);
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
-    return BlocProvider.value(
-      value: _animCubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _forgotPasswordBloc),
+        BlocProvider.value(value: _animCubit),
+      ],
       child: Scaffold(
         backgroundColor: cs.surface,
         appBar: AppBar(
@@ -88,7 +100,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             top: false,
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: EdgeInsets.only(bottom: AppSpacing.lg),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -111,16 +123,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             Column(
                               children: [
                                 Text(
-                                  'Quên mật khẩu?',
+                                  l10n.forgotPasswordTitle,
                                   style: tt.headlineSmall?.copyWith(
                                     fontWeight: FontWeight.w700,
                                     color: cs.onSurface,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                const SizedBox(height: 6),
+                                SizedBox(height: AppSpacing.xs + 2),
                                 Text(
-                                  'Nhập email của bạn để nhận mã xác thực',
+                                  l10n.forgotPasswordSubtitle,
                                   style: tt.bodyLarge?.copyWith(
                                     color: cs.onSurfaceVariant,
                                   ),
@@ -131,31 +143,31 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             AuthTextField(
                               controller: _emailCtrl,
                               focusNode: _emailFocus,
-                              label: 'Email',
-                              hint: 'Nhập email của bạn',
+                              label: l10n.emailLabel,
+                              hint: l10n.emailHint,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.done,
                               validator: AuthValidators.email,
                             ),
-                            const SizedBox(height: 4),
+                            AppSpacing.vGap4,
                             BlocBuilder<
                               ForgotPasswordBloc,
                               ForgotPasswordState
                             >(
                               builder: (context, state) {
                                 return AuthButton(
-                                  label: 'Gửi mã xác thực',
+                                  label: l10n.sendResetCode,
                                   isLoading: state is ForgotPasswordInProgress,
                                   onPressed: _onSubmit,
                                 );
                               },
                             ),
-                            const SizedBox(height: 4),
+                            AppSpacing.vGap4,
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'Quay lại ',
+                                  '${l10n.cancel} ',
                                   style: TextStyle(
                                     color: cs.onSurfaceVariant,
                                     fontSize: 14,
@@ -164,7 +176,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                 GestureDetector(
                                   onTap: () => Navigator.of(context).pop(),
                                   child: Text(
-                                    'Đăng nhập',
+                                    l10n.login,
                                     style: TextStyle(
                                       color: cs.primary,
                                       fontWeight: FontWeight.w600,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/l10n/app_localizations.dart';
 import 'package:study/features/auth/bloc/auth_animation_cubit.dart';
 import 'package:study/features/auth/bloc/register/register_bloc.dart';
 import 'package:study/features/auth/data/models/models.dart';
@@ -10,7 +11,9 @@ import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
 import 'package:study/features/auth/presentation/widgets/auth_text_field.dart';
 import 'package:study/features/auth/presentation/widgets/login_bear.dart';
+import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/routes/router.dart';
+import 'package:study/theme/theme.dart';
 
 class RegisterFormScreen extends StatefulWidget {
   const RegisterFormScreen({super.key});
@@ -28,6 +31,7 @@ class _RegisterFormScreenState extends State<RegisterFormScreen> {
   final _confirmCtrl = TextEditingController();
   final _passwordFocus = FocusNode();
   final _confirmFocus = FocusNode();
+  late final RegisterBloc _registerBloc;
   final _animCubit = AuthAnimationCubit();
   final _bearKey = GlobalKey<AuthBearState>();
   bool _obscurePassword = true;
@@ -38,6 +42,9 @@ class _RegisterFormScreenState extends State<RegisterFormScreen> {
   @override
   void initState() {
     super.initState();
+    _registerBloc = RegisterBloc(
+      authRepository: context.read<AuthRepository>(),
+    );
     _animCubit.startEntrance();
   }
 
@@ -60,6 +67,7 @@ class _RegisterFormScreenState extends State<RegisterFormScreen> {
     _confirmCtrl.dispose();
     _passwordFocus.dispose();
     _confirmFocus.dispose();
+    _registerBloc.close();
     _animCubit.close();
     super.dispose();
   }
@@ -73,7 +81,7 @@ class _RegisterFormScreenState extends State<RegisterFormScreen> {
       return;
     }
 
-    context.read<RegisterBloc>().add(
+    _registerBloc.add(
       RegisterSubmitted(
         email: _emailCtrl.text.trim(),
         password: _passwordCtrl.text,
@@ -91,6 +99,7 @@ class _RegisterFormScreenState extends State<RegisterFormScreen> {
     final navigator = NavigationService.of(context);
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     if (_selectedRole == null) {
       return Scaffold(
@@ -98,11 +107,11 @@ class _RegisterFormScreenState extends State<RegisterFormScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Vui lòng chọn vai trò trước'),
-              const SizedBox(height: 16),
+              Text(l10n.errorRequired),
+              AppSpacing.vGap16,
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Quay lại'),
+                child: Text(l10n.cancel),
               ),
             ],
           ),
@@ -110,8 +119,11 @@ class _RegisterFormScreenState extends State<RegisterFormScreen> {
       );
     }
 
-    return BlocProvider.value(
-      value: _animCubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _registerBloc),
+        BlocProvider.value(value: _animCubit),
+      ],
       child: Scaffold(
         backgroundColor: cs.surface,
         appBar: AppBar(
@@ -149,7 +161,7 @@ class _RegisterFormScreenState extends State<RegisterFormScreen> {
             top: false,
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: EdgeInsets.only(bottom: AppSpacing.lg),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -172,18 +184,18 @@ class _RegisterFormScreenState extends State<RegisterFormScreen> {
                             Column(
                               children: [
                                 Text(
-                                  'Đăng ký tài khoản',
+                                  l10n.registerTitle,
                                   style: tt.headlineSmall?.copyWith(
                                     fontWeight: FontWeight.w700,
                                     color: cs.onSurface,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                const SizedBox(height: 6),
+                                SizedBox(height: AppSpacing.xs + 2),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.md,
+                                    vertical: AppSpacing.xs + 2,
                                   ),
                                   decoration: BoxDecoration(
                                     color: cs.primaryContainer,
@@ -201,73 +213,78 @@ class _RegisterFormScreenState extends State<RegisterFormScreen> {
                             ),
                             AuthTextField(
                               controller: _emailCtrl,
-                              label: 'Email',
-                              hint: 'example@email.com',
+                              label: l10n.emailLabel,
+                              hint: l10n.emailHint,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
                               validator: AuthValidators.email,
                             ),
                             AuthTextField(
                               controller: _userNameCtrl,
-                              label: 'Tên đăng nhập',
+                              label: l10n.usernameLabel,
                               textInputAction: TextInputAction.next,
                               validator: AuthValidators.username,
                             ),
                             AuthTextField(
                               controller: _fullNameCtrl,
-                              label: 'Họ tên (tuỳ chọn)',
+                              label: l10n.fullNameLabel,
                               textInputAction: TextInputAction.next,
                             ),
                             AuthTextField(
                               controller: _passwordCtrl,
                               focusNode: _passwordFocus,
-                              label: 'Mật khẩu',
-                              hint: 'Tạo mật khẩu',
+                              label: l10n.passwordLabel,
+                              hint: l10n.passwordHint,
                               textInputAction: TextInputAction.next,
                               isObscured: _obscurePassword,
                               onToggleObscure: () {
-                                setState(() => _obscurePassword = !_obscurePassword);
+                                setState(
+                                  () => _obscurePassword = !_obscurePassword,
+                                );
                               },
                               validator: AuthValidators.password,
                             ),
                             AuthTextField(
                               controller: _confirmCtrl,
                               focusNode: _confirmFocus,
-                              label: 'Xác nhận mật khẩu',
+                              label: l10n.confirmPasswordLabel,
                               textInputAction: TextInputAction.done,
                               isObscured: _obscureConfirm,
                               onToggleObscure: () {
-                                setState(() => _obscureConfirm = !_obscureConfirm);
+                                setState(
+                                  () => _obscureConfirm = !_obscureConfirm,
+                                );
                               },
                               validator: AuthValidators.confirmPassword(
                                 _passwordCtrl.text,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            AppSpacing.vGap4,
                             BlocBuilder<RegisterBloc, RegisterState>(
                               builder: (context, state) {
                                 return AuthButton(
-                                  label: 'Đăng ký',
+                                  label: l10n.registerButton,
                                   isLoading: state is RegisterInProgress,
                                   onPressed: _onSubmit,
                                 );
                               },
                             ),
-                            const SizedBox(height: 4),
+                            AppSpacing.vGap4,
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'Đã có tài khoản? ',
+                                  '${l10n.alreadyHaveAccount} ',
                                   style: TextStyle(
                                     color: cs.onSurfaceVariant,
                                     fontSize: 14,
                                   ),
                                 ),
                                 GestureDetector(
-                                  onTap: () => navigator.pushAndRemoveAll(Routes.login),
+                                  onTap: () =>
+                                      navigator.pushAndRemoveAll(Routes.login),
                                   child: Text(
-                                    'Đăng nhập',
+                                    l10n.login,
                                     style: TextStyle(
                                       color: cs.primary,
                                       fontWeight: FontWeight.w600,

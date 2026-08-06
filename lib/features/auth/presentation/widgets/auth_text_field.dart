@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
+import 'package:study/theme/theme.dart';
 
 /// Text field with focus glow (always active) and error shake (always active).
 class AuthTextField extends StatefulWidget {
@@ -114,7 +115,7 @@ class _AuthTextFieldState extends State<AuthTextField>
             color: cs.onSurface,
           ),
         ),
-        const SizedBox(height: 8),
+        AppSpacing.vGap8,
         AnimatedBuilder(
           animation: _shakeController,
           builder: (context, child) {
@@ -171,9 +172,9 @@ class _AuthTextFieldState extends State<AuthTextField>
                     : null,
                 filled: true,
                 fillColor: cs.surfaceContainerLow,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.lg - 2,
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),

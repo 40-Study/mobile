@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:study/core/logger/app_logger.dart';
 import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/features/auth/data/session_expired_notifier.dart';
 
@@ -35,7 +36,7 @@ class AuthInterceptor extends QueuedInterceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final isPublic = _publicPaths.any((p) => options.path.contains(p));
+    final isPublic = _publicPaths.any(options.path.contains);
 
     if (!isPublic) {
       final token = await _authStorage.getAccessToken();
@@ -57,7 +58,7 @@ class AuthInterceptor extends QueuedInterceptor {
     }
 
     final path = err.requestOptions.path;
-    final isPublic = _publicPaths.any((p) => path.contains(p));
+    final isPublic = _publicPaths.any(path.contains);
     if (isPublic) {
       return handler.next(err);
     }
@@ -107,7 +108,9 @@ class AuthInterceptor extends QueuedInterceptor {
       );
 
       return true;
-    } catch (_) {
+    } catch (e, stackTrace) {
+      AppLogger.w('Failed to refresh auth token', e);
+      AppLogger.d('Token refresh stackTrace', stackTrace);
       return false;
     }
   }

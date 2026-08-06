@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/constants/durations.dart';
 import 'package:study/features/auth/bloc/auth_animation_cubit.dart';
 import 'package:study/features/auth/bloc/register/register_bloc.dart';
 import 'package:study/features/auth/presentation/utils/otp_countdown_mixin.dart';
+import 'package:study/features/auth/presentation/widgets/auth_animated_submit_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
-import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
 import 'package:study/features/auth/presentation/widgets/login_bear.dart';
 import 'package:study/features/auth/presentation/widgets/otp_boxes.dart';
+import 'package:study/features/auth/repository/auth_repository.dart';
+import 'package:study/l10n/app_localizations.dart';
 import 'package:study/routes/router.dart';
+import 'package:study/theme/theme.dart';
 
 class RegisterOtpScreen extends StatefulWidget {
   const RegisterOtpScreen({super.key});
@@ -20,6 +24,7 @@ class RegisterOtpScreen extends StatefulWidget {
 class _RegisterOtpScreenState extends State<RegisterOtpScreen>
     with OtpCountdownMixin {
   final _otpKey = GlobalKey<OtpBoxesState>();
+  late final RegisterBloc _registerBloc;
   final _animCubit = AuthAnimationCubit();
   final _bearKey = GlobalKey<AuthBearState>();
   String _otp = '';
@@ -27,12 +32,16 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen>
   @override
   void initState() {
     super.initState();
+    _registerBloc = RegisterBloc(
+      authRepository: context.read<AuthRepository>(),
+    );
     _animCubit.startEntrance();
     startCountdown();
   }
 
   @override
   void dispose() {
+    _registerBloc.close();
     _animCubit.close();
     super.dispose();
   }
@@ -42,16 +51,20 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen>
     final navigator = NavigationService.of(context);
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
     final args = ModalRoute.of(context)?.settings.arguments;
 
     if (args is! Map<String, dynamic>) {
-      return const Scaffold(body: Center(child: Text('Dữ liệu không hợp lệ')));
+      return Scaffold(body: Center(child: Text(l10n.errorUnknown)));
     }
 
     final email = args['email'] as String;
 
-    return BlocProvider.value(
-      value: _animCubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _registerBloc),
+        BlocProvider.value(value: _animCubit),
+      ],
       child: Scaffold(
         backgroundColor: cs.surface,
         appBar: AppBar(
@@ -68,11 +81,11 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen>
                 anim.submit();
               case RegisterSuccess():
                 anim.succeed();
-                Future.delayed(const Duration(milliseconds: 400), () {
+                Future.delayed(AppDurations.authRegisterSuccess, () {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Đăng ký thành công! Vui lòng đăng nhập.'),
+                    SnackBar(
+                      content: Text(l10n.registerButton),
                     ),
                   );
                   navigator.pushAndRemoveAll(Routes.login);
@@ -83,7 +96,7 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen>
                 _otpKey.currentState?.clear();
                 ScaffoldMessenger.of(
                   context,
-                ).showSnackBar(const SnackBar(content: Text('Đã gửi lại OTP')));
+                ).showSnackBar(SnackBar(content: Text(l10n.resendOtp)));
               case RegisterFailure(:final message):
                 anim.fail();
                 ScaffoldMessenger.of(
@@ -97,7 +110,7 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen>
             top: false,
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: EdgeInsets.only(bottom: AppSpacing.lg),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -114,16 +127,16 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen>
                           Column(
                             children: [
                               Text(
-                                'Xác thực OTP',
+                                l10n.otpTitle,
                                 style: tt.headlineSmall?.copyWith(
                                   fontWeight: FontWeight.w700,
                                   color: cs.onSurface,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 6),
+                              SizedBox(height: AppSpacing.xs + 2),
                               Text(
-                                'Mã xác thực đã gửi đến $email',
+                                l10n.otpSubtitle(email),
                                 style: tt.bodyLarge?.copyWith(
                                   color: cs.onSurfaceVariant,
                                 ),
@@ -140,43 +153,28 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen>
                               'Hết hạn sau $countdownText',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: isCountdownActive ? cs.primary : cs.error,
+                                color: isCountdownActive
+                                    ? cs.primary
+                                    : cs.error,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          BlocBuilder<RegisterBloc, RegisterState>(
-                            builder: (context, state) {
-                              return BlocBuilder<
-                                AuthAnimationCubit,
-                                AuthAnimationState
-                              >(
-                                builder: (context, animState) {
-                                  return AuthButton(
-                                    label: 'Xác nhận OTP',
-                                    isLoading: state is RegisterInProgress,
-                                    isSuccess:
-                                        animState.status ==
-                                        AuthScreenAnimStatus.success,
-                                    onPressed: () {
-                                      context.read<RegisterBloc>().add(
-                                        RegisterOTPSubmitted(
-                                          email: email,
-                                          otp: _otp,
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
+                          AppSpacing.vGap4,
+                          AuthAnimatedSubmitButton<RegisterBloc, RegisterState>(
+                            label: l10n.verifyButton,
+                            isLoading: (state) => state is RegisterInProgress,
+                            onPressed: () {
+                              context.read<RegisterBloc>().add(
+                                RegisterOTPSubmitted(email: email, otp: _otp),
                               );
                             },
                           ),
-                          const SizedBox(height: 4),
+                          AppSpacing.vGap4,
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
-                                'Chưa nhận được mã? ',
+                                '${l10n.resendOtp}? ',
                                 style: TextStyle(
                                   color: cs.onSurfaceVariant,
                                   fontSize: 14,
@@ -203,8 +201,8 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen>
                                       },
                                 child: Text(
                                   isCountdownActive
-                                      ? 'Gửi lại ($countdownText)'
-                                      : 'Gửi lại OTP',
+                                      ? l10n.resendOtpIn(countdownText)
+                                      : l10n.resendOtp,
                                   style: TextStyle(
                                     color: isCountdownActive
                                         ? cs.onSurfaceVariant

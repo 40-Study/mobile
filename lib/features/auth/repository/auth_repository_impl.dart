@@ -1,5 +1,7 @@
+import 'package:study/core/logger/app_logger.dart';
 import 'package:study/features/auth/data/auth_api_client.dart';
 import 'package:study/features/auth/data/auth_storage.dart';
+import 'package:study/features/auth/data/dto/dto.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 
@@ -7,19 +9,17 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
     required AuthApiClient apiClient,
     required AuthStorage authStorage,
-  })  : _api = apiClient,
-        _storage = authStorage;
+  }) : _api = apiClient,
+       _storage = authStorage;
 
   final AuthApiClient _api;
   final AuthStorage _storage;
 
-  // ============================================================================
-  // HELPER: Extract data from response
   // API có thể trả về { data: {...} } hoặc trực tiếp {...}
-  // ============================================================================
 
   dynamic _extractData(dynamic responseData) {
-    if (responseData is Map<String, dynamic> && responseData.containsKey('data')) {
+    if (responseData is Map<String, dynamic> &&
+        responseData.containsKey('data')) {
       return responseData['data'];
     }
     return responseData;
@@ -49,9 +49,7 @@ class AuthRepositoryImpl implements AuthRepository {
     return [];
   }
 
-  // ============================================================================
   // PUBLIC APIs (không cần token)
-  // ============================================================================
 
   @override
   Future<void> registerRequest({
@@ -61,16 +59,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required String userName,
     String? fullName,
   }) async {
-    final body = <String, dynamic>{
-      'email': email,
-      'password': password,
-      'confirm_password': confirmPassword,
-      'user_name': userName,
-    };
-    if (fullName != null && fullName.isNotEmpty) {
-      body['full_name'] = fullName;
-    }
-    await _api.registerRequest(body);
+    final body = RegisterRequestDto(
+      email: email,
+      password: password,
+      confirmPassword: confirmPassword,
+      userName: userName,
+      fullName: fullName,
+    );
+    await _api.registerRequest(body.toJson());
   }
 
   @override
@@ -78,11 +74,15 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String otp,
   }) async {
-    final response = await _api.registerVerify({'email': email, 'otp': otp});
+    final response = await _api.registerVerify(
+      RegisterVerifyDto(email: email, otp: otp).toJson(),
+    );
     final data = _extractData(response.data);
 
     // API có thể trả về { user: {...} } hoặc trực tiếp user data
-    final userData = data is Map && data.containsKey('user') ? data['user'] : data;
+    final userData = data is Map && data.containsKey('user')
+        ? data['user']
+        : data;
     return RegisterResponse.fromJson(userData as Map<String, dynamic>);
   }
 
@@ -92,25 +92,29 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required DeviceInfoModel deviceInfo,
   }) async {
-    final response = await _api.login({
-      'email': email,
-      'password': password,
-      'device_info': deviceInfo.toJson(),
-    });
+    final response = await _api.login(
+      LoginRequestDto(
+        email: email,
+        password: password,
+        deviceInfo: deviceInfo,
+      ).toJson(),
+    );
 
     final data = _extractData(response.data) as Map<String, dynamic>;
     final loginResponse = LoginResponse.fromJson(data);
 
     // Nếu login hoàn tất (1 role), lưu session
     if (loginResponse.completed && loginResponse.accessToken != null) {
-      await saveSession(AuthResponse(
-        accessToken: loginResponse.accessToken,
-        refreshToken: loginResponse.refreshToken,
-        user: loginResponse.user,
-        activeRole: loginResponse.activeRole,
-        entryContext: loginResponse.entryContext,
-        currentDevice: loginResponse.currentDevice,
-      ));
+      await saveSession(
+        AuthResponse(
+          accessToken: loginResponse.accessToken,
+          refreshToken: loginResponse.refreshToken,
+          user: loginResponse.user,
+          activeRole: loginResponse.activeRole,
+          entryContext: loginResponse.entryContext,
+          currentDevice: loginResponse.currentDevice,
+        ),
+      );
     }
 
     return loginResponse;
@@ -123,16 +127,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required String roleType,
     String? organizationId,
   }) async {
-    final body = <String, dynamic>{
-      'session_token': sessionToken,
-      'role_id': roleId,
-      'role_type': roleType,
-    };
-    if (organizationId != null) {
-      body['organization_id'] = organizationId;
-    }
-
-    final response = await _api.selectRole(body);
+    final response = await _api.selectRole(
+      SelectRoleDto(
+        sessionToken: sessionToken,
+        roleId: roleId,
+        roleType: roleType,
+        organizationId: organizationId,
+      ).toJson(),
+    );
     final data = _extractData(response.data) as Map<String, dynamic>;
     var authResponse = AuthResponse.fromJson(data);
 
@@ -144,23 +146,30 @@ class AuthRepositoryImpl implements AuthRepository {
       try {
         final user = await getMe();
         authResponse = authResponse.copyWith(user: user);
-      } catch (_) {}
+      } catch (e, stackTrace) {
+        AppLogger.w('selectRole: failed to fetch user', e);
+        AppLogger.d('selectRole user fetch stackTrace', stackTrace);
+      }
     }
 
     // Fetch full profile data để có role_name
     try {
       final profiles = await getProfiles();
-      // ignore: avoid_print
-      print('🔄 selectRole: fetched ${profiles.length} profiles');
+      AppLogger.auth('selectRole: fetched ${profiles.length} profiles');
       // Tìm profile khớp với roleId
       final activeProfile = profiles.firstWhere(
         (p) => p.systemRoleId == roleId || p.id == roleId,
-        orElse: () => profiles.isNotEmpty ? profiles.first : authResponse.activeProfile!,
+        orElse: () =>
+            profiles.isNotEmpty ? profiles.first : authResponse.activeProfile!,
       );
-      // ignore: avoid_print
-      print('🔄 selectRole: selected profile with roleName=${activeProfile.roleName}');
+      AppLogger.auth(
+        'selectRole: selected profile with roleName=${activeProfile.roleName}',
+      );
       authResponse = authResponse.copyWith(activeProfile: activeProfile);
-    } catch (_) {}
+    } catch (e, stackTrace) {
+      AppLogger.w('selectRole: failed to fetch profiles', e);
+      AppLogger.d('selectRole profiles fetch stackTrace', stackTrace);
+    }
 
     await saveSession(authResponse);
     return authResponse;
@@ -181,7 +190,9 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<TokenPair> refreshToken() async {
     final rt = await _storage.getRefreshToken();
-    final response = await _api.refreshToken({'refresh_token': rt ?? ''});
+    final response = await _api.refreshToken(
+      RefreshTokenDto(refreshToken: rt ?? '').toJson(),
+    );
     final data = _extractData(response.data) as Map<String, dynamic>;
     final pair = TokenPair.fromJson(data);
 
@@ -195,7 +206,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> resetPasswordRequest({required String email}) async {
-    await _api.resetPasswordRequest({'email': email});
+    await _api.resetPasswordRequest(
+      ResetPasswordRequestDto(email: email).toJson(),
+    );
   }
 
   @override
@@ -205,17 +218,17 @@ class AuthRepositoryImpl implements AuthRepository {
     required String newPassword,
     required String confirmPassword,
   }) async {
-    await _api.resetPassword({
-      'email': email,
-      'otp': otp,
-      'new_password': newPassword,
-      'confirm_password': confirmPassword,
-    });
+    await _api.resetPassword(
+      ResetPasswordDto(
+        email: email,
+        otp: otp,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      ).toJson(),
+    );
   }
 
-  // ============================================================================
   // PROTECTED APIs (cần token)
-  // ============================================================================
 
   @override
   Future<UserModel> getMe() async {
@@ -267,15 +280,13 @@ class AuthRepositoryImpl implements AuthRepository {
     required String roleType,
     String? organizationId,
   }) async {
-    final body = <String, dynamic>{
-      'role_id': roleId,
-      'role_type': roleType,
-    };
-    if (organizationId != null) {
-      body['organization_id'] = organizationId;
-    }
-
-    final response = await _api.switchRole(body);
+    final response = await _api.switchRole(
+      SwitchRoleDto(
+        roleId: roleId,
+        roleType: roleType,
+        organizationId: organizationId,
+      ).toJson(),
+    );
     final data = _extractData(response.data) as Map<String, dynamic>;
     var authResponse = AuthResponse.fromJson(data);
 
@@ -287,30 +298,35 @@ class AuthRepositoryImpl implements AuthRepository {
       try {
         final user = await getMe();
         authResponse = authResponse.copyWith(user: user);
-      } catch (_) {}
+      } catch (e, stackTrace) {
+        AppLogger.w('switchRole: failed to fetch user', e);
+        AppLogger.d('switchRole user fetch stackTrace', stackTrace);
+      }
     }
 
     // Fetch full profile data để có role_name
     // API switch-role có thể trả về active_profile không đầy đủ
     try {
       final profiles = await getProfiles();
-      // ignore: avoid_print
-      print('🔄 switchRole: fetched ${profiles.length} profiles');
+      AppLogger.auth('switchRole: fetched ${profiles.length} profiles');
       for (final p in profiles) {
-        // ignore: avoid_print
-        print('🔄 Profile: id=${p.id}, systemRoleId=${p.systemRoleId}, roleName=${p.roleName}');
+        AppLogger.auth(
+          'Profile: id=${p.id}, systemRoleId=${p.systemRoleId}, '
+          'roleName=${p.roleName}',
+        );
       }
       // Tìm profile đang active (match với roleId hoặc systemRoleId)
       final activeProfile = profiles.firstWhere(
         (p) => p.systemRoleId == roleId || p.id == roleId,
-        orElse: () => profiles.isNotEmpty ? profiles.first : authResponse.activeProfile!,
+        orElse: () =>
+            profiles.isNotEmpty ? profiles.first : authResponse.activeProfile!,
       );
-      // ignore: avoid_print
-      print('🔄 Selected activeProfile: roleName=${activeProfile.roleName}');
+      AppLogger.auth(
+        'Selected activeProfile: roleName=${activeProfile.roleName}',
+      );
       authResponse = authResponse.copyWith(activeProfile: activeProfile);
     } catch (e) {
-      // ignore: avoid_print
-      print('🔄 Error fetching profiles: $e');
+      AppLogger.w('Error fetching profiles during switchRole', e);
     }
 
     await saveSession(authResponse);
@@ -331,9 +347,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<ProfileModel> createProfile({required String systemRoleId}) async {
-    final response = await _api.createProfile({
-      'system_role_id': systemRoleId,
-    });
+    final response = await _api.createProfile(
+      CreateProfileDto(systemRoleId: systemRoleId).toJson(),
+    );
     final data = _extractData(response.data) as Map<String, dynamic>;
 
     // API trả về { profile: {...}, profiles: [...] }
@@ -435,7 +451,10 @@ class AuthRepositoryImpl implements AuthRepository {
     int page = 1,
     int pageSize = 10,
   }) async {
-    final response = await _api.getMyOrganizations(page: page, pageSize: pageSize);
+    final response = await _api.getMyOrganizations(
+      page: page,
+      pageSize: pageSize,
+    );
     final data = _extractData(response.data);
 
     return _parseList<OrganizationModel>(
@@ -445,9 +464,7 @@ class AuthRepositoryImpl implements AuthRepository {
     );
   }
 
-  // ============================================================================
   // OAuth APIs
-  // ============================================================================
 
   @override
   Future<String> getOAuthUrl({required String provider}) async {
@@ -486,9 +503,7 @@ class AuthRepositoryImpl implements AuthRepository {
     await _api.linkAccount(provider, {'code': code});
   }
 
-  // ============================================================================
   // LOCAL STORAGE
-  // ============================================================================
 
   @override
   Future<void> saveSession(AuthResponse response) async {

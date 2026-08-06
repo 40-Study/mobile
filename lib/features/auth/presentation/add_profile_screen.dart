@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:study/di/di_container.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/presentation/utils/role_utils.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
+import 'package:study/l10n/app_localizations.dart';
+import 'package:study/theme/theme.dart';
 
 class AddProfileScreen extends StatefulWidget {
   const AddProfileScreen({super.key});
@@ -17,10 +19,12 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
   bool _isLoading = true;
   bool _isAdding = false;
   String? _error;
+  late final AuthRepository _authRepository;
 
   @override
   void initState() {
     super.initState();
+    _authRepository = context.read<AuthRepository>();
     _loadData();
   }
 
@@ -31,12 +35,10 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
     });
 
     try {
-      final authRepo = diContainer.get<AuthRepository>();
-
       // Load system roles and user profiles in parallel
       final results = await Future.wait([
-        authRepo.getSystemRoles(),
-        authRepo.getProfiles(),
+        _authRepository.getSystemRoles(),
+        _authRepository.getProfiles(),
       ]);
 
       setState(() {
@@ -66,8 +68,7 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
     setState(() => _isAdding = true);
 
     try {
-      final authRepo = diContainer.get<AuthRepository>();
-      await authRepo.createProfile(systemRoleId: role.id);
+      await _authRepository.createProfile(systemRoleId: role.id);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -83,7 +84,7 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
         setState(() => _isAdding = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Lỗi: Không thể thêm vai trò'),
+            content: const Text('Lỗi: Không thể thêm vai trò'),
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
@@ -95,18 +96,19 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
       appBar: AppBar(
         backgroundColor: cs.surfaceContainerLowest,
-        title: const Text('Thêm vai trò'),
+        title: Text(l10n.selectRoleTitle),
       ),
-      body: _buildBody(cs, tt),
+      body: _buildBody(cs, tt, l10n),
     );
   }
 
-  Widget _buildBody(ColorScheme cs, TextTheme tt) {
+  Widget _buildBody(ColorScheme cs, TextTheme tt, AppLocalizations l10n) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -117,13 +119,13 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.error_outline, size: 64, color: cs.error),
-            const SizedBox(height: 16),
+            AppSpacing.vGap16,
             Text(_error!, style: tt.bodyLarge),
-            const SizedBox(height: 16),
+            AppSpacing.vGap16,
             FilledButton.icon(
               onPressed: _loadData,
               icon: const Icon(Icons.refresh),
-              label: const Text('Thử lại'),
+              label: Text(l10n.tryAgainButton),
             ),
           ],
         ),
@@ -133,12 +135,12 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
     if (_availableRoles.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: EdgeInsets.all(AppSpacing.xxl),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: EdgeInsets.all(AppSpacing.xl),
                 decoration: BoxDecoration(
                   color: cs.primaryContainer,
                   shape: BoxShape.circle,
@@ -152,16 +154,12 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
               const SizedBox(height: 24),
               Text(
                 'Bạn đã có tất cả vai trò',
-                style: tt.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: tt.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
                 'Không có vai trò nào khác để thêm vào tài khoản của bạn',
-                style: tt.bodyMedium?.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
+                style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -196,11 +194,7 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
               ),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.person_add_outlined,
-                    size: 48,
-                    color: cs.primary,
-                  ),
+                  Icon(Icons.person_add_outlined, size: 48, color: cs.primary),
                   const SizedBox(height: 12),
                   Text(
                     'Chọn vai trò muốn thêm',
@@ -233,13 +227,15 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
             ),
             const SizedBox(height: 12),
 
-            ..._availableRoles.map((role) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _RoleCard(
-                    role: role,
-                    onTap: _isAdding ? null : () => _addRole(role),
-                  ),
-                )),
+            ..._availableRoles.map(
+              (role) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _RoleCard(
+                  role: role,
+                  onTap: _isAdding ? null : () => _addRole(role),
+                ),
+              ),
+            ),
 
             const SizedBox(height: 16),
 
@@ -254,10 +250,12 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              ..._existingProfiles.map((profile) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: _ExistingProfileCard(profile: profile),
-                  )),
+              ..._existingProfiles.map(
+                (profile) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: _ExistingProfileCard(profile: profile),
+                ),
+              ),
             ],
           ],
         ),
@@ -266,9 +264,7 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
         if (_isAdding)
           Container(
             color: Colors.black.withValues(alpha: 0.3),
-            child: const Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: const Center(child: CircularProgressIndicator()),
           ),
       ],
     );
@@ -276,10 +272,7 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
 }
 
 class _RoleCard extends StatelessWidget {
-  const _RoleCard({
-    required this.role,
-    required this.onTap,
-  });
+  const _RoleCard({required this.role, required this.onTap});
 
   final RoleModel role;
   final VoidCallback? onTap;
@@ -315,7 +308,10 @@ class _RoleCard extends StatelessWidget {
                 height: 56,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [cs.primaryContainer, cs.primaryContainer.withValues(alpha: 0.7)],
+                    colors: [
+                      cs.primaryContainer,
+                      cs.primaryContainer.withValues(alpha: 0.7),
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -342,9 +338,7 @@ class _RoleCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       _getRoleDescription(role.name),
-                      style: tt.bodySmall?.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
+                      style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -355,11 +349,7 @@ class _RoleCard extends StatelessWidget {
                   color: cs.primary,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                child: const Icon(Icons.add, color: Colors.white, size: 20),
               ),
             ],
           ),
@@ -419,9 +409,7 @@ class _ExistingProfileCard extends StatelessWidget {
           Expanded(
             child: Text(
               RoleUtils.getLabel(profile.roleName),
-              style: tt.bodyMedium?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
+              style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
           ),
           Icon(

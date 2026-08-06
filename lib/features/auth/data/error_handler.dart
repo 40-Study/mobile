@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:study/core/error/failures.dart';
 
 /// Centralized error extraction from DioException.
 /// Used by all auth blocs/cubits to maintain consistent error handling.
@@ -13,6 +14,11 @@ class AuthErrorHandler {
   /// 3. Error field
   /// 4. Falls back to DioException message
   static String extractMessage(DioException e) {
+    final failure = e.error;
+    if (failure is Failure) {
+      return _failureMessage(failure);
+    }
+
     final data = e.response?.data;
 
     if (data is Map<String, dynamic>) {
@@ -28,8 +34,8 @@ class AuthErrorHandler {
         if (firstError is String) return firstError;
       }
 
-      // Check for message or error field
-      final message = data['message'] ?? data['error'];
+      // Prefer the specific backend error over the generic response message.
+      final message = data['error'] ?? data['message'];
       if (message is String && message.isNotEmpty) {
         return message;
       }
@@ -37,6 +43,17 @@ class AuthErrorHandler {
 
     // Fallback to DioException message or default
     return e.message ?? 'Đã có lỗi xảy ra';
+  }
+
+  static String _failureMessage(Failure failure) {
+    if (failure is ServerFailure) {
+      final errors = failure.errors;
+      if (errors != null && errors.isNotEmpty) {
+        return errors.first.message;
+      }
+    }
+
+    return failure.message ?? 'Đã có lỗi xảy ra';
   }
 
   /// Extracts error message with custom default.

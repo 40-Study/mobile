@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:study/constants/dimens.dart';
-import 'package:study/di/di_container.dart';
+import 'package:study/constants/dimens.dart' show AppLayout;
 import 'package:study/features/auth/bloc/account/account_cubit.dart';
 import 'package:study/features/auth/bloc/account/account_state.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
@@ -10,11 +9,8 @@ import 'package:study/features/auth/presentation/edit_profile_screen.dart';
 import 'package:study/features/auth/presentation/security_screen.dart';
 import 'package:study/features/auth/presentation/utils/role_utils.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
-import 'package:study/features/student/data/repository/student_repository.dart';
-import 'package:study/features/student/presentation/screens/orders_screen.dart';
-import 'package:study/features/student/presentation/screens/vouchers_screen.dart';
-import 'package:study/features/teacher/presentation/screens/switch_role_screen.dart';
-import 'package:study/theme/app_colors.dart';
+import 'package:study/l10n/app_localizations.dart';
+import 'package:study/theme/theme.dart';
 
 enum AccountRoleType { teacher, student, parent, organization }
 
@@ -48,9 +44,8 @@ class _AccountScreenState extends State<AccountScreen>
   @override
   void initState() {
     super.initState();
-    _cubit = AccountCubit(
-      authRepository: diContainer.get<AuthRepository>(),
-    )..loadAccount();
+    _cubit = AccountCubit(authRepository: context.read<AuthRepository>())
+      ..loadAccount();
     _tabController = _tabCount > 0
         ? TabController(length: _tabCount, vsync: this)
         : null;
@@ -71,19 +66,20 @@ class _AccountScreenState extends State<AccountScreen>
         backgroundColor: Colors.transparent,
         body: BlocConsumer<AccountCubit, AccountState>(
           listener: (context, state) {
+            final l10n = AppLocalizations.of(context)!;
             if (state is AccountUpdateSuccess) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Cập nhật thành công'),
+                  content: Text(l10n.saveChanges),
                   backgroundColor: Theme.of(context).colorScheme.tertiary,
                 ),
               );
               context.read<AuthBloc>().add(AuthUserUpdated(state.user));
             }
             if (state is AccountFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(state.message)));
             }
           },
           builder: (context, state) {
@@ -93,8 +89,9 @@ class _AccountScreenState extends State<AccountScreen>
 
             return BlocBuilder<AuthBloc, AuthState>(
               builder: (context, authState) {
+                final l10n = AppLocalizations.of(context)!;
                 if (authState is! AuthAuthenticated) {
-                  return const Center(child: Text('Chưa đăng nhập'));
+                  return Center(child: Text(l10n.login));
                 }
 
                 final user = authState.user;
@@ -124,10 +121,6 @@ class _AccountScreenState extends State<AccountScreen>
       ),
     );
   }
-
-  // ══════════════════════════════════════════════════════════════
-  //  TEACHER PROFILE - New Beautiful Design
-  // ══════════════════════════════════════════════════════════════
 
   Widget _buildTeacherProfile(
     BuildContext context,
@@ -237,7 +230,9 @@ class _AccountScreenState extends State<AccountScreen>
                       : null,
                   child: user.avatarUrl == null
                       ? Text(
-                          _getInitials(user.fullName ?? user.username ?? 'User'),
+                          _getInitials(
+                            user.fullName ?? user.username ?? 'User',
+                          ),
                           style: tt.headlineMedium?.copyWith(
                             color: cs.primary,
                             fontWeight: FontWeight.bold,
@@ -290,7 +285,7 @@ class _AccountScreenState extends State<AccountScreen>
 
         // Title / Role
         Text(
-          'GIẢNG VIÊN CHUYÊN NGHIỆP',
+          AppLocalizations.of(context)!.roleTeacher.toUpperCase(),
           style: tt.bodyMedium?.copyWith(
             color: cs.onSurface.withValues(alpha: 0.6),
             fontWeight: FontWeight.w600,
@@ -350,32 +345,37 @@ class _AccountScreenState extends State<AccountScreen>
         border: Border.all(color: cs.outline),
         boxShadow: cs.shadowCard,
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _TeacherStatColumn(
-              value: '5.2k',
-              label: 'HỌC VIÊN',
-              showStar: false,
-            ),
-          ),
-          Container(width: 1, height: 40, color: cs.outlineVariant),
-          Expanded(
-            child: _TeacherStatColumn(
-              value: '14',
-              label: 'KHÓA HỌC',
-              showStar: false,
-            ),
-          ),
-          Container(width: 1, height: 40, color: cs.outlineVariant),
-          Expanded(
-            child: _TeacherStatColumn(
-              value: '4.8',
-              label: 'ĐÁNH GIÁ',
-              showStar: true,
-            ),
-          ),
-        ],
+      child: Builder(
+        builder: (context) {
+          final l10n = AppLocalizations.of(context)!;
+          return Row(
+            children: [
+              Expanded(
+                child: _TeacherStatColumn(
+                  value: '5.2k',
+                  label: l10n.students.toUpperCase(),
+                  showStar: false,
+                ),
+              ),
+              Container(width: 1, height: 40, color: cs.outlineVariant),
+              Expanded(
+                child: _TeacherStatColumn(
+                  value: '14',
+                  label: l10n.courses.toUpperCase(),
+                  showStar: false,
+                ),
+              ),
+              Container(width: 1, height: 40, color: cs.outlineVariant),
+              Expanded(
+                child: _TeacherStatColumn(
+                  value: '4.8',
+                  label: l10n.rating.toUpperCase(),
+                  showStar: true,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -404,7 +404,7 @@ class _AccountScreenState extends State<AccountScreen>
             ),
             const SizedBox(width: AppSpacing.sm),
             Text(
-              'Giới thiệu',
+              AppLocalizations.of(context)!.bioLabel,
               style: tt.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: textColor,
@@ -426,7 +426,8 @@ class _AccountScreenState extends State<AccountScreen>
               Text(
                 'Giảng viên chuyên ngành Công nghệ thông tin với hơn 5 năm '
                 'kinh nghiệm giảng dạy UI/UX Design và lập trình Flutter. '
-                'Đam mê chia sẻ kiến thức và giúp học viên phát triển kỹ năng thực tế.',
+                'Đam mê chia sẻ kiến thức và giúp học viên phát triển kỹ '
+                'năng thực tế.',
                 style: tt.bodyMedium?.copyWith(
                   color: cs.onSurfaceVariant,
                   height: 1.6,
@@ -472,6 +473,7 @@ class _AccountScreenState extends State<AccountScreen>
   Widget _buildFeaturedCoursesSection(BuildContext context, Color textColor) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -489,7 +491,7 @@ class _AccountScreenState extends State<AccountScreen>
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
-                'Khóa học nổi bật',
+                l10n.featuredCourses,
                 style: tt.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: textColor,
@@ -502,7 +504,7 @@ class _AccountScreenState extends State<AccountScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Xem tất cả',
+                    l10n.viewAll,
                     style: tt.labelMedium?.copyWith(
                       color: cs.primary,
                       fontWeight: FontWeight.w600,
@@ -602,14 +604,14 @@ class _AccountScreenState extends State<AccountScreen>
                         color: Colors.black.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.camera_alt, color: Colors.white, size: 16),
-                          SizedBox(width: 4),
+                          const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                          const SizedBox(width: 4),
                           Text(
-                            'Sửa ảnh bìa',
-                            style: TextStyle(color: Colors.white, fontSize: 12),
+                            AppLocalizations.of(context)!.editCover,
+                            style: const TextStyle(color: Colors.white, fontSize: 12),
                           ),
                         ],
                       ),
@@ -665,7 +667,10 @@ class _AccountScreenState extends State<AccountScreen>
                               child: user.avatarUrl == null
                                   ? Text(
                                       _getInitials(
-                                          user.fullName ?? user.username ?? 'User'),
+                                        user.fullName ??
+                                            user.username ??
+                                            'User',
+                                      ),
                                       style: tt.headlineMedium?.copyWith(
                                         color: cs.primary,
                                         fontWeight: FontWeight.bold,
@@ -751,14 +756,19 @@ class _AccountScreenState extends State<AccountScreen>
                               ),
                             ),
                           const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              _buildStat(tt, cs, '12', 'Khóa học'),
-                              const SizedBox(width: 24),
-                              _buildStat(tt, cs, '2.5k', 'Điểm XP'),
-                              const SizedBox(width: 24),
-                              _buildStat(tt, cs, '7 🔥', 'Streak'),
-                            ],
+                          Builder(
+                            builder: (context) {
+                              final l10n = AppLocalizations.of(context)!;
+                              return Row(
+                                children: [
+                                  _buildStat(tt, cs, '12', l10n.courses),
+                                  const SizedBox(width: 24),
+                                  _buildStat(tt, cs, '2.5k', l10n.xpPoints),
+                                  const SizedBox(width: 24),
+                                  _buildStat(tt, cs, '7 🔥', l10n.streak),
+                                ],
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -781,7 +791,7 @@ class _AccountScreenState extends State<AccountScreen>
                   unselectedLabelColor: cs.onSurfaceVariant,
                   indicatorColor: cs.primary,
                   indicatorWeight: 3,
-                  tabs: _tabsForRole(widget.roleType),
+                  tabs: _tabsForRole(context, widget.roleType),
                 ),
               ),
             )
@@ -830,28 +840,25 @@ class _AccountScreenState extends State<AccountScreen>
     }
   }
 
-  static List<Tab> _tabsForRole(AccountRoleType role) {
+  List<Tab> _tabsForRole(BuildContext context, AccountRoleType role) {
+    final l10n = AppLocalizations.of(context)!;
     switch (role) {
       case AccountRoleType.teacher:
-        return const [
-          Tab(text: 'Tổng quan'),
-          Tab(text: 'Khóa học'),
-          Tab(text: 'Thành tích'),
+        return [
+          Tab(text: l10n.tabOverview),
+          Tab(text: l10n.courses),
+          Tab(text: l10n.tabAchievements),
         ];
       case AccountRoleType.student:
-        return const [
-          Tab(text: 'Tổng quan'),
-        ];
+        return [Tab(text: l10n.tabOverview)];
       case AccountRoleType.parent:
-        return const [
-          Tab(text: 'Tổng quan'),
-          Tab(text: 'Con em'),
-          Tab(text: 'Thông báo'),
+        return [
+          Tab(text: l10n.tabOverview),
+          Tab(text: l10n.tabChildren),
+          Tab(text: l10n.tabNotifications),
         ];
       case AccountRoleType.organization:
-        return const [
-          Tab(text: 'Tổng quan'),
-        ];
+        return [Tab(text: l10n.tabOverview)];
     }
   }
 
@@ -864,9 +871,7 @@ class _AccountScreenState extends State<AccountScreen>
           _AchievementsTab(),
         ];
       case AccountRoleType.student:
-        return [
-          _StudentOverviewTab(user: user),
-        ];
+        return [_StudentOverviewTab(user: user)];
       case AccountRoleType.parent:
         return [
           _ParentOverviewTab(user: user),
@@ -895,7 +900,7 @@ class _AccountScreenState extends State<AccountScreen>
     try {
       final date = DateTime.parse(dateStr);
       return 'tháng ${date.month}/${date.year}';
-    } catch (_) {
+    } on FormatException {
       return dateStr;
     }
   }
@@ -911,16 +916,14 @@ class _AccountScreenState extends State<AccountScreen>
             color: cs.onSurface,
           ),
         ),
-        Text(
-          label,
-          style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
-        ),
+        Text(label, style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
       ],
     );
   }
 
   void _showOptionsMenu(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     showModalBottomSheet<void>(
       context: context,
@@ -941,10 +944,10 @@ class _AccountScreenState extends State<AccountScreen>
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: AppSpacing.xl - 4),
             ListTile(
               leading: _buildMenuIcon(context, Icons.edit_outlined),
-              title: const Text('Chỉnh sửa trang cá nhân'),
+              title: Text(l10n.editProfile),
               onTap: () {
                 Navigator.pop(context);
                 _navigateToEditProfile();
@@ -952,26 +955,21 @@ class _AccountScreenState extends State<AccountScreen>
             ),
             ListTile(
               leading: _buildMenuIcon(context, Icons.share_outlined),
-              title: const Text('Chia sẻ trang cá nhân'),
+              title: Text(l10n.profileTitle),
               onTap: () => Navigator.pop(context),
             ),
             const Divider(height: 1, indent: 16, endIndent: 16),
             ListTile(
               leading: _buildMenuIcon(context, Icons.swap_horiz),
-              title: const Text('Chuyển đổi vai trò'),
+              title: Text(l10n.selectRoleTitle),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => const SwitchRoleScreen(),
-                  ),
-                );
+                // TODO: Implement switch role
               },
             ),
             ListTile(
               leading: _buildMenuIcon(context, Icons.security),
-              title: const Text('Bảo mật tài khoản'),
+              title: Text(l10n.securityTitle),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -984,51 +982,33 @@ class _AccountScreenState extends State<AccountScreen>
             ),
             ListTile(
               leading: _buildMenuIcon(context, Icons.qr_code),
-              title: const Text('Mã QR của tôi'),
+              title: Text(l10n.profileTitle),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: _buildMenuIcon(context, Icons.link),
-              title: const Text('Sao chép liên kết'),
+              title: Text(l10n.profileTitle),
               onTap: () => Navigator.pop(context),
             ),
             const Divider(height: 1, indent: 16, endIndent: 16),
-            if (widget.roleType == AccountRoleType.student) ...[
-              ListTile(
-                leading: _buildMenuIcon(context, Icons.receipt_long),
-                title: const Text('Đơn hàng của tôi'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _navigateToOrders(context);
-                },
-              ),
-              ListTile(
-                leading: _buildMenuIcon(context, Icons.local_offer),
-                title: const Text('Mã giảm giá'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _navigateToVouchers(context);
-                },
-              ),
-              const Divider(height: 1, indent: 16, endIndent: 16),
-            ],
+            // Student-specific menu items removed
             ListTile(
               leading: Container(
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
                   color: cs.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppRadius.sm + 2),
                 ),
                 child: Icon(Icons.logout, color: cs.error, size: 20),
               ),
-              title: Text('Đăng xuất', style: TextStyle(color: cs.error)),
+              title: Text(l10n.logout, style: TextStyle(color: cs.error)),
               onTap: () {
                 Navigator.pop(context);
                 _confirmLogout(context);
               },
             ),
-            const SizedBox(height: 16),
+            AppSpacing.vGap16,
           ],
         ),
       ),
@@ -1049,17 +1029,18 @@ class _AccountScreenState extends State<AccountScreen>
   }
 
   void _confirmLogout(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // Store bloc reference before showing dialog to avoid context issues
     final authBloc = context.read<AuthBloc>();
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Đăng xuất'),
-        content: const Text('Bạn có chắc chắn muốn đăng xuất?'),
+        title: Text(l10n.logout),
+        content: Text(l10n.logoutConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Hủy'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -1067,7 +1048,7 @@ class _AccountScreenState extends State<AccountScreen>
               // Use stored bloc reference to avoid deactivated widget issue
               authBloc.add(AuthLoggedOut());
             },
-            child: const Text('Đăng xuất'),
+            child: Text(l10n.logout),
           ),
         ],
       ),
@@ -1082,39 +1063,12 @@ class _AccountScreenState extends State<AccountScreen>
     Navigator.push(
       context,
       MaterialPageRoute<void>(
-        builder: (_) => BlocProvider.value(
-          value: _cubit,
-          child: const EditProfileScreen(),
-        ),
+        builder: (_) =>
+            BlocProvider.value(value: _cubit, child: const EditProfileScreen()),
       ),
     );
   }
 
-  void _navigateToOrders(BuildContext ctx) {
-    final repository = diContainer.get<StudentRepository>();
-    Navigator.push(
-      ctx,
-      MaterialPageRoute<void>(
-        builder: (_) => RepositoryProvider.value(
-          value: repository,
-          child: const OrdersScreen(),
-        ),
-      ),
-    );
-  }
-
-  void _navigateToVouchers(BuildContext ctx) {
-    final repository = diContainer.get<StudentRepository>();
-    Navigator.push(
-      ctx,
-      MaterialPageRoute<void>(
-        builder: (_) => RepositoryProvider.value(
-          value: repository,
-          child: const VouchersScreen(),
-        ),
-      ),
-    );
-  }
 
   // ══════════════════════════════════════════════════════════════
   //  PARENT PROFILE - Beautiful Single Page Design
@@ -1126,7 +1080,6 @@ class _AccountScreenState extends State<AccountScreen>
     ProfileModel? profile,
   ) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
     final textColor = cs.onSurface;
     final secondaryColor = cs.onSurface.withValues(alpha: 0.6);
 
@@ -1225,7 +1178,9 @@ class _AccountScreenState extends State<AccountScreen>
                       : null,
                   child: user.avatarUrl == null
                       ? Text(
-                          _getInitials(user.fullName ?? user.username ?? 'User'),
+                          _getInitials(
+                            user.fullName ?? user.username ?? 'User',
+                          ),
                           style: tt.headlineMedium?.copyWith(
                             color: cs.tertiary,
                             fontWeight: FontWeight.bold,
@@ -1278,7 +1233,7 @@ class _AccountScreenState extends State<AccountScreen>
 
         // Role label
         Text(
-          'PHU HUYNH',
+          AppLocalizations.of(context)!.roleParent.toUpperCase(),
           style: tt.bodyMedium?.copyWith(
             color: cs.onSurface.withValues(alpha: 0.6),
             fontWeight: FontWeight.w600,
@@ -1292,8 +1247,7 @@ class _AccountScreenState extends State<AccountScreen>
 
   Widget _buildParentStatsCard(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -1308,7 +1262,7 @@ class _AccountScreenState extends State<AccountScreen>
           _ParentStatItem(
             icon: Icons.child_care,
             value: '2',
-            label: 'Con em',
+            label: l10n.children,
             color: cs.tertiary,
           ),
           Container(
@@ -1319,7 +1273,7 @@ class _AccountScreenState extends State<AccountScreen>
           _ParentStatItem(
             icon: Icons.school,
             value: '5',
-            label: 'Lop hoc',
+            label: l10n.classes,
             color: cs.primary,
           ),
           Container(
@@ -1330,7 +1284,7 @@ class _AccountScreenState extends State<AccountScreen>
           _ParentStatItem(
             icon: Icons.notifications_active,
             value: '12',
-            label: 'Thong bao',
+            label: l10n.notifications,
             color: cs.secondary,
           ),
         ],
@@ -1346,12 +1300,13 @@ class _AccountScreenState extends State<AccountScreen>
   ) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Thong tin tai khoan',
+          l10n.accountInfo,
           style: tt.titleMedium?.copyWith(
             fontWeight: FontWeight.w700,
             color: textColor,
@@ -1370,21 +1325,21 @@ class _AccountScreenState extends State<AccountScreen>
               _buildParentInfoRow(
                 context,
                 Icons.email_outlined,
-                'Email',
-                user.email ?? 'Chua cap nhat',
+                l10n.emailLabel,
+                user.email,
               ),
               const SizedBox(height: AppSpacing.md),
               _buildParentInfoRow(
                 context,
                 Icons.phone_outlined,
-                'So dien thoai',
-                user.phone ?? 'Chua cap nhat',
+                l10n.phoneLabel,
+                user.phone ?? l10n.notUpdated,
               ),
               const SizedBox(height: AppSpacing.md),
               _buildParentInfoRow(
                 context,
                 Icons.calendar_today_outlined,
-                'Ngay tham gia',
+                l10n.joinedDate,
                 _formatJoinDate(user.createdAt),
               ),
             ],
@@ -1436,12 +1391,13 @@ class _AccountScreenState extends State<AccountScreen>
   Widget _buildParentQuickActions(BuildContext context, Color textColor) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Tuy chon',
+          l10n.options,
           style: tt.titleMedium?.copyWith(
             fontWeight: FontWeight.w700,
             color: textColor,
@@ -1459,21 +1415,21 @@ class _AccountScreenState extends State<AccountScreen>
               _buildParentActionTile(
                 context,
                 icon: Icons.edit_outlined,
-                title: 'Chinh sua ho so',
+                title: l10n.editProfile,
                 onTap: _navigateToEditProfile,
               ),
               Divider(height: 1, color: cs.outline.withValues(alpha: 0.2)),
               _buildParentActionTile(
                 context,
                 icon: Icons.lock_outline,
-                title: 'Bao mat',
+                title: l10n.securityTitle,
                 onTap: _navigateToSecurity,
               ),
               Divider(height: 1, color: cs.outline.withValues(alpha: 0.2)),
               _buildParentActionTile(
                 context,
                 icon: Icons.swap_horiz,
-                title: 'Chuyen doi vai tro',
+                title: l10n.switchRole,
                 onTap: _navigateToSwitchRole,
               ),
             ],
@@ -1506,19 +1462,12 @@ class _AccountScreenState extends State<AccountScreen>
   void _navigateToSecurity() {
     Navigator.push(
       context,
-      MaterialPageRoute<void>(
-        builder: (_) => const SecurityScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const SecurityScreen()),
     );
   }
 
   void _navigateToSwitchRole() {
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(
-        builder: (_) => const SwitchRoleScreen(),
-      ),
-    );
+    // TODO: Implement switch role screen
   }
 }
 
@@ -1555,10 +1504,7 @@ class _ParentStatItem extends StatelessWidget {
             color: cs.onSurface,
           ),
         ),
-        Text(
-          label,
-          style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
-        ),
+        Text(label, style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
       ],
     );
   }
@@ -1598,12 +1544,12 @@ class _TeacherStatColumn extends StatelessWidget {
               ),
             ),
             if (showStar) ...[
-              const SizedBox(width: AppSpacing.xxs),
+              const SizedBox(width: 2),
               Icon(Icons.star_rounded, size: 18, color: cs.tertiary),
             ],
           ],
         ),
-        const SizedBox(height: AppSpacing.xxs),
+        const SizedBox(height: 2),
         Text(
           label,
           style: tt.labelSmall?.copyWith(
@@ -1681,19 +1627,31 @@ class _FeaturedCourseCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xs),
                 Row(
                   children: [
-                    Icon(Icons.access_time_rounded,
-                        size: 14, color: cs.onSurfaceVariant),
+                    Icon(
+                      Icons.access_time_rounded,
+                      size: 14,
+                      color: cs.onSurfaceVariant,
+                    ),
                     const SizedBox(width: AppSpacing.xs),
-                    Text(duration,
-                        style: tt.labelSmall
-                            ?.copyWith(color: cs.onSurfaceVariant)),
+                    Text(
+                      duration,
+                      style: tt.labelSmall?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
                     const SizedBox(width: AppSpacing.md),
-                    Icon(Icons.people_outline_rounded,
-                        size: 14, color: cs.onSurfaceVariant),
+                    Icon(
+                      Icons.people_outline_rounded,
+                      size: 14,
+                      color: cs.onSurfaceVariant,
+                    ),
                     const SizedBox(width: AppSpacing.xs),
-                    Text('$students',
-                        style: tt.labelSmall
-                            ?.copyWith(color: cs.onSurfaceVariant)),
+                    Text(
+                      '$students',
+                      style: tt.labelSmall?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -1710,7 +1668,7 @@ class _FeaturedCourseCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.sm,
-                        vertical: AppSpacing.xxs,
+                        vertical: 2,
                       ),
                       decoration: BoxDecoration(
                         color: cs.surfaceTintedPrimary,
@@ -1719,8 +1677,12 @@ class _FeaturedCourseCard extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.star_rounded, size: 14, color: cs.tertiary),
-                          const SizedBox(width: AppSpacing.xxs),
+                          Icon(
+                            Icons.star_rounded,
+                            size: 14,
+                            color: cs.tertiary,
+                          ),
+                          const SizedBox(width: 2),
                           Text(
                             '$rating',
                             style: tt.labelSmall?.copyWith(
@@ -1787,8 +1749,11 @@ class _StudentOverviewTab extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.location_on_outlined,
-                      size: 14, color: cs.onSurface.withValues(alpha: 0.6)),
+                  Icon(
+                    Icons.location_on_outlined,
+                    size: 14,
+                    color: cs.onSurface.withValues(alpha: 0.6),
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     'Hà Nội, Việt Nam',
@@ -1801,104 +1766,105 @@ class _StudentOverviewTab extends StatelessWidget {
             ],
           ),
         ),
-            const SizedBox(height: 16),
+        const SizedBox(height: 16),
 
-            // SKILLS
-            _PortfolioSection(
-              title: 'Kỹ năng',
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: const [
-                  _SkillTag(label: 'Flutter', level: 3),
-                  _SkillTag(label: 'UI/UX Design', level: 2),
-                  _SkillTag(label: 'Python', level: 2),
-                  _SkillTag(label: 'Data Science', level: 1),
-                  _SkillTag(label: 'React', level: 1),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
+        // SKILLS
+        _PortfolioSection(
+          title: AppLocalizations.of(context)!.skills,
+          child: const Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _SkillTag(label: 'Flutter', level: 3),
+              _SkillTag(label: 'UI/UX Design', level: 2),
+              _SkillTag(label: 'Python', level: 2),
+              _SkillTag(label: 'Data Science', level: 1),
+              _SkillTag(label: 'React', level: 1),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
 
-            // INTERESTS
-            _PortfolioSection(
-              title: 'Đang quan tâm',
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: const [
-                  _InterestChip(emoji: '🤖', label: 'AI/ML'),
-                  _InterestChip(emoji: '📱', label: 'Mobile Dev'),
-                  _InterestChip(emoji: '🎨', label: 'Design'),
-                  _InterestChip(emoji: '☁️', label: 'Cloud'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
+        // INTERESTS
+        _PortfolioSection(
+          title: AppLocalizations.of(context)!.interests,
+          child: const Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _InterestChip(emoji: '🤖', label: 'AI/ML'),
+              _InterestChip(emoji: '📱', label: 'Mobile Dev'),
+              _InterestChip(emoji: '🎨', label: 'Design'),
+              _InterestChip(emoji: '☁️', label: 'Cloud'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
 
-            // ACHIEVEMENTS
-            _PortfolioSection(
-              title: 'Thành tựu nổi bật',
-              trailing: Text(
-                'Xem tất cả',
-                style: tt.labelSmall?.copyWith(
-                  color: cs.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              child: const Column(
-                children: [
-                  _AchievementRow(
-                    emoji: '🏆',
-                    title: 'Top 10 Learner',
-                    subtitle: 'Tháng 3/2024',
-                    color: Color(0xFFF59E0B),
-                  ),
-                  SizedBox(height: 12),
-                  _AchievementRow(
-                    emoji: '🎓',
-                    title: 'Flutter Professional',
-                    subtitle: 'Chứng chỉ • 40Study Academy',
-                    color: Color(0xFF2563EB),
-                  ),
-                  SizedBox(height: 12),
-                  _AchievementRow(
-                    emoji: '🔥',
-                    title: '30 Days Streak',
-                    subtitle: 'Hoàn thành 15/02/2024',
-                    color: Color(0xFFEF4444),
-                  ),
-                ],
-              ),
+        // ACHIEVEMENTS
+        _PortfolioSection(
+          title: AppLocalizations.of(context)!.achievements,
+          trailing: Text(
+            AppLocalizations.of(context)!.viewAll,
+            style: tt.labelSmall?.copyWith(
+              color: cs.primary,
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(height: 20),
+          ),
+          child: const Column(
+            children: [
+              _AchievementRow(
+                emoji: '🏆',
+                title: 'Top 10 Learner',
+                subtitle: 'Tháng 3/2024',
+                color: Color(0xFFF59E0B),
+              ),
+              SizedBox(height: 12),
+              _AchievementRow(
+                emoji: '🎓',
+                title: 'Flutter Professional',
+                subtitle: 'Chứng chỉ • 40Study Academy',
+                color: Color(0xFF2563EB),
+              ),
+              SizedBox(height: 12),
+              _AchievementRow(
+                emoji: '🔥',
+                title: '30 Days Streak',
+                subtitle: 'Hoàn thành 15/02/2024',
+                color: Color(0xFFEF4444),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
 
-            // CONTACT
-            _PortfolioSection(
-              title: 'Liên hệ',
-              child: Column(
-                children: [
-                  _ContactRow(icon: Icons.email_outlined, text: user.email),
-                  if (user.phone != null && user.phone!.isNotEmpty)
-                    _ContactRow(icon: Icons.phone_outlined, text: user.phone!),
-                  _ContactRow(
-                    icon: Icons.calendar_today_outlined,
-                    text: _formatJoinDate(user.createdAt),
-                  ),
-                ],
+        // CONTACT
+        _PortfolioSection(
+          title: AppLocalizations.of(context)!.contact,
+          child: Column(
+            children: [
+              _ContactRow(icon: Icons.email_outlined, text: user.email),
+              if (user.phone != null && user.phone!.isNotEmpty)
+                _ContactRow(icon: Icons.phone_outlined, text: user.phone!),
+              _ContactRow(
+                icon: Icons.calendar_today_outlined,
+                text: _formatJoinDate(context, user.createdAt),
               ),
-            ),
+            ],
+          ),
+        ),
         const SizedBox(height: 32),
       ],
     );
   }
 
-  String _formatJoinDate(String? dateStr) {
-    if (dateStr == null) return 'Chưa cập nhật';
+  String _formatJoinDate(BuildContext context, String? dateStr) {
+    final l10n = AppLocalizations.of(context)!;
+    if (dateStr == null) return l10n.notUpdated;
     try {
       final date = DateTime.parse(dateStr);
-      return 'Tham gia tháng ${date.month}/${date.year}';
-    } catch (_) {
+      return l10n.joinedOn('${date.month}/${date.year}');
+    } on FormatException {
       return dateStr;
     }
   }
@@ -1938,7 +1904,7 @@ class _TeacherOverviewTab extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Tổng thu nhập',
+                      AppLocalizations.of(context)!.totalEarnings,
                       style: tt.labelMedium?.copyWith(
                         color: Colors.white70,
                         letterSpacing: 0.5,
@@ -1954,7 +1920,7 @@ class _TeacherOverviewTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'tháng này',
+                      AppLocalizations.of(context)!.thisMonth,
                       style: tt.bodySmall?.copyWith(color: Colors.white60),
                     ),
                   ],
@@ -2007,7 +1973,7 @@ class _TeacherCoursesTab extends StatelessWidget {
 class _AchievementsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Thành tích'));
+    return Center(child: Text(AppLocalizations.of(context)!.tabAchievements));
   }
 }
 
@@ -2021,21 +1987,21 @@ class _ParentOverviewTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Tổng quan phụ huynh'));
+    return Center(child: Text(AppLocalizations.of(context)!.parentOverview));
   }
 }
 
 class _ParentChildrenTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Con em'));
+    return Center(child: Text(AppLocalizations.of(context)!.tabChildren));
   }
 }
 
 class _ParentNotificationsTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const Center(child: Text('Thông báo'));
+    return Center(child: Text(AppLocalizations.of(context)!.tabNotifications));
   }
 }
 
@@ -2079,7 +2045,7 @@ class _PortfolioSection extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              if (trailing != null) trailing!,
+              ?trailing,
             ],
           ),
           const SizedBox(height: 12),
@@ -2332,3 +2298,4 @@ class _PatternPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
