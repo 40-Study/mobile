@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/app/localization.dart';
 import 'package:study/bloc/init/init_bloc.dart';
+import 'package:study/bloc/theme/app_theme.dart';
 import 'package:study/di/app_bloc_providers.dart';
 import 'package:study/di/app_repository_providers.dart';
-import 'package:study/di/di_container.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/features/auth/data/session_expired_notifier.dart';
 import 'package:study/index.dart';
@@ -39,47 +39,30 @@ class _AppState extends State<App> {
           _listenSessionExpired(context);
 
           final navigator = NavigationService.of(context);
-          var textTheme = createTextTheme(context: context);
-          var theme = MaterialTheme(textTheme);
 
-          return MaterialApp(
-            debugShowCheckedModeBanner: kDebugMode,
-            restorationScopeId: 'app',
-            key: Key('${context.watch<ThemeCubit>().themeMode}'),
-            localizationsDelegates: appLocalizationsDelegates,
-            supportedLocales: appSupportedLocales,
-            onGenerateTitle: (BuildContext context) => context.appTitle,
-            theme: theme.light(),
-            darkTheme: theme.dark(),
-            themeMode: context.watch<ThemeCubit>().themeMode,
-            navigatorKey: appNavigatorKey,
-            onGenerateRoute: navigator.onGenerateRoute,
-            builder: (_, child) => MultiBlocListener(
-              listeners: [
-                BlocListener<InitBloc, InitState>(
-                  listener: (_, state) {
-                    if (state is InitOpenApp) {
-                      navigator.pushAndRemoveAll(Routes.app);
-                    } else if (state is InitOpenOnboarding) {
-                      navigator.pushAndRemoveAll(Routes.onboarding);
-                    } else if (state is InitOpenLogin) {
-                      navigator.pushAndRemoveAll(Routes.login);
-                    }
-                  },
+          return BlocSelector<ThemeCubit, AppThemeSettings, ThemeMode>(
+            selector: (settings) => settings.themeMode,
+            builder: (context, themeMode) {
+              final textTheme = createTextTheme(context: context);
+              final theme = MaterialTheme(textTheme);
+
+              return MaterialApp(
+                debugShowCheckedModeBanner: kDebugMode,
+                restorationScopeId: 'app',
+                localizationsDelegates: appLocalizationsDelegates,
+                supportedLocales: appSupportedLocales,
+                onGenerateTitle: (BuildContext context) => context.appTitle,
+                theme: theme.light(),
+                darkTheme: theme.dark(),
+                themeMode: themeMode,
+                navigatorKey: navigator.navigatorKey,
+                onGenerateRoute: navigator.onGenerateRoute,
+                builder: (_, child) => _AppListeners(
+                  navigator: navigator,
+                  child: child ?? const SizedBox.shrink(),
                 ),
-                BlocListener<AuthBloc, AuthState>(
-                  listenWhen: (prev, curr) =>
-                      prev is! AuthUnauthenticated &&
-                      curr is AuthUnauthenticated,
-                  listener: (_, state) {
-                    if (state is AuthUnauthenticated) {
-                      navigator.pushAndRemoveAll(Routes.login);
-                    }
-                  },
-                ),
-              ],
-              child: child ?? const SizedBox.shrink(),
-            ),
+              );
+            },
           );
         },
       ),
@@ -90,8 +73,44 @@ class _AppState extends State<App> {
   /// dispatch event vào AuthBloc để xử lý.
   void _listenSessionExpired(BuildContext context) {
     if (_sessionSub != null) return;
-    _sessionSub = diContainer.get<SessionExpiredNotifier>().stream.listen((_) {
+    _sessionSub = context.read<SessionExpiredNotifier>().stream.listen((_) {
       context.read<AuthBloc>().add(AuthSessionExpired());
     });
+  }
+}
+
+class _AppListeners extends StatelessWidget {
+  const _AppListeners({required this.navigator, required this.child});
+
+  final NavigationService navigator;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<InitBloc, InitState>(
+          listener: (_, state) {
+            if (state is InitOpenApp) {
+              navigator.pushAndRemoveAll(Routes.app);
+            } else if (state is InitOpenOnboarding) {
+              navigator.pushAndRemoveAll(Routes.onboarding);
+            } else if (state is InitOpenLogin) {
+              navigator.pushAndRemoveAll(Routes.login);
+            }
+          },
+        ),
+        BlocListener<AuthBloc, AuthState>(
+          listenWhen: (prev, curr) =>
+              prev is! AuthUnauthenticated && curr is AuthUnauthenticated,
+          listener: (_, state) {
+            if (state is AuthUnauthenticated) {
+              navigator.pushAndRemoveAll(Routes.login);
+            }
+          },
+        ),
+      ],
+      child: child,
+    );
   }
 }

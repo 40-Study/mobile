@@ -1,57 +1,62 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 
-enum AppTheme { light, dark, system }
+enum AppThemeMode {
+  light,
+  dark,
+  system;
 
-class DarkThemePreference extends Equatable {
-  DarkThemePreference({
-    this.darkThemeValue = followSystem,
-    this.isHighContrastModeEnabled = false,
-  });
-
-  static const int followSystem = 1;
-  static const int on = 2;
-  static const int off = 3;
-
-  final int darkThemeValue;
-  final bool isHighContrastModeEnabled;
-
-  @override
-  List<Object?> get props => [darkThemeValue, isHighContrastModeEnabled];
-
-  DarkThemePreference copyWith({
-    int? darkThemeValue,
-    bool? isHighContrastModeEnabled,
-  }) {
-    return DarkThemePreference(
-      darkThemeValue: darkThemeValue ?? this.darkThemeValue,
-      isHighContrastModeEnabled:
-          isHighContrastModeEnabled ?? this.isHighContrastModeEnabled,
-    );
+  ThemeMode toFlutterThemeMode() {
+    switch (this) {
+      case AppThemeMode.light:
+        return ThemeMode.light;
+      case AppThemeMode.dark:
+        return ThemeMode.dark;
+      case AppThemeMode.system:
+        return ThemeMode.system;
+    }
   }
-}
 
-extension DarkThemePreferenceExt on DarkThemePreference {
-  bool isDarkTheme() {
-    return darkThemeValue == DarkThemePreference.on;
+  static AppThemeMode fromIndex(int? value) {
+    if (value == null || value < 0 || value >= AppThemeMode.values.length) {
+      return AppThemeMode.system;
+    }
+    return AppThemeMode.values[value];
+  }
+
+  static AppThemeMode fromLegacyDarkThemeValue(int? value) {
+    switch (value) {
+      case 2:
+        return AppThemeMode.dark;
+      case 3:
+        return AppThemeMode.light;
+      case 1:
+      default:
+        return AppThemeMode.system;
+    }
   }
 }
 
 class AppThemeSettings extends Equatable {
-  AppThemeSettings({required this.darkTheme, required this.appTheme});
+  const AppThemeSettings({
+    this.mode = AppThemeMode.system,
+    this.highContrast = false,
+  });
 
-  final DarkThemePreference darkTheme;
-  final AppTheme appTheme;
+  final AppThemeMode mode;
+  final bool highContrast;
 
-  @override
-  List<Object?> get props => [darkTheme, appTheme];
+  ThemeMode get themeMode => mode.toFlutterThemeMode();
 
-  AppThemeSettings copyWith({
-    DarkThemePreference? darkTheme,
-    AppTheme? appTheme,
-  }) {
+  bool get isDarkMode => mode == AppThemeMode.dark;
+
+  AppThemeSettings copyWith({AppThemeMode? mode, bool? highContrast}) {
     return AppThemeSettings(
-      darkTheme: darkTheme ?? this.darkTheme,
-      appTheme: appTheme ?? this.appTheme,
+      mode: mode ?? this.mode,
+      highContrast: highContrast ?? this.highContrast,
     );
   }
+
+  @override
+  List<Object?> get props => [mode, highContrast];
 }
