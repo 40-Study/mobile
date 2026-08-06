@@ -1,9 +1,0 @@
-export 'bi_main_screen.dart';
-export 'bi_dashboard_screen.dart';
-export 'bi_centers_screen.dart';
-export 'bi_center_insight_screen.dart';
-export 'bi_analytics_screen.dart';
-export 'bi_ai_performance_screen.dart';
-export 'bi_insights_screen.dart';
-export 'bi_marketing_screen.dart';
-export 'bi_settings_screen.dart';
