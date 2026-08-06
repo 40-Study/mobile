@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:study/di/di_container.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/constants/durations.dart';
 import 'package:study/features/onboarding/onboarding_content.dart';
 import 'package:study/features/onboarding/widgets/animated_onboarding_page_content.dart';
 import 'package:study/repository/repository.dart';
@@ -18,13 +21,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   static const int _pageCount = 3;
   int _currentPage = 0;
 
-  OnboardingRepository get _onboardingRepo =>
-      diContainer.get<OnboardingRepository>();
-
   Future<void> _onGetStarted() async {
-    await _onboardingRepo.setSeenOnboarding();
+    await context.read<OnboardingRepository>().setSeenOnboarding();
     if (!mounted) return;
-    NavigationService.of(context).pushAndRemoveAll(Routes.login);
+    unawaited(NavigationService.of(context).pushAndRemoveAll(Routes.login));
   }
 
   @override
@@ -65,12 +65,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     // Skip button (hide on last page)
                     AnimatedOpacity(
                       opacity: _currentPage < _pageCount - 1 ? 1.0 : 0.0,
-                      duration: const Duration(milliseconds: 200),
+                      duration: AppDurations.fadeIn,
                       child: TextButton(
                         onPressed: _currentPage < _pageCount - 1
                             ? () => _pageController.animateToPage(
                                 _pageCount - 1,
-                                duration: const Duration(milliseconds: 400),
+                                duration: AppDurations.pageTransition,
                                 curve: Curves.easeInOutCubic,
                               )
                             : null,
@@ -120,7 +120,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       onPressed: () {
                         if (_currentPage < _pageCount - 1) {
                           _pageController.nextPage(
-                            duration: const Duration(milliseconds: 400),
+                            duration: AppDurations.pageTransition,
                             curve: Curves.easeInOutCubic,
                           );
                         } else {
@@ -200,8 +200,6 @@ class _OnboardingCtaButton extends StatelessWidget {
   }
 }
 
-const Duration _indicatorAnimationDuration = Duration(milliseconds: 280);
-
 class _AnimatedPageIndicator extends StatelessWidget {
   const _AnimatedPageIndicator({required this.count, required this.current});
 
@@ -217,7 +215,7 @@ class _AnimatedPageIndicator extends StatelessWidget {
       children: List.generate(
         count,
         (index) => AnimatedContainer(
-          duration: _indicatorAnimationDuration,
+          duration: AppDurations.pageIndicator,
           curve: Curves.easeInOutCubic,
           width: index == current ? 24 : 8,
           height: 8,
