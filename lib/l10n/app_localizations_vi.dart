@@ -4,9 +4,9 @@ import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
 
-/// The translations for English (`en`).
-class AppLocalizationsEn extends AppLocalizations {
-  AppLocalizationsEn([String locale = 'en']) : super(locale);
+/// The translations for Vietnamese (`vi`).
+class AppLocalizationsVi extends AppLocalizations {
+  AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
   String get appTitle => '40Study';
@@ -26,10 +26,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsTitle => 'Settings';
+  String get settingsTitle => 'Cài đặt';
 
   @override
-  String get appearanceTitle => 'Appearance';
+  String get appearanceTitle => 'Giao diện';
 
   @override
   String get dynamicColorSettingsItemTitle => 'Use dynamic colors';
@@ -39,19 +39,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Adapt app colors to your wallpaper';
 
   @override
-  String get darkThemeSettingsItemTitle => 'Theme mode';
+  String get darkThemeSettingsItemTitle => 'Chế độ tối';
 
   @override
-  String get darkThemeOnSettingsItemTitle => 'Dark';
+  String get darkThemeOnSettingsItemTitle => 'Tối';
 
   @override
-  String get darkThemeOffSettingsItemTitle => 'Light';
+  String get darkThemeOffSettingsItemTitle => 'Sáng';
 
   @override
-  String get darkThemeFollowSystemSettingsItemTitle => 'System default';
+  String get darkThemeFollowSystemSettingsItemTitle => 'Theo hệ thống';
 
   @override
-  String get tryAgainButton => 'Try Again';
+  String get tryAgainButton => 'Thử lại';
 
   @override
   String get appearanceSettingsItem => 'Appearance';
@@ -61,7 +61,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Dark theme dynamic color, languages';
 
   @override
-  String get aboutSettingsItem => 'About';
+  String get aboutSettingsItem => 'Thông tin';
 
   @override
   String get aboutSettingsItemDescription => 'Version, links, feedback';
@@ -122,10 +122,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get itemDetailsTitle => 'Item Details';
 
   @override
-  String get error => 'Error';
+  String get error => 'Lỗi';
 
   @override
-  String get emptyList => 'Empty list';
+  String get emptyList => 'Danh sách trống';
 
   @override
   String get tabHome => 'Home';
@@ -502,432 +502,434 @@ class AppLocalizationsEn extends AppLocalizations {
   String get coresLabel => 'Cores';
 
   @override
-  String get selectRoleTitle => 'Select Role';
+  String get selectRoleTitle => 'Chọn vai trò';
 
   @override
-  String get selectRoleSubtitle => 'Swipe to explore';
+  String get selectRoleSubtitle => 'Vuốt để khám phá';
 
   @override
   String continueWithRole(Object role) {
-    return 'Continue with $role';
+    return 'Tiếp tục với $role';
   }
 
   @override
-  String get tapToSelect => 'Tap to select';
+  String get tapToSelect => 'Nhấn để chọn';
 
   @override
-  String get alreadyHaveAccount => 'Already have an account?';
+  String get alreadyHaveAccount => 'Đã có tài khoản?';
 
   @override
-  String get login => 'Login';
+  String get login => 'Đăng nhập';
 
   @override
-  String get register => 'Register';
+  String get register => 'Đăng ký';
 
   @override
-  String get roleStudent => 'Student';
+  String get roleStudent => 'Học sinh';
 
   @override
-  String get roleTeacher => 'Teacher';
+  String get roleTeacher => 'Giáo viên';
 
   @override
-  String get roleParent => 'Parent';
+  String get roleParent => 'Phụ huynh';
 
   @override
-  String get roleOrganization => 'Organization';
+  String get roleOrganization => 'Tổ chức';
 
   @override
-  String get loginTitle => 'Login';
+  String get loginTitle => 'Đăng nhập';
 
   @override
-  String get loginSubtitle => 'Welcome back';
+  String get loginSubtitle => 'Chào mừng bạn quay lại';
 
   @override
   String get emailLabel => 'Email';
 
   @override
-  String get emailHint => 'Enter your email';
+  String get emailHint => 'Nhập email của bạn';
 
   @override
-  String get passwordLabel => 'Password';
+  String get passwordLabel => 'Mật khẩu';
 
   @override
-  String get passwordHint => 'Enter password';
+  String get passwordHint => 'Nhập mật khẩu';
 
   @override
-  String get forgotPassword => 'Forgot password?';
+  String get forgotPassword => 'Quên mật khẩu?';
 
   @override
-  String get loginButton => 'Login';
+  String get loginButton => 'Đăng nhập';
 
   @override
-  String get orContinueWith => 'Or continue with';
+  String get orContinueWith => 'Hoặc tiếp tục với';
 
   @override
-  String get dontHaveAccount => 'Don\'t have an account?';
+  String get dontHaveAccount => 'Chưa có tài khoản?';
 
   @override
-  String get registerTitle => 'Create Account';
+  String get registerTitle => 'Tạo tài khoản';
 
   @override
-  String get registerSubtitle => 'Start your learning journey';
+  String get registerSubtitle => 'Bắt đầu hành trình học tập';
 
   @override
-  String get fullNameLabel => 'Full Name';
+  String get fullNameLabel => 'Họ và tên';
 
   @override
-  String get fullNameHint => 'Enter your full name';
+  String get fullNameHint => 'Nhập họ và tên';
 
   @override
-  String get usernameLabel => 'Username';
+  String get usernameLabel => 'Tên đăng nhập';
 
   @override
-  String get usernameHint => 'Enter username';
+  String get usernameHint => 'Nhập tên đăng nhập';
 
   @override
-  String get confirmPasswordLabel => 'Confirm Password';
+  String get confirmPasswordLabel => 'Xác nhận mật khẩu';
 
   @override
-  String get confirmPasswordHint => 'Re-enter password';
+  String get confirmPasswordHint => 'Nhập lại mật khẩu';
 
   @override
-  String get registerButton => 'Register';
+  String get registerButton => 'Đăng ký';
 
   @override
-  String get agreeToTerms => 'I agree to the';
+  String get agreeToTerms => 'Tôi đồng ý với';
 
   @override
-  String get termsOfService => 'Terms of Service';
+  String get termsOfService => 'Điều khoản dịch vụ';
 
   @override
-  String get and => 'and';
+  String get and => 'và';
 
   @override
-  String get privacyPolicy => 'Privacy Policy';
+  String get privacyPolicy => 'Chính sách bảo mật';
 
   @override
-  String get otpTitle => 'OTP Verification';
+  String get otpTitle => 'Xác thực OTP';
 
   @override
   String otpSubtitle(Object email) {
-    return 'Enter the OTP sent to $email';
+    return 'Nhập mã OTP đã gửi đến $email';
   }
 
   @override
-  String get resendOtp => 'Resend code';
+  String get resendOtp => 'Gửi lại mã';
 
   @override
   String resendOtpIn(Object seconds) {
-    return 'Resend in ${seconds}s';
+    return 'Gửi lại sau ${seconds}s';
   }
 
   @override
-  String get verifyButton => 'Verify';
+  String get verifyButton => 'Xác nhận';
 
   @override
-  String get forgotPasswordTitle => 'Forgot Password';
+  String get forgotPasswordTitle => 'Quên mật khẩu';
 
   @override
-  String get forgotPasswordSubtitle => 'Enter email to receive recovery code';
+  String get forgotPasswordSubtitle => 'Nhập email để nhận mã khôi phục';
 
   @override
-  String get sendResetCode => 'Send Recovery Code';
+  String get sendResetCode => 'Gửi mã khôi phục';
 
   @override
-  String get resetPasswordTitle => 'Reset Password';
+  String get resetPasswordTitle => 'Đặt lại mật khẩu';
 
   @override
-  String get newPasswordLabel => 'New Password';
+  String get newPasswordLabel => 'Mật khẩu mới';
 
   @override
-  String get newPasswordHint => 'Enter new password';
+  String get newPasswordHint => 'Nhập mật khẩu mới';
 
   @override
-  String get resetPasswordButton => 'Reset Password';
+  String get resetPasswordButton => 'Đặt lại mật khẩu';
 
   @override
-  String get profileTitle => 'Profile';
+  String get profileTitle => 'Hồ sơ';
 
   @override
-  String get editProfile => 'Edit Profile';
+  String get editProfile => 'Chỉnh sửa hồ sơ';
 
   @override
-  String get phoneLabel => 'Phone Number';
+  String get phoneLabel => 'Số điện thoại';
 
   @override
-  String get dateOfBirthLabel => 'Date of Birth';
+  String get dateOfBirthLabel => 'Ngày sinh';
 
   @override
-  String get bioLabel => 'Bio';
+  String get bioLabel => 'Giới thiệu';
 
   @override
-  String get saveChanges => 'Save Changes';
+  String get saveChanges => 'Lưu thay đổi';
 
   @override
-  String get changePasswordTitle => 'Change Password';
+  String get changePasswordTitle => 'Đổi mật khẩu';
 
   @override
-  String get currentPasswordLabel => 'Current Password';
+  String get currentPasswordLabel => 'Mật khẩu hiện tại';
 
   @override
-  String get changePasswordButton => 'Change Password';
+  String get changePasswordButton => 'Đổi mật khẩu';
 
   @override
-  String get securityTitle => 'Security';
+  String get securityTitle => 'Bảo mật';
 
   @override
-  String get linkedAccounts => 'Linked Accounts';
+  String get linkedAccounts => 'Tài khoản liên kết';
 
   @override
-  String get devices => 'Logged In Devices';
+  String get devices => 'Thiết bị đăng nhập';
 
   @override
-  String get logoutAllDevices => 'Logout All Devices';
+  String get logoutAllDevices => 'Đăng xuất tất cả thiết bị';
 
   @override
-  String get deleteAccount => 'Delete Account';
+  String get deleteAccount => 'Xóa tài khoản';
 
   @override
-  String get logout => 'Logout';
+  String get logout => 'Đăng xuất';
 
   @override
-  String get logoutConfirm => 'Are you sure you want to logout?';
+  String get logoutConfirm => 'Bạn có chắc muốn đăng xuất?';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Hủy';
 
   @override
-  String get confirm => 'Confirm';
+  String get confirm => 'Xác nhận';
 
   @override
-  String get errorRequired => 'This field is required';
+  String get errorRequired => 'Trường này là bắt buộc';
 
   @override
-  String get errorInvalidEmail => 'Invalid email address';
+  String get errorInvalidEmail => 'Email không hợp lệ';
 
   @override
-  String get errorPasswordTooShort => 'Password must be at least 8 characters';
+  String get errorPasswordTooShort => 'Mật khẩu phải có ít nhất 8 ký tự';
 
   @override
-  String get errorPasswordMismatch => 'Passwords do not match';
+  String get errorPasswordMismatch => 'Mật khẩu không khớp';
 
   @override
-  String get errorInvalidOtp => 'Invalid OTP code';
+  String get errorInvalidOtp => 'Mã OTP không hợp lệ';
 
   @override
-  String get errorNetworkError => 'Network connection error';
+  String get errorNetworkError => 'Lỗi kết nối mạng';
 
   @override
-  String get errorUnknown => 'An error occurred';
+  String get errorUnknown => 'Đã có lỗi xảy ra';
 
   @override
-  String get languageTitle => 'Language';
+  String get languageTitle => 'Ngôn ngữ';
 
   @override
-  String get students => 'Students';
+  String get students => 'Học viên';
 
   @override
-  String get courses => 'Courses';
+  String get courses => 'Khóa học';
 
   @override
-  String get rating => 'Rating';
+  String get rating => 'Đánh giá';
 
   @override
-  String get viewAll => 'View All';
+  String get viewAll => 'Xem tất cả';
 
   @override
-  String get featuredCourses => 'Featured Courses';
+  String get featuredCourses => 'Khóa học nổi bật';
 
   @override
-  String get editCover => 'Edit Cover';
+  String get editCover => 'Sửa ảnh bìa';
 
   @override
-  String get xpPoints => 'XP Points';
+  String get xpPoints => 'Điểm XP';
 
   @override
   String get streak => 'Streak';
 
   @override
-  String get tabOverview => 'Overview';
+  String get tabOverview => 'Tổng quan';
 
   @override
-  String get tabAchievements => 'Achievements';
+  String get tabAchievements => 'Thành tích';
 
   @override
-  String get tabChildren => 'Children';
+  String get tabChildren => 'Con em';
 
   @override
-  String get tabNotifications => 'Notifications';
+  String get tabNotifications => 'Thông báo';
 
   @override
   String joinedOn(Object date) {
-    return 'Joined $date';
+    return 'Tham gia từ $date';
   }
 
   @override
-  String get accountInfo => 'Account Information';
+  String get accountInfo => 'Thông tin tài khoản';
 
   @override
-  String get notUpdated => 'Not updated';
+  String get notUpdated => 'Chưa cập nhật';
 
   @override
-  String get joinedDate => 'Joined Date';
+  String get joinedDate => 'Ngày tham gia';
 
   @override
-  String get options => 'Options';
+  String get options => 'Tùy chọn';
 
   @override
-  String get switchRole => 'Switch Role';
+  String get switchRole => 'Chuyển đổi vai trò';
 
   @override
-  String get skills => 'Skills';
+  String get skills => 'Kỹ năng';
 
   @override
-  String get interests => 'Interests';
+  String get interests => 'Đang quan tâm';
 
   @override
-  String get achievements => 'Achievements';
+  String get achievements => 'Thành tựu nổi bật';
 
   @override
-  String get contact => 'Contact';
+  String get contact => 'Liên hệ';
 
   @override
-  String get totalEarnings => 'Total Earnings';
+  String get totalEarnings => 'Tổng thu nhập';
 
   @override
-  String get thisMonth => 'this month';
+  String get thisMonth => 'tháng này';
 
   @override
-  String get parentOverview => 'Parent Overview';
+  String get parentOverview => 'Tổng quan phụ huynh';
 
   @override
-  String get children => 'Children';
+  String get children => 'Con em';
 
   @override
-  String get notifications => 'Notifications';
+  String get notifications => 'Thông báo';
 
   @override
-  String get classes => 'Classes';
+  String get classes => 'Lớp học';
 
   @override
-  String get passwordAndSecurity => 'Password & Security';
+  String get passwordAndSecurity => 'Mật khẩu & Bảo mật';
 
   @override
-  String get loginSection => 'Login';
+  String get loginSection => 'Đăng nhập';
 
   @override
-  String get changePassword => 'Change Password';
+  String get changePassword => 'Đổi mật khẩu';
 
   @override
   String get changePasswordHint =>
-      'Use a strong password you don\'t use elsewhere';
+      'Nên sử dụng mật khẩu mạnh mà bạn không dùng ở nơi khác';
 
   @override
-  String get passwordChangedSuccess => 'Password changed successfully';
+  String get passwordChangedSuccess => 'Đổi mật khẩu thành công';
 
   @override
-  String get loggedOutAllDevices => 'Logged out all devices';
+  String get loggedOutAllDevices => 'Đã đăng xuất tất cả thiết bị';
 
   @override
   String unlinkedAccount(Object provider) {
-    return 'Unlinked $provider';
+    return 'Đã hủy liên kết $provider';
   }
 
   @override
-  String get whereYouLoggedIn => 'Where you\'re logged in';
+  String get whereYouLoggedIn => 'Nơi bạn đã đăng nhập';
 
   @override
-  String get logoutAll => 'Logout All';
+  String get logoutAll => 'Đăng xuất tất cả';
 
   @override
-  String get advanced => 'Advanced';
+  String get advanced => 'Nâng cao';
 
   @override
-  String get securityEmails => 'Security notification emails';
+  String get securityEmails => 'Email thông báo bảo mật';
 
   @override
-  String get securityEmailsHint => 'View official emails from us';
+  String get securityEmailsHint =>
+      'Xem danh sách các email chính thức từ chúng tôi';
 
   @override
-  String get activityHistory => 'Activity history';
+  String get activityHistory => 'Lịch sử hoạt động';
 
   @override
-  String get activityHistoryHint => 'View all account-related actions';
+  String get activityHistoryHint =>
+      'Xem tất cả các hành động liên quan đến tài khoản';
 
   @override
   String accountId(Object id) {
-    return 'Account ID: $id';
+    return 'ID tài khoản: $id';
   }
 
   @override
-  String get logoutAllDevicesTitle => 'Logout all devices';
+  String get logoutAllDevicesTitle => 'Đăng xuất tất cả thiết bị';
 
   @override
   String get logoutAllDevicesContent =>
-      'You will be logged out of all devices, including this one. You will need to log in again.';
+      'Bạn sẽ bị đăng xuất khỏi tất cả thiết bị, bao gồm cả thiết bị hiện tại. Bạn sẽ cần đăng nhập lại.';
 
   @override
   String unlinkAccount(Object provider) {
-    return 'Unlink $provider';
+    return 'Hủy liên kết $provider';
   }
 
   @override
   String unlinkAccountContent(Object provider) {
-    return 'You will not be able to log in with $provider after unlinking. Are you sure?';
+    return 'Bạn sẽ không thể đăng nhập bằng $provider sau khi hủy liên kết. Bạn có chắc chắn?';
   }
 
   @override
-  String get unlink => 'Unlink';
+  String get unlink => 'Hủy liên kết';
 
   @override
   String linkOnlyProduction(Object provider) {
-    return 'Linking $provider is only available in production';
+    return 'Liên kết $provider chỉ khả dụng trên môi trường production';
   }
 
   @override
-  String get serverNotConfigured => 'Server not configured';
+  String get serverNotConfigured => 'Server chưa được cấu hình';
 
   @override
-  String get cannotOpenBrowser => 'Cannot open browser';
+  String get cannotOpenBrowser => 'Không thể mở trình duyệt';
 
   @override
   String cannotLink(Object provider) {
-    return 'Cannot link with $provider';
+    return 'Không thể liên kết với $provider';
   }
 
   @override
-  String get noDevices => 'No devices found';
+  String get noDevices => 'Không có thiết bị nào';
 
   @override
-  String get reload => 'Reload';
+  String get reload => 'Tải lại';
 
   @override
-  String get thisDevice => 'This device';
+  String get thisDevice => 'Thiết bị này';
 
   @override
-  String get unknownDevice => 'Unknown device';
+  String get unknownDevice => 'Thiết bị không xác định';
 
   @override
   String linkWith(Object provider) {
-    return 'Link with $provider';
+    return 'Liên kết với $provider';
   }
 
   @override
-  String get loginWithThisProfile => 'Login with this profile';
+  String get loginWithThisProfile => 'Đăng nhập với profile này';
 
   @override
-  String get swipeToChangeProfile => 'Swipe to change profile';
+  String get swipeToChangeProfile => 'Lướt để đổi profile';
 
   @override
-  String get organizationProfile => 'Organization profile';
+  String get organizationProfile => 'Profile tổ chức';
 
   @override
-  String get systemProfile => 'System profile';
+  String get systemProfile => 'Profile hệ thống';
 
   @override
-  String get chooseProfileTitle => 'Choose profile';
+  String get chooseProfileTitle => 'Chọn profile';
 
   @override
   String get chooseProfileSubtitle =>
-      'You have multiple profiles. Choose one to continue.';
+      'Bạn có nhiều profile. Chọn một để tiếp tục.';
 }

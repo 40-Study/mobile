@@ -1,233 +1,287 @@
 import 'package:flutter/material.dart';
 
-/// Together AI Design System - Color Extensions
+/// Together AI Design System - Professional Blue & White Theme
 ///
-/// Pastel gradients, dark-blue-tinted shadows, glass effects.
-/// Sharp geometry (4px, 8px radius).
+/// Clean, minimal design với xanh dương làm màu chủ đạo.
+/// Sử dụng các sắc thái của xanh + trắng cho giao diện chuyên nghiệp.
 extension TogetherColorsX on ColorScheme {
   // ══════════════════════════════════════════════════════════════════════════
-  // BRAND COLORS (illustrations only, NOT UI chrome)
+  // BRAND COLORS - Professional Blue Palette
   // ══════════════════════════════════════════════════════════════════════════
 
-  /// Brand Magenta - for illustrations only
-  Color get brandMagenta => const Color(0xFFEF2CC1);
+  /// Brand Blue - màu chủ đạo
+  Color get brandBlue => const Color(0xFF2563EB);
 
-  /// Brand Orange - for illustrations only
-  Color get brandOrange => const Color(0xFFFC4C02);
+  /// Brand Blue Dark - cho text và accent
+  Color get brandBlueDark => const Color(0xFF1E40AF);
 
-  /// Soft Lavender accent
-  Color get softLavender => const Color(0xFFBDBBFF);
+  /// Brand Blue Light - cho backgrounds
+  Color get brandBlueLight => const Color(0xFF3B82F6);
 
-  /// Dark Blue (midnight blue)
-  Color get darkBlue => const Color(0xFF010120);
+  /// Soft Blue accent - nhẹ nhàng hơn
+  Color get softBlue => const Color(0xFF93C5FD);
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // PASTEL COLORS
-  // ══════════════════════════════════════════════════════════════════════════
-
-  Color get pastelPink => const Color(0xFFFCE7F3);
-  Color get pastelLavender => const Color(0xFFEDE9FE);
-  Color get pastelBlue => const Color(0xFFDBEAFE);
-  Color get pastelCyan => const Color(0xFFCFFAFE);
+  /// Navy - cho text đậm
+  Color get navy => const Color(0xFF1E3A5F);
 
   // ══════════════════════════════════════════════════════════════════════════
-  // PASTEL GRADIENTS (decorative backgrounds)
+  // BLUE TINTS - Các sắc thái xanh nhạt
   // ══════════════════════════════════════════════════════════════════════════
 
-  /// Hero pastel gradient - pink to lavender to blue
-  LinearGradient get gradientPastelCloud => const LinearGradient(
-    colors: [
-      Color(0xFFFCE7F3), // pastel pink
-      Color(0xFFEDE9FE), // pastel lavender
-      Color(0xFFDBEAFE), // pastel blue
-    ],
+  /// Blue 50 - rất nhạt
+  Color get blue50 => const Color(0xFFEFF6FF);
+
+  /// Blue 100 - nhạt
+  Color get blue100 => const Color(0xFFDBEAFE);
+
+  /// Blue 200 - trung bình nhạt
+  Color get blue200 => const Color(0xFFBFDBFE);
+
+  /// Blue 300 - trung bình
+  Color get blue300 => const Color(0xFF93C5FD);
+
+  /// Blue 400
+  Color get blue400 => const Color(0xFF60A5FA);
+
+  /// Blue 500 - main
+  Color get blue500 => const Color(0xFF3B82F6);
+
+  /// Blue 600
+  Color get blue600 => const Color(0xFF2563EB);
+
+  /// Blue 700
+  Color get blue700 => const Color(0xFF1D4ED8);
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // NEUTRAL COLORS - Xám trung tính
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Slate 50 - background sáng
+  Color get slate50 => const Color(0xFFF8FAFC);
+
+  /// Slate 100
+  Color get slate100 => const Color(0xFFF1F5F9);
+
+  /// Slate 200
+  Color get slate200 => const Color(0xFFE2E8F0);
+
+  /// Slate 300
+  Color get slate300 => const Color(0xFFCBD5E1);
+
+  /// Slate 400
+  Color get slate400 => const Color(0xFF94A3B8);
+
+  /// Slate 500
+  Color get slate500 => const Color(0xFF64748B);
+
+  /// Slate 600
+  Color get slate600 => const Color(0xFF475569);
+
+  /// Slate 700
+  Color get slate700 => const Color(0xFF334155);
+
+  /// Slate 800
+  Color get slate800 => const Color(0xFF1E293B);
+
+  /// Slate 900
+  Color get slate900 => const Color(0xFF0F172A);
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // GRADIENTS - Soft & Subtle
+  // ══════════════════════════════════════════════════════════════════════════
+
+  /// Primary gradient - nhẹ nhàng
+  LinearGradient get gradientBluePrimary => const LinearGradient(
+    colors: [Color(0xFF3B82F6), Color(0xFF60A5FA)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// Vertical pastel gradient for page backgrounds
+  /// Soft gradient - cho cards, rất nhẹ
+  LinearGradient get gradientBlueSoft => const LinearGradient(
+    colors: [Color(0xFF60A5FA), Color(0xFF93C5FD)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  /// Light gradient - gần như trắng với hint xanh
+  LinearGradient get gradientBlueLight => LinearGradient(
+    colors: brightness == Brightness.light
+        ? const [Color(0xFFFFFFFF), Color(0xFFFAFCFF)]
+        : const [Color(0xFF0F172A), Color(0xFF1E293B)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  /// Page background - rất subtle
   LinearGradient get gradientPastelVertical => LinearGradient(
     colors: brightness == Brightness.light
-        ? const [
-            Color(0xFFFFFFFF),
-            Color(0xFFFDF4F9), // subtle pink
-            Color(0xFFF5F0FF), // subtle lavender
-            Color(0xFFEEF5FF), // subtle blue
-          ]
-        : const [
-            Color(0xFF010120),
-            Color(0xFF0A0A30),
-            Color(0xFF010120),
-          ],
-    stops: const [0.0, 0.3, 0.6, 1.0],
+        ? const [Color(0xFFFFFFFF), Color(0xFFFCFDFF)]
+        : const [Color(0xFF0F172A), Color(0xFF1E293B)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
-  /// Dawn gradient - soft pink tint
-  LinearGradient get gradientDawn => const LinearGradient(
-    colors: [
-      Color(0xFFFFFFFF),
-      Color(0xFFFDF4F9),
-      Color(0xFFF5F0FF),
-    ],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-  );
+  /// Primary gradient (alias)
+  LinearGradient get gradientPrimary => gradientBlueSoft;
 
-  /// Brand gradient - magenta to orange (illustrations only)
-  LinearGradient get gradientBrand => const LinearGradient(
-    colors: [
-      Color(0xFFEF2CC1),
-      Color(0xFFFC4C02),
-    ],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  /// Primary gradient (legacy support)
-  LinearGradient get gradientPrimary => LinearGradient(
-    colors: [primary, softLavender],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  /// Surface gradient - subtle pastel tint
+  /// Surface gradient - subtle tint
   LinearGradient get gradientSurfacePrimary => LinearGradient(
     colors: [
-      primaryContainer.withValues(alpha: 0.3),
+      blue50.withValues(alpha: 0.5),
       surface,
     ],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
+  // Legacy aliases
+  LinearGradient get gradientPastelCloud => gradientBlueLight;
+  LinearGradient get gradientBrand => gradientBluePrimary;
+  LinearGradient get gradientWarm => gradientBlueSoft;
+  LinearGradient get gradientSunset => gradientBluePrimary;
+  LinearGradient get gradientCool => gradientBlueLight;
+  LinearGradient get gradientRich => gradientPastelVertical;
+  LinearGradient get gradientBackground => gradientPastelVertical;
+  LinearGradient get gradientSurfaceSecondary => gradientSurfacePrimary;
+  LinearGradient get gradientSurfaceTertiary => gradientSurfacePrimary;
+  LinearGradient get gradientDawn => gradientBlueLight;
+
   // ══════════════════════════════════════════════════════════════════════════
-  // DARK-BLUE-TINTED SHADOWS (not generic black)
+  // SHADOWS - Professional Blue-tinted Shadows
   // ══════════════════════════════════════════════════════════════════════════
 
-  /// Standard card shadow - dark blue tinted
+  /// Standard card shadow
   List<BoxShadow> get shadowCard => [
     BoxShadow(
-      color: const Color(0xFF010120).withValues(alpha: 0.1),
-      blurRadius: 10,
-      offset: const Offset(0, 4),
+      color: const Color(0xFF1E3A5F).withValues(alpha: 0.08),
+      blurRadius: 8,
+      offset: const Offset(0, 2),
     ),
   ];
 
   /// Primary glow shadow
   List<BoxShadow> get shadowPrimary => [
     BoxShadow(
-      color: const Color(0xFF010120).withValues(alpha: 0.12),
+      color: const Color(0xFF2563EB).withValues(alpha: 0.15),
       blurRadius: 16,
-      offset: const Offset(0, 6),
-    ),
-    BoxShadow(
-      color: const Color(0xFF010120).withValues(alpha: 0.06),
-      blurRadius: 32,
-      offset: const Offset(0, 12),
-    ),
-  ];
-
-  /// Elevated shadow for floating elements
-  List<BoxShadow> get shadowElevated => [
-    BoxShadow(
-      color: const Color(0xFF010120).withValues(alpha: 0.08),
-      blurRadius: 12,
       offset: const Offset(0, 4),
     ),
     BoxShadow(
-      color: const Color(0xFF010120).withValues(alpha: 0.04),
+      color: const Color(0xFF1E3A5F).withValues(alpha: 0.08),
       blurRadius: 24,
       offset: const Offset(0, 8),
     ),
   ];
 
-  /// Lavender accent shadow
-  List<BoxShadow> get shadowLavender => [
+  /// Elevated shadow
+  List<BoxShadow> get shadowElevated => [
     BoxShadow(
-      color: const Color(0xFFBDBBFF).withValues(alpha: 0.3),
+      color: const Color(0xFF1E3A5F).withValues(alpha: 0.06),
+      blurRadius: 12,
+      offset: const Offset(0, 4),
+    ),
+    BoxShadow(
+      color: const Color(0xFF1E3A5F).withValues(alpha: 0.04),
+      blurRadius: 20,
+      offset: const Offset(0, 8),
+    ),
+  ];
+
+  /// Blue accent shadow
+  List<BoxShadow> get shadowBlue => [
+    BoxShadow(
+      color: const Color(0xFF3B82F6).withValues(alpha: 0.25),
       blurRadius: 16,
       offset: const Offset(0, 4),
     ),
   ];
 
-  /// Magenta accent shadow (for special elements)
-  List<BoxShadow> get shadowMagenta => [
-    BoxShadow(
-      color: const Color(0xFFEF2CC1).withValues(alpha: 0.2),
-      blurRadius: 16,
-      offset: const Offset(0, 4),
-    ),
-  ];
-
-  // Legacy shadows (mapped to new system)
-  List<BoxShadow> get shadowSecondary => shadowLavender;
-  List<BoxShadow> get shadowTertiary => shadowMagenta;
+  // Legacy shadow aliases
+  List<BoxShadow> get shadowLavender => shadowBlue;
+  List<BoxShadow> get shadowMagenta => shadowBlue;
+  List<BoxShadow> get shadowSecondary => shadowBlue;
+  List<BoxShadow> get shadowTertiary => shadowBlue;
 
   // ══════════════════════════════════════════════════════════════════════════
   // GLASS EFFECTS
   // ══════════════════════════════════════════════════════════════════════════
 
-  /// Glass Light - frosted glass on dark surfaces
-  Color get glassLight => const Color(0xFFFFFFFF).withValues(alpha: 0.12);
+  Color get glassLight => const Color(0xFFFFFFFF).withValues(alpha: 0.15);
+  Color get glassDark => const Color(0xFF1E3A5F).withValues(alpha: 0.08);
 
-  /// Glass Dark - subtle tint on light surfaces
-  Color get glassDark => const Color(0xFF000000).withValues(alpha: 0.08);
-
-  /// Frosted overlay
   Color get frostedOverlay => brightness == Brightness.light
-      ? const Color(0xFFFFFFFF).withValues(alpha: 0.85)
-      : const Color(0xFF010120).withValues(alpha: 0.85);
+      ? const Color(0xFFFFFFFF).withValues(alpha: 0.9)
+      : const Color(0xFF0F172A).withValues(alpha: 0.9);
 
-  /// Dark scrim
-  Color get darkScrim => const Color(0xFF010120).withValues(alpha: 0.55);
-
-  /// Light scrim
-  Color get lightScrim => const Color(0xFF010120).withValues(alpha: 0.08);
+  Color get darkScrim => const Color(0xFF0F172A).withValues(alpha: 0.6);
+  Color get lightScrim => const Color(0xFF1E3A5F).withValues(alpha: 0.08);
 
   // ══════════════════════════════════════════════════════════════════════════
   // TEXT COLORS
   // ══════════════════════════════════════════════════════════════════════════
 
-  /// Secondary text color
   Color get textSecondary => onSurface.withValues(alpha: 0.7);
-
-  /// Tertiary text color
   Color get textTertiary => onSurface.withValues(alpha: 0.5);
 
   // ══════════════════════════════════════════════════════════════════════════
   // TINTED SURFACES
   // ══════════════════════════════════════════════════════════════════════════
 
-  /// Card with subtle lavender tint
-  Color get surfaceTintedPrimary =>
-      Color.lerp(surfaceContainerLowest, pastelLavender, 0.08)!;
-
-  /// Card with subtle pink tint
-  Color get surfaceTintedSecondary =>
-      Color.lerp(surfaceContainerLowest, pastelPink, 0.08)!;
-
   /// Card with subtle blue tint
-  Color get surfaceTintedTertiary =>
-      Color.lerp(surfaceContainerLowest, pastelBlue, 0.08)!;
+  Color get surfaceTintedPrimary =>
+      Color.lerp(surfaceContainerLowest, blue100, 0.1)!;
 
-  // Legacy gradients (mapped to new system)
-  LinearGradient get gradientWarm => gradientPastelCloud;
-  LinearGradient get gradientSunset => gradientBrand;
-  LinearGradient get gradientCool => gradientPastelCloud;
-  LinearGradient get gradientRich => gradientPastelVertical;
-  LinearGradient get gradientBackground => gradientPastelVertical;
-  LinearGradient get gradientSurfaceSecondary => gradientSurfacePrimary;
-  LinearGradient get gradientSurfaceTertiary => gradientSurfacePrimary;
+  Color get surfaceTintedSecondary =>
+      Color.lerp(surfaceContainerLowest, blue50, 0.15)!;
+
+  Color get surfaceTintedTertiary =>
+      Color.lerp(surfaceContainerLowest, slate100, 0.1)!;
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // LEGACY ALIASES - Backward compatibility
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Old brand colors → new blue palette
+  Color get brandMagenta => brandBlue;
+  Color get brandOrange => brandBlueLight;
+  Color get softLavender => softBlue;
+  Color get darkBlue => navy;
+
+  // Old pastel colors → blue tints
+  Color get pastelPink => blue50;
+  Color get pastelLavender => blue100;
+  Color get pastelBlue => blue200;
+  Color get pastelCyan => blue100;
 }
 
-/// Together AI Semantic Colors
+/// Semantic Colors - Status indicators
 class TogetherSemanticColors {
   TogetherSemanticColors._();
 
-  static const success = Color(0xFF10B981);
-  static const warning = Color(0xFFF59E0B);
-  static const error = Color(0xFFEF4444);
-  static const info = Color(0xFF3B82F6);
+  static const success = Color(0xFF10B981); // Green
+  static const warning = Color(0xFFF59E0B); // Amber
+  static const error = Color(0xFFEF4444);   // Red
+  static const info = Color(0xFF3B82F6);    // Blue (matches brand)
+}
+
+/// Role Colors - Professional Blue variations for each role
+class RoleColors {
+  RoleColors._();
+
+  // Student - Primary Blue
+  static const studentPrimary = Color(0xFF2563EB);
+  static const studentSecondary = Color(0xFF93C5FD);
+
+  // Teacher - Darker Blue
+  static const teacherPrimary = Color(0xFF1E40AF);
+  static const teacherSecondary = Color(0xFF60A5FA);
+
+  // Parent - Teal Blue
+  static const parentPrimary = Color(0xFF0891B2);
+  static const parentSecondary = Color(0xFF67E8F9);
+
+  // Organization - Navy
+  static const orgPrimary = Color(0xFF1E3A5F);
+  static const orgSecondary = Color(0xFF38BDF8);
 }

@@ -2,13 +2,13 @@ import 'package:study/bloc/theme/app_theme.dart';
 import 'package:study/data/theme_storage.dart';
 
 abstract class ThemeRepository {
-  Future<void> saveTheme(AppTheme theme);
+  Future<void> saveTheme(AppThemeMode mode);
 
-  Future<void> saveDarkTheme(DarkThemePreference pref);
+  Future<void> saveHighContrast(bool enabled);
 
   Future<AppThemeSettings> getTheme();
 
-  Future<DarkThemePreference> getDarkTheme();
+  Future<bool> getHighContrast();
 }
 
 class ThemeRepositoryImpl implements ThemeRepository {
@@ -17,24 +17,24 @@ class ThemeRepositoryImpl implements ThemeRepository {
   final ThemeStorage themeStorage;
 
   @override
-  Future<void> saveTheme(AppTheme theme) async {
-    await themeStorage.saveTheme(theme);
+  Future<void> saveTheme(AppThemeMode mode) async {
+    await themeStorage.saveTheme(mode);
   }
 
   @override
   Future<AppThemeSettings> getTheme() async {
-    final appTheme = await themeStorage.getTheme();
-    final darkTheme = await themeStorage.getDarkTheme();
-    return AppThemeSettings(darkTheme: darkTheme, appTheme: appTheme);
+    final mode = await themeStorage.getTheme();
+    final highContrast = await themeStorage.getHighContrast();
+    return AppThemeSettings(mode: mode, highContrast: highContrast);
   }
 
   @override
-  Future<DarkThemePreference> getDarkTheme() {
-    return themeStorage.getDarkTheme();
+  Future<bool> getHighContrast() {
+    return themeStorage.getHighContrast();
   }
 
   @override
-  Future<void> saveDarkTheme(DarkThemePreference pref) async {
-    await themeStorage.saveDarkTheme(pref);
+  Future<void> saveHighContrast(bool enabled) async {
+    await themeStorage.saveHighContrast(enabled);
   }
 }

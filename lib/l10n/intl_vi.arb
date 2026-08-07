@@ -1,0 +1,220 @@
+{
+  "@@locale": "vi",
+  "appTitle": "40Study",
+
+  "selectRoleTitle": "Chọn vai trò",
+  "selectRoleSubtitle": "Vuốt để khám phá",
+  "continueWithRole": "Tiếp tục với {role}",
+  "@continueWithRole": {
+    "placeholders": {
+      "role": {}
+    }
+  },
+  "tapToSelect": "Nhấn để chọn",
+  "alreadyHaveAccount": "Đã có tài khoản?",
+  "login": "Đăng nhập",
+  "register": "Đăng ký",
+
+  "roleStudent": "Học sinh",
+  "roleTeacher": "Giáo viên",
+  "roleParent": "Phụ huynh",
+  "roleOrganization": "Tổ chức",
+
+  "loginTitle": "Đăng nhập",
+  "loginSubtitle": "Chào mừng bạn quay lại",
+  "emailLabel": "Email",
+  "emailHint": "Nhập email của bạn",
+  "passwordLabel": "Mật khẩu",
+  "passwordHint": "Nhập mật khẩu",
+  "forgotPassword": "Quên mật khẩu?",
+  "loginButton": "Đăng nhập",
+  "orContinueWith": "Hoặc tiếp tục với",
+  "dontHaveAccount": "Chưa có tài khoản?",
+
+  "registerTitle": "Tạo tài khoản",
+  "registerSubtitle": "Bắt đầu hành trình học tập",
+  "fullNameLabel": "Họ và tên",
+  "fullNameHint": "Nhập họ và tên",
+  "usernameLabel": "Tên đăng nhập",
+  "usernameHint": "Nhập tên đăng nhập",
+  "confirmPasswordLabel": "Xác nhận mật khẩu",
+  "confirmPasswordHint": "Nhập lại mật khẩu",
+  "registerButton": "Đăng ký",
+  "agreeToTerms": "Tôi đồng ý với",
+  "termsOfService": "Điều khoản dịch vụ",
+  "and": "và",
+  "privacyPolicy": "Chính sách bảo mật",
+
+  "otpTitle": "Xác thực OTP",
+  "otpSubtitle": "Nhập mã OTP đã gửi đến {email}",
+  "@otpSubtitle": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "resendOtp": "Gửi lại mã",
+  "resendOtpIn": "Gửi lại sau {seconds}s",
+  "@resendOtpIn": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "verifyButton": "Xác nhận",
+
+  "forgotPasswordTitle": "Quên mật khẩu",
+  "forgotPasswordSubtitle": "Nhập email để nhận mã khôi phục",
+  "sendResetCode": "Gửi mã khôi phục",
+  "resetPasswordTitle": "Đặt lại mật khẩu",
+  "newPasswordLabel": "Mật khẩu mới",
+  "newPasswordHint": "Nhập mật khẩu mới",
+  "resetPasswordButton": "Đặt lại mật khẩu",
+
+  "profileTitle": "Hồ sơ",
+  "editProfile": "Chỉnh sửa hồ sơ",
+  "phoneLabel": "Số điện thoại",
+  "dateOfBirthLabel": "Ngày sinh",
+  "bioLabel": "Giới thiệu",
+  "saveChanges": "Lưu thay đổi",
+
+  "changePasswordTitle": "Đổi mật khẩu",
+  "currentPasswordLabel": "Mật khẩu hiện tại",
+  "changePasswordButton": "Đổi mật khẩu",
+
+  "securityTitle": "Bảo mật",
+  "linkedAccounts": "Tài khoản liên kết",
+  "devices": "Thiết bị đăng nhập",
+  "logoutAllDevices": "Đăng xuất tất cả thiết bị",
+  "deleteAccount": "Xóa tài khoản",
+
+  "logout": "Đăng xuất",
+  "logoutConfirm": "Bạn có chắc muốn đăng xuất?",
+  "cancel": "Hủy",
+  "confirm": "Xác nhận",
+
+  "errorRequired": "Trường này là bắt buộc",
+  "errorInvalidEmail": "Email không hợp lệ",
+  "errorPasswordTooShort": "Mật khẩu phải có ít nhất 8 ký tự",
+  "errorPasswordMismatch": "Mật khẩu không khớp",
+  "errorInvalidOtp": "Mã OTP không hợp lệ",
+  "errorNetworkError": "Lỗi kết nối mạng",
+  "errorUnknown": "Đã có lỗi xảy ra",
+
+  "tryAgainButton": "Thử lại",
+
+  "students": "Học viên",
+  "courses": "Khóa học",
+  "rating": "Đánh giá",
+  "viewAll": "Xem tất cả",
+  "featuredCourses": "Khóa học nổi bật",
+  "editCover": "Sửa ảnh bìa",
+  "xpPoints": "Điểm XP",
+  "streak": "Streak",
+  "tabOverview": "Tổng quan",
+  "tabAchievements": "Thành tích",
+  "tabChildren": "Con em",
+  "tabNotifications": "Thông báo",
+  "joinedOn": "Tham gia từ {date}",
+  "@joinedOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "accountInfo": "Thông tin tài khoản",
+  "notUpdated": "Chưa cập nhật",
+  "joinedDate": "Ngày tham gia",
+  "options": "Tùy chọn",
+  "switchRole": "Chuyển đổi vai trò",
+  "skills": "Kỹ năng",
+  "interests": "Đang quan tâm",
+  "achievements": "Thành tựu nổi bật",
+  "contact": "Liên hệ",
+  "totalEarnings": "Tổng thu nhập",
+  "thisMonth": "tháng này",
+  "parentOverview": "Tổng quan phụ huynh",
+  "children": "Con em",
+  "notifications": "Thông báo",
+  "classes": "Lớp học",
+
+  "passwordAndSecurity": "Mật khẩu & Bảo mật",
+  "loginSection": "Đăng nhập",
+  "changePassword": "Đổi mật khẩu",
+  "changePasswordHint": "Nên sử dụng mật khẩu mạnh mà bạn không dùng ở nơi khác",
+  "passwordChangedSuccess": "Đổi mật khẩu thành công",
+  "loggedOutAllDevices": "Đã đăng xuất tất cả thiết bị",
+  "unlinkedAccount": "Đã hủy liên kết {provider}",
+  "@unlinkedAccount": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+  "whereYouLoggedIn": "Nơi bạn đã đăng nhập",
+  "logoutAll": "Đăng xuất tất cả",
+  "advanced": "Nâng cao",
+  "securityEmails": "Email thông báo bảo mật",
+  "securityEmailsHint": "Xem danh sách các email chính thức từ chúng tôi",
+  "activityHistory": "Lịch sử hoạt động",
+  "activityHistoryHint": "Xem tất cả các hành động liên quan đến tài khoản",
+  "accountId": "ID tài khoản: {id}",
+  "@accountId": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "logoutAllDevicesTitle": "Đăng xuất tất cả thiết bị",
+  "logoutAllDevicesContent": "Bạn sẽ bị đăng xuất khỏi tất cả thiết bị, bao gồm cả thiết bị hiện tại. Bạn sẽ cần đăng nhập lại.",
+  "unlinkAccount": "Hủy liên kết {provider}",
+  "@unlinkAccount": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+  "unlinkAccountContent": "Bạn sẽ không thể đăng nhập bằng {provider} sau khi hủy liên kết. Bạn có chắc chắn?",
+  "@unlinkAccountContent": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+  "unlink": "Hủy liên kết",
+  "linkOnlyProduction": "Liên kết {provider} chỉ khả dụng trên môi trường production",
+  "@linkOnlyProduction": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+  "serverNotConfigured": "Server chưa được cấu hình",
+  "cannotOpenBrowser": "Không thể mở trình duyệt",
+  "cannotLink": "Không thể liên kết với {provider}",
+  "@cannotLink": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+  "noDevices": "Không có thiết bị nào",
+  "reload": "Tải lại",
+  "thisDevice": "Thiết bị này",
+  "unknownDevice": "Thiết bị không xác định",
+  "linkWith": "Liên kết với {provider}",
+  "@linkWith": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+
+  "settingsTitle": "Cài đặt",
+  "appearanceTitle": "Giao diện",
+  "darkThemeSettingsItemTitle": "Chế độ tối",
+  "darkThemeOnSettingsItemTitle": "Tối",
+  "darkThemeOffSettingsItemTitle": "Sáng",
+  "darkThemeFollowSystemSettingsItemTitle": "Theo hệ thống",
+  "languageTitle": "Ngôn ngữ",
+  "aboutSettingsItem": "Thông tin",
+  "error": "Lỗi",
+  "emptyList": "Danh sách trống",
+
+  "loginWithThisProfile": "Đăng nhập với profile này",
+  "swipeToChangeProfile": "Lướt để đổi profile",
+  "organizationProfile": "Profile tổ chức",
+  "systemProfile": "Profile hệ thống",
+  "chooseProfileTitle": "Chọn profile",
+  "chooseProfileSubtitle": "Bạn có nhiều profile. Chọn một để tiếp tục."
+}
