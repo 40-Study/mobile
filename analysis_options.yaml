@@ -44,6 +44,7 @@ linter:
     - prefer_final_in_for_each
     - annotate_overrides
     - avoid_empty_else
+    - avoid_print
     - avoid_function_literals_in_foreach_calls
     - avoid_init_to_null
     - avoid_null_checks_in_equality_operators
