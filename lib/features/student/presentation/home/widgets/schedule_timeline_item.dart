@@ -62,12 +62,7 @@ class ScheduleTimelineItem extends StatelessWidget {
               children: [
                 TimelineDot(isActive: data.isActive),
                 if (!isLast)
-                  Expanded(
-                    child: Container(
-                      width: 2,
-                      color: cs.outline.withValues(alpha: 0.3),
-                    ),
-                  ),
+                  Expanded(child: Container(width: 2, color: cs.outline)),
               ],
             ),
           ),
@@ -95,17 +90,13 @@ class ScheduleTimelineItem extends StatelessWidget {
                   AppSpacing.vGap4,
                   Row(
                     children: [
-                      Icon(
-                        _icon,
-                        size: 16,
-                        color: cs.onSurface.withValues(alpha: 0.6),
-                      ),
+                      Icon(_icon, size: 16, color: cs.onSurfaceVariant),
                       AppSpacing.hGap4,
                       Expanded(
                         child: Text(
                           data.subtitle,
                           style: tt.bodySmall?.copyWith(
-                            color: cs.onSurface.withValues(alpha: 0.6),
+                            color: cs.onSurfaceVariant,
                           ),
                         ),
                       ),

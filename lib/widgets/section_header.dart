@@ -37,7 +37,7 @@ class SectionHeader extends StatelessWidget {
               Text(
                 title,
                 style: tt.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                   color: cs.onSurface,
                 ),
               ),
@@ -52,21 +52,16 @@ class SectionHeader extends StatelessWidget {
           ),
         ),
         if (actionLabel != null)
-          GestureDetector(
-            onTap: onActionTap,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  actionLabel!,
-                  style: tt.bodyMedium?.copyWith(
-                    color: cs.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Icon(Icons.arrow_forward, size: 16, color: cs.primary),
-              ],
+          TextButton.icon(
+            onPressed: onActionTap,
+            iconAlignment: IconAlignment.end,
+            icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+            label: Text(
+              actionLabel!,
+              style: tt.bodySmall?.copyWith(
+                color: cs.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
       ],

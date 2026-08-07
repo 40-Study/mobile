@@ -23,19 +23,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lich hoc'),
+        title: const Text('Lịch học'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.today),
+            icon: const Icon(Icons.today_outlined),
+            tooltip: 'Về hôm nay',
             onPressed: () {
-              context
-                  .read<ScheduleBloc>()
-                  .add(ScheduleDateSelected(DateTime.now()));
+              context.read<ScheduleBloc>().add(
+                ScheduleDateSelected(DateTime.now()),
+              );
             },
           ),
         ],
@@ -44,8 +42,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         builder: (context, state) {
           return switch (state) {
             ScheduleInitial() || ScheduleInProgress() => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
             ScheduleFailure(:final message) => _buildError(context, message),
             ScheduleSuccess() => _buildContent(context, state),
           };
@@ -68,7 +66,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           FilledButton(
             onPressed: () =>
                 context.read<ScheduleBloc>().add(const ScheduleStarted()),
-            child: const Text('Thu lai'),
+            child: const Text('Thử lại'),
           ),
         ],
       ),
@@ -77,11 +75,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   Widget _buildContent(BuildContext context, ScheduleSuccess state) {
     final tt = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       children: [
-        // Calendar
         CalendarWidget(
           currentMonth: state.currentMonth,
           selectedDate: state.selectedDate,
@@ -95,14 +93,44 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ),
         AppSpacing.vGap24,
 
-        // Selected date header
-        Text(
-          _formatDate(state.selectedDate),
-          style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Lịch trong ngày',
+                    style: tt.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  AppSpacing.vGap4,
+                  Text(
+                    _formatDate(state.selectedDate),
+                    style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              decoration: BoxDecoration(
+                color: cs.primaryContainer,
+                borderRadius: BorderRadius.circular(AppRadius.full),
+              ),
+              child: Text(
+                '${state.selectedDateItems.length} hoạt động',
+                style: tt.labelMedium?.copyWith(color: cs.onPrimaryContainer),
+              ),
+            ),
+          ],
         ),
         AppSpacing.vGap12,
 
-        // Day schedule
         if (state.isLoadingDay)
           const Center(
             child: Padding(
@@ -116,7 +144,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               return ScheduleTimelineItemData(
                 time: _formatTimeRange(item.startTime, item.endTime),
                 title: item.title,
-                subtitle: '${item.type} • ${item.instructorName ?? ""}',
+                subtitle:
+                    '${_typeLabel(item.type)} • ${item.instructorName ?? ""}',
                 type: _mapScheduleType(item.type),
                 isActive: _isCurrentOrNext(item.startTime, item.endTime),
               );
@@ -135,8 +164,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   }
 
   String _formatTimeRange(DateTime start, DateTime end) {
-    return '${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')} - '
-        '${end.hour.toString().padLeft(2, '0')}:${end.minute.toString().padLeft(2, '0')}';
+    return '${_formatTime(start)} - ${_formatTime(end)}';
+  }
+
+  String _formatTime(DateTime time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
   }
 
   ScheduleItemType _mapScheduleType(String type) {
@@ -151,5 +185,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   bool _isCurrentOrNext(DateTime start, DateTime end) {
     final now = DateTime.now();
     return start.isAfter(now) || (start.isBefore(now) && end.isAfter(now));
+  }
+
+  String _typeLabel(String type) {
+    return switch (type.toLowerCase()) {
+      'livestream' => 'Trực tuyến',
+      'quiz' => 'Bài kiểm tra',
+      'deadline' => 'Hạn nộp',
+      _ => 'Video',
+    };
   }
 }

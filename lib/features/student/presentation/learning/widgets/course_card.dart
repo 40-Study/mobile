@@ -3,11 +3,7 @@ import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/theme/theme.dart';
 
 class CourseCard extends StatelessWidget {
-  const CourseCard({
-    super.key,
-    required this.enrollment,
-    this.onTap,
-  });
+  const CourseCard({super.key, required this.enrollment, this.onTap});
 
   final EnrollmentModel enrollment;
   final VoidCallback? onTap;
@@ -18,25 +14,22 @@ class CourseCard extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final course = enrollment.course;
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
+    final progressLabel = enrollment.progressPercentage.toStringAsFixed(0);
 
     return Card(
-      elevation: 0,
-      color: cs.surfaceContainerLowest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.lg),
           child: Row(
             children: [
-              // Thumbnail
               Container(
-                width: 80,
-                height: 80,
+                width: 76,
+                height: 88,
                 decoration: BoxDecoration(
-                  color: cs.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  color: cs.primaryContainer,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                   image: course?.thumbnailUrl != null
                       ? DecorationImage(
                           image: NetworkImage(course!.thumbnailUrl!),
@@ -45,43 +38,71 @@ class CourseCard extends StatelessWidget {
                       : null,
                 ),
                 child: course?.thumbnailUrl == null
-                    ? Icon(Icons.school, color: cs.primary, size: 32)
+                    ? Icon(
+                        Icons.auto_stories_outlined,
+                        color: cs.onPrimaryContainer,
+                        size: 30,
+                      )
                     : null,
               ),
               AppSpacing.hGap16,
-              // Content
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      course?.title ?? 'Khoa hoc',
-                      style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                      course?.title ?? 'Khóa học',
+                      style: tt.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    AppSpacing.vGap4,
-                    Text(
-                      '${enrollment.completedLessons}/${enrollment.totalLessons} bai • ${enrollment.progressPercentage.toStringAsFixed(0)}%',
-                      style: tt.bodySmall?.copyWith(
-                        color: cs.onSurface.withValues(alpha: 0.6),
+                    if (course?.instructorName != null) ...[
+                      AppSpacing.vGap4,
+                      Text(
+                        course!.instructorName!,
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
+                    ],
+                    AppSpacing.vGap8,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${enrollment.completedLessons}/'
+                            '${enrollment.totalLessons} bài',
+                            style: tt.bodySmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '$progressLabel%',
+                          style: tt.labelSmall?.copyWith(
+                            color: cs.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
                     AppSpacing.vGap8,
                     ClipRRect(
                       borderRadius: BorderRadius.circular(3),
                       child: LinearProgressIndicator(
                         value: progress,
-                        backgroundColor: cs.surfaceContainerHighest,
-                        color: cs.primary,
-                        minHeight: 6,
+                        minHeight: 5,
                       ),
                     ),
                   ],
                 ),
               ),
               AppSpacing.hGap8,
-              Icon(Icons.chevron_right, color: cs.onSurface.withValues(alpha: 0.3)),
+              Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
             ],
           ),
         ),

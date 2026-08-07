@@ -17,10 +17,10 @@ class BadgeGrid extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
+        crossAxisCount: 3,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        childAspectRatio: 0.8,
+        childAspectRatio: 0.9,
       ),
       itemCount: badges.length,
       itemBuilder: (context, index) => _BadgeItem(badge: badges[index]),
@@ -39,7 +39,7 @@ class BadgeGrid extends StatelessWidget {
             Icon(Icons.emoji_events_outlined, size: 48, color: cs.outline),
             AppSpacing.vGap12,
             Text(
-              'Chua co huy hieu',
+              'Chưa có huy hiệu',
               style: tt.bodyMedium?.copyWith(color: cs.outline),
             ),
           ],
@@ -59,16 +59,17 @@ class _BadgeItem extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return GestureDetector(
+    return InkWell(
       onTap: () => _showBadgeDetail(context),
+      borderRadius: BorderRadius.circular(AppRadius.card),
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: cs.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(12),
-          border: badge.isEarned
-              ? Border.all(color: cs.primary.withValues(alpha: 0.3))
-              : null,
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          border: Border.all(
+            color: badge.isEarned ? cs.outline : cs.outlineVariant,
+          ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -79,28 +80,28 @@ class _BadgeItem extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 color: badge.isEarned
-                    ? cs.primary.withValues(alpha: 0.1)
-                    : cs.surfaceContainerHighest,
+                    ? cs.primaryContainer
+                    : cs.surfaceContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 _categoryIcon(badge.category),
                 size: 20,
-                color: badge.isEarned ? cs.primary : cs.outline,
+                color: badge.isEarned ? cs.primary : cs.onSurfaceVariant,
               ),
             ),
             AppSpacing.vGap4,
             Text(
               badge.name,
               style: tt.labelSmall?.copyWith(
-                color: badge.isEarned ? cs.onSurface : cs.outline,
+                color: badge.isEarned ? cs.onSurface : cs.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             if (!badge.isEarned)
-              Icon(Icons.lock, size: 12, color: cs.outline),
+              Icon(Icons.lock_outline, size: 12, color: cs.onSurfaceVariant),
           ],
         ),
       ),
@@ -122,7 +123,7 @@ class _BadgeItem extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       builder: (context) => Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
@@ -134,14 +135,14 @@ class _BadgeItem extends StatelessWidget {
               height: 64,
               decoration: BoxDecoration(
                 color: badge.isEarned
-                    ? cs.primary.withValues(alpha: 0.1)
-                    : cs.surfaceContainerHighest,
+                    ? cs.primaryContainer
+                    : cs.surfaceContainer,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 _categoryIcon(badge.category),
                 size: 32,
-                color: badge.isEarned ? cs.primary : cs.outline,
+                color: badge.isEarned ? cs.primary : cs.onSurfaceVariant,
               ),
             ),
             AppSpacing.vGap16,
@@ -158,18 +159,21 @@ class _BadgeItem extends StatelessWidget {
             AppSpacing.vGap16,
             if (badge.isEarned && badge.earnedAt != null)
               Text(
-                'Dat duoc: ${_formatDate(badge.earnedAt!)}',
+                'Đạt được: ${_formatDate(badge.earnedAt!)}',
                 style: tt.bodySmall?.copyWith(color: cs.outline),
               )
             else
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
-                  color: cs.surfaceContainerHighest,
+                  color: cs.surfaceContainer,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  'Chua mo khoa',
+                  'Chưa mở khóa',
                   style: tt.labelMedium?.copyWith(color: cs.outline),
                 ),
               ),

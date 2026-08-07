@@ -14,29 +14,41 @@ class CourseFilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
+    final cs = Theme.of(context).colorScheme;
+
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-      child: Row(
-        children: [
-          _FilterChip(
-            label: 'Dang hoc',
-            isSelected: selectedFilter == EnrollmentFilter.inProgress,
-            onTap: () => onFilterChanged(EnrollmentFilter.inProgress),
-          ),
-          AppSpacing.hGap8,
-          _FilterChip(
-            label: 'Hoan thanh',
-            isSelected: selectedFilter == EnrollmentFilter.completed,
-            onTap: () => onFilterChanged(EnrollmentFilter.completed),
-          ),
-          AppSpacing.hGap8,
-          _FilterChip(
-            label: 'Cho khai giang',
-            isSelected: selectedFilter == EnrollmentFilter.upcoming,
-            onTap: () => onFilterChanged(EnrollmentFilter.upcoming),
-          ),
-        ],
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.xs),
+        decoration: BoxDecoration(
+          color: cs.surfaceContainer,
+          borderRadius: BorderRadius.circular(AppRadius.card),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: _FilterChip(
+                label: 'Đang học',
+                isSelected: selectedFilter == EnrollmentFilter.inProgress,
+                onTap: () => onFilterChanged(EnrollmentFilter.inProgress),
+              ),
+            ),
+            Expanded(
+              child: _FilterChip(
+                label: 'Hoàn thành',
+                isSelected: selectedFilter == EnrollmentFilter.completed,
+                onTap: () => onFilterChanged(EnrollmentFilter.completed),
+              ),
+            ),
+            Expanded(
+              child: _FilterChip(
+                label: 'Sắp tới',
+                isSelected: selectedFilter == EnrollmentFilter.upcoming,
+                onTap: () => onFilterChanged(EnrollmentFilter.upcoming),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -58,20 +70,26 @@ class _FilterChip extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.xs),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? cs.primary : cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected ? cs.surfaceContainerLowest : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppRadius.xs),
+          border: isSelected ? Border.all(color: cs.outline) : null,
         ),
         child: Text(
           label,
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: tt.labelMedium?.copyWith(
-            color: isSelected ? cs.onPrimary : cs.onSurface,
-            fontWeight: FontWeight.w600,
+            color: isSelected ? cs.primary : cs.onSurfaceVariant,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
           ),
         ),
       ),

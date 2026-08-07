@@ -4,24 +4,24 @@ import 'package:study/features/onboarding/widgets/onboarding_illustrations.dart'
 /// Danh sách 3 trang onboarding với custom illustrations.
 List<OnboardingPageData> get onboardingPages => [
   OnboardingPageData(
-    title: 'Master Any Skill',
-    subtitle: 'Unlock your potential with AI-driven learning paths.',
-    highlightText: 'Any Skill',
+    title: 'Làm chủ mọi kỹ năng',
+    subtitle: 'Học đúng lộ trình, tiến bộ theo nhịp độ của riêng bạn.',
+    highlightText: 'mọi kỹ năng',
     illustrationBuilder: (context, {required isActive}) =>
         AiCardIllustration(isActive: isActive),
   ),
   OnboardingPageData(
-    title: 'Learn by Doing',
-    subtitle: 'Dive into interactive sandboxes where you build real projects.',
-    highlightText: 'Doing',
+    title: 'Học qua thực hành',
+    subtitle: 'Biến kiến thức thành năng lực qua bài tập và dự án thực tế.',
+    highlightText: 'thực hành',
     illustrationBuilder: (context, {required isActive}) =>
         CodeEditorIllustration(isActive: isActive),
   ),
   OnboardingPageData(
-    title: 'Join the Community',
-    subtitle: 'Connect with thousands of students and expert mentors.',
-    highlightText: 'Community',
-    buttonLabel: 'Get Started',
+    title: 'Cùng nhau tiến bộ',
+    subtitle: 'Kết nối với cộng đồng người học và đội ngũ giảng viên.',
+    highlightText: 'tiến bộ',
+    buttonLabel: 'Bắt đầu học',
     illustrationBuilder: (context, {required isActive}) =>
         CommunityIllustration(isActive: isActive),
   ),

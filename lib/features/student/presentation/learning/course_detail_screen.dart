@@ -22,10 +22,11 @@ class CourseDetailScreen extends StatelessWidget {
     final index = allLessons.indexWhere((l) => l.id == lesson.id);
 
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => LessonBloc(StudentRepositoryImpl())
-            ..add(LessonStarted(lesson.id)),
+          create: (_) =>
+              LessonBloc(StudentRepositoryImpl())
+                ..add(LessonStarted(lesson.id)),
           child: LessonDetailScreen(
             currentIndex: index >= 0 ? index : 0,
             totalLessons: allLessons.length,
@@ -41,10 +42,13 @@ class CourseDetailScreen extends StatelessWidget {
       body: BlocBuilder<CourseDetailBloc, CourseDetailState>(
         builder: (context, state) {
           return switch (state) {
-            CourseDetailInitial() ||
-            CourseDetailInProgress() =>
-              const Center(child: CircularProgressIndicator()),
-            CourseDetailFailure(:final message) => _buildError(context, message),
+            CourseDetailInitial() || CourseDetailInProgress() => const Center(
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
+            CourseDetailFailure(:final message) => _buildError(
+              context,
+              message,
+            ),
             CourseDetailSuccess() => _buildContent(context, state),
           };
         },
@@ -64,10 +68,10 @@ class CourseDetailScreen extends StatelessWidget {
           Text(message),
           AppSpacing.vGap16,
           FilledButton(
-            onPressed: () => context
-                .read<CourseDetailBloc>()
-                .add(const CourseDetailRefreshed()),
-            child: const Text('Thu lai'),
+            onPressed: () => context.read<CourseDetailBloc>().add(
+              const CourseDetailRefreshed(),
+            ),
+            child: const Text('Thử lại'),
           ),
         ],
       ),
@@ -80,30 +84,29 @@ class CourseDetailScreen extends StatelessWidget {
     final course = state.course;
     final enrollment = state.enrollment;
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
+    final progressLabel = enrollment.progressPercentage.toStringAsFixed(0);
 
     return CustomScrollView(
       slivers: [
-        // Hero app bar
         SliverAppBar(
-          expandedHeight: 200,
+          expandedHeight: 180,
           pinned: true,
           flexibleSpace: FlexibleSpaceBar(
             background: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    cs.primary,
-                    cs.primary.withValues(alpha: 0.8),
-                  ],
-                ),
-              ),
+              color: cs.primaryContainer,
               child: Center(
-                child: Icon(
-                  Icons.school,
-                  size: 64,
-                  color: cs.onPrimary.withValues(alpha: 0.5),
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: cs.surfaceContainerLowest.withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(AppRadius.card),
+                  ),
+                  child: Icon(
+                    Icons.auto_stories_outlined,
+                    size: 36,
+                    color: cs.onPrimaryContainer,
+                  ),
                 ),
               ),
             ),
@@ -118,47 +121,63 @@ class CourseDetailScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  course?.title ?? 'Khoa hoc',
-                  style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+                  course?.title ?? 'Khóa học',
+                  style: tt.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 AppSpacing.vGap8,
                 if (course?.instructorName != null)
                   Row(
                     children: [
-                      Icon(Icons.person, size: 16, color: cs.outline),
+                      Icon(
+                        Icons.person_outline,
+                        size: 16,
+                        color: cs.onSurfaceVariant,
+                      ),
                       AppSpacing.hGap4,
                       Text(
                         course!.instructorName!,
-                        style: tt.bodyMedium?.copyWith(color: cs.outline),
+                        style: tt.bodyMedium?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
                 AppSpacing.vGap4,
                 Row(
                   children: [
-                    Icon(Icons.access_time, size: 16, color: cs.outline),
+                    Icon(
+                      Icons.access_time,
+                      size: 16,
+                      color: cs.onSurfaceVariant,
+                    ),
                     AppSpacing.hGap4,
                     Text(
-                      '${course?.totalDurationMins ?? 0} phut',
-                      style: tt.bodySmall?.copyWith(color: cs.outline),
+                      '${course?.totalDurationMins ?? 0} phút',
+                      style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                     ),
                     AppSpacing.hGap16,
-                    Icon(Icons.menu_book, size: 16, color: cs.outline),
+                    Icon(
+                      Icons.menu_book_outlined,
+                      size: 16,
+                      color: cs.onSurfaceVariant,
+                    ),
                     AppSpacing.hGap4,
                     Text(
-                      '${course?.totalLessons ?? 0} bai hoc',
-                      style: tt.bodySmall?.copyWith(color: cs.outline),
+                      '${course?.totalLessons ?? 0} bài học',
+                      style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                     ),
                   ],
                 ),
                 AppSpacing.vGap16,
 
-                // Progress bar
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
                     color: cs.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(AppRadius.card),
+                    border: Border.all(color: cs.outline),
                   ),
                   child: Column(
                     children: [
@@ -166,13 +185,13 @@ class CourseDetailScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Tien do hoc tap',
+                            'Tiến độ học tập',
                             style: tt.titleSmall?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           Text(
-                            '${enrollment.progressPercentage.toStringAsFixed(0)}%',
+                            '$progressLabel%',
                             style: tt.titleSmall?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: cs.primary,
@@ -185,24 +204,24 @@ class CourseDetailScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
                           value: progress,
-                          backgroundColor: cs.surfaceContainerHighest,
-                          color: cs.primary,
                           minHeight: 8,
                         ),
                       ),
                       AppSpacing.vGap8,
                       Text(
-                        '${enrollment.completedLessons}/${enrollment.totalLessons} bai da hoan thanh',
-                        style: tt.bodySmall?.copyWith(color: cs.outline),
+                        '${enrollment.completedLessons}/'
+                        '${enrollment.totalLessons} bài đã hoàn thành',
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 AppSpacing.vGap24,
 
-                // Sections header
                 Text(
-                  'Noi dung khoa hoc',
+                  'Nội dung khóa học',
                   style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 AppSpacing.vGap12,
@@ -221,9 +240,9 @@ class CourseDetailScreen extends StatelessWidget {
               sections: state.sections,
               expandedSections: state.expandedSections,
               onSectionToggle: (sectionId) {
-                context
-                    .read<CourseDetailBloc>()
-                    .add(CourseDetailSectionToggled(sectionId));
+                context.read<CourseDetailBloc>().add(
+                  CourseDetailSectionToggled(sectionId),
+                );
               },
               onLessonTap: (lesson) {
                 // Flatten all lessons from sections

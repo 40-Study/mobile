@@ -15,18 +15,12 @@ import 'package:study/features/student/presentation/schedule/schedule_screen.dar
 import 'package:study/features/student/presentation/search/search_screen.dart';
 import 'package:study/features/student/presentation/settings/settings_screen.dart';
 import 'package:study/features/student/repository/student_repository_impl.dart';
-import 'package:study/theme/app_colors.dart';
-import 'package:study/theme/app_spacing.dart';
 import 'package:study/widgets/app_drawer.dart';
 
-// Enum tab cho student shell
 enum StudentTab { home, learning, schedule, achievement, profile }
 
 class StudentShell extends StatefulWidget {
-  const StudentShell({
-    super.key,
-    this.initialTab = StudentTab.home,
-  });
+  const StudentShell({super.key, this.initialTab = StudentTab.home});
 
   final StudentTab initialTab;
 
@@ -36,12 +30,14 @@ class StudentShell extends StatefulWidget {
 
 class _StudentShellState extends State<StudentShell> {
   late StudentTab _currentTab;
+  late Set<int> _visitedTabs;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     _currentTab = widget.initialTab;
+    _visitedTabs = {_currentTab.index};
   }
 
   @override
@@ -49,8 +45,8 @@ class _StudentShellState extends State<StudentShell> {
     final cs = Theme.of(context).colorScheme;
     final authState = context.watch<AuthBloc>().state;
     final userName = authState is AuthAuthenticated
-        ? authState.user.fullName ?? authState.user.username ?? 'Ban'
-        : 'Ban';
+        ? authState.user.fullName ?? authState.user.username ?? 'Bạn'
+        : 'Bạn';
     final userEmail = authState is AuthAuthenticated
         ? authState.user.email
         : '';
@@ -101,82 +97,88 @@ class _StudentShellState extends State<StudentShell> {
           context.read<AuthBloc>().add(AuthLoggedOut());
         },
       ),
-      body: _buildBody(),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentTab.index,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentTab = StudentTab.values[index];
-          });
-        },
-        // Chieu cao bottom nav bar
-        height: AppSpacing.section,
-        indicatorColor: cs.brandBlue.withValues(alpha: 0.12),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book),
-            label: 'Hoc tap',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_today_outlined),
-            selectedIcon: Icon(Icons.calendar_today),
-            label: 'Lich hoc',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.emoji_events_outlined),
-            selectedIcon: Icon(Icons.emoji_events),
-            label: 'Thanh tich',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Tai khoan',
-          ),
+      body: MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => HomeBloc(StudentRepositoryImpl())),
+          BlocProvider(create: (_) => LearningBloc(StudentRepositoryImpl())),
+          BlocProvider(create: (_) => ScheduleBloc(StudentRepositoryImpl())),
+          BlocProvider(create: (_) => AchievementBloc(StudentRepositoryImpl())),
         ],
+        child: IndexedStack(
+          index: _currentTab.index,
+          children: List.generate(
+            StudentTab.values.length,
+            (index) => _visitedTabs.contains(index)
+                ? _buildTab(index, userName)
+                : const SizedBox.shrink(),
+          ),
+        ),
+      ),
+      bottomNavigationBar: DecoratedBox(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: cs.shadow.withValues(alpha: 0.04),
+              blurRadius: 16,
+              offset: const Offset(0, -3),
+            ),
+          ],
+        ),
+        child: NavigationBar(
+          selectedIndex: _currentTab.index,
+          onDestinationSelected: _selectTab,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
+              label: 'Trang chủ',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.menu_book_outlined),
+              selectedIcon: Icon(Icons.menu_book_rounded),
+              label: 'Học tập',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.calendar_today_outlined),
+              selectedIcon: Icon(Icons.calendar_month_rounded),
+              label: 'Lịch học',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.emoji_events_outlined),
+              selectedIcon: Icon(Icons.emoji_events_rounded),
+              label: 'Thành tích',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person_rounded),
+              label: 'Tài khoản',
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildBody() {
-    // Mock repository — replace với DI sau
-    final repository = StudentRepositoryImpl();
+  void _selectTab(int index) {
+    final nextTab = StudentTab.values[index];
+    if (nextTab == _currentTab) return;
+    setState(() {
+      _currentTab = nextTab;
+      _visitedTabs.add(index);
+    });
+  }
 
-    switch (_currentTab) {
-      case StudentTab.home:
-        return BlocProvider(
-          create: (_) => HomeBloc(repository),
-          child: HomeScreen(
-            onDrawerTap: () => _scaffoldKey.currentState?.openDrawer(),
-            onNavigateToTab: (index) {
-              setState(() {
-                _currentTab = StudentTab.values[index];
-              });
-            },
-          ),
-        );
-      case StudentTab.learning:
-        return BlocProvider(
-          create: (_) => LearningBloc(repository),
-          child: const LearningScreen(),
-        );
-      case StudentTab.schedule:
-        return BlocProvider(
-          create: (_) => ScheduleBloc(repository),
-          child: const ScheduleScreen(),
-        );
-      case StudentTab.achievement:
-        return BlocProvider(
-          create: (_) => AchievementBloc(repository),
-          child: const AchievementScreen(),
-        );
-      case StudentTab.profile:
-        return const ProfileScreen();
-    }
+  Widget _buildTab(int index, String userName) {
+    return switch (StudentTab.values[index]) {
+      StudentTab.home => HomeScreen(
+        userName: userName,
+        onDrawerTap: () => _scaffoldKey.currentState?.openDrawer(),
+        onNavigateToTab: _selectTab,
+      ),
+      StudentTab.learning => const LearningScreen(),
+      StudentTab.schedule => const ScheduleScreen(),
+      StudentTab.achievement => const AchievementScreen(),
+      StudentTab.profile => const ProfileScreen(),
+    };
   }
 }

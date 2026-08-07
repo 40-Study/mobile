@@ -26,7 +26,8 @@ class CalendarWidget extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: cs.outline),
       ),
       child: Column(
         children: [
@@ -37,6 +38,7 @@ class CalendarWidget extends StatelessWidget {
               IconButton(
                 onPressed: () => _changeMonth(-1),
                 icon: const Icon(Icons.chevron_left),
+                tooltip: 'Tháng trước',
               ),
               Text(
                 _monthYearText(currentMonth),
@@ -45,6 +47,7 @@ class CalendarWidget extends StatelessWidget {
               IconButton(
                 onPressed: () => _changeMonth(1),
                 icon: const Icon(Icons.chevron_right),
+                tooltip: 'Tháng sau',
               ),
             ],
           ),
@@ -53,17 +56,19 @@ class CalendarWidget extends StatelessWidget {
           // Weekday headers
           Row(
             children: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']
-                .map((day) => Expanded(
-                      child: Center(
-                        child: Text(
-                          day,
-                          style: tt.labelSmall?.copyWith(
-                            color: cs.outline,
-                            fontWeight: FontWeight.w600,
-                          ),
+                .map(
+                  (day) => Expanded(
+                    child: Center(
+                      child: Text(
+                        day,
+                        style: tt.labelSmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ))
+                    ),
+                  ),
+                )
                 .toList(),
           ),
           AppSpacing.vGap8,
@@ -76,18 +81,24 @@ class CalendarWidget extends StatelessWidget {
   }
 
   void _changeMonth(int delta) {
-    final newMonth = DateTime(
-      currentMonth.year,
-      currentMonth.month + delta,
-    );
+    final newMonth = DateTime(currentMonth.year, currentMonth.month + delta);
     onMonthChanged?.call(newMonth);
   }
 
   String _monthYearText(DateTime date) {
     const months = [
-      'Thang 1', 'Thang 2', 'Thang 3', 'Thang 4',
-      'Thang 5', 'Thang 6', 'Thang 7', 'Thang 8',
-      'Thang 9', 'Thang 10', 'Thang 11', 'Thang 12',
+      'Tháng 1',
+      'Tháng 2',
+      'Tháng 3',
+      'Tháng 4',
+      'Tháng 5',
+      'Tháng 6',
+      'Tháng 7',
+      'Tháng 8',
+      'Tháng 9',
+      'Tháng 10',
+      'Tháng 11',
+      'Tháng 12',
     ];
     return '${months[date.month - 1]}, ${date.year}';
   }
@@ -135,17 +146,17 @@ class CalendarWidget extends StatelessWidget {
     final hasEvent = eventDates.any((d) => _isSameDay(d, date));
     final isWeekend = date.weekday == 6 || date.weekday == 7;
 
-    return GestureDetector(
+    return InkWell(
       onTap: isCurrentMonth ? () => onDateSelected?.call(date) : null,
-      child: Container(
-        height: 40,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        height: 42,
         margin: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           color: isSelected ? cs.primary : null,
-          borderRadius: BorderRadius.circular(8),
-          border: isToday && !isSelected
-              ? Border.all(color: cs.primary, width: 2)
-              : null,
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+          border: isToday && !isSelected ? Border.all(color: cs.primary) : null,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -156,17 +167,17 @@ class CalendarWidget extends StatelessWidget {
                 color: isSelected
                     ? cs.onPrimary
                     : !isCurrentMonth
-                        ? cs.outline.withValues(alpha: 0.4)
-                        : isWeekend
-                            ? cs.outline
-                            : cs.onSurface,
+                    ? cs.onSurfaceVariant.withValues(alpha: 0.35)
+                    : isWeekend
+                    ? cs.onSurfaceVariant
+                    : cs.onSurface,
                 fontWeight: isToday || isSelected ? FontWeight.w600 : null,
               ),
             ),
             if (hasEvent && isCurrentMonth)
               Container(
-                width: 6,
-                height: 6,
+                width: 4,
+                height: 4,
                 margin: const EdgeInsets.only(top: 2),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,

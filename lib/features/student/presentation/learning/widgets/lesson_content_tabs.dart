@@ -18,30 +18,27 @@ class LessonContentTabs extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        color: cs.surfaceContainer,
+        borderRadius: BorderRadius.circular(AppRadius.card),
       ),
       padding: const EdgeInsets.all(4),
       child: Row(
         children: LessonContentTab.values.map((tab) {
           final isSelected = tab == selectedTab;
           return Expanded(
-            child: GestureDetector(
+            child: InkWell(
               onTap: () => onTabChanged(tab),
+              borderRadius: BorderRadius.circular(AppRadius.xs),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: isSelected ? cs.surface : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: cs.shadow.withValues(alpha: 0.1),
-                            blurRadius: 4,
-                          ),
-                        ]
-                      : null,
+                  color: isSelected
+                      ? cs.surfaceContainerLowest
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(AppRadius.xs),
+                  border: isSelected ? Border.all(color: cs.outline) : null,
                 ),
                 child: Text(
                   _tabLabel(tab),
@@ -63,9 +60,9 @@ class LessonContentTabs extends StatelessWidget {
   String _tabLabel(LessonContentTab tab) {
     return switch (tab) {
       LessonContentTab.video => 'Video',
-      LessonContentTab.documents => 'Tai lieu',
-      LessonContentTab.quiz => 'Bai tap',
-      LessonContentTab.notes => 'Ghi chu',
+      LessonContentTab.documents => 'Tài liệu',
+      LessonContentTab.quiz => 'Bài tập',
+      LessonContentTab.notes => 'Ghi chú',
     };
   }
 }

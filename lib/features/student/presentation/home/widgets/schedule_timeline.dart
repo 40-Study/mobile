@@ -8,7 +8,7 @@ class ScheduleTimeline extends StatelessWidget {
   const ScheduleTimeline({
     super.key,
     required this.items,
-    this.emptyMessage = 'Khong co lich hoc hom nay',
+    this.emptyMessage = 'Không có lịch học hôm nay',
   });
 
   final List<ScheduleTimelineItemData> items;
@@ -24,23 +24,19 @@ class ScheduleTimeline extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.xl),
         decoration: BoxDecoration(
           color: cs.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          border: Border.all(color: cs.outlineVariant),
+          boxShadow: AppShadows.sm,
         ),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.event_available,
-                size: 48,
-                color: cs.onSurface.withValues(alpha: 0.3),
-              ),
+              Icon(Icons.event_available, size: 48, color: cs.secondary),
               AppSpacing.vGap8,
               Text(
                 emptyMessage,
-                style: tt.bodyMedium?.copyWith(
-                  color: cs.onSurface.withValues(alpha: 0.5),
-                ),
+                style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
               ),
             ],
           ),
@@ -52,7 +48,9 @@ class ScheduleTimeline extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: cs.outlineVariant),
+        boxShadow: AppShadows.sm,
       ),
       child: Column(
         children: List.generate(items.length, (index) {

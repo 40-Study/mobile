@@ -8,7 +8,6 @@ import 'package:study/features/onboarding/widgets/animated_onboarding_page_conte
 import 'package:study/repository/repository.dart';
 import 'package:study/routes/router.dart';
 
-/// Màn 3 trang onboarding. Gradient nền, chuyển trang mượt, CTA nổi bật.
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -40,29 +39,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final pages = onboardingPages;
 
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.surface,
-              colorScheme.primaryContainer.withValues(alpha: 0.3),
-            ],
-          ),
-        ),
+      body: ColoredBox(
+        color: colorScheme.surface,
         child: SafeArea(
           child: Column(
             children: [
-              // Header: Skip button only (top right)
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 12, 0),
+                padding: const EdgeInsets.fromLTRB(24, 12, 12, 0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    // Skip button (hide on last page)
+                    Text(
+                      '40Study',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const Spacer(),
                     AnimatedOpacity(
                       opacity: _currentPage < _pageCount - 1 ? 1.0 : 0.0,
                       duration: AppDurations.fadeIn,
@@ -75,7 +67,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               )
                             : null,
                         child: Text(
-                          'Skip',
+                          'Bỏ qua',
                           style: TextStyle(
                             color: colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w600,
@@ -88,7 +80,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
 
-              // Page content
               Expanded(
                 child: PageView.builder(
                   controller: _pageController,
@@ -103,20 +94,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
 
-              // Bottom: Indicator + CTA
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                 child: Column(
                   children: [
-                    // Page indicator
                     _AnimatedPageIndicator(
                       count: _pageCount,
                       current: _currentPage,
                     ),
                     const SizedBox(height: 24),
-                    // Full-width CTA button
                     _OnboardingCtaButton(
-                      label: pages[_currentPage].buttonLabel ?? 'Next',
+                      label: pages[_currentPage].buttonLabel ?? 'Tiếp tục',
                       onPressed: () {
                         if (_currentPage < _pageCount - 1) {
                           _pageController.nextPage(
@@ -147,54 +135,14 @@ class _OnboardingCtaButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return SizedBox(
       width: double.infinity,
-      height: 56,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              colorScheme.primary,
-              colorScheme.primary.withValues(alpha: 0.85),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.primary.withValues(alpha: 0.3),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onPressed,
-            borderRadius: BorderRadius.circular(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  label,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: colorScheme.onPrimary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.arrow_forward,
-                  color: colorScheme.onPrimary,
-                  size: 20,
-                ),
-              ],
-            ),
-          ),
-        ),
+      height: 52,
+      child: FilledButton.icon(
+        onPressed: onPressed,
+        iconAlignment: IconAlignment.end,
+        icon: const Icon(Icons.arrow_forward_rounded, size: 20),
+        label: Text(label),
       ),
     );
   }
@@ -221,9 +169,7 @@ class _AnimatedPageIndicator extends StatelessWidget {
           height: 8,
           margin: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            color: index == current
-                ? colorScheme.primary
-                : colorScheme.outline.withValues(alpha: 0.35),
+            color: index == current ? colorScheme.primary : colorScheme.outline,
             borderRadius: BorderRadius.circular(4),
           ),
         ),

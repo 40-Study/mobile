@@ -3,11 +3,7 @@ import 'package:study/features/student/data/models/models.dart';
 import 'package:study/theme/theme.dart';
 
 class AssignmentItem extends StatelessWidget {
-  const AssignmentItem({
-    super.key,
-    required this.assignment,
-    this.onTap,
-  });
+  const AssignmentItem({super.key, required this.assignment, this.onTap});
 
   final AssignmentModel assignment;
   final VoidCallback? onTap;
@@ -17,10 +13,10 @@ class AssignmentItem extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    final daysLeft = assignment.dueDate != null
-        ? assignment.dueDate!.difference(DateTime.now()).inDays
-        : null;
-    final isUrgent = daysLeft != null && daysLeft < 3;
+    final daysLeft = assignment.dueDate?.difference(DateTime.now()).inDays;
+    final isUrgent = daysLeft != null && daysLeft >= 0 && daysLeft < 3;
+    final isOverdue = daysLeft != null && daysLeft < 0;
+    final statusColor = isUrgent || isOverdue ? cs.error : cs.tertiary;
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
@@ -28,12 +24,14 @@ class AssignmentItem extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: (isUrgent ? cs.error : cs.primary).withValues(alpha: 0.1),
+          color: isUrgent || isOverdue
+              ? cs.errorContainer
+              : cs.tertiaryContainer,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
           assignment.type == 'quiz' ? Icons.quiz : Icons.assignment,
-          color: isUrgent ? cs.error : cs.primary,
+          color: statusColor,
           size: 20,
         ),
       ),
@@ -43,34 +41,34 @@ class AssignmentItem extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      subtitle: Text(
-        '${assignment.courseName ?? "Khoa hoc"} • ${assignment.questionCount} cau hoi',
-        style: tt.bodySmall?.copyWith(
-          color: cs.onSurface.withValues(alpha: 0.6),
-        ),
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (daysLeft != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: (isUrgent ? cs.error : cs.primary).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                'Con $daysLeft ngay',
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: AppSpacing.xs),
+        child: Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.xs,
+          children: [
+            Text(
+              '${assignment.courseName ?? "Khóa học"} • '
+              '${assignment.questionCount} câu hỏi',
+              style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+            ),
+            if (daysLeft != null)
+              Text(
+                isOverdue
+                    ? 'Đã quá hạn'
+                    : daysLeft == 0
+                    ? 'Hạn hôm nay'
+                    : 'Còn $daysLeft ngày',
                 style: tt.labelSmall?.copyWith(
-                  color: isUrgent ? cs.error : cs.primary,
-                  fontWeight: FontWeight.w600,
+                  color: statusColor,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-            ),
-          AppSpacing.hGap8,
-          TextButton(onPressed: onTap, child: const Text('Lam')),
-        ],
+          ],
+        ),
       ),
+      trailing: Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
+      onTap: onTap,
     );
   }
 }

@@ -1,344 +1,326 @@
 import 'package:flutter/material.dart';
 
-/// Together AI Design System
-/// Pastel gradients + sharp geometry + midnight blue dark mode
+/// The visual foundation for 40Study.
+///
+/// The palette is intentionally restrained: neutral surfaces carry the UI,
+/// blue communicates action, and teal/amber are reserved for status.
 class MaterialTheme {
   const MaterialTheme(this.textTheme);
 
   final TextTheme textTheme;
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // TOGETHER AI COLORS
-  // ══════════════════════════════════════════════════════════════════════════
-
-  /// Brand Magenta - for illustrations only
-  static const brandMagenta = Color(0xFFEF2CC1);
-
-  /// Brand Orange - for illustrations only
-  static const brandOrange = Color(0xFFFC4C02);
-
-  /// Dark Blue - primary dark surface (midnight blue)
-  static const darkBlue = Color(0xFF010120);
-
-  /// Soft Lavender - accent
-  static const softLavender = Color(0xFFBDBBFF);
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // LIGHT SCHEME - Together AI
-  // ══════════════════════════════════════════════════════════════════════════
+  static const brandMagenta = Color(0xFFBE185D);
+  static const brandOrange = Color(0xFFB45309);
+  static const darkBlue = Color(0xFF14171F);
+  static const softLavender = Color(0xFFDCE4FF);
 
   static ColorScheme lightScheme() {
     return const ColorScheme(
       brightness: Brightness.light,
-
-      // Primary: Dark Blue (CTA buttons)
-      primary: darkBlue,
-      surfaceTint: darkBlue,
-      onPrimary: Color(0xFFFFFFFF),
-      primaryContainer: Color(0xFFEDE9FE), // pastel lavender
-      onPrimaryContainer: darkBlue,
-      inversePrimary: softLavender,
-
-      // Secondary: Soft Lavender
-      secondary: softLavender,
-      onSecondary: darkBlue,
-      secondaryContainer: Color(0xFFF5F3FF),
-      onSecondaryContainer: darkBlue,
-
-      // Tertiary: Brand Magenta (subtle use)
-      tertiary: brandMagenta,
-      onTertiary: Color(0xFFFFFFFF),
-      tertiaryContainer: Color(0xFFFCE7F3), // pastel pink
-      onTertiaryContainer: Color(0xFF4A0E2C),
-
-      // Error
-      error: Color(0xFFEF4444),
-      onError: Color(0xFFFFFFFF),
-      errorContainer: Color(0xFFFEE2E2),
-      onErrorContainer: Color(0xFF7F1D1D),
-
-      // Surfaces: Pure White
-      surface: Color(0xFFFFFFFF),
-      onSurface: Color(0xFF000000),
-      onSurfaceVariant: Color(0xFF6B7280), // gray-500
-      outline: Color(0x14000000), // 8% black border
-      outlineVariant: Color(0x0A000000), // 4% black
-
-      // System
-      shadow: darkBlue, // dark-blue tinted shadow
-      scrim: darkBlue,
-      inverseSurface: darkBlue,
-
-      // Surface containers
-      surfaceDim: Color(0xFFF9FAFB),
+      primary: Color(0xFF3D5FC4),
+      surfaceTint: Colors.transparent,
+      onPrimary: Colors.white,
+      primaryContainer: Color(0xFFEDF1FF),
+      onPrimaryContainer: Color(0xFF17327F),
+      inversePrimary: Color(0xFFB9C7FF),
+      secondary: Color(0xFF087F73),
+      onSecondary: Colors.white,
+      secondaryContainer: Color(0xFFE4F5F1),
+      onSecondaryContainer: Color(0xFF075A53),
+      tertiary: Color(0xFFB86B12),
+      onTertiary: Colors.white,
+      tertiaryContainer: Color(0xFFFFF0DD),
+      onTertiaryContainer: Color(0xFF7C3E08),
+      error: Color(0xFFBA1A1A),
+      onError: Colors.white,
+      errorContainer: Color(0xFFFFDAD6),
+      onErrorContainer: Color(0xFF93000A),
+      surface: Color(0xFFF8F9FC),
+      onSurface: Color(0xFF24262E),
+      onSurfaceVariant: Color(0xFF707480),
+      outline: Color(0xFFE7E9EF),
+      outlineVariant: Color(0xFFF0F1F5),
+      shadow: Color(0xFF111318),
+      scrim: Color(0xFF111318),
+      inverseSurface: Color(0xFF2F3037),
+      onInverseSurface: Color(0xFFF3F3F5),
+      surfaceDim: Color(0xFFEDEEF2),
       surfaceBright: Color(0xFFFFFFFF),
       surfaceContainerLowest: Color(0xFFFFFFFF),
-      surfaceContainerLow: Color(0xFFFAFAFA),
-      surfaceContainer: Color(0xFFF5F5F5),
-      surfaceContainerHigh: Color(0xFFEFEFEF),
-      surfaceContainerHighest: Color(0xFFE5E5E5),
-
-      // Fixed variants
-      primaryFixed: Color(0xFFEDE9FE),
-      onPrimaryFixed: darkBlue,
-      primaryFixedDim: darkBlue,
-      onPrimaryFixedVariant: Color(0xFFFFFFFF),
-      secondaryFixed: softLavender,
-      onSecondaryFixed: darkBlue,
-      secondaryFixedDim: Color(0xFF9997E6),
-      onSecondaryFixedVariant: Color(0xFFFFFFFF),
-      tertiaryFixed: Color(0xFFFCE7F3),
-      onTertiaryFixed: Color(0xFF4A0E2C),
-      tertiaryFixedDim: brandMagenta,
-      onTertiaryFixedVariant: Color(0xFFFFFFFF),
+      surfaceContainerLow: Color(0xFFF4F5F8),
+      surfaceContainer: Color(0xFFF0F1F5),
+      surfaceContainerHigh: Color(0xFFEBEDF2),
+      surfaceContainerHighest: Color(0xFFE5E8EE),
+      primaryFixed: Color(0xFFE9EEFF),
+      onPrimaryFixed: Color(0xFF17327F),
+      primaryFixedDim: Color(0xFFCAD5FF),
+      onPrimaryFixedVariant: Color(0xFF2948AA),
+      secondaryFixed: Color(0xFFDDF4EF),
+      onSecondaryFixed: Color(0xFF075A53),
+      secondaryFixedDim: Color(0xFFB8E4DB),
+      onSecondaryFixedVariant: Color(0xFF087F73),
+      tertiaryFixed: Color(0xFFFFEDD5),
+      onTertiaryFixed: Color(0xFF7C3E08),
+      tertiaryFixedDim: Color(0xFFF4D1A6),
+      onTertiaryFixedVariant: Color(0xFF9A570E),
     );
   }
 
-  ThemeData light() {
-    return theme(lightScheme());
-  }
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // DARK SCHEME - Together AI (Midnight Blue)
-  // ══════════════════════════════════════════════════════════════════════════
+  ThemeData light() => theme(lightScheme());
 
   static ColorScheme darkScheme() {
     return const ColorScheme(
       brightness: Brightness.dark,
-
-      // Primary: Soft Lavender on dark
-      primary: softLavender,
-      surfaceTint: softLavender,
-      onPrimary: darkBlue,
-      primaryContainer: Color(0xFF1A1A40),
-      onPrimaryContainer: softLavender,
-      inversePrimary: darkBlue,
-
-      // Secondary
-      secondary: Color(0xFFD4D2FF),
-      onSecondary: darkBlue,
-      secondaryContainer: Color(0xFF2A2A50),
-      onSecondaryContainer: Color(0xFFEDE9FE),
-
-      // Tertiary: Brand Magenta
-      tertiary: Color(0xFFF472B6), // lighter magenta
-      onTertiary: darkBlue,
-      tertiaryContainer: Color(0xFF4A0E2C),
-      onTertiaryContainer: Color(0xFFFCE7F3),
-
-      // Error
-      error: Color(0xFFF87171),
-      onError: Color(0xFF7F1D1D),
-      errorContainer: Color(0xFF7F1D1D),
-      onErrorContainer: Color(0xFFFEE2E2),
-
-      // Surfaces: Dark Blue (NOT gray-black)
-      surface: darkBlue,
-      onSurface: Color(0xFFFFFFFF),
-      onSurfaceVariant: Color(0xFF9CA3AF), // gray-400
-      outline: Color(0x1FFFFFFF), // 12% white border
-      outlineVariant: Color(0x14FFFFFF), // 8% white
-
-      // System
-      shadow: Color(0xFF000010),
-      scrim: Color(0xFF000010),
-      inverseSurface: Color(0xFFFFFFFF),
-
-      // Surface containers: layered midnight blue
-      surfaceDim: darkBlue,
-      surfaceBright: Color(0xFF0A0A30),
-      surfaceContainerLowest: Color(0xFF000015),
-      surfaceContainerLow: Color(0xFF050525),
-      surfaceContainer: Color(0xFF0A0A35),
-      surfaceContainerHigh: Color(0xFF151545),
-      surfaceContainerHighest: Color(0xFF202055),
-
-      // Fixed variants
-      primaryFixed: softLavender,
-      onPrimaryFixed: darkBlue,
-      primaryFixedDim: Color(0xFF9997E6),
-      onPrimaryFixedVariant: Color(0xFFEDE9FE),
-      secondaryFixed: Color(0xFFD4D2FF),
-      onSecondaryFixed: darkBlue,
-      secondaryFixedDim: Color(0xFFB0ADFF),
-      onSecondaryFixedVariant: Color(0xFFEDE9FE),
-      tertiaryFixed: Color(0xFFF472B6),
-      onTertiaryFixed: Color(0xFF4A0E2C),
-      tertiaryFixedDim: brandMagenta,
-      onTertiaryFixedVariant: Color(0xFFFCE7F3),
+      primary: Color(0xFFBAC8FF),
+      surfaceTint: Colors.transparent,
+      onPrimary: Color(0xFF10276D),
+      primaryContainer: Color(0xFF283866),
+      onPrimaryContainer: Color(0xFFE4E9FF),
+      inversePrimary: Color(0xFF3157D5),
+      secondary: Color(0xFF87D5C9),
+      onSecondary: Color(0xFF003731),
+      secondaryContainer: Color(0xFF164842),
+      onSecondaryContainer: Color(0xFFB4EEE5),
+      tertiary: Color(0xFFF3C17E),
+      onTertiary: Color(0xFF4C2A00),
+      tertiaryContainer: Color(0xFF59401E),
+      onTertiaryContainer: Color(0xFFFFE2BA),
+      error: Color(0xFFFFB4AB),
+      onError: Color(0xFF690005),
+      errorContainer: Color(0xFF93000A),
+      onErrorContainer: Color(0xFFFFDAD6),
+      surface: Color(0xFF12151B),
+      onSurface: Color(0xFFE7E5EA),
+      onSurfaceVariant: Color(0xFFB8BAC4),
+      outline: Color(0xFF343943),
+      outlineVariant: Color(0xFF252A33),
+      shadow: Colors.black,
+      scrim: Colors.black,
+      inverseSurface: Color(0xFFE5E2E8),
+      onInverseSurface: Color(0xFF2F3036),
+      surfaceDim: Color(0xFF0F1217),
+      surfaceBright: Color(0xFF343840),
+      surfaceContainerLowest: Color(0xFF181B22),
+      surfaceContainerLow: Color(0xFF161920),
+      surfaceContainer: Color(0xFF1C1F27),
+      surfaceContainerHigh: Color(0xFF232730),
+      surfaceContainerHighest: Color(0xFF2B3039),
+      primaryFixed: Color(0xFFDCE4FF),
+      onPrimaryFixed: Color(0xFF10276D),
+      primaryFixedDim: Color(0xFFB9C7FF),
+      onPrimaryFixedVariant: Color(0xFF2948AA),
+      secondaryFixed: Color(0xFFB4EEE5),
+      onSecondaryFixed: Color(0xFF003731),
+      secondaryFixedDim: Color(0xFF87D5C9),
+      onSecondaryFixedVariant: Color(0xFF075A53),
+      tertiaryFixed: Color(0xFFFFDDB0),
+      onTertiaryFixed: Color(0xFF321A00),
+      tertiaryFixedDim: Color(0xFFF3C17E),
+      onTertiaryFixedVariant: Color(0xFF68400E),
     );
   }
 
-  ThemeData dark() {
-    return theme(darkScheme());
+  ThemeData dark() => theme(darkScheme());
+
+  ThemeData theme(ColorScheme colors) {
+    final resolvedTextTheme = textTheme.apply(
+      bodyColor: colors.onSurface,
+      displayColor: colors.onSurface,
+    );
+    final border = BorderSide(color: colors.outline);
+    final softBorder = BorderSide(color: colors.outlineVariant);
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: colors.brightness,
+      colorScheme: colors,
+      textTheme: resolvedTextTheme,
+      scaffoldBackgroundColor: colors.surface,
+      canvasColor: colors.surface,
+      dividerColor: colors.outlineVariant,
+      splashFactory: InkSparkle.splashFactory,
+      visualDensity: VisualDensity.standard,
+      appBarTheme: AppBarTheme(
+        backgroundColor: colors.surface,
+        foregroundColor: colors.onSurface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        centerTitle: false,
+        titleSpacing: 20,
+        toolbarHeight: 64,
+        titleTextStyle: resolvedTextTheme.titleLarge?.copyWith(
+          color: colors.onSurface,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: colors.surfaceContainerLowest,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: softBorder,
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: colors.surfaceContainerLowest,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        titleTextStyle: resolvedTextTheme.titleLarge?.copyWith(
+          color: colors.onSurface,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: colors.surfaceContainerLowest,
+        surfaceTintColor: Colors.transparent,
+        showDragHandle: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: colors.surfaceContainerLowest,
+        hintStyle: resolvedTextTheme.bodyMedium?.copyWith(
+          color: colors.onSurfaceVariant,
+        ),
+        prefixIconColor: colors.onSurfaceVariant,
+        suffixIconColor: colors.onSurfaceVariant,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: border,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: border,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: colors.primary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: colors.error),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: resolvedTextTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          elevation: 0,
+          backgroundColor: colors.primary,
+          foregroundColor: colors.onPrimary,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(48, 48),
+          side: border,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: resolvedTextTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          minimumSize: const Size(44, 44),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: resolvedTextTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          minimumSize: const Size.square(44),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: colors.surfaceContainerLowest,
+        selectedColor: colors.primaryContainer,
+        side: border,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        labelStyle: resolvedTextTheme.labelMedium,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        height: 72,
+        elevation: 0,
+        backgroundColor: colors.surfaceContainerLowest,
+        indicatorColor: colors.primaryContainer,
+        indicatorShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          return IconThemeData(
+            size: 22,
+            color: states.contains(WidgetState.selected)
+                ? colors.primary
+                : colors.onSurfaceVariant,
+          );
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          return resolvedTextTheme.labelSmall?.copyWith(
+            color: states.contains(WidgetState.selected)
+                ? colors.primary
+                : colors.onSurfaceVariant,
+            fontWeight: states.contains(WidgetState.selected)
+                ? FontWeight.w600
+                : FontWeight.w500,
+          );
+        }),
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: colors.primary,
+        linearTrackColor: colors.surfaceContainerHighest,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: colors.inverseSurface,
+        contentTextStyle: resolvedTextTheme.bodyMedium?.copyWith(
+          color: colors.onInverseSurface,
+        ),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      listTileTheme: ListTileThemeData(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        minTileHeight: 56,
+        iconColor: colors.onSurfaceVariant,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      dividerTheme: DividerThemeData(
+        color: colors.outlineVariant,
+        thickness: 1,
+        space: 1,
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: colors.inverseSurface,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        textStyle: resolvedTextTheme.bodySmall?.copyWith(
+          color: colors.onInverseSurface,
+        ),
+      ),
+    );
   }
-
-  // ══════════════════════════════════════════════════════════════════════════
-  // THEME BUILDER
-  // ══════════════════════════════════════════════════════════════════════════
-
-  ThemeData theme(ColorScheme colorScheme) => ThemeData(
-    useMaterial3: true,
-    brightness: colorScheme.brightness,
-    colorScheme: colorScheme,
-    textTheme: textTheme.apply(
-      bodyColor: colorScheme.onSurface,
-      displayColor: colorScheme.onSurface,
-    ),
-    scaffoldBackgroundColor: colorScheme.surface,
-    canvasColor: colorScheme.surface,
-    dividerColor: colorScheme.outline,
-
-    // AppBar - clean, minimal
-    appBarTheme: AppBarTheme(
-      backgroundColor: colorScheme.surface,
-      foregroundColor: colorScheme.onSurface,
-      elevation: 0,
-      surfaceTintColor: Colors.transparent,
-      titleTextStyle: textTheme.titleLarge?.copyWith(
-        color: colorScheme.onSurface,
-        fontWeight: FontWeight.w500,
-        letterSpacing: -0.5,
-      ),
-    ),
-
-    // Cards - sharp radius (8px), dark-blue shadow
-    cardTheme: CardThemeData(
-      color: colorScheme.surfaceContainerLowest,
-      surfaceTintColor: Colors.transparent,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8), // comfortable radius
-        side: BorderSide(color: colorScheme.outline),
-      ),
-    ),
-
-    // Dialog
-    dialogTheme: DialogThemeData(
-      backgroundColor: colorScheme.surfaceContainerLowest,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      titleTextStyle: textTheme.titleLarge?.copyWith(
-        color: colorScheme.onSurface,
-        fontWeight: FontWeight.w500,
-        letterSpacing: -0.5,
-      ),
-    ),
-
-    // Input - sharp radius (4px)
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: colorScheme.surfaceContainerLow,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(4), // sharp radius
-        borderSide: BorderSide(color: colorScheme.outline),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(4),
-        borderSide: BorderSide(color: colorScheme.outline),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(4),
-        borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(4),
-        borderSide: BorderSide(color: colorScheme.error),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(4),
-        borderSide: BorderSide(color: colorScheme.error, width: 1.5),
-      ),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 12,
-      ),
-    ),
-
-    // Buttons - sharp radius (4px)
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        minimumSize: const Size(44, 44),
-        backgroundColor: colorScheme.primary,
-        foregroundColor: colorScheme.onPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-        ),
-        textStyle: textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    ),
-
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size(44, 44),
-        side: BorderSide(color: colorScheme.outline),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-        ),
-        textStyle: textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    ),
-
-    textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(
-        minimumSize: const Size(44, 44),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-        ),
-        textStyle: textTheme.labelLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    ),
-
-    // FilledButton - dark solid
-    filledButtonTheme: FilledButtonThemeData(
-      style: FilledButton.styleFrom(
-        minimumSize: const Size(44, 44),
-        backgroundColor: colorScheme.primary,
-        foregroundColor: colorScheme.onPrimary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-        ),
-      ),
-    ),
-
-    // Chips/Badges - sharp radius (4px)
-    chipTheme: ChipThemeData(
-      backgroundColor: colorScheme.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4),
-        side: BorderSide(color: colorScheme.outline),
-      ),
-    ),
-
-    // Snackbar
-    snackBarTheme: SnackBarThemeData(
-      backgroundColor: colorScheme.inverseSurface,
-      contentTextStyle: textTheme.bodyMedium?.copyWith(
-        color: colorScheme.surface,
-      ),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4),
-      ),
-    ),
-
-    // Bottom Navigation
-    navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: colorScheme.surface,
-      indicatorColor: colorScheme.primaryContainer,
-      labelTextStyle: WidgetStateProperty.all(
-        textTheme.labelSmall?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    ),
-  );
 }

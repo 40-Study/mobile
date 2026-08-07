@@ -37,10 +37,11 @@ class _LearningScreenState extends State<LearningScreen> {
 
   void _navigateToCourseDetail(String enrollmentId) {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => CourseDetailBloc(StudentRepositoryImpl())
-            ..add(CourseDetailStarted(enrollmentId)),
+          create: (_) =>
+              CourseDetailBloc(StudentRepositoryImpl())
+                ..add(CourseDetailStarted(enrollmentId)),
           child: const CourseDetailScreen(),
         ),
       ),
@@ -49,27 +50,29 @@ class _LearningScreenState extends State<LearningScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hoc tap'),
+        title: const Text('Học tập'),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
+            tooltip: 'Thông báo',
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute<void>(builder: (_) => const NotificationScreen()),
+              MaterialPageRoute<void>(
+                builder: (_) => const NotificationScreen(),
+              ),
             ),
           ),
+          AppSpacing.hGap8,
         ],
       ),
       body: BlocBuilder<LearningBloc, LearningState>(
         builder: (context, state) {
           return switch (state) {
             LearningInitial() || LearningInProgress() => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
             LearningFailure(:final message) => _buildError(context, message),
             LearningSuccess() => _buildContent(context, state),
           };
@@ -80,58 +83,94 @@ class _LearningScreenState extends State<LearningScreen> {
 
   Widget _buildError(BuildContext context, String message) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.error_outline, size: 48, color: cs.error),
-          AppSpacing.vGap16,
-          Text(message),
-          AppSpacing.vGap16,
-          FilledButton(
-            onPressed: () =>
-                context.read<LearningBloc>().add(const LearningStarted()),
-            child: const Text('Thu lai'),
-          ),
-        ],
+      child: Padding(
+        padding: AppSpacing.paddingScreenAll,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.sync_problem, size: 44, color: cs.error),
+            AppSpacing.vGap12,
+            Text('Không thể tải khóa học', style: tt.titleMedium),
+            AppSpacing.vGap4,
+            Text(
+              message,
+              style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+              textAlign: TextAlign.center,
+            ),
+            AppSpacing.vGap16,
+            FilledButton.icon(
+              onPressed: () =>
+                  context.read<LearningBloc>().add(const LearningStarted()),
+              icon: const Icon(Icons.refresh),
+              label: const Text('Thử lại'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildContent(BuildContext context, LearningSuccess state) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
     return RefreshIndicator(
       onRefresh: () async {
         context.read<LearningBloc>().add(const LearningRefreshed());
+        await Future<void>.delayed(const Duration(milliseconds: 600));
       },
       child: CustomScrollView(
         slivers: [
-          // Search bar
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.screenPadding),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Tim kiem khoa hoc...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screenPadding,
+                AppSpacing.sm,
+                AppSpacing.screenPadding,
+                AppSpacing.lg,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Khóa học của bạn', style: tt.headlineSmall),
+                  AppSpacing.vGap4,
+                  Text(
+                    '${state.enrollments.length} khóa học trong thư viện',
+                    style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                   ),
-                  filled: true,
-                  fillColor: cs.surfaceContainerHighest,
-                ),
-                onChanged: (query) {
-                  context.read<LearningBloc>().add(LearningSearchChanged(query));
-                },
+                  AppSpacing.vGap16,
+                  TextField(
+                    controller: _searchController,
+                    textInputAction: TextInputAction.search,
+                    decoration: InputDecoration(
+                      hintText: 'Tìm kiếm khóa học',
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      suffixIcon: state.searchQuery.isEmpty
+                          ? null
+                          : IconButton(
+                              onPressed: () {
+                                _searchController.clear();
+                                context.read<LearningBloc>().add(
+                                  const LearningSearchChanged(''),
+                                );
+                              },
+                              icon: const Icon(Icons.close_rounded),
+                              tooltip: 'Xóa tìm kiếm',
+                            ),
+                    ),
+                    onChanged: (query) {
+                      context.read<LearningBloc>().add(
+                        LearningSearchChanged(query),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ),
-
-          // Filter chips
           SliverToBoxAdapter(
             child: CourseFilterChips(
               selectedFilter: state.filter,
@@ -140,36 +179,34 @@ class _LearningScreenState extends State<LearningScreen> {
               },
             ),
           ),
-
           const SliverToBoxAdapter(child: AppSpacing.vGap16),
-
-          // Course list
           if (state.filteredEnrollments.isEmpty)
-            SliverFillRemaining(
+            const SliverFillRemaining(
               child: EmptyState(
                 icon: Icons.school_outlined,
-                title: 'Chua co khoa hoc nao',
-                message: 'Bat dau hoc khoa hoc dau tien cua ban',
+                title: 'Không tìm thấy khóa học',
+                message: 'Thử thay đổi từ khóa hoặc bộ lọc',
               ),
             )
           else
             SliverPadding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screenPadding,
+                0,
+                AppSpacing.screenPadding,
+                AppSpacing.xl,
+              ),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final enrollment = state.filteredEnrollments[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                      child: CourseCard(
-                        enrollment: enrollment,
-                        onTap: () => _navigateToCourseDetail(enrollment.id),
-                      ),
-                    );
-                  },
-                  childCount: state.filteredEnrollments.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final enrollment = state.filteredEnrollments[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: CourseCard(
+                      enrollment: enrollment,
+                      onTap: () => _navigateToCourseDetail(enrollment.id),
+                    ),
+                  );
+                }, childCount: state.filteredEnrollments.length),
               ),
             ),
         ],

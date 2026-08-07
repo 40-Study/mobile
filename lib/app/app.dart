@@ -102,7 +102,7 @@ class _AppListeners extends StatelessWidget {
         ),
         BlocListener<AuthBloc, AuthState>(
           listenWhen: (prev, curr) =>
-              prev is! AuthUnauthenticated && curr is AuthUnauthenticated,
+              prev is AuthAuthenticated && curr is AuthUnauthenticated,
           listener: (_, state) {
             if (state is AuthUnauthenticated) {
               navigator.pushAndRemoveAll(Routes.login);

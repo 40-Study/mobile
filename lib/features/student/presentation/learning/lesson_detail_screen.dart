@@ -26,8 +26,8 @@ class LessonDetailScreen extends StatelessWidget {
         builder: (context, state) {
           return switch (state) {
             LessonInitial() || LessonInProgress() => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
             LessonFailure(:final message) => _buildError(context, message),
             LessonSuccess() => _buildContent(context, state),
           };
@@ -49,7 +49,7 @@ class LessonDetailScreen extends StatelessWidget {
           AppSpacing.vGap16,
           FilledButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Quay lai'),
+            child: const Text('Quay lại'),
           ),
         ],
       ),
@@ -94,7 +94,7 @@ class LessonDetailScreen extends StatelessWidget {
                                 ),
                                 AppSpacing.vGap8,
                                 Text(
-                                  'Khong co video',
+                                  'Không có video',
                                   style: tt.bodyMedium?.copyWith(
                                     color: Colors.white.withValues(alpha: 0.5),
                                   ),
@@ -133,7 +133,9 @@ class LessonDetailScreen extends StatelessWidget {
                   children: [
                     Text(
                       lesson.title,
-                      style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                      style: tt.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     if (lesson.durationMinutes > 0) ...[
                       AppSpacing.vGap4,
@@ -142,8 +144,10 @@ class LessonDetailScreen extends StatelessWidget {
                           Icon(Icons.access_time, size: 16, color: cs.outline),
                           AppSpacing.hGap4,
                           Text(
-                            '${lesson.durationMinutes} phut',
-                            style: tt.bodySmall?.copyWith(color: cs.outline),
+                            '${lesson.durationMinutes} phút',
+                            style: tt.bodySmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
                           ),
                         ],
                       ),
@@ -152,9 +156,9 @@ class LessonDetailScreen extends StatelessWidget {
                     LessonContentTabs(
                       selectedTab: state.selectedTab,
                       onTabChanged: (tab) {
-                        context
-                            .read<LessonBloc>()
-                            .add(LessonContentTabChanged(tab));
+                        context.read<LessonBloc>().add(
+                          LessonContentTabChanged(tab),
+                        );
                       },
                     ),
                   ],
@@ -197,35 +201,35 @@ class LessonDetailScreen extends StatelessWidget {
 
     return switch (state.selectedTab) {
       LessonContentTab.video => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Mo ta',
-              style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            AppSpacing.vGap8,
-            Text(
-              state.lesson.description ?? 'Khong co mo ta',
-              style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-            ),
-            AppSpacing.vGap24,
-          ],
-        ),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Mô tả',
+            style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          AppSpacing.vGap8,
+          Text(
+            state.lesson.description ?? 'Không có mô tả',
+            style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+          ),
+          AppSpacing.vGap24,
+        ],
+      ),
       LessonContentTab.documents => _buildEmptyTab(
-          context,
-          Icons.description_outlined,
-          'Chua co tai lieu',
-        ),
+        context,
+        Icons.description_outlined,
+        'Chưa có tài liệu',
+      ),
       LessonContentTab.quiz => _buildEmptyTab(
-          context,
-          Icons.quiz_outlined,
-          'Chua co bai tap',
-        ),
+        context,
+        Icons.quiz_outlined,
+        'Chưa có bài tập',
+      ),
       LessonContentTab.notes => _buildEmptyTab(
-          context,
-          Icons.edit_note,
-          'Chua co ghi chu',
-        ),
+        context,
+        Icons.edit_note,
+        'Chưa có ghi chú',
+      ),
     };
   }
 
@@ -238,11 +242,11 @@ class LessonDetailScreen extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.xxl),
         child: Column(
           children: [
-            Icon(icon, size: 48, color: cs.outline),
+            Icon(icon, size: 48, color: cs.onSurfaceVariant),
             AppSpacing.vGap12,
             Text(
               message,
-              style: tt.bodyMedium?.copyWith(color: cs.outline),
+              style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
           ],
         ),

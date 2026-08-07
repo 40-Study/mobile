@@ -22,22 +22,22 @@ class StudentRepositoryImpl implements StudentRepository {
     return Result.success([
       ScheduleItemModel(
         id: '1',
-        title: 'Toan cao cap A1',
+        title: 'Toán cao cấp A1',
         type: 'livestream',
         startTime: DateTime.now().copyWith(hour: 9, minute: 0),
         endTime: DateTime.now().copyWith(hour: 10, minute: 30),
-        courseName: 'Toan 10',
-        instructorName: 'Nguyen Van A',
-        location: 'Phong A101',
+        courseName: 'Toán 10',
+        instructorName: 'Nguyễn Văn An',
+        location: 'Phòng A101',
       ),
       ScheduleItemModel(
         id: '2',
-        title: 'Python Co ban - Bai 2.3',
+        title: 'Python cơ bản - Bài 2.3',
         type: 'video',
         startTime: DateTime.now().copyWith(hour: 14, minute: 0),
         endTime: DateTime.now().copyWith(hour: 15, minute: 30),
-        courseName: 'Python Co ban',
-        instructorName: 'Tran Van B',
+        courseName: 'Python cơ bản',
+        instructorName: 'Trần Minh Bình',
       ),
     ]);
   }
@@ -49,17 +49,17 @@ class StudentRepositoryImpl implements StudentRepository {
     return Result.success([
       AssignmentModel(
         id: '1',
-        title: 'Quiz: Bien va kieu du lieu',
+        title: 'Quiz: Biến và kiểu dữ liệu',
         type: 'quiz',
-        courseName: 'Python Co ban',
+        courseName: 'Python cơ bản',
         questionCount: 10,
         dueDate: DateTime.now().add(const Duration(days: 2)),
       ),
       AssignmentModel(
         id: '2',
-        title: 'Bai tap: Ham so',
+        title: 'Bài tập: Hàm số',
         type: 'assignment',
-        courseName: 'Toan 10',
+        courseName: 'Toán 10',
         questionCount: 5,
         dueDate: DateTime.now().add(const Duration(days: 5)),
       ),
@@ -79,6 +79,13 @@ class StudentRepositoryImpl implements StudentRepository {
         completedLessons: 9,
         totalLessons: 20,
         lastAccessedAt: DateTime.now().subtract(const Duration(hours: 2)),
+        course: const CourseModel(
+          id: 'course-1',
+          title: 'Python từ cơ bản đến ứng dụng',
+          instructorName: 'Nguyễn Minh Anh',
+          categoryName: 'Lập trình',
+          totalLessons: 20,
+        ),
       ),
       EnrollmentModel(
         id: '2',
@@ -87,6 +94,13 @@ class StudentRepositoryImpl implements StudentRepository {
         completedLessons: 16,
         totalLessons: 20,
         lastAccessedAt: DateTime.now().subtract(const Duration(days: 1)),
+        course: const CourseModel(
+          id: 'course-2',
+          title: 'Toán tư duy lớp 10',
+          instructorName: 'Trần Hoàng Nam',
+          categoryName: 'Toán học',
+          totalLessons: 20,
+        ),
       ),
     ]);
   }
@@ -113,7 +127,9 @@ class StudentRepositoryImpl implements StudentRepository {
   }
 
   @override
-  Future<ApiResult<EnrollmentModel>> getCourseDetail(String enrollmentId) async {
+  Future<ApiResult<EnrollmentModel>> getCourseDetail(
+    String enrollmentId,
+  ) async {
     await Future<void>.delayed(const Duration(milliseconds: 500));
 
     // Mock data với sections và lessons
@@ -126,21 +142,21 @@ class StudentRepositoryImpl implements StudentRepository {
         totalLessons: 20,
         course: CourseModel(
           id: 'course-1',
-          title: 'Python Co ban',
-          shortDescription: 'Hoc lap trinh Python tu co ban den nang cao',
-          instructorName: 'Nguyen Van A',
+          title: 'Python cơ bản',
+          shortDescription: 'Học lập trình Python từ cơ bản đến nâng cao',
+          instructorName: 'Nguyễn Văn An',
           totalLessons: 20,
           totalSections: 4,
           totalDurationMins: 480,
           sections: [
             SectionModel(
               id: 'section-1',
-              title: 'Gioi thieu Python',
+              title: 'Giới thiệu Python',
               totalLessons: 5,
               lessons: [
                 LessonModel(
                   id: 'lesson-1',
-                  title: 'Python la gi?',
+                  title: 'Python là gì?',
                   durationMinutes: 15,
                   progress: const LessonProgressModel(
                     status: 'completed',
@@ -149,7 +165,7 @@ class StudentRepositoryImpl implements StudentRepository {
                 ),
                 LessonModel(
                   id: 'lesson-2',
-                  title: 'Cai dat moi truong',
+                  title: 'Cài đặt môi trường',
                   durationMinutes: 20,
                   progress: const LessonProgressModel(
                     status: 'completed',
@@ -165,20 +181,48 @@ class StudentRepositoryImpl implements StudentRepository {
                     progressPercentage: 50,
                   ),
                 ),
-                const LessonModel(id: 'lesson-4', title: 'Bien va hang', durationMinutes: 25),
-                const LessonModel(id: 'lesson-5', title: 'Kieu du lieu', durationMinutes: 30),
+                const LessonModel(
+                  id: 'lesson-4',
+                  title: 'Biến và hằng',
+                  durationMinutes: 25,
+                ),
+                const LessonModel(
+                  id: 'lesson-5',
+                  title: 'Kiểu dữ liệu',
+                  durationMinutes: 30,
+                ),
               ],
             ),
             SectionModel(
               id: 'section-2',
-              title: 'Cau truc dieu khien',
+              title: 'Cấu trúc điều khiển',
               totalLessons: 5,
               lessons: [
-                const LessonModel(id: 'lesson-6', title: 'If-else', durationMinutes: 20),
-                const LessonModel(id: 'lesson-7', title: 'Vong lap for', durationMinutes: 25),
-                const LessonModel(id: 'lesson-8', title: 'Vong lap while', durationMinutes: 20),
-                const LessonModel(id: 'lesson-9', title: 'Break va continue', durationMinutes: 15),
-                const LessonModel(id: 'lesson-10', title: 'Bai tap tong hop', durationMinutes: 30),
+                const LessonModel(
+                  id: 'lesson-6',
+                  title: 'If-else',
+                  durationMinutes: 20,
+                ),
+                const LessonModel(
+                  id: 'lesson-7',
+                  title: 'Vòng lặp for',
+                  durationMinutes: 25,
+                ),
+                const LessonModel(
+                  id: 'lesson-8',
+                  title: 'Vòng lặp while',
+                  durationMinutes: 20,
+                ),
+                const LessonModel(
+                  id: 'lesson-9',
+                  title: 'Break và continue',
+                  durationMinutes: 15,
+                ),
+                const LessonModel(
+                  id: 'lesson-10',
+                  title: 'Bài tập tổng hợp',
+                  durationMinutes: 30,
+                ),
               ],
             ),
           ],
@@ -194,14 +238,15 @@ class StudentRepositoryImpl implements StudentRepository {
     return Result.success(
       LessonModel(
         id: lessonId,
-        title: 'Python la gi?',
-        description: 'Tim hieu ve ngon ngu lap trinh Python va ung dung cua no.',
+        title: 'Python là gì?',
+        description:
+            'Tìm hiểu về ngôn ngữ lập trình Python và ứng dụng của nó.',
         durationMinutes: 15,
         contents: [
           const LessonContentModel(
             id: 'content-1',
             type: 'video',
-            title: 'Video bai giang',
+            title: 'Video bài giảng',
             videoUrl: 'https://example.com/video.mp4',
             duration: 900,
           ),
@@ -228,16 +273,16 @@ class StudentRepositoryImpl implements StudentRepository {
     return Result.success([
       BadgeModel(
         id: '1',
-        name: 'Nguoi moi bat dau',
-        description: 'Hoan thanh bai hoc dau tien',
+        name: 'Người mới bắt đầu',
+        description: 'Hoàn thành bài học đầu tiên',
         isEarned: true,
         earnedAt: DateTime.now().subtract(const Duration(days: 10)),
         category: 'learning',
       ),
       BadgeModel(
         id: '2',
-        name: 'Hoc sinh cham chi',
-        description: 'Hoc 7 ngay lien tuc',
+        name: 'Học sinh chăm chỉ',
+        description: 'Học 7 ngày liên tục',
         isEarned: true,
         earnedAt: DateTime.now().subtract(const Duration(days: 3)),
         category: 'streak',
@@ -245,25 +290,25 @@ class StudentRepositoryImpl implements StudentRepository {
       const BadgeModel(
         id: '3',
         name: 'Master Python',
-        description: 'Hoan thanh khoa Python',
+        description: 'Hoàn thành khóa Python',
         category: 'course',
       ),
       const BadgeModel(
         id: '4',
         name: 'Quiz Champion',
-        description: 'Dat 100 diem 5 bai quiz',
+        description: 'Đạt 100 điểm 5 bài quiz',
         category: 'quiz',
       ),
       const BadgeModel(
         id: '5',
-        name: 'Nguoi hoc nhanh',
-        description: 'Hoan thanh 10 bai hoc trong 1 ngay',
+        name: 'Người học nhanh',
+        description: 'Hoàn thành 10 bài học trong 1 ngày',
         category: 'speed',
       ),
       const BadgeModel(
         id: '6',
-        name: 'Hoc sinh xuat sac',
-        description: 'Hoan thanh 3 khoa hoc',
+        name: 'Học sinh xuất sắc',
+        description: 'Hoàn thành 3 khóa học',
         category: 'learning',
       ),
     ]);
@@ -273,18 +318,20 @@ class StudentRepositoryImpl implements StudentRepository {
   Future<ApiResult<StudentStatsModel>> getStats() async {
     await Future<void>.delayed(const Duration(milliseconds: 500));
 
-    return Result.success(const StudentStatsModel(
-      level: 5,
-      currentXp: 750,
-      nextLevelXp: 1000,
-      streakDays: 7,
-      totalCourses: 3,
-      completedCourses: 1,
-      totalLessons: 60,
-      completedLessons: 25,
-      totalQuizScore: 85.5,
-      totalStudyHours: 24.5,
-      weeklyStudyHours: [2.5, 3.0, 1.5, 4.0, 2.0, 5.5, 3.5],
-    ));
+    return Result.success(
+      const StudentStatsModel(
+        level: 5,
+        currentXp: 750,
+        nextLevelXp: 1000,
+        streakDays: 7,
+        totalCourses: 3,
+        completedCourses: 1,
+        totalLessons: 60,
+        completedLessons: 25,
+        totalQuizScore: 85.5,
+        totalStudyHours: 24.5,
+        weeklyStudyHours: [2.5, 3.0, 1.5, 4.0, 2.0, 5.5, 3.5],
+      ),
+    );
   }
 }

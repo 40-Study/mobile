@@ -4,6 +4,7 @@ import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/features/auth/data/models/user_model.dart';
 import 'package:study/features/auth/presentation/edit_profile_screen.dart';
 import 'package:study/features/auth/presentation/security_screen.dart';
+import 'package:study/features/student/presentation/bookmark/bookmark_screen.dart';
 import 'package:study/features/student/presentation/settings/settings_screen.dart';
 import 'package:study/theme/theme.dart';
 
@@ -16,7 +17,7 @@ class ProfileScreen extends StatelessWidget {
       builder: (context, state) {
         if (state is! AuthAuthenticated) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(child: CircularProgressIndicator(strokeWidth: 2.5)),
           );
         }
         return _ProfileContent(user: state.user);
@@ -27,37 +28,26 @@ class ProfileScreen extends StatelessWidget {
 
 class _ProfileContent extends StatelessWidget {
   const _ProfileContent({required this.user});
+
   final UserModel user;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          // Header
-          SliverToBoxAdapter(
-            child: _ProfileHeader(user: user),
-          ),
-
-          // Stats
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              child: _StatsRow(),
-            ),
-          ),
-
-          const SliverToBoxAdapter(child: AppSpacing.vGap24),
-
-          // Menu sections
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-              child: _MenuSections(user: user),
-            ),
-          ),
-
-          const SliverToBoxAdapter(child: AppSpacing.vGap32),
+      appBar: AppBar(title: const Text('Tài khoản')),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenPadding,
+          AppSpacing.sm,
+          AppSpacing.screenPadding,
+          AppSpacing.xxl,
+        ),
+        children: [
+          _ProfileHeader(user: user),
+          AppSpacing.vGap24,
+          const _StatsRow(),
+          AppSpacing.vGap24,
+          const _MenuSections(),
         ],
       ),
     );
@@ -66,104 +56,92 @@ class _ProfileContent extends StatelessWidget {
 
 class _ProfileHeader extends StatelessWidget {
   const _ProfileHeader({required this.user});
+
   final UserModel user;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final name = user.fullName ?? user.username ?? 'Người dùng';
 
-    return Container(
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + AppSpacing.lg,
-        bottom: AppSpacing.xl,
-      ),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            cs.primary,
-            cs.primary.withValues(alpha: 0.85),
-          ],
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: cs.outline),
+          ),
+          child: CircleAvatar(
+            radius: 34,
+            backgroundColor: cs.primaryContainer,
+            backgroundImage: user.avatarUrl != null
+                ? NetworkImage(user.avatarUrl!)
+                : null,
+            child: user.avatarUrl == null
+                ? Text(
+                    _getInitials(name),
+                    style: tt.titleLarge?.copyWith(
+                      color: cs.onPrimaryContainer,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  )
+                : null,
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          // Avatar
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 2),
-            ),
-            child: CircleAvatar(
-              radius: 48,
-              backgroundColor: Colors.white.withValues(alpha: 0.2),
-              backgroundImage: user.avatarUrl != null
-                  ? NetworkImage(user.avatarUrl!)
-                  : null,
-              child: user.avatarUrl == null
-                  ? Text(
-                      _getInitials(user.fullName ?? user.username ?? 'U'),
-                      style: tt.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    )
-                  : null,
-            ),
-          ),
-          AppSpacing.vGap12,
-
-          // Name
-          Text(
-            user.fullName ?? user.username ?? 'User',
-            style: tt.titleLarge?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          AppSpacing.vGap4,
-
-          // Email
-          Text(
-            user.email,
-            style: tt.bodyMedium?.copyWith(
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
-          ),
-          AppSpacing.vGap8,
-
-          // Role badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.school, size: 14, color: Colors.white),
-                AppSpacing.hGap4,
-                Text(
-                  'Hoc sinh',
-                  style: tt.labelMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
+        AppSpacing.hGap16,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                name,
+                style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              AppSpacing.vGap4,
+              Text(
+                user.email,
+                style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              AppSpacing.vGap8,
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: cs.secondaryContainer,
+                  borderRadius: BorderRadius.circular(AppRadius.full),
+                ),
+                child: Text(
+                  'Học sinh',
+                  style: tt.labelSmall?.copyWith(
+                    color: cs.onSecondaryContainer,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        IconButton(
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute<void>(builder: (_) => const EditProfileScreen()),
+          ),
+          icon: const Icon(Icons.edit_outlined),
+          tooltip: 'Chỉnh sửa hồ sơ',
+        ),
+      ],
     );
   }
 
   String _getInitials(String name) {
-    final parts = name.trim().split(' ');
+    final parts = name.trim().split(RegExp(r'\s+'));
     if (parts.length >= 2) {
       return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
     }
@@ -172,44 +150,57 @@ class _ProfileHeader extends StatelessWidget {
 }
 
 class _StatsRow extends StatelessWidget {
+  const _StatsRow();
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Transform.translate(
-      offset: const Offset(0, -24),
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: cs.shadow.withValues(alpha: 0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.lg,
+      ),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: cs.outline),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _StatItem(
+              icon: Icons.auto_stories_outlined,
+              value: '5',
+              label: 'Khóa học',
+              color: cs.primary,
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            _StatItem(icon: Icons.school, value: '5', label: 'Khoa hoc'),
-            _divider(cs),
-            _StatItem(icon: Icons.local_fire_department, value: '12', label: 'Streak'),
-            _divider(cs),
-            _StatItem(icon: Icons.star, value: '2.4k', label: 'XP'),
-          ],
-        ),
+          ),
+          _divider(cs),
+          Expanded(
+            child: _StatItem(
+              icon: Icons.local_fire_department_outlined,
+              value: '12',
+              label: 'Chuỗi ngày',
+              color: cs.tertiary,
+            ),
+          ),
+          _divider(cs),
+          Expanded(
+            child: _StatItem(
+              icon: Icons.bolt_outlined,
+              value: '2.4k',
+              label: 'Điểm XP',
+              color: cs.secondary,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _divider(ColorScheme cs) {
-    return Container(
-      width: 1,
-      height: 40,
-      color: cs.outline.withValues(alpha: 0.2),
-    );
+    return Container(width: 1, height: 44, color: cs.outlineVariant);
   }
 }
 
@@ -218,62 +209,63 @@ class _StatItem extends StatelessWidget {
     required this.icon,
     required this.value,
     required this.label,
+    required this.color,
   });
 
   final IconData icon;
   final String value;
   final String label;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return Expanded(
-      child: Column(
-        children: [
-          Icon(icon, color: cs.primary, size: 24),
-          AppSpacing.vGap4,
-          Text(
-            value,
-            style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          Text(
-            label,
-            style: tt.bodySmall?.copyWith(color: cs.outline),
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 21),
+        AppSpacing.vGap4,
+        Text(
+          value,
+          style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        Text(
+          label,
+          style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 }
 
 class _MenuSections extends StatelessWidget {
-  const _MenuSections({required this.user});
-  final UserModel user;
+  const _MenuSections();
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Tai khoan
         _MenuSection(
-          title: 'Tai khoan',
+          title: 'Tài khoản',
           items: [
             _MenuItem(
               icon: Icons.person_outline,
-              title: 'Chinh sua thong tin',
+              title: 'Thông tin cá nhân',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute<void>(builder: (_) => const EditProfileScreen()),
+                MaterialPageRoute<void>(
+                  builder: (_) => const EditProfileScreen(),
+                ),
               ),
             ),
             _MenuItem(
               icon: Icons.lock_outline,
-              title: 'Bao mat',
+              title: 'Bảo mật',
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute<void>(builder: (_) => const SecurityScreen()),
@@ -281,20 +273,21 @@ class _MenuSections extends StatelessWidget {
             ),
             _MenuItem(
               icon: Icons.bookmark_outline,
-              title: 'Da luu',
-              onTap: () {},
+              title: 'Nội dung đã lưu',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const BookmarkScreen()),
+              ),
             ),
           ],
         ),
         AppSpacing.vGap16,
-
-        // Cai dat
         _MenuSection(
-          title: 'Cai dat',
+          title: 'Ứng dụng',
           items: [
             _MenuItem(
-              icon: Icons.settings_outlined,
-              title: 'Cai dat ung dung',
+              icon: Icons.tune_outlined,
+              title: 'Cài đặt',
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
@@ -302,24 +295,22 @@ class _MenuSections extends StatelessWidget {
             ),
             _MenuItem(
               icon: Icons.help_outline,
-              title: 'Tro giup & Ho tro',
-              onTap: () {},
+              title: 'Trợ giúp và hỗ trợ',
+              onTap: () => _showComingSoon(context),
             ),
             _MenuItem(
               icon: Icons.info_outline,
-              title: 'Gioi thieu',
-              onTap: () {},
+              title: 'Giới thiệu 40Study',
+              onTap: () => _showComingSoon(context),
             ),
           ],
         ),
         AppSpacing.vGap16,
-
-        // Dang xuat
         _MenuSection(
           items: [
             _MenuItem(
               icon: Icons.logout,
-              title: 'Dang xuat',
+              title: 'Đăng xuất',
               iconColor: cs.error,
               titleColor: cs.error,
               onTap: () => _confirmLogout(context),
@@ -330,24 +321,30 @@ class _MenuSections extends StatelessWidget {
     );
   }
 
+  void _showComingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Tính năng đang được hoàn thiện')),
+    );
+  }
+
   void _confirmLogout(BuildContext context) {
     final authBloc = context.read<AuthBloc>();
     showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Dang xuat'),
-        content: const Text('Ban co chac muon dang xuat?'),
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Đăng xuất'),
+        content: const Text('Bạn có chắc muốn đăng xuất khỏi 40Study?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Huy'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Hủy'),
           ),
           FilledButton(
             onPressed: () {
-              Navigator.pop(ctx);
+              Navigator.pop(dialogContext);
               authBloc.add(AuthLoggedOut());
             },
-            child: const Text('Dang xuat'),
+            child: const Text('Đăng xuất'),
           ),
         ],
       ),
@@ -371,27 +368,26 @@ class _MenuSection extends StatelessWidget {
       children: [
         if (title != null) ...[
           Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: AppSpacing.sm),
+            padding: const EdgeInsets.only(left: 2, bottom: AppSpacing.sm),
             child: Text(
               title!,
-              style: tt.labelLarge?.copyWith(
-                color: cs.onSurface.withValues(alpha: 0.6),
-                fontWeight: FontWeight.w600,
-              ),
+              style: tt.labelLarge?.copyWith(color: cs.onSurfaceVariant),
             ),
           ),
         ],
         Container(
           decoration: BoxDecoration(
             color: cs.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: cs.outline.withValues(alpha: 0.1)),
+            borderRadius: BorderRadius.circular(AppRadius.card),
+            border: Border.all(color: cs.outline),
           ),
+          clipBehavior: Clip.antiAlias,
           child: Column(
             children: [
               for (var i = 0; i < items.length; i++) ...[
                 items[i],
-                if (i < items.length - 1) const Divider(height: 1, indent: 56),
+                if (i < items.length - 1)
+                  const Divider(indent: 56, endIndent: 16),
               ],
             ],
           ),
@@ -422,12 +418,19 @@ class _MenuItem extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return ListTile(
-      leading: Icon(icon, color: iconColor ?? cs.primary, size: 22),
+      leading: Icon(icon, color: iconColor ?? cs.onSurfaceVariant, size: 22),
       title: Text(
         title,
-        style: tt.bodyMedium?.copyWith(color: titleColor),
+        style: tt.bodyMedium?.copyWith(
+          color: titleColor,
+          fontWeight: FontWeight.w500,
+        ),
       ),
-      trailing: Icon(Icons.chevron_right, color: cs.outline, size: 20),
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: cs.onSurfaceVariant,
+        size: 20,
+      ),
       onTap: onTap,
     );
   }

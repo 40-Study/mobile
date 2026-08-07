@@ -39,7 +39,28 @@ class AppDrawer extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            // User header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.sm,
+                0,
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    '40Study',
+                    style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                    tooltip: 'Đóng menu',
+                  ),
+                ],
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: Row(
@@ -70,7 +91,7 @@ class AppDrawer extends StatelessWidget {
                         Text(
                           userEmail,
                           style: tt.bodySmall?.copyWith(
-                            color: cs.onSurface.withValues(alpha: 0.6),
+                            color: cs.onSurfaceVariant,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -82,46 +103,44 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
             const Divider(height: 1),
-            // Menu items
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 children: [
                   _DrawerItem(
                     icon: Icons.notifications_outlined,
-                    label: 'Thong bao',
+                    label: 'Thông báo',
                     badge: notificationCount > 0 ? notificationCount : null,
                     onTap: onNotificationsTap,
                   ),
                   _DrawerItem(
                     icon: Icons.bookmark_outline,
-                    label: 'Da luu',
+                    label: 'Đã lưu',
                     onTap: onBookmarksTap,
                   ),
                   _DrawerItem(
                     icon: Icons.search,
-                    label: 'Tim kiem',
+                    label: 'Tìm kiếm',
                     onTap: onSearchTap,
                   ),
                   const Divider(height: 16, indent: 16, endIndent: 16),
                   _DrawerItem(
                     icon: Icons.settings_outlined,
-                    label: 'Cai dat',
+                    label: 'Cài đặt',
                     onTap: onSettingsTap,
                   ),
                   _DrawerItem(
                     icon: Icons.help_outline,
-                    label: 'Tro giup',
+                    label: 'Trợ giúp',
                     onTap: onHelpTap,
                   ),
                 ],
               ),
             ),
             const Divider(height: 1),
-            // Logout ở cuối drawer
             _DrawerItem(
               icon: Icons.logout,
-              label: 'Dang xuat',
+              label: 'Đăng xuất',
               iconColor: cs.error,
               labelColor: cs.error,
               onTap: onLogoutTap,
@@ -157,11 +176,8 @@ class _DrawerItem extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return ListTile(
-      leading: Icon(icon, color: iconColor ?? cs.onSurface.withValues(alpha: 0.7)),
-      title: Text(
-        label,
-        style: tt.bodyLarge?.copyWith(color: labelColor),
-      ),
+      leading: Icon(icon, color: iconColor ?? cs.onSurfaceVariant),
+      title: Text(label, style: tt.bodyLarge?.copyWith(color: labelColor)),
       // Badge cho notification count
       trailing: badge != null
           ? Container(

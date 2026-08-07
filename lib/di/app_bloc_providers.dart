@@ -24,7 +24,8 @@ abstract class AppBlocProviders {
         )..add(InitStarted()),
       ),
       BlocProvider<AuthBloc>(
-        create: (context) => AuthBloc(context.read<AuthRepository>()),
+        create: (context) =>
+            AuthBloc(context.read<AuthRepository>())..add(AuthStarted()),
       ),
     ];
   }

@@ -23,9 +23,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: ScheduleTimeline(items: items),
-          ),
+          home: Scaffold(body: ScheduleTimeline(items: items)),
         ),
       );
 
@@ -38,13 +36,11 @@ void main() {
     testWidgets('should show empty state when no items', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: ScheduleTimeline(items: []),
-          ),
+          home: Scaffold(body: ScheduleTimeline(items: [])),
         ),
       );
 
-      expect(find.text('Khong co lich hoc hom nay'), findsOneWidget);
+      expect(find.text('Không có lịch học hôm nay'), findsOneWidget);
     });
   });
 }

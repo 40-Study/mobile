@@ -18,104 +18,87 @@ class ContinueLearningCard extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+    return Material(
+      color: cs.surfaceContainerLowest,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        side: BorderSide(color: cs.outlineVariant),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onContinueTap,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.play_circle, size: 20, color: cs.primary),
-              AppSpacing.hGap8,
-              Text(
-                'Tiep tuc hoc',
-                style: tt.titleSmall?.copyWith(
-                  color: cs.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          AppSpacing.vGap12,
-          Row(
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: cs.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(Icons.school, color: cs.primary),
-              ),
-              AppSpacing.hGap12,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      enrollment.course?.title ?? 'Khoa hoc',
-                      style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: cs.secondaryContainer,
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
                     ),
-                    AppSpacing.vGap4,
-                    Text(
-                      '${enrollment.completedLessons}/${enrollment.totalLessons} bai',
-                      style: tt.bodySmall?.copyWith(
-                        color: cs.onSurface.withValues(alpha: 0.6),
-                      ),
+                    child: Icon(
+                      Icons.play_arrow_rounded,
+                      color: cs.onSecondaryContainer,
                     ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          AppSpacing.vGap12,
-          Row(
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(3),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    backgroundColor: cs.surfaceContainerHighest,
-                    color: cs.primary,
-                    minHeight: 6,
                   ),
-                ),
+                  AppSpacing.hGap12,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tiếp tục học',
+                          style: tt.labelMedium?.copyWith(
+                            color: cs.secondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        AppSpacing.vGap4,
+                        Text(
+                          enrollment.course?.title ?? 'Khóa học của bạn',
+                          style: tt.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  AppSpacing.hGap8,
+                  Icon(Icons.arrow_forward_rounded, color: cs.primary),
+                ],
               ),
-              AppSpacing.hGap12,
-              Text(
-                '${enrollment.progressPercentage.toStringAsFixed(0)}%',
-                style: tt.labelMedium?.copyWith(
-                  color: cs.primary,
-                  fontWeight: FontWeight.w600,
-                ),
+              AppSpacing.vGap16,
+              Row(
+                children: [
+                  Text(
+                    '${enrollment.completedLessons}/${enrollment.totalLessons} bài',
+                    style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${enrollment.progressPercentage.toStringAsFixed(0)}%',
+                    style: tt.labelMedium?.copyWith(
+                      color: cs.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              AppSpacing.vGap8,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(3),
+                child: LinearProgressIndicator(value: progress, minHeight: 6),
               ),
             ],
           ),
-          AppSpacing.vGap12,
-          Align(
-            alignment: Alignment.centerRight,
-            child: FilledButton.icon(
-              onPressed: onContinueTap,
-              icon: const Icon(Icons.play_arrow, size: 18),
-              label: const Text('Tiep tuc'),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

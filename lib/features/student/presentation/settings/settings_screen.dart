@@ -4,108 +4,123 @@ import 'package:study/bloc/theme/app_theme.dart';
 import 'package:study/bloc/theme/theme_cubit.dart';
 import 'package:study/theme/theme.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _pushNotifications = true;
+  bool _emailNotifications = false;
+  bool _scheduleReminders = true;
+  bool _autoplay = false;
+  bool _wifiDownloads = true;
 
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cai dat')),
+      appBar: AppBar(title: const Text('Cài đặt')),
       body: ListView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenPadding,
+          AppSpacing.sm,
+          AppSpacing.screenPadding,
+          AppSpacing.xxl,
+        ),
         children: [
-          // Giao dien
-          _SectionTitle(title: 'Giao dien'),
+          const _SectionTitle(title: 'Giao diện'),
           _SettingsCard(
             children: [
               _ThemeToggle(),
               const Divider(height: 1),
               _SettingsTile(
                 icon: Icons.language,
-                title: 'Ngon ngu',
-                trailing: Text('Tieng Viet', style: tt.bodySmall),
+                title: 'Ngôn ngữ',
+                trailing: Text('Tiếng Việt', style: tt.bodySmall),
                 onTap: () {},
               ),
             ],
           ),
           AppSpacing.vGap24,
 
-          // Thong bao
-          _SectionTitle(title: 'Thong bao'),
+          const _SectionTitle(title: 'Thông báo'),
           _SettingsCard(
             children: [
               _SettingsSwitch(
                 icon: Icons.notifications_active,
-                title: 'Thong bao push',
-                value: true,
-                onChanged: (v) {},
+                title: 'Thông báo đẩy',
+                value: _pushNotifications,
+                onChanged: (value) =>
+                    setState(() => _pushNotifications = value),
               ),
               const Divider(height: 1),
               _SettingsSwitch(
                 icon: Icons.email,
-                title: 'Thong bao email',
-                value: false,
-                onChanged: (v) {},
+                title: 'Thông báo email',
+                value: _emailNotifications,
+                onChanged: (value) =>
+                    setState(() => _emailNotifications = value),
               ),
               const Divider(height: 1),
               _SettingsSwitch(
                 icon: Icons.calendar_today,
-                title: 'Nhac lich hoc',
-                value: true,
-                onChanged: (v) {},
+                title: 'Nhắc lịch học',
+                value: _scheduleReminders,
+                onChanged: (value) =>
+                    setState(() => _scheduleReminders = value),
               ),
             ],
           ),
           AppSpacing.vGap24,
 
-          // Hoc tap
-          _SectionTitle(title: 'Hoc tap'),
+          const _SectionTitle(title: 'Học tập'),
           _SettingsCard(
             children: [
               _SettingsSwitch(
                 icon: Icons.play_circle,
-                title: 'Tu dong phat video',
-                value: false,
-                onChanged: (v) {},
+                title: 'Tự động phát video',
+                value: _autoplay,
+                onChanged: (value) => setState(() => _autoplay = value),
               ),
               const Divider(height: 1),
               _SettingsTile(
                 icon: Icons.speed,
-                title: 'Toc do phat mac dinh',
+                title: 'Tốc độ phát mặc định',
                 trailing: Text('1.0x', style: tt.bodySmall),
                 onTap: () {},
               ),
               const Divider(height: 1),
               _SettingsSwitch(
                 icon: Icons.download,
-                title: 'Tai xuong qua WiFi',
-                value: true,
-                onChanged: (v) {},
+                title: 'Tải xuống qua Wi-Fi',
+                value: _wifiDownloads,
+                onChanged: (value) => setState(() => _wifiDownloads = value),
               ),
             ],
           ),
           AppSpacing.vGap24,
 
-          // Khac
-          _SectionTitle(title: 'Khac'),
+          const _SectionTitle(title: 'Khác'),
           _SettingsCard(
             children: [
               _SettingsTile(
                 icon: Icons.storage,
-                title: 'Xoa cache',
+                title: 'Xóa bộ nhớ đệm',
                 trailing: Text('24 MB', style: tt.bodySmall),
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Da xoa cache')),
+                    const SnackBar(content: Text('Đã xóa bộ nhớ đệm')),
                   );
                 },
               ),
               const Divider(height: 1),
               _SettingsTile(
                 icon: Icons.info_outline,
-                title: 'Phien ban',
+                title: 'Phiên bản',
                 trailing: Text('1.0.0', style: tt.bodySmall),
                 onTap: () {},
               ),
@@ -132,7 +147,7 @@ class _SectionTitle extends StatelessWidget {
       child: Text(
         title,
         style: tt.labelLarge?.copyWith(
-          color: cs.onSurface.withValues(alpha: 0.6),
+          color: cs.onSurfaceVariant,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -151,8 +166,8 @@ class _SettingsCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: cs.outline.withValues(alpha: 0.1)),
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: cs.outline),
       ),
       child: Column(children: children),
     );
@@ -178,14 +193,14 @@ class _SettingsTile extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return ListTile(
-      leading: Icon(icon, color: cs.primary, size: 22),
+      leading: Icon(icon, color: cs.onSurfaceVariant, size: 22),
       title: Text(title, style: tt.bodyMedium),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (trailing != null) trailing!,
           AppSpacing.hGap8,
-          Icon(Icons.chevron_right, color: cs.outline, size: 20),
+          Icon(Icons.chevron_right, color: cs.onSurfaceVariant, size: 20),
         ],
       ),
       onTap: onTap,
@@ -212,7 +227,7 @@ class _SettingsSwitch extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return ListTile(
-      leading: Icon(icon, color: cs.primary, size: 22),
+      leading: Icon(icon, color: cs.onSurfaceVariant, size: 22),
       title: Text(title, style: tt.bodyMedium),
       trailing: Switch.adaptive(value: value, onChanged: onChanged),
     );
@@ -230,15 +245,14 @@ class _ThemeToggle extends StatelessWidget {
     return ListTile(
       leading: Icon(
         isDark ? Icons.dark_mode : Icons.light_mode,
-        color: cs.primary,
+        color: cs.onSurfaceVariant,
         size: 22,
       ),
-      title: Text('Giao dien toi', style: tt.bodyMedium),
+      title: Text('Giao diện tối', style: tt.bodyMedium),
       trailing: Switch.adaptive(
         value: isDark,
-        onChanged: (v) => themeCubit.setThemeMode(
-          v ? AppThemeMode.dark : AppThemeMode.light,
-        ),
+        onChanged: (v) =>
+            themeCubit.setThemeMode(v ? AppThemeMode.dark : AppThemeMode.light),
       ),
     );
   }

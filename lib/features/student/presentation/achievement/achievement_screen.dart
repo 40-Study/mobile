@@ -24,16 +24,14 @@ class _AchievementScreenState extends State<AchievementScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Thanh tich')),
+      appBar: AppBar(title: const Text('Thành tích')),
       body: BlocBuilder<AchievementBloc, AchievementState>(
         builder: (context, state) {
           return switch (state) {
-            AchievementInitial() ||
-            AchievementInProgress() =>
-              const Center(child: CircularProgressIndicator()),
+            AchievementInitial() || AchievementInProgress() => const Center(
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
             AchievementFailure(:final message) => _buildError(context, message),
             AchievementSuccess() => _buildContent(context, state),
           };
@@ -54,9 +52,8 @@ class _AchievementScreenState extends State<AchievementScreen> {
           Text(message),
           AppSpacing.vGap16,
           FilledButton(
-            onPressed: () => context
-                .read<AchievementBloc>()
-                .add(const AchievementStarted()),
+            onPressed: () =>
+                context.read<AchievementBloc>().add(const AchievementStarted()),
             child: const Text('Thu lai'),
           ),
         ],
@@ -65,17 +62,12 @@ class _AchievementScreenState extends State<AchievementScreen> {
   }
 
   Widget _buildContent(BuildContext context, AchievementSuccess state) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       children: [
-        // Hero card
         StatsHeroCard(stats: state.stats),
         AppSpacing.vGap24,
 
-        // Tab selector
         _TabSelector(
           selectedTab: state.selectedTab,
           onTabChanged: (tab) {
@@ -84,8 +76,8 @@ class _AchievementScreenState extends State<AchievementScreen> {
         ),
         AppSpacing.vGap16,
 
-        // Tab content
         _buildTabContent(context, state),
+        AppSpacing.vGap24,
       ],
     );
   }
@@ -95,27 +87,27 @@ class _AchievementScreenState extends State<AchievementScreen> {
 
     return switch (state.selectedTab) {
       AchievementTab.badges => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (state.earnedBadges.isNotEmpty) ...[
-              Text(
-                'Da mo khoa (${state.earnedBadges.length})',
-                style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              AppSpacing.vGap12,
-              BadgeGrid(badges: state.earnedBadges),
-              AppSpacing.vGap24,
-            ],
-            if (state.lockedBadges.isNotEmpty) ...[
-              Text(
-                'Chua mo khoa (${state.lockedBadges.length})',
-                style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              AppSpacing.vGap12,
-              BadgeGrid(badges: state.lockedBadges),
-            ],
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (state.earnedBadges.isNotEmpty) ...[
+            Text(
+              'Đã mở khóa (${state.earnedBadges.length})',
+              style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            AppSpacing.vGap12,
+            BadgeGrid(badges: state.earnedBadges),
+            AppSpacing.vGap24,
           ],
-        ),
+          if (state.lockedBadges.isNotEmpty) ...[
+            Text(
+              'Chưa mở khóa (${state.lockedBadges.length})',
+              style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            AppSpacing.vGap12,
+            BadgeGrid(badges: state.lockedBadges),
+          ],
+        ],
+      ),
       AchievementTab.certificates => _buildCertificates(context, state),
       AchievementTab.stats => StatsView(stats: state.stats),
     };
@@ -131,15 +123,19 @@ class _AchievementScreenState extends State<AchievementScreen> {
           padding: const EdgeInsets.all(AppSpacing.xxl),
           child: Column(
             children: [
-              Icon(Icons.workspace_premium_outlined, size: 48, color: cs.outline),
+              Icon(
+                Icons.workspace_premium_outlined,
+                size: 48,
+                color: cs.outline,
+              ),
               AppSpacing.vGap12,
               Text(
-                'Chua co chung chi',
+                'Chưa có chứng chỉ',
                 style: tt.bodyMedium?.copyWith(color: cs.outline),
               ),
               AppSpacing.vGap8,
               Text(
-                'Hoan thanh khoa hoc de nhan chung chi',
+                'Hoàn thành khóa học để nhận chứng chỉ',
                 style: tt.bodySmall?.copyWith(color: cs.outline),
                 textAlign: TextAlign.center,
               ),
@@ -149,16 +145,12 @@ class _AchievementScreenState extends State<AchievementScreen> {
       );
     }
 
-    // TODO: Implement certificate list
     return const SizedBox.shrink();
   }
 }
 
 class _TabSelector extends StatelessWidget {
-  const _TabSelector({
-    required this.selectedTab,
-    required this.onTabChanged,
-  });
+  const _TabSelector({required this.selectedTab, required this.onTabChanged});
 
   final AchievementTab selectedTab;
   final ValueChanged<AchievementTab> onTabChanged;
@@ -169,30 +161,27 @@ class _TabSelector extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(12),
+        color: cs.surfaceContainer,
+        borderRadius: BorderRadius.circular(AppRadius.card),
       ),
       padding: const EdgeInsets.all(4),
       child: Row(
         children: AchievementTab.values.map((tab) {
           final isSelected = tab == selectedTab;
           return Expanded(
-            child: GestureDetector(
+            child: InkWell(
               onTap: () => onTabChanged(tab),
+              borderRadius: BorderRadius.circular(AppRadius.xs),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOut,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: isSelected ? cs.surface : Colors.transparent,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: cs.shadow.withValues(alpha: 0.1),
-                            blurRadius: 4,
-                          ),
-                        ]
-                      : null,
+                  color: isSelected
+                      ? cs.surfaceContainerLowest
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(AppRadius.xs),
+                  border: isSelected ? Border.all(color: cs.outline) : null,
                 ),
                 child: Text(
                   _tabLabel(tab),
@@ -213,9 +202,9 @@ class _TabSelector extends StatelessWidget {
 
   String _tabLabel(AchievementTab tab) {
     return switch (tab) {
-      AchievementTab.badges => 'Huy hieu',
-      AchievementTab.certificates => 'Chung chi',
-      AchievementTab.stats => 'Thong ke',
+      AchievementTab.badges => 'Huy hiệu',
+      AchievementTab.certificates => 'Chứng chỉ',
+      AchievementTab.stats => 'Thống kê',
     };
   }
 }

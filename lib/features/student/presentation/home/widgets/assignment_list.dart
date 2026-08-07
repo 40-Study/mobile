@@ -4,11 +4,7 @@ import 'package:study/features/student/presentation/home/widgets/assignment_item
 import 'package:study/theme/theme.dart';
 
 class AssignmentList extends StatelessWidget {
-  const AssignmentList({
-    super.key,
-    required this.assignments,
-    this.onItemTap,
-  });
+  const AssignmentList({super.key, required this.assignments, this.onItemTap});
 
   final List<AssignmentModel> assignments;
   final void Function(AssignmentModel)? onItemTap;
@@ -23,23 +19,19 @@ class AssignmentList extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.xl),
         decoration: BoxDecoration(
           color: cs.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          border: Border.all(color: cs.outlineVariant),
+          boxShadow: AppShadows.sm,
         ),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.check_circle,
-                size: 48,
-                color: Colors.green.withValues(alpha: 0.5),
-              ),
+              Icon(Icons.check_circle, size: 48, color: cs.secondary),
               AppSpacing.vGap8,
               Text(
-                'Hoan thanh tat ca bai tap!',
-                style: tt.bodyMedium?.copyWith(
-                  color: cs.onSurface.withValues(alpha: 0.5),
-                ),
+                'Bạn đã hoàn thành tất cả bài tập',
+                style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
               ),
             ],
           ),
@@ -50,14 +42,16 @@ class AssignmentList extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: cs.outlineVariant),
+        boxShadow: AppShadows.sm,
       ),
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.all(AppSpacing.lg),
         itemCount: assignments.length,
-        separatorBuilder: (_, __) => const Divider(height: 16),
+        separatorBuilder: (_, _) => const Divider(height: 16),
         itemBuilder: (context, index) {
           final assignment = assignments[index];
           return AssignmentItem(

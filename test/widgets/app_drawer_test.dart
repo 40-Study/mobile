@@ -5,7 +5,9 @@ import 'package:study/widgets/app_drawer.dart';
 
 void main() {
   group('AppDrawer', () {
-    testWidgets('should display user header with name and email', (tester) async {
+    testWidgets('should display user header with name and email', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -53,12 +55,12 @@ void main() {
       scaffoldState.openDrawer();
       await tester.pumpAndSettle();
 
-      expect(find.text('Thong bao'), findsOneWidget);
-      expect(find.text('Da luu'), findsOneWidget);
-      expect(find.text('Tim kiem'), findsOneWidget);
-      expect(find.text('Cai dat'), findsOneWidget);
-      expect(find.text('Tro giup'), findsOneWidget);
-      expect(find.text('Dang xuat'), findsOneWidget);
+      expect(find.text('Thông báo'), findsOneWidget);
+      expect(find.text('Đã lưu'), findsOneWidget);
+      expect(find.text('Tìm kiếm'), findsOneWidget);
+      expect(find.text('Cài đặt'), findsOneWidget);
+      expect(find.text('Trợ giúp'), findsOneWidget);
+      expect(find.text('Đăng xuất'), findsOneWidget);
     });
   });
 }

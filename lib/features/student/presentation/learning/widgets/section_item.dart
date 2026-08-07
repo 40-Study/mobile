@@ -117,7 +117,8 @@ class SectionItem extends StatelessWidget {
     if (progress?.status == 'completed') return LessonStatus.completed;
 
     // Check if any progress exists
-    if (progress?.progressPercentage != null && progress!.progressPercentage > 0) {
+    if (progress?.progressPercentage != null &&
+        progress!.progressPercentage > 0) {
       return LessonStatus.current;
     }
 
