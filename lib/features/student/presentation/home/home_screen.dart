@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/features/student/bloc/achievement/achievement_bloc.dart';
+import 'package:study/features/student/bloc/achievement/achievement_event.dart';
+import 'package:study/features/student/bloc/achievement/achievement_state.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
 import 'package:study/features/student/bloc/home/home_bloc.dart';
 import 'package:study/features/student/bloc/home/home_event.dart';
 import 'package:study/features/student/bloc/home/home_state.dart';
+import 'package:study/features/student/data/models/schedule_item_model.dart';
 import 'package:study/features/student/presentation/home/widgets/assignment_list.dart';
 import 'package:study/features/student/presentation/home/widgets/continue_learning_card.dart';
+import 'package:study/features/student/presentation/home/widgets/daily_goal_card.dart';
 import 'package:study/features/student/presentation/home/widgets/schedule_timeline.dart';
+import 'package:study/features/student/presentation/home/widgets/weekly_achievement_card.dart';
 import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
 import 'package:study/features/student/repository/student_repository_impl.dart';
@@ -35,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     context.read<HomeBloc>().add(const HomeStarted());
+    context.read<AchievementBloc>().add(const AchievementStarted());
   }
 
   @override
@@ -44,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: 56,
         leading: widget.onDrawerTap != null
             ? IconButton(
                 icon: const Icon(Icons.menu),
@@ -171,6 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildContent(BuildContext context, HomeSuccess state) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final activeScheduleId = _activeScheduleId(state.scheduleItems);
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -178,70 +187,153 @@ class _HomeScreenState extends State<HomeScreen> {
         await Future<void>.delayed(const Duration(milliseconds: 600));
       },
       child: ListView(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+        padding: EdgeInsets.zero,
         children: [
-          Text(
-            '${_greeting()}, ${_firstName(widget.userName)}',
-            style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          AppSpacing.vGap4,
-          Text(
-            _formatToday(DateTime.now()),
-            style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-          ),
-          const SizedBox(height: 20),
-          _DailyOverview(
-            scheduleCount: state.scheduleItems.length,
-            assignmentCount: state.assignments.length,
-          ),
-          AppSpacing.vGap24,
-
-          if (state.continueLearning != null) ...[
-            ContinueLearningCard(
-              enrollment: state.continueLearning!,
-              onContinueTap: () =>
-                  _navigateToCourse(context, state.continueLearning!.id),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screenPadding,
+              AppSpacing.xs,
+              AppSpacing.screenPadding,
+              AppSpacing.lg,
             ),
-            AppSpacing.vGap24,
-          ],
-
-          SectionHeader(
-            title: 'Lịch học hôm nay',
-            icon: Icons.calendar_today,
-            actionLabel: 'Xem tất cả',
-            onActionTap: () => widget.onNavigateToTab?.call(2),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${_greeting()}, ${_firstName(widget.userName)}',
+                  style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                ),
+                AppSpacing.vGap4,
+                Text(
+                  'Tiếp tục hành trình\nhọc tập của bạn.',
+                  style: tt.headlineMedium?.copyWith(
+                    color: cs.onSurface,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
+                  ),
+                ),
+                AppSpacing.vGap12,
+                _TodaySummary(
+                  scheduleCount: state.scheduleItems.length,
+                  assignmentCount: state.assignments.length,
+                ),
+                const SizedBox(height: 20),
+                if (state.continueLearning != null)
+                  ContinueLearningCard(
+                    enrollment: state.continueLearning!,
+                    onContinueTap: () =>
+                        _navigateToCourse(context, state.continueLearning!.id),
+                  ),
+              ],
+            ),
           ),
-          AppSpacing.vGap12,
-          ScheduleTimeline(
-            items: state.scheduleItems.map((item) {
-              return ScheduleTimelineItemData(
-                time: _formatTimeRange(item.startTime, item.endTime),
-                title: item.title,
-                subtitle:
-                    '${_typeLabel(item.type)} • ${item.instructorName ?? ""}',
-                type: _mapScheduleType(item.type),
-                isActive: _isCurrentOrNext(item.startTime, item.endTime),
-              );
-            }).toList(),
+          Container(
+            decoration: BoxDecoration(
+              color: Color.alphaBlend(
+                cs.primary.withValues(
+                  alpha: Theme.of(context).brightness == Brightness.light
+                      ? 0.045
+                      : 0.065,
+                ),
+                cs.surfaceContainer,
+              ),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppRadius.xl),
+              ),
+              border: Border(
+                top: BorderSide(color: cs.primary.withValues(alpha: 0.1)),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: cs.shadow.withValues(alpha: 0.045),
+                  blurRadius: 32,
+                  offset: const Offset(0, -10),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screenPadding,
+              AppSpacing.xl,
+              AppSpacing.screenPadding,
+              104,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SectionHeader(
+                  title: 'Lịch học hôm nay',
+                  actionLabel: 'Xem tất cả',
+                  onActionTap: () => widget.onNavigateToTab?.call(2),
+                ),
+                AppSpacing.vGap12,
+                ScheduleTimeline(
+                  items: state.scheduleItems.map((item) {
+                    return ScheduleTimelineItemData(
+                      time: _formatTimeRange(item.startTime, item.endTime),
+                      title: item.title,
+                      subtitle: item.instructorName ?? _typeLabel(item.type),
+                      type: _mapScheduleType(item.type),
+                      isActive: item.id == activeScheduleId,
+                    );
+                  }).toList(),
+                ),
+                AppSpacing.vGap24,
+                if (state.continueLearning != null) ...[
+                  SectionHeader(
+                    title: 'Mục tiêu hôm nay',
+                    iconColor: cs.secondary,
+                  ),
+                  AppSpacing.vGap12,
+                  DailyGoalCard(
+                    enrollment: state.continueLearning!,
+                    onTap: () =>
+                        _navigateToCourse(context, state.continueLearning!.id),
+                  ),
+                  AppSpacing.vGap24,
+                ],
+                SectionHeader(
+                  title: 'Bài tập cần hoàn thành',
+                  iconColor: cs.tertiary,
+                  actionLabel: 'Xem tất cả',
+                  onActionTap: () => widget.onNavigateToTab?.call(1),
+                ),
+                AppSpacing.vGap12,
+                AssignmentList(
+                  assignments: state.assignments,
+                  onItemTap: (assignment) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Mở bài tập: ${assignment.title}'),
+                      ),
+                    );
+                  },
+                ),
+                AppSpacing.vGap24,
+                SectionHeader(
+                  title: 'Thành tựu tuần này',
+                  iconColor: cs.tertiary,
+                  actionLabel: 'Xem tất cả',
+                  onActionTap: () => widget.onNavigateToTab?.call(3),
+                ),
+                AppSpacing.vGap12,
+                BlocBuilder<AchievementBloc, AchievementState>(
+                  builder: (context, achievementState) {
+                    return switch (achievementState) {
+                      AchievementSuccess() => WeeklyAchievementCard(
+                        stats: achievementState.stats,
+                        earnedBadgeCount: achievementState.earnedBadges.length,
+                        onTap: () => widget.onNavigateToTab?.call(3),
+                      ),
+                      AchievementFailure() => _AchievementPlaceholder(
+                        onTap: () => widget.onNavigateToTab?.call(3),
+                      ),
+                      _ => const _AchievementLoadingCard(),
+                    };
+                  },
+                ),
+              ],
+            ),
           ),
-          AppSpacing.vGap24,
-
-          SectionHeader(
-            title: 'Bài tập cần hoàn thành',
-            icon: Icons.assignment,
-            actionLabel: 'Xem tất cả',
-            onActionTap: () => widget.onNavigateToTab?.call(1),
-          ),
-          AppSpacing.vGap12,
-          AssignmentList(
-            assignments: state.assignments,
-            onItemTap: (assignment) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Mở bài tập: ${assignment.title}')),
-              );
-            },
-          ),
-          AppSpacing.vGap32,
         ],
       ),
     );
@@ -280,9 +372,24 @@ class _HomeScreenState extends State<HomeScreen> {
     };
   }
 
-  bool _isCurrentOrNext(DateTime start, DateTime end) {
+  String? _activeScheduleId(List<ScheduleItemModel> items) {
     final now = DateTime.now();
-    return start.isAfter(now) || (start.isBefore(now) && end.isAfter(now));
+    ScheduleItemModel? current;
+    ScheduleItemModel? next;
+
+    for (final item in items) {
+      final isCurrent =
+          !item.startTime.isAfter(now) && item.endTime.isAfter(now);
+      if (isCurrent &&
+          (current == null || item.startTime.isBefore(current.startTime))) {
+        current = item;
+      } else if (item.startTime.isAfter(now) &&
+          (next == null || item.startTime.isBefore(next.startTime))) {
+        next = item;
+      }
+    }
+
+    return current?.id ?? next?.id;
   }
 
   String _typeLabel(String type) {
@@ -312,23 +419,10 @@ class _HomeScreenState extends State<HomeScreen> {
     if (normalized == null || normalized.isEmpty) return 'B';
     return normalized.substring(0, 1).toUpperCase();
   }
-
-  String _formatToday(DateTime date) {
-    const weekdays = [
-      'Thứ Hai',
-      'Thứ Ba',
-      'Thứ Tư',
-      'Thứ Năm',
-      'Thứ Sáu',
-      'Thứ Bảy',
-      'Chủ Nhật',
-    ];
-    return '${weekdays[date.weekday - 1]}, ${date.day} tháng ${date.month}';
-  }
 }
 
-class _DailyOverview extends StatelessWidget {
-  const _DailyOverview({
+class _TodaySummary extends StatelessWidget {
+  const _TodaySummary({
     required this.scheduleCount,
     required this.assignmentCount,
   });
@@ -340,94 +434,129 @@ class _DailyOverview extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: cs.outlineVariant),
-        boxShadow: AppShadows.sm,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _OverviewItem(
-              icon: Icons.calendar_month_outlined,
-              value: '$scheduleCount',
-              label: 'buổi học',
-              color: cs.primary,
-              background: cs.primaryContainer,
-            ),
-          ),
-          SizedBox(
-            height: 42,
-            child: VerticalDivider(color: cs.outlineVariant),
-          ),
-          Expanded(
-            child: _OverviewItem(
-              icon: Icons.task_alt_outlined,
-              value: '$assignmentCount',
-              label: 'bài cần làm',
-              color: cs.tertiary,
-              background: cs.tertiaryContainer,
-            ),
-          ),
-        ],
-      ),
+    return Row(
+      children: [
+        _SummaryItem(
+          icon: Icons.calendar_month_outlined,
+          label: '$scheduleCount buổi học',
+          color: cs.primary,
+        ),
+        Container(
+          width: 1,
+          height: 18,
+          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          color: cs.outline,
+        ),
+        _SummaryItem(
+          icon: Icons.task_alt_outlined,
+          label: '$assignmentCount bài cần làm',
+          color: cs.tertiary,
+        ),
+      ],
     );
   }
 }
 
-class _OverviewItem extends StatelessWidget {
-  const _OverviewItem({
+class _SummaryItem extends StatelessWidget {
+  const _SummaryItem({
     required this.icon,
-    required this.value,
     required this.label,
     required this.color,
-    required this.background,
   });
 
   final IconData icon;
-  final String value;
   final String label;
   final Color color;
-  final Color background;
 
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
-    final cs = Theme.of(context).colorScheme;
 
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 38,
-          height: 38,
+          width: 24,
+          height: 24,
           decoration: BoxDecoration(
-            color: background,
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(AppRadius.xs),
           ),
-          child: Icon(icon, size: 19, color: color),
+          child: Icon(icon, size: 15, color: color),
         ),
-        AppSpacing.hGap12,
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              Text(
-                label,
-                style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
+        AppSpacing.hGap8,
+        Text(
+          label,
+          style: tt.labelSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
       ],
+    );
+  }
+}
+
+class _AchievementLoadingCard extends StatelessWidget {
+  const _AchievementLoadingCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      height: 156,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: cs.outline),
+        boxShadow: AppShadows.layeredCard,
+      ),
+      alignment: Alignment.center,
+      child: const CircularProgressIndicator(strokeWidth: 2.5),
+    );
+  }
+}
+
+class _AchievementPlaceholder extends StatelessWidget {
+  const _AchievementPlaceholder({this.onTap});
+
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        boxShadow: AppShadows.layeredCard,
+      ),
+      child: Material(
+        color: cs.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          side: BorderSide(color: cs.outline),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Row(
+              children: [
+                Icon(Icons.emoji_events_outlined, color: cs.tertiary),
+                AppSpacing.hGap12,
+                Expanded(
+                  child: Text(
+                    'Mở trang Thành tích để xem các cột mốc của bạn.',
+                    style: tt.bodyMedium,
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

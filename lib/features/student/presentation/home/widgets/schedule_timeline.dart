@@ -25,9 +25,10 @@ class ScheduleTimeline extends StatelessWidget {
         decoration: BoxDecoration(
           color: cs.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(AppRadius.card),
-          border: Border.all(color: cs.outlineVariant),
-          boxShadow: AppShadows.sm,
+          border: Border.all(color: cs.outline),
+          boxShadow: AppShadows.layeredCard,
         ),
+        clipBehavior: Clip.antiAlias,
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -45,17 +46,19 @@ class ScheduleTimeline extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: cs.outlineVariant),
-        boxShadow: AppShadows.sm,
+        border: Border.all(color: cs.outline),
+        boxShadow: AppShadows.layeredCard,
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         children: List.generate(items.length, (index) {
           return ScheduleTimelineItem(
             data: items[index],
+            isFirst: index == 0,
             isLast: index == items.length - 1,
           );
         }),

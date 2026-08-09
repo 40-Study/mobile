@@ -19,7 +19,7 @@ enum AppThemeMode {
 
   static AppThemeMode fromIndex(int? value) {
     if (value == null || value < 0 || value >= AppThemeMode.values.length) {
-      return AppThemeMode.system;
+      return AppThemeMode.light;
     }
     return AppThemeMode.values[value];
   }
@@ -31,15 +31,16 @@ enum AppThemeMode {
       case 3:
         return AppThemeMode.light;
       case 1:
-      default:
         return AppThemeMode.system;
+      default:
+        return AppThemeMode.light;
     }
   }
 }
 
 class AppThemeSettings extends Equatable {
   const AppThemeSettings({
-    this.mode = AppThemeMode.system,
+    this.mode = AppThemeMode.light,
     this.highContrast = false,
   });
 

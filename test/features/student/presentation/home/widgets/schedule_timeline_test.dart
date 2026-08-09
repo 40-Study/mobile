@@ -27,9 +27,11 @@ void main() {
         ),
       );
 
-      expect(find.text('09:00 - 10:30'), findsOneWidget);
+      expect(find.text('09:00'), findsOneWidget);
+      expect(find.text('10:30'), findsOneWidget);
       expect(find.text('Toan cao cap'), findsOneWidget);
-      expect(find.text('14:00 - 15:30'), findsOneWidget);
+      expect(find.text('14:00'), findsOneWidget);
+      expect(find.text('15:30'), findsOneWidget);
       expect(find.text('Python Co ban'), findsOneWidget);
     });
 

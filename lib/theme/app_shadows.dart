@@ -16,6 +16,29 @@ abstract class AppShadows {
     ),
   ];
 
+  static final soft = [
+    BoxShadow(
+      color: _shadowColor.withValues(alpha: 0.035),
+      blurRadius: 24,
+      spreadRadius: -6,
+      offset: const Offset(0, 8),
+    ),
+  ];
+
+  static final layeredCard = [
+    BoxShadow(
+      color: _shadowColor.withValues(alpha: 0.065),
+      blurRadius: 32,
+      spreadRadius: -8,
+      offset: const Offset(0, 14),
+    ),
+    BoxShadow(
+      color: _shadowColor.withValues(alpha: 0.04),
+      blurRadius: 8,
+      offset: const Offset(0, 2),
+    ),
+  ];
+
   static final md = [
     BoxShadow(
       color: _shadowColor.withValues(alpha: 0.08),
@@ -54,19 +77,19 @@ abstract class AppShadows {
 
   // Colored shadows (for role cards, etc.)
   static List<BoxShadow> colored(Color color, {double opacity = 0.3}) => [
-        BoxShadow(
-          color: color.withValues(alpha: opacity),
-          blurRadius: 24,
-          offset: const Offset(0, 8),
-        ),
-      ];
+    BoxShadow(
+      color: color.withValues(alpha: opacity),
+      blurRadius: 24,
+      offset: const Offset(0, 8),
+    ),
+  ];
 
   // Glow effect
   static List<BoxShadow> glow(Color color, {double opacity = 0.4}) => [
-        BoxShadow(
-          color: color.withValues(alpha: opacity),
-          blurRadius: 32,
-          spreadRadius: -4,
-        ),
-      ];
+    BoxShadow(
+      color: color.withValues(alpha: opacity),
+      blurRadius: 32,
+      spreadRadius: -4,
+    ),
+  ];
 }

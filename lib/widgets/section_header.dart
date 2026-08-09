@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/theme/theme.dart';
 
 class SectionHeader extends StatelessWidget {
   const SectionHeader({
@@ -26,8 +27,32 @@ class SectionHeader extends StatelessWidget {
     return Row(
       children: [
         if (icon != null) ...[
-          Icon(icon, size: 18, color: iconColor ?? cs.primary),
-          const SizedBox(width: 8),
+          Container(
+            width: 30,
+            height: 30,
+            decoration: BoxDecoration(
+              color: (iconColor ?? cs.primary).withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            child: Icon(icon, size: 17, color: iconColor ?? cs.primary),
+          ),
+          AppSpacing.hGap8,
+        ] else ...[
+          Container(
+            width: 4,
+            height: 22,
+            decoration: BoxDecoration(
+              color: (iconColor ?? cs.primary).withValues(alpha: 0.96),
+              borderRadius: BorderRadius.circular(AppRadius.full),
+              boxShadow: [
+                BoxShadow(
+                  color: (iconColor ?? cs.primary).withValues(alpha: 0.18),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+          ),
+          AppSpacing.hGap8,
         ],
         Expanded(
           child: Column(
@@ -37,8 +62,9 @@ class SectionHeader extends StatelessWidget {
               Text(
                 title,
                 style: tt.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: cs.onSurface,
+                  letterSpacing: 0,
                 ),
               ),
               if (subtitle != null) ...[
@@ -58,9 +84,10 @@ class SectionHeader extends StatelessWidget {
             icon: const Icon(Icons.arrow_forward_rounded, size: 16),
             label: Text(
               actionLabel!,
-              style: tt.bodySmall?.copyWith(
+              style: tt.labelMedium?.copyWith(
                 color: cs.primary,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0,
               ),
             ),
           ),

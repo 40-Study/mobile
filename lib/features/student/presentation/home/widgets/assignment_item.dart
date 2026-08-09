@@ -12,62 +12,75 @@ class AssignmentItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-
     final daysLeft = assignment.dueDate?.difference(DateTime.now()).inDays;
-    final isUrgent = daysLeft != null && daysLeft >= 0 && daysLeft < 3;
     final isOverdue = daysLeft != null && daysLeft < 0;
+    final isUrgent = daysLeft != null && daysLeft >= 0 && daysLeft < 3;
     final statusColor = isUrgent || isOverdue ? cs.error : cs.tertiary;
 
     return ListTile(
       contentPadding: EdgeInsets.zero,
+      minVerticalPadding: AppSpacing.md,
       leading: Container(
-        width: 40,
-        height: 40,
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
-          color: isUrgent || isOverdue
-              ? cs.errorContainer
-              : cs.tertiaryContainer,
-          borderRadius: BorderRadius.circular(8),
+          color: statusColor.withValues(alpha: 0.1),
+          shape: BoxShape.circle,
         ),
         child: Icon(
-          assignment.type == 'quiz' ? Icons.quiz : Icons.assignment,
+          assignment.type == 'quiz'
+              ? Icons.quiz_outlined
+              : Icons.assignment_outlined,
           color: statusColor,
-          size: 20,
+          size: 21,
         ),
       ),
       title: Text(
         assignment.title,
-        style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+        style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Padding(
         padding: const EdgeInsets.only(top: AppSpacing.xs),
-        child: Wrap(
-          spacing: AppSpacing.sm,
-          runSpacing: AppSpacing.xs,
-          children: [
-            Text(
-              '${assignment.courseName ?? "Khóa học"} • '
-              '${assignment.questionCount} câu hỏi',
-              style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-            ),
-            if (daysLeft != null)
-              Text(
-                isOverdue
-                    ? 'Đã quá hạn'
-                    : daysLeft == 0
-                    ? 'Hạn hôm nay'
-                    : 'Còn $daysLeft ngày',
-                style: tt.labelSmall?.copyWith(
-                  color: statusColor,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-          ],
+        child: Text(
+          '${assignment.courseName ?? "Khóa học"} • '
+          '${assignment.questionCount} câu hỏi',
+          style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
-      trailing: Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
+      trailing: daysLeft == null
+          ? Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant)
+          : SizedBox(
+              width: 64,
+              child: Text.rich(
+                TextSpan(
+                  text: '${isOverdue ? "Trạng thái" : "Còn lại"}\n',
+                  children: [
+                    TextSpan(
+                      text: isOverdue
+                          ? 'Quá hạn'
+                          : daysLeft == 0
+                          ? 'Hôm nay'
+                          : '$daysLeft ngày',
+                      style: TextStyle(
+                        color: statusColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                style: tt.labelSmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                  height: 1.35,
+                ),
+                textAlign: TextAlign.end,
+                maxLines: 2,
+              ),
+            ),
       onTap: onTap,
     );
   }

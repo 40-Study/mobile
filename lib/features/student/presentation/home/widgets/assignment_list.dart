@@ -20,9 +20,10 @@ class AssignmentList extends StatelessWidget {
         decoration: BoxDecoration(
           color: cs.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(AppRadius.card),
-          border: Border.all(color: cs.outlineVariant),
-          boxShadow: AppShadows.sm,
+          border: Border.all(color: cs.outline),
+          boxShadow: AppShadows.layeredCard,
         ),
+        clipBehavior: Clip.antiAlias,
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -43,15 +44,20 @@ class AssignmentList extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: cs.outlineVariant),
-        boxShadow: AppShadows.sm,
+        border: Border.all(color: cs.outline),
+        boxShadow: AppShadows.layeredCard,
       ),
+      clipBehavior: Clip.antiAlias,
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.sm,
+        ),
         itemCount: assignments.length,
-        separatorBuilder: (_, _) => const Divider(height: 16),
+        separatorBuilder: (_, _) =>
+            Divider(height: 1, indent: 56, color: cs.outlineVariant),
         itemBuilder: (context, index) {
           final assignment = assignments[index];
           return AssignmentItem(
