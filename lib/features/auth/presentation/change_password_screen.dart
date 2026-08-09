@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:study/di/di_container.dart';
 import 'package:study/features/auth/bloc/security/security_cubit.dart';
 import 'package:study/features/auth/bloc/security/security_state.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
+import 'package:study/l10n/app_localizations.dart';
+import 'package:study/theme/theme.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -27,9 +28,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   void initState() {
     super.initState();
-    _cubit = SecurityCubit(
-      authRepository: diContainer.get<AuthRepository>(),
-    );
+    _cubit = SecurityCubit(authRepository: context.read<AuthRepository>());
   }
 
   @override
@@ -45,6 +44,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return BlocProvider.value(
       value: _cubit,
@@ -52,15 +52,15 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         backgroundColor: cs.surfaceContainerLowest,
         appBar: AppBar(
           backgroundColor: cs.surfaceContainerLowest,
-          title: const Text('Đổi mật khẩu'),
+          title: Text(l10n.changePasswordTitle),
         ),
         body: BlocConsumer<SecurityCubit, SecurityState>(
           listener: (context, state) {
             if (state is SecurityPasswordChanged) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Đổi mật khẩu thành công'),
-                  backgroundColor: Colors.green,
+                SnackBar(
+                  content: Text(l10n.changePasswordButton),
+                  backgroundColor: cs.primary,
                 ),
               );
               Navigator.pop(context);
@@ -81,7 +81,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               children: [
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(AppSpacing.lg),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -89,21 +89,19 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         children: [
                           // Info card
                           Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: EdgeInsets.all(AppSpacing.lg),
                             decoration: BoxDecoration(
                               color: cs.primaryContainer.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
                               children: [
-                                Icon(
-                                  Icons.info_outline,
-                                  color: cs.primary,
-                                ),
-                                const SizedBox(width: 12),
+                                Icon(Icons.info_outline, color: cs.primary),
+                                AppSpacing.hGap12,
                                 Expanded(
                                   child: Text(
-                                    'Nên sử dụng mật khẩu mạnh mà bạn không dùng ở nơi khác',
+                                    'Nên sử dụng mật khẩu mạnh mà bạn không '
+                                    'dùng ở nơi khác',
                                     style: tt.bodySmall?.copyWith(
                                       color: cs.onPrimaryContainer,
                                     ),
@@ -112,58 +110,59 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          AppSpacing.vGap24,
 
                           // Old password
-                          _buildLabel('Mật khẩu hiện tại'),
-                          const SizedBox(height: 8),
+                          _buildLabel(l10n.currentPasswordLabel),
+                          AppSpacing.vGap8,
                           _buildPasswordField(
                             controller: _oldPasswordController,
-                            hint: 'Nhập mật khẩu hiện tại',
+                            hint: l10n.passwordHint,
                             obscure: _obscureOld,
                             onToggle: () =>
                                 setState(() => _obscureOld = !_obscureOld),
                             enabled: !isLoading,
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: AppSpacing.xl - 4),
 
                           // New password
-                          _buildLabel('Mật khẩu mới'),
-                          const SizedBox(height: 8),
+                          _buildLabel(l10n.newPasswordLabel),
+                          AppSpacing.vGap8,
                           _buildPasswordField(
                             controller: _newPasswordController,
-                            hint: 'Nhập mật khẩu mới',
+                            hint: l10n.newPasswordHint,
                             obscure: _obscureNew,
                             onToggle: () =>
                                 setState(() => _obscureNew = !_obscureNew),
                             enabled: !isLoading,
                             validator: (value) {
                               if (value == null || value.length < 8) {
-                                return 'Mật khẩu phải có ít nhất 8 ký tự';
+                                return l10n.errorPasswordTooShort;
                               }
                               return null;
                             },
                           ),
-                          const SizedBox(height: 20),
+                          SizedBox(height: AppSpacing.xl - 4),
 
                           // Confirm password
-                          _buildLabel('Xác nhận mật khẩu mới'),
-                          const SizedBox(height: 8),
+                          _buildLabel(l10n.confirmPasswordLabel),
+                          AppSpacing.vGap8,
                           _buildPasswordField(
                             controller: _confirmPasswordController,
-                            hint: 'Nhập lại mật khẩu mới',
+                            hint: l10n.confirmPasswordHint,
                             obscure: _obscureConfirm,
                             onToggle: () => setState(
-                                () => _obscureConfirm = !_obscureConfirm),
+                              () => _obscureConfirm = !_obscureConfirm,
+                            ),
                             enabled: !isLoading,
                             validator: (value) {
                               if (value != _newPasswordController.text) {
-                                return 'Mật khẩu không khớp';
+                                return l10n.errorPasswordMismatch;
                               }
                               return null;
                             },
                           ),
-                          const SizedBox(height: 16),
+                          AppSpacing.vGap16,
 
                           // Revoke others checkbox
                           CheckboxListTile(
@@ -171,7 +170,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             onChanged: isLoading
                                 ? null
                                 : (value) =>
-                                    setState(() => _revokeOthers = value!),
+                                      setState(() => _revokeOthers = value!),
                             title: Text(
                               'Đăng xuất khỏi các thiết bị khác',
                               style: tt.bodyMedium,
@@ -193,29 +192,29 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
                 // Save button
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(AppSpacing.lg),
                   child: SizedBox(
                     width: double.infinity,
                     child: FilledButton(
                       onPressed: isLoading ? null : _changePassword,
                       style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppRadius.borderMd,
                         ),
                       ),
                       child: isLoading
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: cs.onPrimary,
                               ),
                             )
-                          : const Text(
-                              'Đổi mật khẩu',
-                              style: TextStyle(
+                          : Text(
+                              l10n.changePasswordButton,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -262,9 +261,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         hintText: hint,
         filled: true,
         fillColor: cs.surface,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.lg - 2,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -286,10 +285,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   }
 
   void _changePassword() {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
     if (_oldPasswordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng nhập mật khẩu hiện tại')),
+        SnackBar(content: Text(l10n.errorRequired)),
       );
       return;
     }

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:study/di/di_container.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/features/auth/bloc/security/security_cubit.dart';
 import 'package:study/features/auth/bloc/security/security_state.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/presentation/change_password_screen.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
+import 'package:study/l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SecurityScreen extends StatefulWidget {
   const SecurityScreen({super.key});
@@ -17,13 +19,20 @@ class SecurityScreen extends StatefulWidget {
 
 class _SecurityScreenState extends State<SecurityScreen> {
   late final SecurityCubit _cubit;
+  AuthBloc? _authBloc;
 
   @override
   void initState() {
     super.initState();
-    _cubit = SecurityCubit(
-      authRepository: diContainer.get<AuthRepository>(),
-    )..loadDevices();
+    _cubit = SecurityCubit(authRepository: context.read<AuthRepository>())
+      ..loadDevices();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Store AuthBloc reference early to avoid deactivated widget issues
+    _authBloc ??= context.read<AuthBloc>();
   }
 
   @override
@@ -36,6 +45,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return BlocProvider.value(
       value: _cubit,
@@ -43,47 +53,70 @@ class _SecurityScreenState extends State<SecurityScreen> {
         backgroundColor: cs.surfaceContainerLowest,
         appBar: AppBar(
           backgroundColor: cs.surfaceContainerLowest,
-          title: const Text('Mật khẩu & Bảo mật'),
+          title: Text(l10n.passwordAndSecurity),
         ),
         body: BlocConsumer<SecurityCubit, SecurityState>(
           listener: (context, state) {
             if (state is SecurityPasswordChanged) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Đổi mật khẩu thành công')),
+                SnackBar(content: Text(l10n.passwordChangedSuccess)),
               );
             }
             if (state is SecurityLoggedOutAll) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Đã đăng xuất tất cả thiết bị'),
+                SnackBar(content: Text(l10n.loggedOutAllDevices)),
+              );
+              // Use stored bloc reference to avoid deactivated widget issue
+              _authBloc?.add(AuthLoggedOut());
+            }
+            if (state is SecurityAccountUnlinked) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    l10n.unlinkedAccount(_getProviderName(state.provider)),
+                  ),
                 ),
               );
-              context.read<AuthBloc>().add(AuthLoggedOut());
             }
             if (state is SecurityFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(state.message)));
             }
           },
           builder: (context, state) {
-            List<DeviceModel> devices = _getDevices(state);
+            final devices = _getDevices(state);
+            final linkedAccounts = _getLinkedAccounts(state);
 
             return ListView(
               padding: const EdgeInsets.all(16),
               children: [
                 // Login section
-                _SectionHeader(title: 'Đăng nhập'),
+                _SectionHeader(title: l10n.loginSection),
                 const SizedBox(height: 12),
                 _SettingsCard(
                   children: [
                     _SettingsItem(
                       icon: Icons.lock_outline,
-                      title: 'Đổi mật khẩu',
-                      subtitle: 'Nên sử dụng mật khẩu mạnh mà bạn không dùng ở nơi khác',
-                      onTap: () => _showChangePasswordDialog(),
+                      title: l10n.changePassword,
+                      subtitle: l10n.changePasswordHint,
+                      onTap: _showChangePasswordDialog,
                     ),
                   ],
+                ),
+                const SizedBox(height: 24),
+
+                // Linked accounts section
+                _SectionHeader(title: l10n.linkedAccounts),
+                const SizedBox(height: 12),
+                _LinkedAccountsList(
+                  linkedAccounts: linkedAccounts,
+                  isLoading: state is SecurityLoading,
+                  unlinkingProvider: state is SecurityUnlinkingAccount
+                      ? state.provider
+                      : null,
+                  onUnlink: _showUnlinkDialog,
+                  onLink: _linkAccount,
                 ),
                 const SizedBox(height: 24),
 
@@ -91,12 +124,12 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _SectionHeader(title: 'Nơi bạn đã đăng nhập'),
+                    _SectionHeader(title: l10n.whereYouLoggedIn),
                     if (devices.length > 1)
                       TextButton(
-                        onPressed: () => _showLogoutAllDialog(),
+                        onPressed: _showLogoutAllDialog,
                         child: Text(
-                          'Đăng xuất tất cả',
+                          l10n.logoutAll,
                           style: TextStyle(color: cs.error),
                         ),
                       ),
@@ -111,14 +144,14 @@ class _SecurityScreenState extends State<SecurityScreen> {
                 const SizedBox(height: 24),
 
                 // Advanced section
-                _SectionHeader(title: 'Nâng cao'),
+                _SectionHeader(title: l10n.advanced),
                 const SizedBox(height: 12),
                 _SettingsCard(
                   children: [
                     _SettingsItem(
                       icon: Icons.email_outlined,
-                      title: 'Email thông báo bảo mật',
-                      subtitle: 'Xem danh sách các email chính thức từ chúng tôi',
+                      title: l10n.securityEmails,
+                      subtitle: l10n.securityEmailsHint,
                       onTap: () {},
                     ),
                     Divider(
@@ -128,8 +161,8 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     ),
                     _SettingsItem(
                       icon: Icons.history,
-                      title: 'Lịch sử hoạt động',
-                      subtitle: 'Xem tất cả các hành động liên quan đến tài khoản',
+                      title: l10n.activityHistory,
+                      subtitle: l10n.activityHistoryHint,
                       onTap: () {},
                     ),
                   ],
@@ -142,13 +175,17 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     children: [
                       BlocBuilder<AuthBloc, AuthState>(
                         builder: (context, authState) {
-                          String accountId = 'N/A';
+                          var accountId = 'N/A';
                           if (authState is AuthAuthenticated) {
                             final id = authState.user.id;
-                            accountId = 'ID-${id.substring(0, id.length > 8 ? 8 : id.length).toUpperCase()}';
+                            final shortId = id.substring(
+                              0,
+                              id.length > 8 ? 8 : id.length,
+                            );
+                            accountId = 'ID-${shortId.toUpperCase()}';
                           }
                           return Text(
-                            'ID tài khoản: $accountId',
+                            l10n.accountId(accountId),
                             style: tt.bodySmall?.copyWith(
                               color: cs.onSurfaceVariant,
                             ),
@@ -181,49 +218,134 @@ class _SecurityScreenState extends State<SecurityScreen> {
       SecurityChangingPassword(:final devices) => devices,
       SecurityPasswordChanged(:final devices) => devices,
       SecurityLoggingOutAll(:final devices) => devices,
+      SecurityUnlinkingAccount(:final devices) => devices,
+      SecurityAccountUnlinked(:final devices) => devices,
       SecurityFailure(:final devices) => devices,
       _ => [],
+    };
+  }
+
+  List<LinkedAccountModel> _getLinkedAccounts(SecurityState state) {
+    return switch (state) {
+      SecurityLoaded(:final linkedAccounts) => linkedAccounts,
+      SecurityChangingPassword(:final linkedAccounts) => linkedAccounts,
+      SecurityPasswordChanged(:final linkedAccounts) => linkedAccounts,
+      SecurityLoggingOutAll(:final linkedAccounts) => linkedAccounts,
+      SecurityUnlinkingAccount(:final linkedAccounts) => linkedAccounts,
+      SecurityAccountUnlinked(:final linkedAccounts) => linkedAccounts,
+      SecurityFailure(:final linkedAccounts) => linkedAccounts,
+      _ => [],
+    };
+  }
+
+  String _getProviderName(String provider) {
+    return switch (provider.toLowerCase()) {
+      'google' => 'Google',
+      'facebook' => 'Facebook',
+      'github' => 'GitHub',
+      _ => provider,
     };
   }
 
   void _showChangePasswordDialog() {
     Navigator.push(
       context,
-      MaterialPageRoute<void>(
-        builder: (_) => const ChangePasswordScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const ChangePasswordScreen()),
     );
   }
 
   void _showLogoutAllDialog() {
     final cs = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Đăng xuất tất cả thiết bị'),
-        content: const Text(
-          'Bạn sẽ bị đăng xuất khỏi tất cả thiết bị, bao gồm cả thiết bị hiện tại. '
-          'Bạn sẽ cần đăng nhập lại.',
-        ),
+        title: Text(l10n.logoutAllDevicesTitle),
+        content: Text(l10n.logoutAllDevicesContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Hủy'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
               _cubit.logoutAllDevices();
             },
-            style: FilledButton.styleFrom(
-              backgroundColor: cs.error,
-            ),
-            child: const Text('Đăng xuất tất cả'),
+            style: FilledButton.styleFrom(backgroundColor: cs.error),
+            child: Text(l10n.logoutAll),
           ),
         ],
       ),
     );
+  }
+
+  void _showUnlinkDialog(String provider) {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final providerName = _getProviderName(provider);
+
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.unlinkAccount(providerName)),
+        content: Text(l10n.unlinkAccountContent(providerName)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _cubit.unlinkAccount(provider);
+            },
+            style: FilledButton.styleFrom(backgroundColor: cs.error),
+            child: Text(l10n.unlink),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _linkAccount(String provider) async {
+    final l10n = AppLocalizations.of(context)!;
+    final providerName = _getProviderName(provider);
+    final baseUrl = dotenv.get('BASE_URL', fallback: '');
+
+    // Check if running on localhost (dev environment)
+    if (baseUrl.contains('127.0.0.1') || baseUrl.contains('localhost')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.linkOnlyProduction(providerName))),
+      );
+      return;
+    }
+
+    try {
+      if (baseUrl.isEmpty) {
+        throw Exception(l10n.serverNotConfigured);
+      }
+
+      // OAuth link endpoint: GET /api/auth/oauth/:provider (with link mode)
+      final oauthUrl = '$baseUrl/api/auth/oauth/$provider?mode=link';
+      final uri = Uri.parse(oauthUrl);
+
+      // Open URL in browser - backend will redirect to OAuth provider
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw Exception(l10n.cannotOpenBrowser);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.cannotLink(providerName)),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
   }
 }
 
@@ -312,14 +434,9 @@ class _SettingsItem extends StatelessWidget {
       ),
       subtitle: Text(
         subtitle,
-        style: tt.bodySmall?.copyWith(
-          color: cs.onSurfaceVariant,
-        ),
+        style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
       ),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: cs.onSurfaceVariant,
-      ),
+      trailing: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
     );
   }
 }
@@ -362,14 +479,14 @@ class _DevicesList extends StatelessWidget {
             Icon(Icons.devices, size: 48, color: cs.onSurfaceVariant),
             const SizedBox(height: 16),
             Text(
-              'Không có thiết bị nào',
+              AppLocalizations.of(context)!.noDevices,
               style: TextStyle(color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: 8),
             TextButton.icon(
               onPressed: onRefresh,
               icon: const Icon(Icons.refresh),
-              label: const Text('Tải lại'),
+              label: Text(AppLocalizations.of(context)!.reload),
             ),
           ],
         ),
@@ -446,7 +563,8 @@ class _DeviceItem extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(
-                        device.deviceName ?? 'Thiết bị không xác định',
+                        device.deviceName ??
+                            AppLocalizations.of(context)!.unknownDevice,
                         style: tt.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                           color: cs.onSurface,
@@ -465,9 +583,9 @@ class _DeviceItem extends StatelessWidget {
                           color: cs.primary,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text(
-                          'Thiết bị này',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context)!.thisDevice,
+                          style: const TextStyle(
                             fontSize: 10,
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
@@ -480,9 +598,7 @@ class _DeviceItem extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   _buildDeviceInfo(),
-                  style: tt.bodySmall?.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
+                  style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                 ),
               ],
             ),
@@ -540,3 +656,183 @@ class _DeviceItem extends StatelessWidget {
   }
 }
 
+class _LinkedAccountsList extends StatelessWidget {
+  const _LinkedAccountsList({
+    required this.linkedAccounts,
+    required this.isLoading,
+    required this.unlinkingProvider,
+    required this.onUnlink,
+    required this.onLink,
+  });
+
+  final List<LinkedAccountModel> linkedAccounts;
+  final bool isLoading;
+  final String? unlinkingProvider;
+  final void Function(String provider) onUnlink;
+  final void Function(String provider) onLink;
+
+  // Supported OAuth providers
+  static const _providers = ['google', 'facebook', 'github'];
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    if (isLoading) {
+      return Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: _providers.asMap().entries.map((entry) {
+          final index = entry.key;
+          final provider = entry.value;
+          final linkedAccount = linkedAccounts
+              .cast<LinkedAccountModel?>()
+              .firstWhere(
+                (a) => a?.provider.toLowerCase() == provider,
+                orElse: () => null,
+              );
+          final isLinked = linkedAccount != null;
+          final isUnlinking = unlinkingProvider == provider;
+
+          return Column(
+            children: [
+              _LinkedAccountItem(
+                provider: provider,
+                email: linkedAccount?.email,
+                isLinked: isLinked,
+                isLoading: isUnlinking,
+                onTap: () => isLinked ? onUnlink(provider) : onLink(provider),
+              ),
+              if (index < _providers.length - 1)
+                Divider(
+                  height: 1,
+                  indent: 72,
+                  color: cs.outlineVariant.withValues(alpha: 0.5),
+                ),
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _LinkedAccountItem extends StatelessWidget {
+  const _LinkedAccountItem({
+    required this.provider,
+    required this.email,
+    required this.isLinked,
+    required this.isLoading,
+    required this.onTap,
+  });
+
+  final String provider;
+  final String? email;
+  final bool isLinked;
+  final bool isLoading;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return ListTile(
+      onTap: isLoading ? null : onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      leading: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: _getProviderColor(provider).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          _getProviderIcon(provider),
+          color: _getProviderColor(provider),
+          size: 24,
+        ),
+      ),
+      title: Text(
+        _getProviderName(provider),
+        style: tt.bodyLarge?.copyWith(
+          fontWeight: FontWeight.w500,
+          color: cs.onSurface,
+        ),
+      ),
+      subtitle: Text(
+        isLinked ? (email ?? 'Đã liên kết') : 'Chưa liên kết',
+        style: tt.bodySmall?.copyWith(
+          color: isLinked ? cs.primary : cs.onSurfaceVariant,
+        ),
+      ),
+      trailing: isLoading
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: isLinked ? cs.errorContainer : cs.primaryContainer,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                isLinked ? 'Hủy' : 'Liên kết',
+                style: tt.labelSmall?.copyWith(
+                  color: isLinked ? cs.onErrorContainer : cs.onPrimaryContainer,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+    );
+  }
+
+  String _getProviderName(String provider) {
+    return switch (provider.toLowerCase()) {
+      'google' => 'Google',
+      'facebook' => 'Facebook',
+      'github' => 'GitHub',
+      _ => provider,
+    };
+  }
+
+  IconData _getProviderIcon(String provider) {
+    return switch (provider.toLowerCase()) {
+      'google' => Icons.g_mobiledata,
+      'facebook' => Icons.facebook,
+      'github' => Icons.code,
+      _ => Icons.link,
+    };
+  }
+
+  Color _getProviderColor(String provider) {
+    return switch (provider.toLowerCase()) {
+      'google' => const Color(0xFFDB4437),
+      'facebook' => const Color(0xFF4267B2),
+      'github' => const Color(0xFF333333),
+      _ => Colors.grey,
+    };
+  }
+}

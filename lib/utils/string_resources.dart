@@ -1,24 +1,16 @@
 import 'package:flutter/widgets.dart';
-import 'package:study/generated/l10n.dart';
+import 'package:study/l10n/app_localizations.dart';
 
 extension LocalizationExtension on BuildContext {
-  S get l10n => S.of(this);
+  AppLocalizations get l10n => AppLocalizations.of(this)!;
 }
 
 extension StringResourcesExtension on BuildContext {
-  String get appearanceSettingsItem => l10n.appearanceSettingsItem;
-
   String get appTitle => l10n.appTitle;
 
   String get appearanceTitle => l10n.appearanceTitle;
 
-  String get dynamicColorSettingsItemTitle =>
-      l10n.dynamicColorSettingsItemTitle;
-
-  String get dynamicColorSettingsItemDescription =>
-      l10n.dynamicColorSettingsItemDescription;
-
-  String get darkThemeTitle => l10n.darkThemeTitle;
+  String get darkThemeSettingsItemTitle => l10n.darkThemeSettingsItemTitle;
 
   String get darkThemeOnSettingsItemTitle => l10n.darkThemeOnSettingsItemTitle;
 
@@ -28,30 +20,13 @@ extension StringResourcesExtension on BuildContext {
   String get darkThemeFollowSystemSettingsItemTitle =>
       l10n.darkThemeFollowSystemSettingsItemTitle;
 
-  String get emailsTitle => l10n.emailsTitle;
-
-  String get rocketsTab => l10n.rocketsTab;
-
-  String get coresLabel => l10n.coresLabel;
-
   String get settingsTitle => l10n.settingsTitle;
 
   String get emptyList => l10n.emptyList;
-
-  String get launchesTitle => l10n.launchesTitle;
-
-  String get rocketsTitle => l10n.rocketsTitle;
 
   String get tryAgainButton => l10n.tryAgainButton;
 
   String get aboutSettingsItem => l10n.aboutSettingsItem;
 
-  String get aboutSettingsItemDescription => l10n.aboutSettingsItemDescription;
-
-  String launchedAt(Object launchedAt) {
-    return l10n.launchedAt(launchedAt);
-  }
-
-  String get appearanceSettingsItemDescription =>
-      l10n.appearanceSettingsItemDescription;
+  String get languageTitle => l10n.languageTitle;
 }

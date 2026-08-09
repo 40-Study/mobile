@@ -1,14 +1,14 @@
-import 'package:study/bloc/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:study/bloc/theme/app_theme.dart';
 
 abstract class ThemeStorage {
-  Future<void> saveTheme(AppTheme theme);
+  Future<void> saveTheme(AppThemeMode mode);
 
-  Future<void> saveDarkTheme(DarkThemePreference pref);
+  Future<void> saveHighContrast(bool enabled);
 
-  Future<AppTheme> getTheme();
+  Future<AppThemeMode> getTheme();
 
-  Future<DarkThemePreference> getDarkTheme();
+  Future<bool> getHighContrast();
 }
 
 class SharedPreferencesThemeStorage implements ThemeStorage {
@@ -22,37 +22,27 @@ class SharedPreferencesThemeStorage implements ThemeStorage {
   final SharedPreferences sharedPreferences;
 
   @override
-  Future<AppTheme> getTheme() async {
+  Future<AppThemeMode> getTheme() async {
     final prefs = await SharedPreferences.getInstance();
-    final themeIndex = prefs.getInt(_themeKey) ?? 0;
-    if (themeIndex >= AppTheme.values.length) return AppTheme.system;
-    return AppTheme.values[themeIndex];
+    if (prefs.containsKey(_themeKey)) {
+      return AppThemeMode.fromIndex(prefs.getInt(_themeKey));
+    }
+    return AppThemeMode.fromLegacyDarkThemeValue(prefs.getInt(_darkThemeKey));
   }
 
   @override
-  Future<void> saveTheme(AppTheme theme) async {
-    await sharedPreferences.setInt(_themeKey, theme.index);
+  Future<void> saveTheme(AppThemeMode mode) async {
+    await sharedPreferences.setInt(_themeKey, mode.index);
   }
 
   @override
-  Future<void> saveDarkTheme(DarkThemePreference pref) async {
-    await sharedPreferences.setInt(_darkThemeKey, pref.darkThemeValue);
-    await sharedPreferences.setBool(
-      _isHighContrastModeEnabledKey,
-      pref.isHighContrastModeEnabled,
-    );
+  Future<void> saveHighContrast(bool enabled) async {
+    await sharedPreferences.setBool(_isHighContrastModeEnabledKey, enabled);
   }
 
   @override
-  Future<DarkThemePreference> getDarkTheme() async {
+  Future<bool> getHighContrast() async {
     final prefs = await SharedPreferences.getInstance();
-    final darkThemeValue =
-        prefs.getInt(_darkThemeKey) ?? DarkThemePreference.followSystem;
-    final isHighContrastModeEnabled =
-        prefs.getBool(_isHighContrastModeEnabledKey) ?? false;
-    return DarkThemePreference(
-      darkThemeValue: darkThemeValue,
-      isHighContrastModeEnabled: isHighContrastModeEnabled,
-    );
+    return prefs.getBool(_isHighContrastModeEnabledKey) ?? false;
   }
 }

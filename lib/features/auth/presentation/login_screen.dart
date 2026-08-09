@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:study/l10n/app_localizations.dart';
+import 'package:study/constants/durations.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/features/auth/bloc/auth_animation_cubit.dart';
 import 'package:study/features/auth/bloc/login/login_bloc.dart';
+import 'package:study/features/auth/data/auth_storage.dart';
+import 'package:study/features/auth/data/device_info_helper.dart';
 import 'package:study/features/auth/presentation/utils/validators.dart';
+import 'package:study/features/auth/presentation/widgets/auth_animated_submit_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
-import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
 import 'package:study/features/auth/presentation/widgets/auth_text_field.dart';
 import 'package:study/features/auth/presentation/widgets/login_bear.dart';
+import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/routes/router.dart';
+import 'package:study/theme/theme.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,6 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordCtrl = TextEditingController();
   final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
+  late final LoginBloc _loginBloc;
   final _animCubit = AuthAnimationCubit();
   final _bearKey = GlobalKey<AuthBearState>();
   bool _obscure = true;
@@ -31,6 +40,10 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    _loginBloc = LoginBloc(
+      authRepository: context.read<AuthRepository>(),
+      deviceInfoHelper: DeviceInfoHelper(context.read<AuthStorage>()),
+    );
     _animCubit.startEntrance();
   }
 
@@ -40,13 +53,14 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordCtrl.dispose();
     _emailFocus.dispose();
     _passwordFocus.dispose();
+    _loginBloc.close();
     _animCubit.close();
     super.dispose();
   }
 
   void _onSubmit() {
     if (!_formKey.currentState!.validate()) return;
-    context.read<LoginBloc>().add(
+    _loginBloc.add(
       LoginSubmitted(
         email: _emailCtrl.text.trim(),
         password: _passwordCtrl.text,
@@ -59,9 +73,13 @@ class _LoginScreenState extends State<LoginScreen> {
     final navigator = NavigationService.of(context);
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
-    return BlocProvider.value(
-      value: _animCubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _loginBloc),
+        BlocProvider.value(value: _animCubit),
+      ],
       child: Scaffold(
         backgroundColor: cs.surface,
         body: BlocListener<LoginBloc, LoginState>(
@@ -73,11 +91,33 @@ class _LoginScreenState extends State<LoginScreen> {
               case LoginSuccess(:final response):
                 anim.succeed();
                 _bearKey.currentState?.triggerSuccess();
-                Future.delayed(const Duration(milliseconds: 800), () {
+                Future.delayed(AppDurations.authSuccess, () {
                   if (!mounted) return;
                   context.read<AuthBloc>().add(AuthLoggedIn(response));
-                  navigator.pushAndRemoveAll(Routes.app);
+                  // Small delay to let AuthBloc process the event
+                  Future.delayed(AppDurations.authSuccessNavigate, () {
+                    if (!mounted) return;
+                    navigator.pushAndRemoveAll(Routes.app);
+                  });
                 });
+              case LoginNeedsRoleSelection(:final sessionToken, :final roles):
+                anim.succeed();
+                _bearKey.currentState?.triggerSuccess();
+                Future.delayed(AppDurations.authRolePickerDelay, () {
+                  if (!mounted) return;
+                  navigator.navigateTo(Routes.loginRolePicker, {
+                    'sessionToken': sessionToken,
+                    'roles': roles,
+                  });
+                });
+              case LoginNeedsRoleRegistration():
+                anim.succeed();
+                // TODO: Navigate to role registration screen
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Bạn chưa có vai trò, vui lòng đăng ký'),
+                  ),
+                );
               case LoginFailure(:final message):
                 anim.fail();
                 _bearKey.currentState?.triggerFail();
@@ -91,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: EdgeInsets.only(bottom: AppSpacing.lg),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -109,22 +149,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         key: _formKey,
                         child: StaggeredColumn(
                           animate: false,
-                          spacing: 16,
+                          spacing: 12,
                           children: [
                             Column(
                               children: [
                                 Text(
-                                  'Đăng nhập',
-                                  style: tt.headlineSmall?.copyWith(
+                                  l10n.loginTitle,
+                                  style: tt.titleLarge?.copyWith(
                                     fontWeight: FontWeight.w700,
                                     color: cs.onSurface,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                const SizedBox(height: 6),
+                                AppSpacing.vGap4,
                                 Text(
-                                  'Chào mừng bạn quay lại',
-                                  style: tt.bodyLarge?.copyWith(
+                                  l10n.loginSubtitle,
+                                  style: tt.bodyMedium?.copyWith(
                                     color: cs.onSurfaceVariant,
                                   ),
                                   textAlign: TextAlign.center,
@@ -134,8 +174,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             AuthTextField(
                               controller: _emailCtrl,
                               focusNode: _emailFocus,
-                              label: 'Email',
-                              hint: 'Nhập email của bạn',
+                              label: l10n.emailLabel,
+                              hint: l10n.emailHint,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
                               validator: AuthValidators.email,
@@ -146,8 +186,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 AuthTextField(
                                   controller: _passwordCtrl,
                                   focusNode: _passwordFocus,
-                                  label: 'Mật khẩu',
-                                  hint: 'Nhập mật khẩu',
+                                  label: l10n.passwordLabel,
+                                  hint: l10n.passwordHint,
                                   textInputAction: TextInputAction.done,
                                   isObscured: _obscure,
                                   onToggleObscure: () {
@@ -155,7 +195,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                   },
                                   validator: AuthValidators.password,
                                 ),
-                                const SizedBox(height: 4),
                                 TextButton(
                                   onPressed: () => navigator.navigateTo(
                                     Routes.forgotPassword,
@@ -167,58 +206,87 @@ class _LoginScreenState extends State<LoginScreen> {
                                         MaterialTapTargetSize.shrinkWrap,
                                   ),
                                   child: Text(
-                                    'Quên mật khẩu?',
+                                    l10n.forgotPassword,
                                     style: TextStyle(
                                       color: cs.primary,
                                       fontWeight: FontWeight.w500,
-                                      fontSize: 14,
+                                      fontSize: 13,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            BlocBuilder<LoginBloc, LoginState>(
-                              builder: (context, loginState) {
-                                return BlocBuilder<
-                                  AuthAnimationCubit,
-                                  AuthAnimationState
-                                >(
-                                  builder: (context, animState) {
-                                    return AuthButton(
-                                      label: 'Đăng nhập',
-                                      isLoading: loginState is LoginInProgress,
-                                      isSuccess:
-                                          animState.status ==
-                                          AuthScreenAnimStatus.success,
-                                      onPressed: _onSubmit,
-                                    );
-                                  },
-                                );
-                              },
+                            AuthAnimatedSubmitButton<LoginBloc, LoginState>(
+                              label: l10n.loginButton,
+                              isLoading: (state) => state is LoginInProgress,
+                              onPressed: _onSubmit,
                             ),
-                            const SizedBox(height: 8),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'Chưa có tài khoản? ',
+                                  '${l10n.dontHaveAccount} ',
                                   style: TextStyle(
                                     color: cs.onSurfaceVariant,
-                                    fontSize: 14,
+                                    fontSize: 13,
                                   ),
                                 ),
                                 GestureDetector(
                                   onTap: () =>
                                       navigator.navigateTo(Routes.selectRole),
                                   child: Text(
-                                    'Đăng ký',
+                                    l10n.register,
                                     style: TextStyle(
                                       color: cs.primary,
                                       fontWeight: FontWeight.w600,
-                                      fontSize: 14,
+                                      fontSize: 13,
                                     ),
                                   ),
+                                ),
+                              ],
+                            ),
+                            AppSpacing.vGap8,
+                            // OAuth divider
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Divider(color: cs.outlineVariant),
+                                ),
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.md,
+                                  ),
+                                  child: Text(
+                                    l10n.orContinueWith,
+                                    style: TextStyle(
+                                      color: cs.onSurfaceVariant,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Divider(color: cs.outlineVariant),
+                                ),
+                              ],
+                            ),
+                            AppSpacing.vGap4,
+                            // OAuth buttons
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _OAuthButton(
+                                  provider: 'google',
+                                  onTap: () => _loginWithOAuth('google'),
+                                ),
+                                AppSpacing.hGap12,
+                                _OAuthButton(
+                                  provider: 'facebook',
+                                  onTap: () => _loginWithOAuth('facebook'),
+                                ),
+                                AppSpacing.hGap12,
+                                _OAuthButton(
+                                  provider: 'github',
+                                  onTap: () => _loginWithOAuth('github'),
                                 ),
                               ],
                             ),
@@ -234,5 +302,106 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _loginWithOAuth(String provider) async {
+    final providerName = _getProviderName(provider);
+    final baseUrl = dotenv.get('BASE_URL', fallback: '');
+
+    // Check if running on localhost (dev environment)
+    if (baseUrl.contains('127.0.0.1') || baseUrl.contains('localhost')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Đăng nhập bằng $providerName chỉ khả dụng trên '
+            'môi trường production',
+          ),
+        ),
+      );
+      return;
+    }
+
+    try {
+      if (baseUrl.isEmpty) {
+        throw Exception('Server chưa được cấu hình');
+      }
+
+      // OAuth endpoint: GET /api/auth/oauth/:provider
+      final oauthUrl = '$baseUrl/api/auth/oauth/$provider';
+      final uri = Uri.parse(oauthUrl);
+
+      // Open URL in browser - backend will redirect to OAuth provider
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        throw Exception('Không thể mở trình duyệt');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Không thể đăng nhập bằng $providerName'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+    }
+  }
+
+  String _getProviderName(String provider) {
+    return switch (provider.toLowerCase()) {
+      'google' => 'Google',
+      'facebook' => 'Facebook',
+      'github' => 'GitHub',
+      _ => provider,
+    };
+  }
+}
+
+class _OAuthButton extends StatelessWidget {
+  const _OAuthButton({required this.provider, required this.onTap});
+
+  final String provider;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+        ),
+        child: Icon(
+          _getProviderIcon(provider),
+          color: _getProviderColor(provider),
+          size: 24,
+        ),
+      ),
+    );
+  }
+
+  IconData _getProviderIcon(String provider) {
+    return switch (provider.toLowerCase()) {
+      'google' => Icons.g_mobiledata,
+      'facebook' => Icons.facebook,
+      'github' => Icons.code,
+      _ => Icons.link,
+    };
+  }
+
+  Color _getProviderColor(String provider) {
+    return switch (provider.toLowerCase()) {
+      'google' => const Color(0xFFDB4437),
+      'facebook' => const Color(0xFF4267B2),
+      'github' => const Color(0xFF333333),
+      _ => Colors.grey,
+    };
   }
 }

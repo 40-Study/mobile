@@ -70,20 +70,20 @@ class _AnimatedOnboardingPageContentState
       duration: const Duration(milliseconds: 2200),
     );
 
-    _illustrationScale = Tween<double>(begin: 0.4, end: 1.0).animate(
+    _illustrationScale = Tween<double>(begin: 0.94, end: 1.0).animate(
       CurvedAnimation(
         parent: _illustrationController,
-        curve: Curves.easeOutBack,
+        curve: Curves.easeOutCubic,
       ),
     );
     _illustrationOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _illustrationController, curve: Curves.easeOut),
     );
-    _pulseScale = Tween<double>(begin: 1.0, end: 1.06).animate(
+    _pulseScale = Tween<double>(begin: 1.0, end: 1.015).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
-    _titleOffset = Tween<double>(begin: 24.0, end: 0.0).animate(
+    _titleOffset = Tween<double>(begin: 12.0, end: 0.0).animate(
       CurvedAnimation(parent: _titleController, curve: Curves.easeOutCubic),
     );
     _titleOpacity = Tween<double>(
@@ -91,7 +91,7 @@ class _AnimatedOnboardingPageContentState
       end: 1.0,
     ).animate(CurvedAnimation(parent: _titleController, curve: Curves.easeOut));
 
-    _subtitleOffset = Tween<double>(begin: 20.0, end: 0.0).animate(
+    _subtitleOffset = Tween<double>(begin: 10.0, end: 0.0).animate(
       CurvedAnimation(parent: _subtitleController, curve: Curves.easeOutCubic),
     );
     _subtitleOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -142,8 +142,8 @@ class _AnimatedOnboardingPageContentState
 
     setState(() {
       // Rotate based on drag direction (limited range)
-      _rotationY = (_rotationY + delta.dx * 0.005).clamp(-0.3, 0.3);
-      _rotationX = (_rotationX - delta.dy * 0.005).clamp(-0.3, 0.3);
+      _rotationY = (_rotationY + delta.dx * 0.002).clamp(-0.08, 0.08);
+      _rotationX = (_rotationX - delta.dy * 0.002).clamp(-0.08, 0.08);
     });
   }
 
@@ -213,9 +213,9 @@ class _AnimatedOnboardingPageContentState
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildIllustration(colorScheme),
-            const SizedBox(height: 36),
+            const SizedBox(height: 28),
             _buildTitle(theme, colorScheme),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             _buildSubtitle(theme, colorScheme),
           ],
         ),
@@ -257,7 +257,7 @@ class _AnimatedOnboardingPageContentState
               );
             },
           ),
-          const SizedBox(height: 36),
+          const SizedBox(height: 28),
           AnimatedBuilder(
             animation: _titleController,
             builder: (context, child) {
@@ -270,7 +270,7 @@ class _AnimatedOnboardingPageContentState
               );
             },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           AnimatedBuilder(
             animation: _subtitleController,
             builder: (context, child) {
@@ -292,7 +292,7 @@ class _AnimatedOnboardingPageContentState
     final data = widget.data;
     final baseStyle = theme.textTheme.headlineMedium?.copyWith(
       fontWeight: FontWeight.w800,
-      letterSpacing: -0.3,
+      letterSpacing: 0,
       height: 1.2,
       color: colorScheme.onSurface,
     );

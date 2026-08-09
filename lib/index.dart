@@ -1,5 +1,5 @@
 export 'bloc/theme/theme_cubit.dart';
-export 'constants/index.dart';
+export 'constants/index.dart' hide AppRadius, AppSpacing;
 export 'features/view.dart';
 export 'repository/repository.dart';
 export 'routes/router.dart';

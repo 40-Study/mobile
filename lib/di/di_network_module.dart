@@ -2,12 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart' hide Environment;
 import 'package:study/config/app_config.dart';
 import 'package:study/config/environment.dart';
+import 'package:study/core/network/network_error_interceptor.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/auth/data/auth_api_client.dart';
+import 'package:study/features/course/data/course_api_client.dart';
 import 'package:study/features/auth/data/auth_interceptor.dart';
 import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/features/auth/data/session_expired_notifier.dart';
-import 'package:study/features/teacher/data/teacher_api_client.dart';
 import 'package:talker_dio_logger/talker_dio_logger_interceptor.dart';
 import 'package:talker_dio_logger/talker_dio_logger_settings.dart';
 
@@ -16,8 +17,20 @@ abstract class NetworkModule {
   @lazySingleton
   Dio provideDio() {
     final config = Environment<AppConfig>.instance().config;
+    const timeout = Duration(seconds: 30);
 
-    final dio = Dio(BaseOptions(baseUrl: config.url));
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: config.url,
+        connectTimeout: timeout,
+        receiveTimeout: timeout,
+        sendTimeout: timeout,
+        headers: const {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
 
     dio.interceptors.add(
       AuthInterceptor(
@@ -37,6 +50,8 @@ abstract class NetworkModule {
       ),
     );
 
+    dio.interceptors.add(NetworkErrorInterceptor());
+
     return dio;
   }
 
@@ -44,5 +59,5 @@ abstract class NetworkModule {
   AuthApiClient provideAuthApiClient(Dio dio) => AuthApiClient(dio);
 
   @lazySingleton
-  TeacherApiClient provideTeacherApiClient(Dio dio) => TeacherApiClient(dio);
+  CourseApiClient provideCourseApiClient(Dio dio) => CourseApiClient(dio);
 }

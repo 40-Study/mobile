@@ -14,7 +14,6 @@ final class RegisterSubmitted extends RegisterEvent {
     required this.password,
     required this.confirmPassword,
     required this.userName,
-    required this.roleId,
     this.fullName,
   });
 
@@ -22,18 +21,16 @@ final class RegisterSubmitted extends RegisterEvent {
   final String password;
   final String confirmPassword;
   final String userName;
-  final String roleId;
   final String? fullName;
 
   @override
   List<Object?> get props => [
-    email,
-    password,
-    confirmPassword,
-    userName,
-    roleId,
-    fullName,
-  ];
+        email,
+        password,
+        confirmPassword,
+        userName,
+        fullName,
+      ];
 }
 
 /// Xác thực OTP (bước 2).
@@ -54,7 +51,6 @@ final class RegisterOTPResent extends RegisterEvent {
     required this.password,
     required this.confirmPassword,
     required this.userName,
-    required this.roleId,
     this.fullName,
   });
 
@@ -62,7 +58,6 @@ final class RegisterOTPResent extends RegisterEvent {
   final String password;
   final String confirmPassword;
   final String userName;
-  final String roleId;
   final String? fullName;
 
   @override

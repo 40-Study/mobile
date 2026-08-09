@@ -19,39 +19,85 @@ final class SecurityLoading extends SecurityState {
 }
 
 final class SecurityLoaded extends SecurityState {
-  const SecurityLoaded({required this.devices});
+  const SecurityLoaded({
+    required this.devices,
+    this.linkedAccounts = const [],
+  });
 
   final List<DeviceModel> devices;
+  final List<LinkedAccountModel> linkedAccounts;
 
   @override
-  List<Object?> get props => [devices];
+  List<Object?> get props => [devices, linkedAccounts];
 }
 
 final class SecurityChangingPassword extends SecurityState {
-  const SecurityChangingPassword({required this.devices});
+  const SecurityChangingPassword({
+    required this.devices,
+    this.linkedAccounts = const [],
+  });
 
   final List<DeviceModel> devices;
+  final List<LinkedAccountModel> linkedAccounts;
 
   @override
-  List<Object?> get props => [devices];
+  List<Object?> get props => [devices, linkedAccounts];
 }
 
 final class SecurityPasswordChanged extends SecurityState {
-  const SecurityPasswordChanged({required this.devices});
+  const SecurityPasswordChanged({
+    required this.devices,
+    this.linkedAccounts = const [],
+  });
 
   final List<DeviceModel> devices;
+  final List<LinkedAccountModel> linkedAccounts;
 
   @override
-  List<Object?> get props => [devices];
+  List<Object?> get props => [devices, linkedAccounts];
 }
 
 final class SecurityLoggingOutAll extends SecurityState {
-  const SecurityLoggingOutAll({required this.devices});
+  const SecurityLoggingOutAll({
+    required this.devices,
+    this.linkedAccounts = const [],
+  });
 
   final List<DeviceModel> devices;
+  final List<LinkedAccountModel> linkedAccounts;
 
   @override
-  List<Object?> get props => [devices];
+  List<Object?> get props => [devices, linkedAccounts];
+}
+
+final class SecurityUnlinkingAccount extends SecurityState {
+  const SecurityUnlinkingAccount({
+    required this.devices,
+    required this.linkedAccounts,
+    required this.provider,
+  });
+
+  final List<DeviceModel> devices;
+  final List<LinkedAccountModel> linkedAccounts;
+  final String provider;
+
+  @override
+  List<Object?> get props => [devices, linkedAccounts, provider];
+}
+
+final class SecurityAccountUnlinked extends SecurityState {
+  const SecurityAccountUnlinked({
+    required this.devices,
+    required this.linkedAccounts,
+    required this.provider,
+  });
+
+  final List<DeviceModel> devices;
+  final List<LinkedAccountModel> linkedAccounts;
+  final String provider;
+
+  @override
+  List<Object?> get props => [devices, linkedAccounts, provider];
 }
 
 final class SecurityLoggedOutAll extends SecurityState {
@@ -59,11 +105,16 @@ final class SecurityLoggedOutAll extends SecurityState {
 }
 
 final class SecurityFailure extends SecurityState {
-  const SecurityFailure({required this.message, this.devices = const []});
+  const SecurityFailure({
+    required this.message,
+    this.devices = const [],
+    this.linkedAccounts = const [],
+  });
 
   final String message;
   final List<DeviceModel> devices;
+  final List<LinkedAccountModel> linkedAccounts;
 
   @override
-  List<Object?> get props => [message, devices];
+  List<Object?> get props => [message, devices, linkedAccounts];
 }

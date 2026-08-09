@@ -20,6 +20,9 @@ abstract class AuthStorage {
   Future<void> saveActiveRole(RoleModel role);
   Future<RoleModel?> getActiveRole();
 
+  Future<void> saveActiveProfile(ProfileModel profile);
+  Future<ProfileModel?> getActiveProfile();
+
   Future<void> saveActiveOrg(OrganizationModel? org);
   Future<OrganizationModel?> getActiveOrg();
 
@@ -45,6 +48,7 @@ class SharedPreferencesAuthStorage implements AuthStorage {
   static const _keyRefreshToken = 'auth_refresh_token';
   static const _keyUser = 'auth_user';
   static const _keyActiveRole = 'auth_active_role';
+  static const _keyActiveProfile = 'auth_active_profile';
   static const _keyActiveOrg = 'auth_active_org';
   static const _keyEntryContext = 'auth_entry_context';
   static const _keyDeviceId = 'auth_device_id';
@@ -95,6 +99,18 @@ class SharedPreferencesAuthStorage implements AuthStorage {
   }
 
   @override
+  Future<void> saveActiveProfile(ProfileModel profile) async {
+    await _prefs.setString(_keyActiveProfile, jsonEncode(profile.toJson()));
+  }
+
+  @override
+  Future<ProfileModel?> getActiveProfile() async {
+    final raw = _prefs.getString(_keyActiveProfile);
+    if (raw == null) return null;
+    return ProfileModel.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+  }
+
+  @override
   Future<void> saveActiveOrg(OrganizationModel? org) async {
     if (org == null) {
       await _prefs.remove(_keyActiveOrg);
@@ -139,6 +155,7 @@ class SharedPreferencesAuthStorage implements AuthStorage {
     await _prefs.remove(_keyRefreshToken);
     await _prefs.remove(_keyUser);
     await _prefs.remove(_keyActiveRole);
+    await _prefs.remove(_keyActiveProfile);
     await _prefs.remove(_keyActiveOrg);
     await _prefs.remove(_keyEntryContext);
   }

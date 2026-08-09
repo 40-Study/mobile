@@ -52,65 +52,58 @@ class _SvgLogoXPainter extends CustomPainter {
     _DotData(x: 0.08, y: 0.02, size: 1.00),
 
     // Inner diagonals (4 large dots)
-    _DotData(x: 0.25, y: 0.21, size: 0.78),   // upper-right
-    _DotData(x: -0.11, y: 0.20, size: 0.80),  // upper-left
-    _DotData(x: 0.24, y: -0.17, size: 0.78),  // lower-right
-    _DotData(x: -0.12, y: -0.14, size: 0.76),  // lower-left
-
+    _DotData(x: 0.25, y: 0.21, size: 0.78), // upper-right
+    _DotData(x: -0.11, y: 0.20, size: 0.80), // upper-left
+    _DotData(x: 0.24, y: -0.17, size: 0.78), // lower-right
+    _DotData(x: -0.12, y: -0.14, size: 0.76), // lower-left
     // ===== MEDIUM DOTS (arms) =====
     // Left arm
-    _DotData(x: -0.27, y: 0.01, size: 0.62),  // left-center
-    _DotData(x: -0.27, y: 0.40, size: 0.62),  // top-left
+    _DotData(x: -0.27, y: 0.01, size: 0.62), // left-center
+    _DotData(x: -0.27, y: 0.40, size: 0.62), // top-left
     _DotData(x: -0.28, y: -0.33, size: 0.60), // bottom-left
-
     // Right arm
-    _DotData(x: 0.38, y: 0.01, size: 0.62),   // right-center
-    _DotData(x: 0.42, y: 0.38, size: 0.62),   // top-right
-    _DotData(x: 0.41, y: -0.34, size: 0.60),  // bottom-right
-
+    _DotData(x: 0.38, y: 0.01, size: 0.62), // right-center
+    _DotData(x: 0.42, y: 0.38, size: 0.62), // top-right
+    _DotData(x: 0.41, y: -0.34, size: 0.60), // bottom-right
     // Top/Bottom center
-    _DotData(x: 0.06, y: 0.36, size: 0.60),   // top-center
-    _DotData(x: 0.04, y: -0.33, size: 0.62),  // bottom-center
-
+    _DotData(x: 0.06, y: 0.36, size: 0.60), // top-center
+    _DotData(x: 0.04, y: -0.33, size: 0.62), // bottom-center
     // ===== SMALL DOTS (outer arms) =====
     // Outer corners
-    _DotData(x: 0.53, y: -0.17, size: 0.46),  // right-upper outer
+    _DotData(x: 0.53, y: -0.17, size: 0.46), // right-upper outer
     _DotData(x: -0.40, y: -0.16, size: 0.46), // left-upper outer
-    _DotData(x: 0.52, y: 0.23, size: 0.46),   // right-lower outer
+    _DotData(x: 0.52, y: 0.23, size: 0.46), // right-lower outer
     _DotData(x: -0.44, y: -0.50, size: 0.46), // left far bottom
-    _DotData(x: -0.40, y: 0.24, size: 0.46),  // left-lower outer
-
+    _DotData(x: -0.40, y: 0.24, size: 0.46), // left-lower outer
     // Far diagonals
-    _DotData(x: 0.57, y: 0.56, size: 0.46),   // top-right far
-    _DotData(x: 0.26, y: 0.53, size: 0.46),   // top-center-right
-    _DotData(x: -0.13, y: 0.52, size: 0.46),  // top-center-left
-    _DotData(x: -0.44, y: 0.57, size: 0.46),  // top-left far
-    _DotData(x: 0.56, y: -0.51, size: 0.46),  // bottom-right far
-    _DotData(x: 0.25, y: -0.47, size: 0.46),  // bottom-center-right
+    _DotData(x: 0.57, y: 0.56, size: 0.46), // top-right far
+    _DotData(x: 0.26, y: 0.53, size: 0.46), // top-center-right
+    _DotData(x: -0.13, y: 0.52, size: 0.46), // top-center-left
+    _DotData(x: -0.44, y: 0.57, size: 0.46), // top-left far
+    _DotData(x: 0.56, y: -0.51, size: 0.46), // bottom-right far
+    _DotData(x: 0.25, y: -0.47, size: 0.46), // bottom-center-right
     _DotData(x: -0.14, y: -0.46, size: 0.46), // bottom-center-left
-
     // ===== TINY DOTS (scattered edges) =====
     _DotData(x: -0.54, y: -0.32, size: 0.30), // left edge
-    _DotData(x: -0.53, y: 0.39, size: 0.30),  // left edge upper
-    _DotData(x: 0.64, y: 0.37, size: 0.30),   // right edge upper
-    _DotData(x: -0.27, y: 0.65, size: 0.30),  // top far left
+    _DotData(x: -0.53, y: 0.39, size: 0.30), // left edge upper
+    _DotData(x: 0.64, y: 0.37, size: 0.30), // right edge upper
+    _DotData(x: -0.27, y: 0.65, size: 0.30), // top far left
     _DotData(x: -0.58, y: -0.65, size: 0.28), // far corner
     _DotData(x: -0.28, y: -0.59, size: 0.28), // bottom far left
-    _DotData(x: 0.63, y: -0.33, size: 0.30),  // right edge lower
-    _DotData(x: 0.71, y: 0.69, size: 0.28),   // far top-right
-    _DotData(x: 0.40, y: 0.66, size: 0.30),   // top-right
-    _DotData(x: -0.56, y: 0.72, size: 0.28),  // far top-left
-    _DotData(x: 0.38, y: -0.61, size: 0.28),  // bottom-right
-    _DotData(x: 0.69, y: -0.65, size: 0.28),  // far bottom-right
-
+    _DotData(x: 0.63, y: -0.33, size: 0.30), // right edge lower
+    _DotData(x: 0.71, y: 0.69, size: 0.28), // far top-right
+    _DotData(x: 0.40, y: 0.66, size: 0.30), // top-right
+    _DotData(x: -0.56, y: 0.72, size: 0.28), // far top-left
+    _DotData(x: 0.38, y: -0.61, size: 0.28), // bottom-right
+    _DotData(x: 0.69, y: -0.65, size: 0.28), // far bottom-right
     // ===== VERY TINY DOTS (fading edges) =====
-    _DotData(x: 0.74, y: 0.51, size: 0.22),   // far right
-    _DotData(x: -0.39, y: 0.77, size: 0.22),  // far top
-    _DotData(x: 0.73, y: -0.46, size: 0.22),  // far right lower
+    _DotData(x: 0.74, y: 0.51, size: 0.22), // far right
+    _DotData(x: -0.39, y: 0.77, size: 0.22), // far top
+    _DotData(x: 0.73, y: -0.46, size: 0.22), // far right lower
     _DotData(x: -0.64, y: -0.44, size: 0.22), // far left lower
-    _DotData(x: -0.63, y: 0.52, size: 0.22),  // far left upper
-    _DotData(x: 0.51, y: 0.76, size: 0.22),   // far top right
-    _DotData(x: 0.49, y: -0.71, size: 0.18),  // very far bottom
+    _DotData(x: -0.63, y: 0.52, size: 0.22), // far left upper
+    _DotData(x: 0.51, y: 0.76, size: 0.22), // far top right
+    _DotData(x: 0.49, y: -0.71, size: 0.18), // very far bottom
     _DotData(x: -0.41, y: -0.70, size: 0.18), // very far bottom left
   ];
 
@@ -142,21 +135,29 @@ class _SvgLogoXPainter extends CustomPainter {
       // Start position: fly in from outside along dot's direction
       final flyAngle = _flyInAngles[i % _flyInAngles.length];
       final flyDistance = size.width * 1.2;
-      final startOffset = center + Offset(
-        math.cos(flyAngle) * flyDistance,
-        math.sin(flyAngle) * flyDistance,
-      );
+      final startOffset =
+          center +
+          Offset(
+            math.cos(flyAngle) * flyDistance,
+            math.sin(flyAngle) * flyDistance,
+          );
 
       // Apply easeOutBack for bouncy landing
       final curvedProgress = Curves.easeOutBack.transform(dotProgress);
-      final currentOffset = Offset.lerp(startOffset, endOffset, curvedProgress)!;
+      final currentOffset = Offset.lerp(
+        startOffset,
+        endOffset,
+        curvedProgress,
+      )!;
 
       // Radius grows with easeOutCubic
       final radiusProgress = Curves.easeOutCubic.transform(dotProgress);
       final radius = maxRadius * dot.size * radiusProgress;
 
       // Opacity fades in quickly
-      final opacity = Curves.easeOut.transform((dotProgress * 2).clamp(0.0, 1.0));
+      final opacity = Curves.easeOut.transform(
+        (dotProgress * 2).clamp(0.0, 1.0),
+      );
       paint.color = color.withValues(alpha: opacity);
 
       canvas.drawCircle(currentOffset, radius, paint);
@@ -175,7 +176,10 @@ class _SvgLogoXPainter extends CustomPainter {
     // Center dots arrive FIRST, outer dots arrive LATER
     final staggerDelay = normalizedDist * 0.6;
     final animationWindow = 0.4;
-    final dotProgress = ((progress - staggerDelay) / animationWindow).clamp(0.0, 1.0);
+    final dotProgress = ((progress - staggerDelay) / animationWindow).clamp(
+      0.0,
+      1.0,
+    );
 
     return dotProgress;
   }
@@ -695,12 +699,8 @@ class CommunityIllustration extends StatelessWidget {
             top: 70,
             child: _CommunityNode(
               size: 48,
-              color: const Color(0xFFF0ABFC), // pink
-              child: const Icon(
-                Icons.school,
-                size: 22,
-                color: Color(0xFF86198F),
-              ),
+              color: colorScheme.secondaryContainer,
+              child: Icon(Icons.school, size: 22, color: colorScheme.secondary),
             ),
           ),
 
@@ -725,12 +725,8 @@ class CommunityIllustration extends StatelessWidget {
             bottom: 70,
             child: _CommunityNode(
               size: 52,
-              color: const Color(0xFFFED7AA), // orange
-              child: const Icon(
-                Icons.person,
-                size: 26,
-                color: Color(0xFFEA580C),
-              ),
+              color: colorScheme.tertiaryContainer,
+              child: Icon(Icons.person, size: 26, color: colorScheme.tertiary),
             ),
           ),
 

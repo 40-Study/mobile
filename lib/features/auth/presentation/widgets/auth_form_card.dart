@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:study/l10n/app_localizations.dart';
+import 'package:study/theme/theme.dart';
 
 class AuthFormCard extends StatelessWidget {
   const AuthFormCard({super.key, required this.child, this.showLogo = false});
@@ -10,14 +12,20 @@ class AuthFormCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 28),
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
+      margin: EdgeInsets.symmetric(horizontal: AppSpacing.xl + 4),
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.xl - 4,
+        AppSpacing.xl + 4,
+        AppSpacing.xl - 4,
+        AppSpacing.xl + 4,
+      ),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: AppRadius.borderXl,
         boxShadow: [
           BoxShadow(
             color: cs.shadow.withValues(alpha: 0.06),
@@ -31,13 +39,13 @@ class AuthFormCard extends StatelessWidget {
         children: [
           if (showLogo) ...[
             Text(
-              '40Study',
+              l10n.appTitle,
               style: tt.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: cs.primary,
               ),
             ),
-            const SizedBox(height: 32),
+            AppSpacing.vGap32,
           ],
           child,
         ],

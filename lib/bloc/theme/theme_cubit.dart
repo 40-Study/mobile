@@ -5,40 +5,26 @@ import 'package:study/index.dart';
 
 /// Theme persistence and mode (light/dark/system).
 class ThemeCubit extends Cubit<AppThemeSettings> {
-  ThemeCubit(this.themeRepository) : super(defaultTheme);
+  ThemeCubit(this._repository) : super(const AppThemeSettings());
 
-  final ThemeRepository themeRepository;
-
-  static var defaultTheme = AppThemeSettings(
-    darkTheme: DarkThemePreference(
-      darkThemeValue: DarkThemePreference.followSystem,
-    ),
-    appTheme: AppTheme.system,
-  );
+  final ThemeRepository _repository;
 
   Future<void> loadTheme() async {
-    final savedTheme = await themeRepository.getTheme();
+    final savedTheme = await _repository.getTheme();
     emit(savedTheme);
   }
 
-  AppThemeSettings get theme => state;
-
-  set setTheme(AppThemeSettings theme) {
-    themeRepository.saveTheme(theme.appTheme);
-    emit(theme);
+  Future<void> setThemeMode(AppThemeMode mode) async {
+    final settings = state.copyWith(mode: mode);
+    await _repository.saveTheme(settings.mode);
+    emit(settings);
   }
 
-  void updateTheme(AppThemeSettings value) => setTheme = value;
-
-  ThemeMode get themeMode {
-    switch (state.darkTheme.darkThemeValue) {
-      case DarkThemePreference.on:
-        return ThemeMode.dark;
-      case DarkThemePreference.off:
-        return ThemeMode.light;
-      case DarkThemePreference.followSystem:
-      default:
-        return ThemeMode.system;
-    }
+  Future<void> setHighContrast({required bool enabled}) async {
+    final settings = state.copyWith(highContrast: enabled);
+    await _repository.saveHighContrast(enabled);
+    emit(settings);
   }
+
+  ThemeMode get themeMode => state.themeMode;
 }

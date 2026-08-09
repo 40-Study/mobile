@@ -24,9 +24,11 @@ import 'package:study/features/auth/data/auth_storage.dart' as _i450;
 import 'package:study/features/auth/data/session_expired_notifier.dart'
     as _i785;
 import 'package:study/features/auth/repository/auth_repository.dart' as _i584;
-import 'package:study/features/teacher/data/repository/teacher_repository.dart'
-    as _i1041;
-import 'package:study/features/teacher/data/teacher_api_client.dart' as _i437;
+import 'package:study/features/course/data/course_api_client.dart' as _i511;
+import 'package:study/features/course/repository/course_repository.dart'
+    as _i1065;
+import 'package:study/features/course/repository/course_repository_impl.dart'
+    as _i38;
 import 'package:study/repository/onboarding_repository.dart' as _i812;
 import 'package:study/repository/theme_repository.dart' as _i354;
 import 'package:talker/talker.dart' as _i993;
@@ -61,18 +63,16 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i384.AuthApiClient>(
       () => networkModule.provideAuthApiClient(gh<_i361.Dio>()),
     );
-    gh.lazySingleton<_i437.TeacherApiClient>(
-      () => networkModule.provideTeacherApiClient(gh<_i361.Dio>()),
+    gh.lazySingleton<_i511.CourseApiClient>(
+      () => networkModule.provideCourseApiClient(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i1065.CourseRepository>(
+      () => _i38.CourseRepositoryImpl(gh<_i511.CourseApiClient>()),
     );
     gh.factory<_i584.AuthRepository>(
       () => repositoryModule.provideAuthRepository(
         gh<_i384.AuthApiClient>(),
         gh<_i450.AuthStorage>(),
-      ),
-    );
-    gh.factory<_i1041.TeacherRepository>(
-      () => repositoryModule.provideTeacherRepository(
-        gh<_i437.TeacherApiClient>(),
       ),
     );
     gh.factory<_i812.OnboardingRepository>(

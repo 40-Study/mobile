@@ -9,8 +9,8 @@ part 'register_state.dart';
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   RegisterBloc({required AuthRepository authRepository})
-    : _authRepository = authRepository,
-      super(RegisterInitial()) {
+      : _authRepository = authRepository,
+        super(RegisterInitial()) {
     on<RegisterSubmitted>(_onSubmitted);
     on<RegisterOTPSubmitted>(_onOTPSubmitted);
     on<RegisterOTPResent>(_onOTPResent);
@@ -30,7 +30,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         password: event.password,
         confirmPassword: event.confirmPassword,
         userName: event.userName,
-        roleId: event.roleId,
         fullName: event.fullName,
       );
       emit(RegisterOTPSent());
@@ -65,7 +64,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         password: event.password,
         confirmPassword: event.confirmPassword,
         userName: event.userName,
-        roleId: event.roleId,
         fullName: event.fullName,
       );
       emit(RegisterOTPSent());

@@ -3,12 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/auth_animation_cubit.dart';
 import 'package:study/features/auth/bloc/forgot_password/forgot_password_bloc.dart';
 import 'package:study/features/auth/presentation/utils/validators.dart';
+import 'package:study/features/auth/presentation/widgets/auth_animated_submit_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
-import 'package:study/features/auth/presentation/widgets/auth_button.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
 import 'package:study/features/auth/presentation/widgets/auth_text_field.dart';
 import 'package:study/features/auth/presentation/widgets/login_bear.dart';
+import 'package:study/features/auth/repository/auth_repository.dart';
+import 'package:study/l10n/app_localizations.dart';
 import 'package:study/routes/router.dart';
+import 'package:study/theme/theme.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -23,6 +26,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _confirmCtrl = TextEditingController();
   final _passwordFocus = FocusNode();
   final _confirmFocus = FocusNode();
+  late final ForgotPasswordBloc _forgotPasswordBloc;
   final _animCubit = AuthAnimationCubit();
   final _bearKey = GlobalKey<AuthBearState>();
   bool _obscurePassword = true;
@@ -31,6 +35,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   @override
   void initState() {
     super.initState();
+    _forgotPasswordBloc = ForgotPasswordBloc(
+      authRepository: context.read<AuthRepository>(),
+    );
     _animCubit.startEntrance();
   }
 
@@ -40,13 +47,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     _confirmCtrl.dispose();
     _passwordFocus.dispose();
     _confirmFocus.dispose();
+    _forgotPasswordBloc.close();
     _animCubit.close();
     super.dispose();
   }
 
   void _onSubmit(String email, String otp) {
     if (!_formKey.currentState!.validate()) return;
-    context.read<ForgotPasswordBloc>().add(
+    _forgotPasswordBloc.add(
       ForgotPasswordResetSubmitted(
         email: email,
         otp: otp,
@@ -61,14 +69,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     final navigator = NavigationService.of(context);
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
     final args =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
         {};
     final email = args['email'] as String? ?? '';
     final otp = args['otp'] as String? ?? '';
 
-    return BlocProvider.value(
-      value: _animCubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _forgotPasswordBloc),
+        BlocProvider.value(value: _animCubit),
+      ],
       child: Scaffold(
         backgroundColor: cs.surface,
         appBar: AppBar(
@@ -88,8 +100,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 Future.delayed(const Duration(milliseconds: 400), () {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Đặt lại mật khẩu thành công!'),
+                    SnackBar(
+                      content: Text(l10n.resetPasswordButton),
                     ),
                   );
                   navigator.pushAndRemoveAll(Routes.login);
@@ -109,7 +121,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             top: false,
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: EdgeInsets.only(bottom: AppSpacing.lg),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -131,16 +143,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             Column(
                               children: [
                                 Text(
-                                  'Đặt mật khẩu mới',
+                                  l10n.resetPasswordTitle,
                                   style: tt.headlineSmall?.copyWith(
                                     fontWeight: FontWeight.w700,
                                     color: cs.onSurface,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                const SizedBox(height: 6),
+                                SizedBox(height: AppSpacing.xs + 2),
                                 Text(
-                                  'Nhập mật khẩu mới cho tài khoản',
+                                  l10n.newPasswordHint,
                                   style: tt.bodyLarge?.copyWith(
                                     color: cs.onSurfaceVariant,
                                   ),
@@ -151,7 +163,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             AuthTextField(
                               controller: _passwordCtrl,
                               focusNode: _passwordFocus,
-                              label: 'Mật khẩu mới',
+                              label: l10n.newPasswordLabel,
                               textInputAction: TextInputAction.next,
                               isObscured: _obscurePassword,
                               onToggleObscure: () {
@@ -164,7 +176,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             AuthTextField(
                               controller: _confirmCtrl,
                               focusNode: _confirmFocus,
-                              label: 'Xác nhận mật khẩu',
+                              label: l10n.confirmPasswordLabel,
                               textInputAction: TextInputAction.done,
                               isObscured: _obscureConfirm,
                               onToggleObscure: () {
@@ -176,29 +188,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                 _passwordCtrl.text,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            BlocBuilder<
+                            AppSpacing.vGap4,
+                            AuthAnimatedSubmitButton<
                               ForgotPasswordBloc,
                               ForgotPasswordState
                             >(
-                              builder: (context, state) {
-                                return BlocBuilder<
-                                  AuthAnimationCubit,
-                                  AuthAnimationState
-                                >(
-                                  builder: (context, animState) {
-                                    return AuthButton(
-                                      label: 'Đặt lại mật khẩu',
-                                      isLoading:
-                                          state is ForgotPasswordInProgress,
-                                      isSuccess:
-                                          animState.status ==
-                                          AuthScreenAnimStatus.success,
-                                      onPressed: () => _onSubmit(email, otp),
-                                    );
-                                  },
-                                );
-                              },
+                              label: l10n.resetPasswordButton,
+                              isLoading: (state) =>
+                                  state is ForgotPasswordInProgress,
+                              onPressed: () => _onSubmit(email, otp),
                             ),
                           ],
                         ),

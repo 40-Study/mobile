@@ -9,6 +9,7 @@ import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
 import 'app_localizations_pt.dart';
 import 'app_localizations_uk.dart';
+import 'app_localizations_vi.dart';
 
 // ignore_for_file: type=lint
 
@@ -100,6 +101,7 @@ abstract class AppLocalizations {
     Locale('en'),
     Locale('pt'),
     Locale('uk'),
+    Locale('vi'),
   ];
 
   /// The title of the application
@@ -1031,6 +1033,816 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cores'**
   String get coresLabel;
+
+  /// No description provided for @selectRoleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Role'**
+  String get selectRoleTitle;
+
+  /// No description provided for @selectRoleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe to explore'**
+  String get selectRoleSubtitle;
+
+  /// No description provided for @continueWithRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with {role}'**
+  String continueWithRole(Object role);
+
+  /// No description provided for @tapToSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to select'**
+  String get tapToSelect;
+
+  /// No description provided for @alreadyHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get alreadyHaveAccount;
+
+  /// No description provided for @login.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get login;
+
+  /// No description provided for @register.
+  ///
+  /// In en, this message translates to:
+  /// **'Register'**
+  String get register;
+
+  /// No description provided for @roleStudent.
+  ///
+  /// In en, this message translates to:
+  /// **'Student'**
+  String get roleStudent;
+
+  /// No description provided for @roleTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher'**
+  String get roleTeacher;
+
+  /// No description provided for @roleParent.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent'**
+  String get roleParent;
+
+  /// No description provided for @roleOrganization.
+  ///
+  /// In en, this message translates to:
+  /// **'Organization'**
+  String get roleOrganization;
+
+  /// No description provided for @loginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get loginTitle;
+
+  /// No description provided for @loginSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get loginSubtitle;
+
+  /// No description provided for @emailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get emailLabel;
+
+  /// No description provided for @emailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email'**
+  String get emailHint;
+
+  /// No description provided for @passwordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get passwordLabel;
+
+  /// No description provided for @passwordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter password'**
+  String get passwordHint;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get forgotPassword;
+
+  /// No description provided for @loginButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get loginButton;
+
+  /// No description provided for @orContinueWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Or continue with'**
+  String get orContinueWith;
+
+  /// No description provided for @dontHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account?'**
+  String get dontHaveAccount;
+
+  /// No description provided for @registerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Account'**
+  String get registerTitle;
+
+  /// No description provided for @registerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start your learning journey'**
+  String get registerSubtitle;
+
+  /// No description provided for @fullNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get fullNameLabel;
+
+  /// No description provided for @fullNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your full name'**
+  String get fullNameHint;
+
+  /// No description provided for @usernameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get usernameLabel;
+
+  /// No description provided for @usernameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter username'**
+  String get usernameHint;
+
+  /// No description provided for @confirmPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get confirmPasswordLabel;
+
+  /// No description provided for @confirmPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-enter password'**
+  String get confirmPasswordHint;
+
+  /// No description provided for @registerButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Register'**
+  String get registerButton;
+
+  /// No description provided for @agreeToTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree to the'**
+  String get agreeToTerms;
+
+  /// No description provided for @termsOfService.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get termsOfService;
+
+  /// No description provided for @and.
+  ///
+  /// In en, this message translates to:
+  /// **'and'**
+  String get and;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @otpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'OTP Verification'**
+  String get otpTitle;
+
+  /// No description provided for @otpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the OTP sent to {email}'**
+  String otpSubtitle(Object email);
+
+  /// No description provided for @resendOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend code'**
+  String get resendOtp;
+
+  /// No description provided for @resendOtpIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend in {seconds}s'**
+  String resendOtpIn(Object seconds);
+
+  /// No description provided for @verifyButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get verifyButton;
+
+  /// No description provided for @forgotPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot Password'**
+  String get forgotPasswordTitle;
+
+  /// No description provided for @forgotPasswordSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter email to receive recovery code'**
+  String get forgotPasswordSubtitle;
+
+  /// No description provided for @sendResetCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Recovery Code'**
+  String get sendResetCode;
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @newPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get newPasswordLabel;
+
+  /// No description provided for @newPasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter new password'**
+  String get newPasswordHint;
+
+  /// No description provided for @resetPasswordButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Password'**
+  String get resetPasswordButton;
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profileTitle;
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Profile'**
+  String get editProfile;
+
+  /// No description provided for @phoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get phoneLabel;
+
+  /// No description provided for @dateOfBirthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of Birth'**
+  String get dateOfBirthLabel;
+
+  /// No description provided for @bioLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bio'**
+  String get bioLabel;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get saveChanges;
+
+  /// No description provided for @changePasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Password'**
+  String get changePasswordTitle;
+
+  /// No description provided for @currentPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Password'**
+  String get currentPasswordLabel;
+
+  /// No description provided for @changePasswordButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Password'**
+  String get changePasswordButton;
+
+  /// No description provided for @securityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Security'**
+  String get securityTitle;
+
+  /// No description provided for @linkedAccounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked Accounts'**
+  String get linkedAccounts;
+
+  /// No description provided for @devices.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged In Devices'**
+  String get devices;
+
+  /// No description provided for @logoutAllDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout All Devices'**
+  String get logoutAllDevices;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// No description provided for @logoutConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to logout?'**
+  String get logoutConfirm;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @errorRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required'**
+  String get errorRequired;
+
+  /// No description provided for @errorInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email address'**
+  String get errorInvalidEmail;
+
+  /// No description provided for @errorPasswordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters'**
+  String get errorPasswordTooShort;
+
+  /// No description provided for @errorPasswordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get errorPasswordMismatch;
+
+  /// No description provided for @errorInvalidOtp.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid OTP code'**
+  String get errorInvalidOtp;
+
+  /// No description provided for @errorNetworkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Network connection error'**
+  String get errorNetworkError;
+
+  /// No description provided for @errorUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred'**
+  String get errorUnknown;
+
+  /// No description provided for @languageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get languageTitle;
+
+  /// No description provided for @students.
+  ///
+  /// In en, this message translates to:
+  /// **'Students'**
+  String get students;
+
+  /// No description provided for @courses.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses'**
+  String get courses;
+
+  /// No description provided for @rating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get rating;
+
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View All'**
+  String get viewAll;
+
+  /// No description provided for @featuredCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Featured Courses'**
+  String get featuredCourses;
+
+  /// No description provided for @editCover.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Cover'**
+  String get editCover;
+
+  /// No description provided for @xpPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'XP Points'**
+  String get xpPoints;
+
+  /// No description provided for @streak.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak'**
+  String get streak;
+
+  /// No description provided for @tabOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get tabOverview;
+
+  /// No description provided for @tabAchievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get tabAchievements;
+
+  /// No description provided for @tabChildren.
+  ///
+  /// In en, this message translates to:
+  /// **'Children'**
+  String get tabChildren;
+
+  /// No description provided for @tabNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get tabNotifications;
+
+  /// No description provided for @joinedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined {date}'**
+  String joinedOn(Object date);
+
+  /// No description provided for @accountInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Information'**
+  String get accountInfo;
+
+  /// No description provided for @notUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Not updated'**
+  String get notUpdated;
+
+  /// No description provided for @joinedDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined Date'**
+  String get joinedDate;
+
+  /// No description provided for @options.
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get options;
+
+  /// No description provided for @switchRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch Role'**
+  String get switchRole;
+
+  /// No description provided for @skills.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills'**
+  String get skills;
+
+  /// No description provided for @interests.
+  ///
+  /// In en, this message translates to:
+  /// **'Interests'**
+  String get interests;
+
+  /// No description provided for @achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get achievements;
+
+  /// No description provided for @contact.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact'**
+  String get contact;
+
+  /// No description provided for @totalEarnings.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Earnings'**
+  String get totalEarnings;
+
+  /// No description provided for @thisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'this month'**
+  String get thisMonth;
+
+  /// No description provided for @parentOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent Overview'**
+  String get parentOverview;
+
+  /// No description provided for @children.
+  ///
+  /// In en, this message translates to:
+  /// **'Children'**
+  String get children;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @classes.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes'**
+  String get classes;
+
+  /// No description provided for @passwordAndSecurity.
+  ///
+  /// In en, this message translates to:
+  /// **'Password & Security'**
+  String get passwordAndSecurity;
+
+  /// No description provided for @loginSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get loginSection;
+
+  /// No description provided for @changePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Password'**
+  String get changePassword;
+
+  /// No description provided for @changePasswordHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Use a strong password you don\'t use elsewhere'**
+  String get changePasswordHint;
+
+  /// No description provided for @passwordChangedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Password changed successfully'**
+  String get passwordChangedSuccess;
+
+  /// No description provided for @loggedOutAllDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged out all devices'**
+  String get loggedOutAllDevices;
+
+  /// No description provided for @unlinkedAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlinked {provider}'**
+  String unlinkedAccount(Object provider);
+
+  /// No description provided for @whereYouLoggedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Where you\'re logged in'**
+  String get whereYouLoggedIn;
+
+  /// No description provided for @logoutAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout All'**
+  String get logoutAll;
+
+  /// No description provided for @advanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get advanced;
+
+  /// No description provided for @securityEmails.
+  ///
+  /// In en, this message translates to:
+  /// **'Security notification emails'**
+  String get securityEmails;
+
+  /// No description provided for @securityEmailsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'View official emails from us'**
+  String get securityEmailsHint;
+
+  /// No description provided for @activityHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity history'**
+  String get activityHistory;
+
+  /// No description provided for @activityHistoryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'View all account-related actions'**
+  String get activityHistoryHint;
+
+  /// No description provided for @accountId.
+  ///
+  /// In en, this message translates to:
+  /// **'Account ID: {id}'**
+  String accountId(Object id);
+
+  /// No description provided for @logoutAllDevicesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout all devices'**
+  String get logoutAllDevicesTitle;
+
+  /// No description provided for @logoutAllDevicesContent.
+  ///
+  /// In en, this message translates to:
+  /// **'You will be logged out of all devices, including this one. You will need to log in again.'**
+  String get logoutAllDevicesContent;
+
+  /// No description provided for @unlinkAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlink {provider}'**
+  String unlinkAccount(Object provider);
+
+  /// No description provided for @unlinkAccountContent.
+  ///
+  /// In en, this message translates to:
+  /// **'You will not be able to log in with {provider} after unlinking. Are you sure?'**
+  String unlinkAccountContent(Object provider);
+
+  /// No description provided for @unlink.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlink'**
+  String get unlink;
+
+  /// No description provided for @linkOnlyProduction.
+  ///
+  /// In en, this message translates to:
+  /// **'Linking {provider} is only available in production'**
+  String linkOnlyProduction(Object provider);
+
+  /// No description provided for @serverNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Server not configured'**
+  String get serverNotConfigured;
+
+  /// No description provided for @cannotOpenBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot open browser'**
+  String get cannotOpenBrowser;
+
+  /// No description provided for @cannotLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot link with {provider}'**
+  String cannotLink(Object provider);
+
+  /// No description provided for @noDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'No devices found'**
+  String get noDevices;
+
+  /// No description provided for @reload.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload'**
+  String get reload;
+
+  /// No description provided for @thisDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'This device'**
+  String get thisDevice;
+
+  /// No description provided for @unknownDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown device'**
+  String get unknownDevice;
+
+  /// No description provided for @linkWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Link with {provider}'**
+  String linkWith(Object provider);
+
+  /// No description provided for @loginWithThisProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Login with this profile'**
+  String get loginWithThisProfile;
+
+  /// No description provided for @swipeToChangeProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe to change profile'**
+  String get swipeToChangeProfile;
+
+  /// No description provided for @organizationProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Organization profile'**
+  String get organizationProfile;
+
+  /// No description provided for @systemProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'System profile'**
+  String get systemProfile;
+
+  /// No description provided for @chooseProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose profile'**
+  String get chooseProfileTitle;
+
+  /// No description provided for @chooseProfileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You have multiple profiles. Choose one to continue.'**
+  String get chooseProfileSubtitle;
 }
 
 class _AppLocalizationsDelegate
@@ -1044,7 +1856,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['de', 'en', 'pt', 'uk'].contains(locale.languageCode);
+      <String>['de', 'en', 'pt', 'uk', 'vi'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -1061,6 +1873,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsPt();
     case 'uk':
       return AppLocalizationsUk();
+    case 'vi':
+      return AppLocalizationsVi();
   }
 
   throw FlutterError(

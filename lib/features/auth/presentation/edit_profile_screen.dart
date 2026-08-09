@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/account/account_cubit.dart';
 import 'package:study/features/auth/bloc/account/account_state.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
+import 'package:study/l10n/app_localizations.dart';
+import 'package:study/theme/theme.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -35,7 +37,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
       final user = authState.user;
-      _nameController.text = user.fullName ?? user.username;
+      _nameController.text = user.fullName ?? user.username ?? '';
       _phoneController.text = user.phone ?? '';
       _dobController.text = user.dateOfBirth ?? '';
     }
@@ -54,12 +56,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: cs.surfaceContainerLowest,
       appBar: AppBar(
         backgroundColor: cs.surfaceContainerLowest,
-        title: const Text('Chỉnh sửa trang cá nhân'),
+        title: Text(l10n.editProfile),
         actions: [
           BlocBuilder<AccountCubit, AccountState>(
             builder: (context, state) {
@@ -73,7 +76,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : Text(
-                        'Lưu',
+                        l10n.saveChanges,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: cs.primary,
@@ -89,9 +92,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           if (state is AccountUpdateSuccess) {
             context.read<AuthBloc>().add(AuthUserUpdated(state.user));
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Cập nhật thành công'),
-                backgroundColor: Colors.green,
+              SnackBar(
+                content: Text(l10n.saveChanges),
+                backgroundColor: cs.tertiary,
               ),
             );
             Navigator.pop(context);
@@ -106,7 +109,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           }
         },
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(AppSpacing.lg),
           child: Form(
             key: _formKey,
             child: Column(
@@ -121,7 +124,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                       if (state is AuthAuthenticated) {
                         avatarUrl = state.user.avatarUrl;
-                        final name = state.user.fullName ?? state.user.username;
+                        final name = state.user.fullName ?? state.user.username ?? 'User';
                         initials = _getInitials(name);
                       }
 
@@ -149,7 +152,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 bottom: 0,
                                 right: 0,
                                 child: Container(
-                                  padding: const EdgeInsets.all(8),
+                                  padding: EdgeInsets.all(AppSpacing.sm),
                                   decoration: BoxDecoration(
                                     color: cs.primary,
                                     shape: BoxShape.circle,
@@ -167,70 +170,70 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                          AppSpacing.vGap12,
                           TextButton(
                             onPressed: () {},
-                            child: const Text('Thay đổi ảnh đại diện'),
+                            child: Text(l10n.editProfile),
                           ),
                         ],
                       );
                     },
                   ),
                 ),
-                const SizedBox(height: 24),
+                AppSpacing.vGap24,
 
                 // Form Fields
-                _buildSectionTitle('Thông tin cơ bản'),
-                const SizedBox(height: 16),
+                _buildSectionTitle(l10n.profileTitle),
+                AppSpacing.vGap16,
 
                 _buildTextField(
                   controller: _nameController,
-                  label: 'Họ và tên',
-                  hint: 'Nhập họ và tên',
+                  label: l10n.fullNameLabel,
+                  hint: l10n.fullNameHint,
                   icon: Icons.person_outline,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Vui lòng nhập họ và tên';
+                      return l10n.errorRequired;
                     }
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                AppSpacing.vGap16,
 
                 _buildTextField(
                   controller: _phoneController,
-                  label: 'Số điện thoại',
-                  hint: 'Nhập số điện thoại',
+                  label: l10n.phoneLabel,
+                  hint: l10n.phoneLabel,
                   icon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
                 ),
-                const SizedBox(height: 16),
+                AppSpacing.vGap16,
 
                 _buildTextField(
                   controller: _dobController,
-                  label: 'Ngày sinh',
+                  label: l10n.dateOfBirthLabel,
                   hint: 'DD/MM/YYYY',
                   icon: Icons.calendar_today_outlined,
                   readOnly: true,
-                  onTap: () => _selectDate(),
+                  onTap: _selectDate,
                 ),
-                const SizedBox(height: 24),
+                AppSpacing.vGap24,
 
-                _buildSectionTitle('Giới thiệu'),
-                const SizedBox(height: 16),
+                _buildSectionTitle(l10n.bioLabel),
+                AppSpacing.vGap16,
 
                 _buildTextField(
                   controller: _bioController,
-                  label: 'Tiểu sử',
-                  hint: 'Viết vài dòng giới thiệu về bạn...',
+                  label: l10n.bioLabel,
+                  hint: l10n.bioLabel,
                   icon: Icons.edit_note,
                   maxLines: 4,
                 ),
-                const SizedBox(height: 32),
+                AppSpacing.vGap32,
 
                 // Email (readonly)
-                _buildSectionTitle('Thông tin tài khoản'),
-                const SizedBox(height: 16),
+                _buildSectionTitle(l10n.emailLabel),
+                AppSpacing.vGap16,
 
                 BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, state) {
@@ -240,22 +243,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     }
                     return _buildInfoRow(
                       icon: Icons.email_outlined,
-                      label: 'Email',
+                      label: l10n.emailLabel,
                       value: email,
                       trailing: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.1),
+                          color: cs.tertiary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Text(
-                          'Đã xác thực',
+                        child: Text(
+                          l10n.confirm,
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.green,
+                            color: cs.tertiary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -263,7 +266,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     );
                   },
                 ),
-                const SizedBox(height: 32),
+                AppSpacing.vGap32,
               ],
             ),
           ),
@@ -342,16 +345,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final tt = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.borderMd,
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
         children: [
           Icon(icon, color: cs.onSurfaceVariant),
-          const SizedBox(width: 16),
+          AppSpacing.hGap16,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -362,7 +365,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     color: cs.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: 4),
+                AppSpacing.vGap4,
                 Text(
                   value,
                   style: tt.bodyLarge?.copyWith(

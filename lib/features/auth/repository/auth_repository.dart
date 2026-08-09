@@ -1,40 +1,55 @@
 import 'package:study/features/auth/data/models/models.dart';
 
+/// Auth Repository Interface - theo API Documentation v1.0
 abstract class AuthRepository {
-  // ==========================================================================
-  // PUBLIC APIs
-  // ==========================================================================
+  // ============================================================================
+  // PUBLIC APIs (không cần token)
+  // ============================================================================
 
-  /// Lấy danh sách system roles.
-  Future<List<RoleModel>> getSystemRoles();
-
-  /// Đăng nhập.
-  Future<AuthResponse> login({
-    required String email,
-    required String password,
-    required DeviceInfoModel deviceInfo,
-  });
-
-  /// Bước 1 đăng ký: Gửi form, server gửi OTP qua email.
+  /// 2.1 Đăng ký - Bước 1: Request OTP
   Future<void> registerRequest({
     required String email,
     required String password,
     required String confirmPassword,
     required String userName,
-    required String roleId,
     String? fullName,
   });
 
-  /// Bước 2 đăng ký: Xác thực OTP.
+  /// 2.2 Đăng ký - Bước 2: Verify OTP
   Future<RegisterResponse> registerVerify({
     required String email,
     required String otp,
   });
 
-  /// Bước 1 reset password: Gửi OTP qua email.
+  /// 2.3 Đăng nhập
+  /// Returns LoginResponse với 3 trường hợp:
+  /// - 1 role: completed=true, có access_token, user
+  /// - 2+ roles: completed=true, có session_token, roles[]
+  /// - 0 roles: completed=false, needs_role_registration=true
+  Future<LoginResponse> login({
+    required String email,
+    required String password,
+    required DeviceInfoModel deviceInfo,
+  });
+
+  /// 2.4 Chọn Role (sau login nếu có nhiều roles)
+  Future<AuthResponse> selectRole({
+    required String sessionToken,
+    required String roleId,
+    required String roleType,
+    String? organizationId,
+  });
+
+  /// 2.5 Lấy danh sách System Roles
+  Future<List<RoleModel>> getSystemRoles();
+
+  /// 2.6 Refresh Token
+  Future<TokenPair> refreshToken();
+
+  /// 2.7 Quên mật khẩu - Bước 1: Request OTP
   Future<void> resetPasswordRequest({required String email});
 
-  /// Bước 2 reset password: Xác thực OTP + đặt mật khẩu mới.
+  /// 2.8 Quên mật khẩu - Bước 2: Reset Password
   Future<void> resetPassword({
     required String email,
     required String otp,
@@ -42,24 +57,52 @@ abstract class AuthRepository {
     required String confirmPassword,
   });
 
-  /// Refresh token.
-  Future<TokenPair> refreshToken();
+  // ============================================================================
+  // PROTECTED APIs (cần token)
+  // ============================================================================
 
-  // ==========================================================================
-  // PROTECTED APIs (cần đăng nhập)
-  // ==========================================================================
-
-  /// Lấy thông tin user hiện tại từ server.
+  /// 3.1 Lấy thông tin user hiện tại
   Future<UserModel> getMe();
 
-  /// Cập nhật thông tin user.
+  /// 3.2 Cập nhật thông tin user
   Future<UserModel> updateMe({
     String? username,
+    String? fullName,
     String? phone,
     String? dateOfBirth,
+    String? bio,
+    String? avatarUrl,
   });
 
-  /// Đổi mật khẩu.
+  /// 3.3 Lấy roles của user
+  Future<List<RoleModel>> getMyRoles();
+
+  /// 3.4 Chuyển role (đã đăng nhập)
+  Future<AuthResponse> switchRole({
+    required String roleId,
+    required String roleType,
+    String? organizationId,
+  });
+
+  /// 3.5 Lấy danh sách profiles
+  Future<List<ProfileModel>> getProfiles();
+
+  /// 3.6 Tạo profile mới
+  Future<ProfileModel> createProfile({required String systemRoleId});
+
+  /// 3.7 Xóa profile
+  Future<void> deleteProfile({required String profileId});
+
+  /// 3.8 Lấy danh sách thiết bị đăng nhập
+  Future<List<DeviceModel>> getDevices();
+
+  /// 2.10 Logout (thiết bị hiện tại)
+  Future<void> logout();
+
+  /// 2.11 Logout tất cả thiết bị
+  Future<void> logoutAll();
+
+  /// 2.12 Đổi mật khẩu
   Future<void> changePassword({
     required String oldPassword,
     required String newPassword,
@@ -68,40 +111,63 @@ abstract class AuthRepository {
     bool revokeOthers = false,
   });
 
-  /// Lấy danh sách profiles (multi-role).
-  Future<List<ProfileModel>> getProfiles();
+  /// 2.13 Xóa tài khoản
+  Future<void> deleteAccount({required String password});
 
-  /// Thêm system profile mới.
-  Future<ProfileModel> addSystemProfile({required String systemRoleId});
+  /// 2.14 Lấy danh sách tài khoản OAuth đã liên kết
+  Future<List<LinkedAccountModel>> getLinkedAccounts();
 
-  /// Chuyển đổi profile.
-  Future<AuthResponse> switchProfile({
-    required String profileType,
-    required String profileId,
+  /// 2.15 Hủy liên kết tài khoản OAuth
+  Future<void> unlinkAccount({required String provider});
+
+  // ============================================================================
+  // OAuth APIs
+  // ============================================================================
+
+  /// 2.16 Lấy OAuth URL để mở browser
+  Future<String> getOAuthUrl({required String provider});
+
+  /// 2.17 Xử lý OAuth callback (exchange code for tokens)
+  Future<LoginResponse> handleOAuthCallback({
+    required String provider,
+    required String code,
+    String? state,
   });
 
-  /// Lấy danh sách thiết bị đăng nhập.
-  Future<List<DeviceModel>> getDevices();
+  /// 2.18 Liên kết OAuth account (cho user đã đăng nhập)
+  Future<void> linkOAuthAccount({
+    required String provider,
+    required String code,
+  });
 
-  /// Đăng xuất thiết bị hiện tại.
-  Future<void> logout();
+  /// Lấy danh sách con của phụ huynh
+  Future<List<UserModel>> getChildren({int page = 1, int pageSize = 10});
 
-  /// Đăng xuất tất cả thiết bị.
-  Future<void> logoutAll();
+  /// Lấy danh sách organizations của user
+  Future<List<OrganizationModel>> getMyOrganizations({
+    int page = 1,
+    int pageSize = 10,
+  });
 
-  // ==========================================================================
+  // ============================================================================
   // LOCAL STORAGE
-  // ==========================================================================
+  // ============================================================================
 
-  /// Lưu session (token + user) vào local.
+  /// Lưu session (token + user + role) vào local
   Future<void> saveSession(AuthResponse response);
 
-  /// Kiểm tra đã đăng nhập chưa (có token local).
+  /// Kiểm tra đã đăng nhập chưa
   Future<bool> isLoggedIn();
 
-  /// Lấy user đã lưu trong local.
+  /// Lấy user đã lưu trong local
   Future<UserModel?> getSavedUser();
 
-  /// Xoá toàn bộ session local.
+  /// Lấy profile đang active từ local
+  Future<ProfileModel?> getSavedProfile();
+
+  /// Lấy role đang active từ local
+  Future<RoleModel?> getSavedRole();
+
+  /// Xoá toàn bộ session local
   Future<void> clearSession();
 }

@@ -409,5 +409,210 @@
   "noCoresFound": "No cores found for \"{query}\"",
   "blockLabel": "Block {blockNumber}",
   "spaceXCoresTitle": "SpaceX Falcon Cores",
-  "coresLabel": "Cores"
+  "coresLabel": "Cores",
+
+  "selectRoleTitle": "Select Role",
+  "selectRoleSubtitle": "Swipe to explore",
+  "continueWithRole": "Continue with {role}",
+  "@continueWithRole": {
+    "placeholders": {
+      "role": {}
+    }
+  },
+  "tapToSelect": "Tap to select",
+  "alreadyHaveAccount": "Already have an account?",
+  "login": "Login",
+  "register": "Register",
+
+  "roleStudent": "Student",
+  "roleTeacher": "Teacher",
+  "roleParent": "Parent",
+  "roleOrganization": "Organization",
+
+  "loginTitle": "Login",
+  "loginSubtitle": "Welcome back",
+  "emailLabel": "Email",
+  "emailHint": "Enter your email",
+  "passwordLabel": "Password",
+  "passwordHint": "Enter password",
+  "forgotPassword": "Forgot password?",
+  "loginButton": "Login",
+  "orContinueWith": "Or continue with",
+  "dontHaveAccount": "Don't have an account?",
+
+  "registerTitle": "Create Account",
+  "registerSubtitle": "Start your learning journey",
+  "fullNameLabel": "Full Name",
+  "fullNameHint": "Enter your full name",
+  "usernameLabel": "Username",
+  "usernameHint": "Enter username",
+  "confirmPasswordLabel": "Confirm Password",
+  "confirmPasswordHint": "Re-enter password",
+  "registerButton": "Register",
+  "agreeToTerms": "I agree to the",
+  "termsOfService": "Terms of Service",
+  "and": "and",
+  "privacyPolicy": "Privacy Policy",
+
+  "otpTitle": "OTP Verification",
+  "otpSubtitle": "Enter the OTP sent to {email}",
+  "@otpSubtitle": {
+    "placeholders": {
+      "email": {}
+    }
+  },
+  "resendOtp": "Resend code",
+  "resendOtpIn": "Resend in {seconds}s",
+  "@resendOtpIn": {
+    "placeholders": {
+      "seconds": {}
+    }
+  },
+  "verifyButton": "Verify",
+
+  "forgotPasswordTitle": "Forgot Password",
+  "forgotPasswordSubtitle": "Enter email to receive recovery code",
+  "sendResetCode": "Send Recovery Code",
+  "resetPasswordTitle": "Reset Password",
+  "newPasswordLabel": "New Password",
+  "newPasswordHint": "Enter new password",
+  "resetPasswordButton": "Reset Password",
+
+  "profileTitle": "Profile",
+  "editProfile": "Edit Profile",
+  "phoneLabel": "Phone Number",
+  "dateOfBirthLabel": "Date of Birth",
+  "bioLabel": "Bio",
+  "saveChanges": "Save Changes",
+
+  "changePasswordTitle": "Change Password",
+  "currentPasswordLabel": "Current Password",
+  "changePasswordButton": "Change Password",
+
+  "securityTitle": "Security",
+  "linkedAccounts": "Linked Accounts",
+  "devices": "Logged In Devices",
+  "logoutAllDevices": "Logout All Devices",
+  "deleteAccount": "Delete Account",
+
+  "logout": "Logout",
+  "logoutConfirm": "Are you sure you want to logout?",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+
+  "errorRequired": "This field is required",
+  "errorInvalidEmail": "Invalid email address",
+  "errorPasswordTooShort": "Password must be at least 8 characters",
+  "errorPasswordMismatch": "Passwords do not match",
+  "errorInvalidOtp": "Invalid OTP code",
+  "errorNetworkError": "Network connection error",
+  "errorUnknown": "An error occurred",
+
+  "languageTitle": "Language",
+
+  "students": "Students",
+  "courses": "Courses",
+  "rating": "Rating",
+  "viewAll": "View All",
+  "featuredCourses": "Featured Courses",
+  "editCover": "Edit Cover",
+  "xpPoints": "XP Points",
+  "streak": "Streak",
+  "tabOverview": "Overview",
+  "tabAchievements": "Achievements",
+  "tabChildren": "Children",
+  "tabNotifications": "Notifications",
+  "joinedOn": "Joined {date}",
+  "@joinedOn": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "accountInfo": "Account Information",
+  "notUpdated": "Not updated",
+  "joinedDate": "Joined Date",
+  "options": "Options",
+  "switchRole": "Switch Role",
+  "skills": "Skills",
+  "interests": "Interests",
+  "achievements": "Achievements",
+  "contact": "Contact",
+  "totalEarnings": "Total Earnings",
+  "thisMonth": "this month",
+  "parentOverview": "Parent Overview",
+  "children": "Children",
+  "notifications": "Notifications",
+  "classes": "Classes",
+
+  "passwordAndSecurity": "Password & Security",
+  "loginSection": "Login",
+  "changePassword": "Change Password",
+  "changePasswordHint": "Use a strong password you don't use elsewhere",
+  "passwordChangedSuccess": "Password changed successfully",
+  "loggedOutAllDevices": "Logged out all devices",
+  "unlinkedAccount": "Unlinked {provider}",
+  "@unlinkedAccount": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+  "whereYouLoggedIn": "Where you're logged in",
+  "logoutAll": "Logout All",
+  "advanced": "Advanced",
+  "securityEmails": "Security notification emails",
+  "securityEmailsHint": "View official emails from us",
+  "activityHistory": "Activity history",
+  "activityHistoryHint": "View all account-related actions",
+  "accountId": "Account ID: {id}",
+  "@accountId": {
+    "placeholders": {
+      "id": {}
+    }
+  },
+  "logoutAllDevicesTitle": "Logout all devices",
+  "logoutAllDevicesContent": "You will be logged out of all devices, including this one. You will need to log in again.",
+  "unlinkAccount": "Unlink {provider}",
+  "@unlinkAccount": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+  "unlinkAccountContent": "You will not be able to log in with {provider} after unlinking. Are you sure?",
+  "@unlinkAccountContent": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+  "unlink": "Unlink",
+  "linkOnlyProduction": "Linking {provider} is only available in production",
+  "@linkOnlyProduction": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+  "serverNotConfigured": "Server not configured",
+  "cannotOpenBrowser": "Cannot open browser",
+  "cannotLink": "Cannot link with {provider}",
+  "@cannotLink": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+  "noDevices": "No devices found",
+  "reload": "Reload",
+  "thisDevice": "This device",
+  "unknownDevice": "Unknown device",
+  "linkWith": "Link with {provider}",
+  "@linkWith": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+
+  "loginWithThisProfile": "Login with this profile",
+  "swipeToChangeProfile": "Swipe to change profile",
+  "organizationProfile": "Organization profile",
+  "systemProfile": "System profile",
+  "chooseProfileTitle": "Choose profile",
+  "chooseProfileSubtitle": "You have multiple profiles. Choose one to continue."
 }
