@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/features/course/data/models/certificate_model.dart';
 import 'package:study/features/student/bloc/achievement/achievement_event.dart';
 import 'package:study/features/student/bloc/achievement/achievement_state.dart';
 import 'package:study/features/student/data/models/models.dart';
@@ -31,8 +32,41 @@ class AchievementBloc extends Bloc<AchievementEvent, AchievementState> {
     emit(AchievementSuccess(
       stats: stats.valueOrNull ?? const StudentStatsModel(),
       badges: badges.valueOrNull ?? [],
-      certificates: [], // TODO: Load from API
+      certificates: _mockCertificates(),
     ));
+  }
+
+  List<CertificateModel> _mockCertificates() {
+    return [
+      CertificateModel(
+        id: '1',
+        certificateNumber: 'CERT-2024-001',
+        courseTitle: 'UI/UX Design Fundamentals',
+        instructorName: 'Alex Johnson',
+        issueDate: DateTime(2024, 4, 20),
+      ),
+      CertificateModel(
+        id: '2',
+        certificateNumber: 'CERT-2024-002',
+        courseTitle: 'Design Thinking for Designers',
+        instructorName: 'David Chen',
+        issueDate: DateTime(2024, 4, 5),
+      ),
+      CertificateModel(
+        id: '3',
+        certificateNumber: 'CERT-2024-003',
+        courseTitle: 'Python từ cơ bản đến nâng cao',
+        instructorName: 'Nguyễn Minh Anh',
+        issueDate: DateTime(2024, 3, 15),
+      ),
+      CertificateModel(
+        id: '4',
+        certificateNumber: 'CERT-2024-004',
+        courseTitle: 'Lập trình Web với React',
+        instructorName: 'Trần Hoàng Nam',
+        issueDate: DateTime(2024, 2, 28),
+      ),
+    ];
   }
 
   void _onTabChanged(
