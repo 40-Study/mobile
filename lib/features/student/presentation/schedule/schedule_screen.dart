@@ -6,7 +6,6 @@ import 'package:study/features/student/bloc/schedule/schedule_state.dart';
 import 'package:study/features/student/presentation/home/widgets/schedule_timeline.dart';
 import 'package:study/features/student/presentation/schedule/widgets/calendar_widget.dart';
 import 'package:study/theme/theme.dart';
-import 'package:study/widgets/section_header.dart';
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
@@ -211,15 +210,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     }).toList(),
                   ),
 
-                AppSpacing.vGap24,
-
-                // Quick tips section
-                SectionHeader(
-                  title: 'Mẹo học tập',
-                  iconColor: cs.secondary,
-                ),
-                AppSpacing.vGap12,
-                _LearningTipCard(),
               ],
             ),
           ),
@@ -494,61 +484,3 @@ class _EmptySchedule extends StatelessWidget {
   }
 }
 
-class _LearningTipCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    final tips = [
-      (Icons.lightbulb_outline, 'Chia nhỏ bài học thành các phần 25 phút'),
-      (Icons.self_improvement, 'Nghỉ ngơi 5 phút sau mỗi phiên học'),
-      (Icons.edit_note, 'Ghi chú lại những điểm quan trọng'),
-    ];
-
-    final tip = tips[DateTime.now().day % tips.length];
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            cs.secondaryContainer,
-            cs.secondaryContainer.withValues(alpha: 0.7),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        boxShadow: AppShadows.soft,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: cs.onSecondaryContainer.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-            ),
-            child: Icon(
-              tip.$1,
-              color: cs.onSecondaryContainer,
-              size: 24,
-            ),
-          ),
-          AppSpacing.hGap12,
-          Expanded(
-            child: Text(
-              tip.$2,
-              style: tt.bodyMedium?.copyWith(
-                color: cs.onSecondaryContainer,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
