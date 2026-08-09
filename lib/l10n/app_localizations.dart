@@ -1843,6 +1843,354 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You have multiple profiles. Choose one to continue.'**
   String get chooseProfileSubtitle;
+
+  /// No description provided for @achievementTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement'**
+  String get achievementTitle;
+
+  /// No description provided for @allBadges.
+  ///
+  /// In en, this message translates to:
+  /// **'All Badges'**
+  String get allBadges;
+
+  /// No description provided for @badgesEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'{earned} / {total} badges earned'**
+  String badgesEarned(Object earned, Object total);
+
+  /// No description provided for @overallProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall Progress'**
+  String get overallProgress;
+
+  /// No description provided for @earned.
+  ///
+  /// In en, this message translates to:
+  /// **'Earned'**
+  String get earned;
+
+  /// No description provided for @inProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress'**
+  String get inProgress;
+
+  /// No description provided for @notEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Earned'**
+  String get notEarned;
+
+  /// No description provided for @filter.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get filter;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// No description provided for @learning.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning'**
+  String get learning;
+
+  /// No description provided for @habit.
+  ///
+  /// In en, this message translates to:
+  /// **'Habit'**
+  String get habit;
+
+  /// No description provided for @achievement.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement'**
+  String get achievement;
+
+  /// No description provided for @status.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get status;
+
+  /// No description provided for @category.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// No description provided for @apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @newBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW'**
+  String get newBadge;
+
+  /// No description provided for @certificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate'**
+  String get certificate;
+
+  /// No description provided for @yourCertificates.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Certificates'**
+  String get yourCertificates;
+
+  /// No description provided for @certificatesEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} certificates earned'**
+  String certificatesEarned(Object count);
+
+  /// No description provided for @completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get completed;
+
+  /// No description provided for @studying.
+  ///
+  /// In en, this message translates to:
+  /// **'Studying'**
+  String get studying;
+
+  /// No description provided for @design.
+  ///
+  /// In en, this message translates to:
+  /// **'Design'**
+  String get design;
+
+  /// No description provided for @programming.
+  ///
+  /// In en, this message translates to:
+  /// **'Programming'**
+  String get programming;
+
+  /// No description provided for @business.
+  ///
+  /// In en, this message translates to:
+  /// **'Business'**
+  String get business;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'lessons'**
+  String get lessons;
+
+  /// No description provided for @certificateDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate Detail'**
+  String get certificateDetail;
+
+  /// No description provided for @certificateConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This certificate confirms you have completed the course and mastered the fundamentals.'**
+  String get certificateConfirm;
+
+  /// No description provided for @download.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get download;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @addToLinkedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to\nLinkedIn'**
+  String get addToLinkedIn;
+
+  /// No description provided for @printCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get printCertificate;
+
+  /// No description provided for @courseInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Information'**
+  String get courseInfo;
+
+  /// No description provided for @course.
+  ///
+  /// In en, this message translates to:
+  /// **'Course'**
+  String get course;
+
+  /// No description provided for @completionDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion Date'**
+  String get completionDate;
+
+  /// No description provided for @duration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get duration;
+
+  /// No description provided for @instructor.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructor'**
+  String get instructor;
+
+  /// No description provided for @level.
+  ///
+  /// In en, this message translates to:
+  /// **'Level'**
+  String get level;
+
+  /// No description provided for @basic.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic'**
+  String get basic;
+
+  /// No description provided for @skillsEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills Earned'**
+  String get skillsEarned;
+
+  /// No description provided for @downloadPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Download PDF'**
+  String get downloadPdf;
+
+  /// No description provided for @copyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Link'**
+  String get copyLink;
+
+  /// No description provided for @showQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Show QR Code'**
+  String get showQrCode;
+
+  /// No description provided for @reportIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Report Issue'**
+  String get reportIssue;
+
+  /// No description provided for @viewCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'View Certificate'**
+  String get viewCertificate;
+
+  /// No description provided for @continueLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Learning'**
+  String get continueLearning;
+
+  /// No description provided for @recentBadges.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Badges'**
+  String get recentBadges;
+
+  /// No description provided for @learningActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Activity'**
+  String get learningActivity;
+
+  /// No description provided for @daysLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days learned'**
+  String daysLearned(Object count);
+
+  /// No description provided for @less.
+  ///
+  /// In en, this message translates to:
+  /// **'Less'**
+  String get less;
+
+  /// No description provided for @more.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// No description provided for @learningTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Trend'**
+  String get learningTrend;
+
+  /// No description provided for @last7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get last7Days;
+
+  /// No description provided for @minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'min'**
+  String get minutes;
+
+  /// No description provided for @studyHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Study Hours'**
+  String get studyHours;
+
+  /// No description provided for @completedLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed Lessons'**
+  String get completedLessons;
+
+  /// No description provided for @badges.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges'**
+  String get badges;
 }
 
 class _AppLocalizationsDelegate

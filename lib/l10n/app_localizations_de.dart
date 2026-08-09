@@ -930,4 +930,185 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get chooseProfileSubtitle =>
       'You have multiple profiles. Choose one to continue.';
+
+  @override
+  String get achievementTitle => 'Achievement';
+
+  @override
+  String get allBadges => 'All Badges';
+
+  @override
+  String badgesEarned(Object earned, Object total) {
+    return '$earned / $total badges earned';
+  }
+
+  @override
+  String get overallProgress => 'Overall Progress';
+
+  @override
+  String get earned => 'Earned';
+
+  @override
+  String get inProgress => 'In Progress';
+
+  @override
+  String get notEarned => 'Not Earned';
+
+  @override
+  String get filter => 'Filter';
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get learning => 'Learning';
+
+  @override
+  String get habit => 'Habit';
+
+  @override
+  String get achievement => 'Achievement';
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get category => 'Category';
+
+  @override
+  String get apply => 'Apply';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get newBadge => 'NEW';
+
+  @override
+  String get certificate => 'Certificate';
+
+  @override
+  String get yourCertificates => 'Your Certificates';
+
+  @override
+  String certificatesEarned(Object count) {
+    return '$count certificates earned';
+  }
+
+  @override
+  String get completed => 'Completed';
+
+  @override
+  String get studying => 'Studying';
+
+  @override
+  String get design => 'Design';
+
+  @override
+  String get programming => 'Programming';
+
+  @override
+  String get business => 'Business';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get lessons => 'lessons';
+
+  @override
+  String get certificateDetail => 'Certificate Detail';
+
+  @override
+  String get certificateConfirm =>
+      'This certificate confirms you have completed the course and mastered the fundamentals.';
+
+  @override
+  String get download => 'Download';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get addToLinkedIn => 'Add to\nLinkedIn';
+
+  @override
+  String get printCertificate => 'Print';
+
+  @override
+  String get courseInfo => 'Course Information';
+
+  @override
+  String get course => 'Course';
+
+  @override
+  String get completionDate => 'Completion Date';
+
+  @override
+  String get duration => 'Duration';
+
+  @override
+  String get instructor => 'Instructor';
+
+  @override
+  String get level => 'Level';
+
+  @override
+  String get basic => 'Basic';
+
+  @override
+  String get skillsEarned => 'Skills Earned';
+
+  @override
+  String get downloadPdf => 'Download PDF';
+
+  @override
+  String get copyLink => 'Copy Link';
+
+  @override
+  String get showQrCode => 'Show QR Code';
+
+  @override
+  String get reportIssue => 'Report Issue';
+
+  @override
+  String get viewCertificate => 'View Certificate';
+
+  @override
+  String get continueLearning => 'Continue Learning';
+
+  @override
+  String get recentBadges => 'Recent Badges';
+
+  @override
+  String get learningActivity => 'Learning Activity';
+
+  @override
+  String daysLearned(Object count) {
+    return '$count days learned';
+  }
+
+  @override
+  String get less => 'Less';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get learningTrend => 'Learning Trend';
+
+  @override
+  String get last7Days => 'Last 7 days';
+
+  @override
+  String get minutes => 'min';
+
+  @override
+  String get studyHours => 'Study Hours';
+
+  @override
+  String get completedLessons => 'Completed Lessons';
+
+  @override
+  String get badges => 'Badges';
 }

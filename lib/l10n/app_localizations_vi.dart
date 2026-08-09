@@ -315,7 +315,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get rocketsTitle => 'Rockets';
 
   @override
-  String get overview => 'Overview';
+  String get overview => 'Tổng quan';
 
   @override
   String get specifications => 'Specifications';
@@ -932,4 +932,185 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get chooseProfileSubtitle =>
       'Bạn có nhiều profile. Chọn một để tiếp tục.';
+
+  @override
+  String get achievementTitle => 'Thành tích';
+
+  @override
+  String get allBadges => 'Tất cả huy hiệu';
+
+  @override
+  String badgesEarned(Object earned, Object total) {
+    return '$earned / $total huy hiệu đã đạt được';
+  }
+
+  @override
+  String get overallProgress => 'Tiến độ chung';
+
+  @override
+  String get earned => 'Đã đạt được';
+
+  @override
+  String get inProgress => 'Đang tiến hành';
+
+  @override
+  String get notEarned => 'Chưa đạt';
+
+  @override
+  String get filter => 'Bộ lọc';
+
+  @override
+  String get all => 'Tất cả';
+
+  @override
+  String get learning => 'Học tập';
+
+  @override
+  String get habit => 'Thói quen';
+
+  @override
+  String get achievement => 'Thành tích';
+
+  @override
+  String get status => 'Trạng thái';
+
+  @override
+  String get category => 'Danh mục';
+
+  @override
+  String get apply => 'Áp dụng';
+
+  @override
+  String get close => 'Đóng';
+
+  @override
+  String get newBadge => 'MỚI';
+
+  @override
+  String get certificate => 'Chứng chỉ';
+
+  @override
+  String get yourCertificates => 'Chứng chỉ của bạn';
+
+  @override
+  String certificatesEarned(Object count) {
+    return '$count chứng chỉ đã đạt được';
+  }
+
+  @override
+  String get completed => 'Đã hoàn thành';
+
+  @override
+  String get studying => 'Đang học';
+
+  @override
+  String get design => 'Thiết kế';
+
+  @override
+  String get programming => 'Lập trình';
+
+  @override
+  String get business => 'Kinh doanh';
+
+  @override
+  String get language => 'Ngôn ngữ';
+
+  @override
+  String get lessons => 'bài học';
+
+  @override
+  String get certificateDetail => 'Chi tiết chứng chỉ';
+
+  @override
+  String get certificateConfirm =>
+      'Chứng chỉ xác nhận bạn đã hoàn thành khóa học và nắm vững các kiến thức nền tảng.';
+
+  @override
+  String get download => 'Tải xuống';
+
+  @override
+  String get share => 'Chia sẻ';
+
+  @override
+  String get addToLinkedIn => 'Thêm vào\nLinkedIn';
+
+  @override
+  String get printCertificate => 'In chứng chỉ';
+
+  @override
+  String get courseInfo => 'Thông tin khóa học';
+
+  @override
+  String get course => 'Khóa học';
+
+  @override
+  String get completionDate => 'Ngày hoàn thành';
+
+  @override
+  String get duration => 'Thời lượng';
+
+  @override
+  String get instructor => 'Giảng viên';
+
+  @override
+  String get level => 'Trình độ';
+
+  @override
+  String get basic => 'Cơ bản';
+
+  @override
+  String get skillsEarned => 'Kỹ năng đạt được';
+
+  @override
+  String get downloadPdf => 'Tải xuống PDF';
+
+  @override
+  String get copyLink => 'Sao chép liên kết';
+
+  @override
+  String get showQrCode => 'Hiển thị mã QR';
+
+  @override
+  String get reportIssue => 'Báo cáo vấn đề';
+
+  @override
+  String get viewCertificate => 'Xem chứng chỉ';
+
+  @override
+  String get continueLearning => 'Tiếp tục học';
+
+  @override
+  String get recentBadges => 'Huy hiệu gần đây';
+
+  @override
+  String get learningActivity => 'Hoạt động học tập';
+
+  @override
+  String daysLearned(Object count) {
+    return '$count ngày học';
+  }
+
+  @override
+  String get less => 'Ít';
+
+  @override
+  String get more => 'Nhiều';
+
+  @override
+  String get learningTrend => 'Xu hướng học tập';
+
+  @override
+  String get last7Days => '7 ngày qua';
+
+  @override
+  String get minutes => 'phút';
+
+  @override
+  String get studyHours => 'Giờ học';
+
+  @override
+  String get completedLessons => 'Bài học hoàn thành';
+
+  @override
+  String get badges => 'Huy hiệu';
 }
