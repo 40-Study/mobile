@@ -26,13 +26,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
     result.when(
       success: (items) {
-        // Mock event dates for demo
-        final eventDates = <DateTime>{
-          today,
-          today.add(const Duration(days: 2)),
-          today.add(const Duration(days: 5)),
-          today.add(const Duration(days: 7)),
-        };
+        final currentMonth = DateTime(now.year, now.month);
+        final eventDates = _generateMockEventDates(currentMonth);
 
         emit(ScheduleSuccess(
           currentMonth: DateTime(now.year, now.month),
@@ -87,17 +82,38 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     );
   }
 
-  void _onMonthChanged(
+  Future<void> _onMonthChanged(
     ScheduleMonthChanged event,
     Emitter<ScheduleState> emit,
-  ) {
+  ) async {
     final currentState = state;
     if (currentState is! ScheduleSuccess) return;
 
-    emit(currentState.copyWith(
-      currentMonth: DateTime(event.month.year, event.month.month),
-    ));
+    final newMonth = DateTime(event.month.year, event.month.month);
 
-    // TODO: Load event dates for new month from API
+    // Mock event dates cho tháng mới
+    final eventDates = _generateMockEventDates(newMonth);
+
+    emit(currentState.copyWith(
+      currentMonth: newMonth,
+      eventDates: eventDates,
+    ));
+  }
+
+  /// Mock event dates - thay bằng API call sau
+  Set<DateTime> _generateMockEventDates(DateTime month) {
+    final dates = <DateTime>{};
+    // Tạo vài ngày có lịch trong tháng
+    for (var i = 0; i < 28; i += 3) {
+      if (i + 1 <= 28) {
+        dates.add(DateTime(month.year, month.month, i + 1));
+      }
+    }
+    // Thêm ngày hôm nay nếu trong tháng này
+    final now = DateTime.now();
+    if (now.year == month.year && now.month == month.month) {
+      dates.add(DateTime(now.year, now.month, now.day));
+    }
+    return dates;
   }
 }

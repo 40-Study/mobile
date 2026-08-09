@@ -6,6 +6,9 @@ import 'package:study/features/student/bloc/achievement/achievement_state.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
 import 'package:study/features/student/bloc/home/home_bloc.dart';
+import 'package:study/features/student/bloc/lesson/lesson_bloc.dart';
+import 'package:study/features/student/bloc/lesson/lesson_event.dart';
+import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
 import 'package:study/features/student/bloc/home/home_event.dart';
 import 'package:study/features/student/bloc/home/home_state.dart';
 import 'package:study/features/student/data/models/schedule_item_model.dart';
@@ -274,6 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       subtitle: item.instructorName ?? _typeLabel(item.type),
                       type: _mapScheduleType(item.type),
                       isActive: item.id == activeScheduleId,
+                      onTap: () => _onScheduleItemTap(context, item),
                     );
                   }).toList(),
                 ),
@@ -337,6 +341,36 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  void _onScheduleItemTap(BuildContext context, ScheduleItemModel item) {
+    if (item.lessonId != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => BlocProvider(
+            create: (_) => LessonBloc(StudentRepositoryImpl())
+              ..add(LessonStarted(item.lessonId!)),
+            child: const LessonDetailScreen(),
+          ),
+        ),
+      );
+    } else if (item.courseId != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => BlocProvider(
+            create: (_) => CourseDetailBloc(StudentRepositoryImpl())
+              ..add(CourseDetailStarted(item.courseId!)),
+            child: const CourseDetailScreen(),
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Mở: ${item.title}')),
+      );
+    }
   }
 
   void _navigateToCourse(BuildContext context, String enrollmentId) {

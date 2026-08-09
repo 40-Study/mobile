@@ -330,11 +330,11 @@ class _EventDot extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      width: 5,
-      height: 5,
+      width: 6,
+      height: 6,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isSelected ? cs.onPrimary : cs.primary,
+        color: isSelected ? cs.onPrimary : cs.tertiary,
       ),
     );
   }

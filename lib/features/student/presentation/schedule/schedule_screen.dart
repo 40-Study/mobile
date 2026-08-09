@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
+import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
+import 'package:study/features/student/bloc/lesson/lesson_bloc.dart';
+import 'package:study/features/student/bloc/lesson/lesson_event.dart';
 import 'package:study/features/student/bloc/schedule/schedule_bloc.dart';
 import 'package:study/features/student/bloc/schedule/schedule_event.dart';
 import 'package:study/features/student/bloc/schedule/schedule_state.dart';
+import 'package:study/features/student/data/models/schedule_item_model.dart';
 import 'package:study/features/student/presentation/home/widgets/schedule_timeline.dart';
+import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
+import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
 import 'package:study/features/student/presentation/schedule/widgets/calendar_widget.dart';
+import 'package:study/features/student/repository/student_repository_impl.dart';
 import 'package:study/theme/theme.dart';
 
 class ScheduleScreen extends StatefulWidget {
@@ -206,6 +214,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                             '${_typeLabel(item.type)} • ${item.instructorName ?? ""}',
                         type: _mapScheduleType(item.type),
                         isActive: _isCurrentOrNext(item.startTime, item.endTime),
+                        onTap: () => _onScheduleItemTap(context, item),
                       );
                     }).toList(),
                   ),
@@ -216,6 +225,38 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ],
       ),
     );
+  }
+
+  void _onScheduleItemTap(BuildContext context, ScheduleItemModel item) {
+    // Navigate based on item type
+    if (item.lessonId != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => BlocProvider(
+            create: (_) => LessonBloc(StudentRepositoryImpl())
+              ..add(LessonStarted(item.lessonId!)),
+            child: const LessonDetailScreen(),
+          ),
+        ),
+      );
+    } else if (item.courseId != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => BlocProvider(
+            create: (_) => CourseDetailBloc(StudentRepositoryImpl())
+              ..add(CourseDetailStarted(item.courseId!)),
+            child: const CourseDetailScreen(),
+          ),
+        ),
+      );
+    } else {
+      // Show snackbar for items without navigation
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Mở: ${item.title}')),
+      );
+    }
   }
 
   String _formatTimeRange(DateTime start, DateTime end) {
