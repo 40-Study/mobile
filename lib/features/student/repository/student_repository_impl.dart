@@ -18,15 +18,28 @@ class StudentRepositoryImpl implements StudentRepository {
     // TODO: Wire up với real API
     await Future<void>.delayed(const Duration(milliseconds: 500));
 
+    // Chỉ trả data cho những ngày có event (sync với _generateMockEventDates)
+    final now = DateTime.now();
+    final isToday = date.year == now.year &&
+        date.month == now.month &&
+        date.day == now.day;
+    final hasEvent = (date.day - 1) % 3 == 0 || isToday;
+
+    if (!hasEvent) {
+      return Result.success([]);
+    }
+
     // Mock data
     return Result.success([
       ScheduleItemModel(
         id: '1',
         title: 'Toán cao cấp A1',
         type: 'livestream',
-        startTime: DateTime.now().copyWith(hour: 9, minute: 0),
-        endTime: DateTime.now().copyWith(hour: 10, minute: 30),
+        startTime: date.copyWith(hour: 9, minute: 0),
+        endTime: date.copyWith(hour: 10, minute: 30),
         courseName: 'Toán 10',
+        courseId: '1',
+        lessonId: 'lesson-1',
         instructorName: 'Nguyễn Văn An',
         location: 'Phòng A101',
       ),
@@ -34,9 +47,11 @@ class StudentRepositoryImpl implements StudentRepository {
         id: '2',
         title: 'Python cơ bản - Bài 2.3',
         type: 'video',
-        startTime: DateTime.now().copyWith(hour: 14, minute: 0),
-        endTime: DateTime.now().copyWith(hour: 15, minute: 30),
+        startTime: date.copyWith(hour: 14, minute: 0),
+        endTime: date.copyWith(hour: 15, minute: 30),
         courseName: 'Python cơ bản',
+        courseId: '1',
+        lessonId: 'lesson-2',
         instructorName: 'Trần Minh Bình',
       ),
     ]);

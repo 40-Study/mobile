@@ -8,6 +8,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<ScheduleStarted>(_onStarted);
     on<ScheduleDateSelected>(_onDateSelected);
     on<ScheduleMonthChanged>(_onMonthChanged);
+    on<ScheduleNoteSaved>(_onNoteSaved);
+    on<ScheduleNoteDeleted>(_onNoteDeleted);
   }
 
   final StudentRepository _repository;
@@ -64,18 +66,22 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     // Load schedule for selected date
     final result = await _repository.getScheduleByDate(selectedDate);
 
+    // Get fresh state after async
+    final freshState = state;
+    if (freshState is! ScheduleSuccess) return;
+
     result.when(
       success: (items) {
-        emit(currentState.copyWith(
+        emit(freshState.copyWith(
           selectedDate: selectedDate,
           selectedDateItems: items,
           isLoadingDay: false,
         ));
       },
       failure: (error) {
-        emit(currentState.copyWith(
+        emit(freshState.copyWith(
           selectedDate: selectedDate,
-          selectedDateItems: [],
+          selectedDateItems: const [],
           isLoadingDay: false,
         ));
       },
@@ -98,6 +104,39 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       currentMonth: newMonth,
       eventDates: eventDates,
     ));
+  }
+
+  void _onNoteSaved(
+    ScheduleNoteSaved event,
+    Emitter<ScheduleState> emit,
+  ) {
+    final currentState = state;
+    if (currentState is! ScheduleSuccess) return;
+
+    final key = ScheduleSuccess.dateKey(event.date);
+    final updatedNotes = Map<String, String>.from(currentState.dailyNotes);
+
+    if (event.note.trim().isEmpty) {
+      updatedNotes.remove(key);
+    } else {
+      updatedNotes[key] = event.note.trim();
+    }
+
+    emit(currentState.copyWith(dailyNotes: updatedNotes));
+  }
+
+  void _onNoteDeleted(
+    ScheduleNoteDeleted event,
+    Emitter<ScheduleState> emit,
+  ) {
+    final currentState = state;
+    if (currentState is! ScheduleSuccess) return;
+
+    final key = ScheduleSuccess.dateKey(event.date);
+    final updatedNotes = Map<String, String>.from(currentState.dailyNotes)
+      ..remove(key);
+
+    emit(currentState.copyWith(dailyNotes: updatedNotes));
   }
 
   /// Mock event dates - thay bằng API call sau

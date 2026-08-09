@@ -203,7 +203,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 if (state.isLoadingDay)
                   _LoadingSchedule()
                 else if (state.selectedDateItems.isEmpty)
-                  _EmptySchedule(selectedDate: state.selectedDate)
+                  _FreeDay()
                 else
                   ScheduleTimeline(
                     items: state.selectedDateItems.map((item) {
@@ -219,6 +219,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     }).toList(),
                   ),
 
+                AppSpacing.vGap24,
+
+                // Daily goals section
+                _DailyGoalsSection(date: state.selectedDate),
               ],
             ),
           ),
@@ -475,10 +479,413 @@ class _LoadingSchedule extends StatelessWidget {
   }
 }
 
-class _EmptySchedule extends StatelessWidget {
-  const _EmptySchedule({required this.selectedDate});
+class _FreeDay extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
-  final DateTime selectedDate;
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: cs.secondaryContainer.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(AppRadius.card),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.celebration_outlined,
+            color: cs.onSecondaryContainer,
+            size: 24,
+          ),
+          AppSpacing.hGap12,
+          Text(
+            'Hôm nay free! Nghỉ ngơi hoặc học thêm nhé.',
+            style: tt.bodyMedium?.copyWith(
+              color: cs.onSecondaryContainer,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DailyGoalsSection extends StatefulWidget {
+  const _DailyGoalsSection({required this.date});
+
+  final DateTime date;
+
+  @override
+  State<_DailyGoalsSection> createState() => _DailyGoalsSectionState();
+}
+
+class _DailyGoalsSectionState extends State<_DailyGoalsSection> {
+  // Goals lưu theo ngày
+  static final _goalsByDate = <String, List<_GoalItem>>{};
+
+  final _controller = TextEditingController();
+  bool _isAdding = false;
+
+  String get _dateKey =>
+      '${widget.date.year}-${widget.date.month}-${widget.date.day}';
+
+  List<_GoalItem> get _goals => _goalsByDate[_dateKey] ?? [];
+
+  @override
+  void didUpdateWidget(covariant _DailyGoalsSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reset adding state khi đổi ngày
+    if (_dateKey != '${oldWidget.date.year}-${oldWidget.date.month}-${oldWidget.date.day}') {
+      _isAdding = false;
+      _controller.clear();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _addGoal() {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+
+    setState(() {
+      final goals = List<_GoalItem>.from(_goals);
+      goals.add(_GoalItem(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        title: text,
+      ));
+      _goalsByDate[_dateKey] = goals;
+      _controller.clear();
+      _isAdding = false;
+    });
+  }
+
+  void _toggleGoal(String id) {
+    setState(() {
+      final goals = List<_GoalItem>.from(_goals);
+      final index = goals.indexWhere((g) => g.id == id);
+      if (index != -1) {
+        goals[index] = goals[index].copyWith(
+          isCompleted: !goals[index].isCompleted,
+        );
+        _goalsByDate[_dateKey] = goals;
+      }
+    });
+  }
+
+  void _deleteGoal(String id) {
+    setState(() {
+      final goals = List<_GoalItem>.from(_goals);
+      goals.removeWhere((g) => g.id == id);
+      _goalsByDate[_dateKey] = goals;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final goals = _goals;
+    final completedCount = goals.where((g) => g.isCompleted).length;
+    final progress = goals.isEmpty ? 0.0 : completedCount / goals.length;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: cs.outline),
+        boxShadow: AppShadows.layeredCard,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header với progress
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Mục tiêu hôm nay',
+                  style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+              Text(
+                '$completedCount/${goals.length}',
+                style: tt.labelMedium?.copyWith(
+                  color: cs.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          AppSpacing.vGap8,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: cs.outline.withValues(alpha: 0.2),
+              minHeight: 6,
+            ),
+          ),
+
+          AppSpacing.vGap16,
+
+          // Goals list or empty state
+          if (goals.isEmpty && !_isAdding)
+            _EmptyGoals(onAdd: () => setState(() => _isAdding = true))
+          else ...[
+            // Goals
+            ...List.generate(goals.length, (index) {
+              final goal = goals[index];
+              return Padding(
+                padding: EdgeInsets.only(
+                  bottom: index < goals.length - 1 ? AppSpacing.sm : 0,
+                ),
+                child: _GoalTile(
+                  goal: goal,
+                  onToggle: () => _toggleGoal(goal.id),
+                  onDelete: () => _deleteGoal(goal.id),
+                ),
+              );
+            }),
+
+            // Add input or button
+            AppSpacing.vGap12,
+            if (_isAdding)
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerHigh,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextField(
+                      controller: _controller,
+                      autofocus: true,
+                      style: tt.bodyLarge,
+                      maxLines: 2,
+                      minLines: 1,
+                      decoration: InputDecoration(
+                        hintText: 'Viết mục tiêu của bạn...',
+                        hintStyle: tt.bodyLarge?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                        filled: true,
+                        fillColor: cs.surface,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
+                          borderSide: BorderSide(color: cs.outline),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
+                          borderSide: BorderSide(color: cs.outline),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
+                          borderSide: BorderSide(color: cs.primary, width: 1.5),
+                        ),
+                        contentPadding: const EdgeInsets.all(AppSpacing.md),
+                      ),
+                      onSubmitted: (_) => _addGoal(),
+                    ),
+                    AppSpacing.vGap12,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => setState(() {
+                            _isAdding = false;
+                            _controller.clear();
+                          }),
+                          child: Text(
+                            'Huỷ',
+                            style: TextStyle(color: cs.onSurfaceVariant),
+                          ),
+                        ),
+                        AppSpacing.hGap8,
+                        FilledButton.icon(
+                          onPressed: _addGoal,
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('Thêm'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              )
+            else
+              InkWell(
+                onTap: () => setState(() => _isAdding = true),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: cs.primary.withValues(alpha: 0.3),
+                      style: BorderStyle.solid,
+                    ),
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add_rounded, size: 18, color: cs.primary),
+                      AppSpacing.hGap4,
+                      Text(
+                        'Thêm mục tiêu',
+                        style: tt.labelMedium?.copyWith(
+                          color: cs.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _GoalItem {
+  _GoalItem({
+    required this.id,
+    required this.title,
+    this.isCompleted = false,
+  });
+
+  final String id;
+  final String title;
+  final bool isCompleted;
+
+  _GoalItem copyWith({bool? isCompleted}) {
+    return _GoalItem(
+      id: id,
+      title: title,
+      isCompleted: isCompleted ?? this.isCompleted,
+    );
+  }
+}
+
+class _GoalTile extends StatelessWidget {
+  const _GoalTile({
+    required this.goal,
+    required this.onToggle,
+    required this.onDelete,
+  });
+
+  final _GoalItem goal;
+  final VoidCallback onToggle;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Dismissible(
+      key: Key(goal.id),
+      direction: DismissDirection.endToStart,
+      onDismissed: (_) => onDelete(),
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: AppSpacing.lg),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [cs.errorContainer, cs.error.withValues(alpha: 0.8)],
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+        ),
+        child: Icon(Icons.delete_outline, size: 22, color: cs.onError),
+      ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        decoration: BoxDecoration(
+          color: goal.isCompleted
+              ? cs.primaryContainer.withValues(alpha: 0.3)
+              : cs.surface,
+          border: Border.all(
+            color: goal.isCompleted
+                ? cs.primary.withValues(alpha: 0.3)
+                : cs.outline.withValues(alpha: 0.5),
+          ),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onToggle,
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
+              child: Row(
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: goal.isCompleted ? cs.primary : Colors.transparent,
+                      border: Border.all(
+                        color: goal.isCompleted ? cs.primary : cs.outline,
+                        width: 2,
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: goal.isCompleted
+                        ? const Icon(Icons.check, size: 14, color: Colors.white)
+                        : null,
+                  ),
+                  AppSpacing.hGap12,
+                  Expanded(
+                    child: Text(
+                      goal.title,
+                      style: tt.bodyMedium?.copyWith(
+                        decoration: goal.isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
+                        color: goal.isCompleted
+                            ? cs.onSurfaceVariant
+                            : cs.onSurface,
+                        fontWeight: goal.isCompleted ? null : FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  if (goal.isCompleted)
+                    Icon(
+                      Icons.celebration,
+                      size: 16,
+                      color: cs.primary.withValues(alpha: 0.6),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyGoals extends StatelessWidget {
+  const _EmptyGoals({required this.onAdd});
+
+  final VoidCallback onAdd;
 
   @override
   Widget build(BuildContext context) {
@@ -486,38 +893,25 @@ class _EmptySchedule extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.xl),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(color: cs.outline),
-        boxShadow: AppShadows.layeredCard,
+        borderRadius: BorderRadius.circular(AppRadius.card),
       ),
-      child: Column(
+      child: Row(
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: cs.secondaryContainer,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.event_available_outlined,
-              color: cs.onSecondaryContainer,
-              size: 28,
+          Icon(Icons.lightbulb_outline, color: cs.outline),
+          AppSpacing.hGap12,
+          Expanded(
+            child: Text(
+              'Chưa có mục tiêu. Thêm ngay!',
+              style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
           ),
-          AppSpacing.vGap12,
-          Text(
-            'Không có lịch học',
-            style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          AppSpacing.vGap4,
-          Text(
-            'Ngày này bạn được nghỉ ngơi!',
-            style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-            textAlign: TextAlign.center,
+          TextButton(
+            onPressed: onAdd,
+            child: const Text('Thêm'),
           ),
         ],
       ),

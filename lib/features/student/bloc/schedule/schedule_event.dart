@@ -28,3 +28,22 @@ final class ScheduleMonthChanged extends ScheduleEvent {
   @override
   List<Object?> get props => [month];
 }
+
+final class ScheduleNoteSaved extends ScheduleEvent {
+  const ScheduleNoteSaved({required this.date, required this.note});
+
+  final DateTime date;
+  final String note;
+
+  @override
+  List<Object?> get props => [date, note];
+}
+
+final class ScheduleNoteDeleted extends ScheduleEvent {
+  const ScheduleNoteDeleted(this.date);
+
+  final DateTime date;
+
+  @override
+  List<Object?> get props => [date];
+}

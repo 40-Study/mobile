@@ -11,6 +11,8 @@ import 'package:study/features/student/bloc/lesson/lesson_event.dart';
 import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
 import 'package:study/features/student/bloc/home/home_event.dart';
 import 'package:study/features/student/bloc/home/home_state.dart';
+import 'package:study/features/student/bloc/schedule/schedule_bloc.dart';
+import 'package:study/features/student/bloc/schedule/schedule_event.dart';
 import 'package:study/features/student/data/models/schedule_item_model.dart';
 import 'package:study/features/student/presentation/home/widgets/assignment_list.dart';
 import 'package:study/features/student/presentation/home/widgets/continue_learning_card.dart';
@@ -290,8 +292,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   AppSpacing.vGap12,
                   DailyGoalCard(
                     enrollment: state.continueLearning!,
-                    onTap: () =>
-                        _navigateToCourse(context, state.continueLearning!.id),
+                    onTap: () {
+                      context.read<ScheduleBloc>().add(
+                        ScheduleDateSelected(DateTime.now()),
+                      );
+                      widget.onNavigateToTab?.call(2);
+                    },
                   ),
                   AppSpacing.vGap24,
                 ],

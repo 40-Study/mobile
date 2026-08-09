@@ -7,15 +7,19 @@ class CalendarWidget extends StatelessWidget {
     required this.currentMonth,
     required this.selectedDate,
     required this.eventDates,
+    this.noteDates = const {},
     this.onDateSelected,
     this.onMonthChanged,
+    this.onAddNote,
   });
 
   final DateTime currentMonth;
   final DateTime selectedDate;
   final Set<DateTime> eventDates;
+  final Set<DateTime> noteDates;
   final ValueChanged<DateTime>? onDateSelected;
   final ValueChanged<DateTime>? onMonthChanged;
+  final ValueChanged<DateTime>? onAddNote;
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +92,7 @@ class CalendarWidget extends StatelessWidget {
               currentMonth: currentMonth,
               selectedDate: selectedDate,
               hasEvent: eventDates.any((d) => _isSameDay(d, date)),
+              hasNote: noteDates.any((d) => _isSameDay(d, date)),
               onTap: date.month == currentMonth.month
                   ? () => onDateSelected?.call(date)
                   : null,
@@ -244,6 +249,7 @@ class _DayCell extends StatelessWidget {
     required this.currentMonth,
     required this.selectedDate,
     required this.hasEvent,
+    required this.hasNote,
     this.onTap,
   });
 
@@ -251,6 +257,7 @@ class _DayCell extends StatelessWidget {
   final DateTime currentMonth;
   final DateTime selectedDate;
   final bool hasEvent;
+  final bool hasNote;
   final VoidCallback? onTap;
 
   @override
@@ -291,9 +298,16 @@ class _DayCell extends StatelessWidget {
                 fontWeight: isToday || isSelected ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
-            if (hasEvent && isCurrentMonth) ...[
+            if ((hasEvent || hasNote) && isCurrentMonth) ...[
               const SizedBox(height: 2),
-              _EventDot(isSelected: isSelected),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (hasEvent) _EventDot(isSelected: isSelected),
+                  if (hasEvent && hasNote) const SizedBox(width: 2),
+                  if (hasNote) _NoteDot(isSelected: isSelected),
+                ],
+              ),
             ],
           ],
         ),
@@ -335,6 +349,26 @@ class _EventDot extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: isSelected ? cs.onPrimary : cs.tertiary,
+      ),
+    );
+  }
+}
+
+class _NoteDot extends StatelessWidget {
+  const _NoteDot({required this.isSelected});
+
+  final bool isSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      width: 6,
+      height: 6,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isSelected ? cs.onPrimary : cs.secondary,
       ),
     );
   }
