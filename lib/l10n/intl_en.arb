@@ -614,5 +614,84 @@
   "organizationProfile": "Organization profile",
   "systemProfile": "System profile",
   "chooseProfileTitle": "Choose profile",
-  "chooseProfileSubtitle": "You have multiple profiles. Choose one to continue."
+  "chooseProfileSubtitle": "You have multiple profiles. Choose one to continue.",
+
+  "achievementTitle": "Achievement",
+  "allBadges": "All Badges",
+  "badgesEarned": "{earned} / {total} badges earned",
+  "@badgesEarned": {
+    "placeholders": {
+      "earned": {},
+      "total": {}
+    }
+  },
+  "overallProgress": "Overall Progress",
+  "earned": "Earned",
+  "inProgress": "In Progress",
+  "notEarned": "Not Earned",
+  "filter": "Filter",
+  "all": "All",
+  "learning": "Learning",
+  "habit": "Habit",
+  "achievement": "Achievement",
+  "status": "Status",
+  "category": "Category",
+  "apply": "Apply",
+  "close": "Close",
+  "newBadge": "NEW",
+
+  "certificate": "Certificate",
+  "yourCertificates": "Your Certificates",
+  "certificatesEarned": "{count} certificates earned",
+  "@certificatesEarned": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "completed": "Completed",
+  "studying": "Studying",
+  "overview": "Overview",
+  "design": "Design",
+  "programming": "Programming",
+  "business": "Business",
+  "language": "Language",
+  "lessons": "lessons",
+
+  "certificateDetail": "Certificate Detail",
+  "certificateConfirm": "This certificate confirms you have completed the course and mastered the fundamentals.",
+  "download": "Download",
+  "share": "Share",
+  "addToLinkedIn": "Add to\nLinkedIn",
+  "printCertificate": "Print",
+  "courseInfo": "Course Information",
+  "course": "Course",
+  "completionDate": "Completion Date",
+  "duration": "Duration",
+  "instructor": "Instructor",
+  "level": "Level",
+  "basic": "Basic",
+  "skillsEarned": "Skills Earned",
+  "downloadPdf": "Download PDF",
+  "copyLink": "Copy Link",
+  "showQrCode": "Show QR Code",
+  "reportIssue": "Report Issue",
+  "viewCertificate": "View Certificate",
+  "continueLearning": "Continue Learning",
+
+  "recentBadges": "Recent Badges",
+  "learningActivity": "Learning Activity",
+  "daysLearned": "{count} days learned",
+  "@daysLearned": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "less": "Less",
+  "more": "More",
+  "learningTrend": "Learning Trend",
+  "last7Days": "Last 7 days",
+  "minutes": "min",
+  "studyHours": "Study Hours",
+  "completedLessons": "Completed Lessons",
+  "badges": "Badges"
 }

@@ -216,5 +216,84 @@
   "organizationProfile": "Profile tổ chức",
   "systemProfile": "Profile hệ thống",
   "chooseProfileTitle": "Chọn profile",
-  "chooseProfileSubtitle": "Bạn có nhiều profile. Chọn một để tiếp tục."
+  "chooseProfileSubtitle": "Bạn có nhiều profile. Chọn một để tiếp tục.",
+
+  "achievementTitle": "Thành tích",
+  "allBadges": "Tất cả huy hiệu",
+  "badgesEarned": "{earned} / {total} huy hiệu đã đạt được",
+  "@badgesEarned": {
+    "placeholders": {
+      "earned": {},
+      "total": {}
+    }
+  },
+  "overallProgress": "Tiến độ chung",
+  "earned": "Đã đạt được",
+  "inProgress": "Đang tiến hành",
+  "notEarned": "Chưa đạt",
+  "filter": "Bộ lọc",
+  "all": "Tất cả",
+  "learning": "Học tập",
+  "habit": "Thói quen",
+  "achievement": "Thành tích",
+  "status": "Trạng thái",
+  "category": "Danh mục",
+  "apply": "Áp dụng",
+  "close": "Đóng",
+  "newBadge": "MỚI",
+
+  "certificate": "Chứng chỉ",
+  "yourCertificates": "Chứng chỉ của bạn",
+  "certificatesEarned": "{count} chứng chỉ đã đạt được",
+  "@certificatesEarned": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "completed": "Đã hoàn thành",
+  "studying": "Đang học",
+  "overview": "Tổng quan",
+  "design": "Thiết kế",
+  "programming": "Lập trình",
+  "business": "Kinh doanh",
+  "language": "Ngôn ngữ",
+  "lessons": "bài học",
+
+  "certificateDetail": "Chi tiết chứng chỉ",
+  "certificateConfirm": "Chứng chỉ xác nhận bạn đã hoàn thành khóa học và nắm vững các kiến thức nền tảng.",
+  "download": "Tải xuống",
+  "share": "Chia sẻ",
+  "addToLinkedIn": "Thêm vào\nLinkedIn",
+  "printCertificate": "In chứng chỉ",
+  "courseInfo": "Thông tin khóa học",
+  "course": "Khóa học",
+  "completionDate": "Ngày hoàn thành",
+  "duration": "Thời lượng",
+  "instructor": "Giảng viên",
+  "level": "Trình độ",
+  "basic": "Cơ bản",
+  "skillsEarned": "Kỹ năng đạt được",
+  "downloadPdf": "Tải xuống PDF",
+  "copyLink": "Sao chép liên kết",
+  "showQrCode": "Hiển thị mã QR",
+  "reportIssue": "Báo cáo vấn đề",
+  "viewCertificate": "Xem chứng chỉ",
+  "continueLearning": "Tiếp tục học",
+
+  "recentBadges": "Huy hiệu gần đây",
+  "learningActivity": "Hoạt động học tập",
+  "daysLearned": "{count} ngày học",
+  "@daysLearned": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "less": "Ít",
+  "more": "Nhiều",
+  "learningTrend": "Xu hướng học tập",
+  "last7Days": "7 ngày qua",
+  "minutes": "phút",
+  "studyHours": "Giờ học",
+  "completedLessons": "Bài học hoàn thành",
+  "badges": "Huy hiệu"
 }
