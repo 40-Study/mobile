@@ -395,19 +395,24 @@ class _CertificatePreview extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const SizedBox(width: 48),
-                    Column(
-                      children: [
-                        Text('C E R T I F I C A T E',
-                            style: tt.titleMedium?.copyWith(
-                                color: cs.primary,
-                                letterSpacing: 4,
-                                fontWeight: FontWeight.w600)),
-                        AppSpacing.vGap4,
-                        Text('OF COMPLETION',
-                            style: tt.labelSmall?.copyWith(
-                                color: cs.primary.withValues(alpha: 0.7),
-                                letterSpacing: 2)),
-                      ],
+                    Flexible(
+                      child: Column(
+                        children: [
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text('C E R T I F I C A T E',
+                                style: tt.titleMedium?.copyWith(
+                                    color: cs.primary,
+                                    letterSpacing: 4,
+                                    fontWeight: FontWeight.w600)),
+                          ),
+                          AppSpacing.vGap4,
+                          Text('OF COMPLETION',
+                              style: tt.labelSmall?.copyWith(
+                                  color: cs.primary.withValues(alpha: 0.7),
+                                  letterSpacing: 2)),
+                        ],
+                      ),
                     ),
                     SizedBox(
                       width: 48,
@@ -451,17 +456,20 @@ class _CertificatePreview extends StatelessWidget {
                                 tt.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
                       ],
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(certificate.instructorName ?? '',
-                            style: tt.titleSmall?.copyWith(
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.w500)),
-                        Text('Course Instructor',
-                            style: tt.labelSmall
-                                ?.copyWith(color: cs.onSurfaceVariant)),
-                      ],
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(certificate.instructorName ?? '',
+                              style: tt.titleSmall?.copyWith(
+                                  fontStyle: FontStyle.italic,
+                                  fontWeight: FontWeight.w500),
+                              overflow: TextOverflow.ellipsis),
+                          Text('Course Instructor',
+                              style: tt.labelSmall
+                                  ?.copyWith(color: cs.onSurfaceVariant)),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -608,7 +616,9 @@ class _ActionItem extends StatelessWidget {
             AppSpacing.vGap8,
             Text(label,
                 style: tt.labelSmall?.copyWith(color: cs.onSurface),
-                textAlign: TextAlign.center),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis),
           ],
         ),
       ),

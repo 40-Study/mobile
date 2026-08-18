@@ -108,35 +108,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
     return Scaffold(
       backgroundColor: cs.surface,
-      body: Stack(
-        children: [
-          // Subtle lavender background
-          Positioned(
-            top: -100,
-            right: -80,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: cs.primary.withValues(alpha: 0.06),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 50,
-            left: -60,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: cs.primary.withValues(alpha: 0.04),
-              ),
-            ),
-          ),
-          // Content
-          SafeArea(
+      body: SafeArea(
             child: CustomScrollView(
               slivers: [
                 // AppBar
@@ -224,8 +196,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               ],
             ),
           ),
-        ],
-      ),
       // FAB for adding sections
       floatingActionButton: _isEditMode
           ? FloatingActionButton(
@@ -1301,23 +1271,7 @@ class _PortfolioPreviewScreen extends StatelessWidget {
           AppSpacing.hGap8,
         ],
       ),
-      body: Stack(
-        children: [
-          // Background
-          Positioned(
-            top: -100,
-            right: -80,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: cs.primary.withValues(alpha: 0.06),
-              ),
-            ),
-          ),
-          // Content
-          ListView(
+      body: ListView(
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
             children: [
               // Profile hero (preview mode)
@@ -1336,8 +1290,6 @@ class _PortfolioPreviewScreen extends StatelessWidget {
               const SizedBox(height: 100),
             ],
           ),
-        ],
-      ),
     );
   }
 }
@@ -2055,29 +2007,53 @@ class _SkillsSection extends StatelessWidget {
             AppSpacing.vGap12,
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
+              child: Column(
                 children: [
-                  ...skills.asMap().entries.map((entry) => _SkillChip(
-                        skill: entry.value,
-                        isEditMode: isEditMode,
-                        onRemove: isEditMode && onRemoveSkill != null
-                            ? () => onRemoveSkill!(entry.key)
-                            : null,
-                      )),
-                  if (isEditMode && onAddSkill != null)
+                  // Grid 2 columns
+                  for (int i = 0; i < skills.length; i += 2)
+                    Padding(
+                      padding: EdgeInsets.only(bottom: i + 2 < skills.length ? 8 : 0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _SkillChip(
+                              skill: skills[i],
+                              isEditMode: isEditMode,
+                              onRemove: isEditMode && onRemoveSkill != null
+                                  ? () => onRemoveSkill!(i)
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          if (i + 1 < skills.length)
+                            Expanded(
+                              child: _SkillChip(
+                                skill: skills[i + 1],
+                                isEditMode: isEditMode,
+                                onRemove: isEditMode && onRemoveSkill != null
+                                    ? () => onRemoveSkill!(i + 1)
+                                    : null,
+                              ),
+                            )
+                          else
+                            const Expanded(child: SizedBox()),
+                        ],
+                      ),
+                    ),
+                  if (isEditMode && onAddSkill != null) ...[
+                    const SizedBox(height: 8),
                     GestureDetector(
                       onTap: onAddSkill,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
                           color: cs.primary.withValues(alpha: 0.1),
-                          borderRadius: AppRadius.borderFull,
+                          borderRadius: AppRadius.borderMd,
                           border: Border.all(color: cs.primary),
                         ),
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.add, size: 16, color: cs.primary),
                             const SizedBox(width: 4),
@@ -2092,6 +2068,7 @@ class _SkillsSection extends StatelessWidget {
                         ),
                       ),
                     ),
+                  ],
                 ],
               ),
             ),
@@ -2119,24 +2096,27 @@ class _SkillChip extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: AppRadius.borderFull,
+        borderRadius: AppRadius.borderMd,
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(_getSkillIcon(skill.name), size: 16, color: cs.primary),
           AppSpacing.hGap8,
-          Text(
-            skill.name,
-            style: tt.labelMedium?.copyWith(fontWeight: FontWeight.w500),
+          Expanded(
+            child: Text(
+              skill.name,
+              style: tt.labelMedium?.copyWith(fontWeight: FontWeight.w500),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           AppSpacing.hGap8,
           // Level dots
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: List.generate(5, (index) {
               return Container(
                 width: 6,
