@@ -168,11 +168,17 @@ class StudentRepositoryImpl implements StudentRepository {
               id: 'section-1',
               title: 'Giới thiệu Python',
               totalLessons: 5,
+              totalDurationMins: 100,
               lessons: [
                 LessonModel(
                   id: 'lesson-1',
                   title: 'Python là gì?',
                   durationMinutes: 15,
+                  contents: const [
+                    LessonContentModel(id: 'c1-1', type: 'video', title: 'Giới thiệu về Python', duration: 300),
+                    LessonContentModel(id: 'c1-2', type: 'video', title: 'Lịch sử phát triển', duration: 240),
+                    LessonContentModel(id: 'c1-3', type: 'exercise', title: 'Bài tập kiểm tra', duration: 180),
+                  ],
                   progress: const LessonProgressModel(
                     status: 'completed',
                     progressPercentage: 100,
@@ -182,6 +188,11 @@ class StudentRepositoryImpl implements StudentRepository {
                   id: 'lesson-2',
                   title: 'Cài đặt môi trường',
                   durationMinutes: 20,
+                  contents: const [
+                    LessonContentModel(id: 'c2-1', type: 'video', title: 'Cài đặt Python trên Windows', duration: 360),
+                    LessonContentModel(id: 'c2-2', type: 'video', title: 'Cài đặt Python trên Mac', duration: 300),
+                    LessonContentModel(id: 'c2-3', type: 'article', title: 'Cấu hình IDE', duration: 240),
+                  ],
                   progress: const LessonProgressModel(
                     status: 'completed',
                     progressPercentage: 100,
@@ -191,6 +202,10 @@ class StudentRepositoryImpl implements StudentRepository {
                   id: 'lesson-3',
                   title: 'Hello World',
                   durationMinutes: 10,
+                  contents: const [
+                    LessonContentModel(id: 'c3-1', type: 'video', title: 'Chương trình đầu tiên', duration: 300),
+                    LessonContentModel(id: 'c3-2', type: 'exercise', title: 'Thực hành viết code', duration: 180),
+                  ],
                   progress: const LessonProgressModel(
                     status: 'in_progress',
                     progressPercentage: 50,
@@ -200,11 +215,21 @@ class StudentRepositoryImpl implements StudentRepository {
                   id: 'lesson-4',
                   title: 'Biến và hằng',
                   durationMinutes: 25,
+                  contents: [
+                    LessonContentModel(id: 'c4-1', type: 'video', title: 'Khai báo biến', duration: 420),
+                    LessonContentModel(id: 'c4-2', type: 'video', title: 'Hằng số trong Python', duration: 300),
+                    LessonContentModel(id: 'c4-3', type: 'exercise', title: 'Bài tập về biến', duration: 240),
+                  ],
                 ),
                 const LessonModel(
                   id: 'lesson-5',
                   title: 'Kiểu dữ liệu',
                   durationMinutes: 30,
+                  contents: [
+                    LessonContentModel(id: 'c5-1', type: 'video', title: 'Các kiểu dữ liệu cơ bản', duration: 480),
+                    LessonContentModel(id: 'c5-2', type: 'video', title: 'Ép kiểu dữ liệu', duration: 360),
+                    LessonContentModel(id: 'c5-3', type: 'exercise', title: 'Thực hành kiểu dữ liệu', duration: 300),
+                  ],
                 ),
               ],
             ),
@@ -212,31 +237,55 @@ class StudentRepositoryImpl implements StudentRepository {
               id: 'section-2',
               title: 'Cấu trúc điều khiển',
               totalLessons: 5,
+              totalDurationMins: 110,
               lessons: [
                 const LessonModel(
                   id: 'lesson-6',
                   title: 'If-else',
                   durationMinutes: 20,
+                  contents: [
+                    LessonContentModel(id: 'c6-1', type: 'video', title: 'Câu lệnh if', duration: 360),
+                    LessonContentModel(id: 'c6-2', type: 'video', title: 'Câu lệnh if-else', duration: 300),
+                    LessonContentModel(id: 'c6-3', type: 'exercise', title: 'Bài tập if-else', duration: 240),
+                  ],
                 ),
                 const LessonModel(
                   id: 'lesson-7',
                   title: 'Vòng lặp for',
                   durationMinutes: 25,
+                  contents: [
+                    LessonContentModel(id: 'c7-1', type: 'video', title: 'Cú pháp vòng lặp for', duration: 420),
+                    LessonContentModel(id: 'c7-2', type: 'video', title: 'Range trong Python', duration: 300),
+                    LessonContentModel(id: 'c7-3', type: 'exercise', title: 'Thực hành vòng lặp', duration: 300),
+                  ],
                 ),
                 const LessonModel(
                   id: 'lesson-8',
                   title: 'Vòng lặp while',
                   durationMinutes: 20,
+                  contents: [
+                    LessonContentModel(id: 'c8-1', type: 'video', title: 'Cú pháp while', duration: 360),
+                    LessonContentModel(id: 'c8-2', type: 'exercise', title: 'Bài tập while', duration: 240),
+                  ],
                 ),
                 const LessonModel(
                   id: 'lesson-9',
                   title: 'Break và continue',
                   durationMinutes: 15,
+                  contents: [
+                    LessonContentModel(id: 'c9-1', type: 'video', title: 'Sử dụng break', duration: 240),
+                    LessonContentModel(id: 'c9-2', type: 'video', title: 'Sử dụng continue', duration: 240),
+                  ],
                 ),
                 const LessonModel(
                   id: 'lesson-10',
                   title: 'Bài tập tổng hợp',
                   durationMinutes: 30,
+                  contents: [
+                    LessonContentModel(id: 'c10-1', type: 'article', title: 'Hướng dẫn bài tập', duration: 300),
+                    LessonContentModel(id: 'c10-2', type: 'exercise', title: 'Bài tập 1: FizzBuzz', duration: 600),
+                    LessonContentModel(id: 'c10-3', type: 'exercise', title: 'Bài tập 2: Tìm số nguyên tố', duration: 600),
+                  ],
                 ),
               ],
             ),
@@ -255,15 +304,34 @@ class StudentRepositoryImpl implements StudentRepository {
         id: lessonId,
         title: 'Python là gì?',
         description:
-            'Tìm hiểu về ngôn ngữ lập trình Python và ứng dụng của nó.',
+            'Tìm hiểu về ngôn ngữ lập trình Python và ứng dụng của nó trong phát triển phần mềm, khoa học dữ liệu, và trí tuệ nhân tạo.',
         durationMinutes: 15,
-        contents: [
-          const LessonContentModel(
+        contents: const [
+          LessonContentModel(
             id: 'content-1',
             type: 'video',
-            title: 'Video bài giảng',
-            videoUrl: 'https://example.com/video.mp4',
-            duration: 900,
+            title: 'Giới thiệu tổng quan về Python',
+            videoUrl: 'https://example.com/video1.mp4',
+            duration: 300,
+          ),
+          LessonContentModel(
+            id: 'content-2',
+            type: 'video',
+            title: 'Lịch sử phát triển Python',
+            videoUrl: 'https://example.com/video2.mp4',
+            duration: 240,
+          ),
+          LessonContentModel(
+            id: 'content-3',
+            type: 'article',
+            title: 'Tài liệu tham khảo',
+            duration: 180,
+          ),
+          LessonContentModel(
+            id: 'content-4',
+            type: 'exercise',
+            title: 'Bài tập kiểm tra kiến thức',
+            duration: 300,
           ),
         ],
         progress: const LessonProgressModel(
