@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:study/l10n/app_localizations.dart';
 import 'package:study/features/auth/bloc/auth_animation_cubit.dart';
 import 'package:study/features/auth/bloc/forgot_password/forgot_password_bloc.dart';
 import 'package:study/features/auth/presentation/utils/validators.dart';
@@ -10,6 +9,7 @@ import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
 import 'package:study/features/auth/presentation/widgets/auth_text_field.dart';
 import 'package:study/features/auth/presentation/widgets/login_bear.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
+import 'package:study/l10n/app_localizations.dart';
 import 'package:study/routes/router.dart';
 import 'package:study/theme/theme.dart';
 
@@ -100,7 +100,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             top: false,
             child: Center(
               child: SingleChildScrollView(
-                padding: EdgeInsets.only(bottom: AppSpacing.lg),
+                padding: const EdgeInsets.only(bottom: AppSpacing.lg),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -130,7 +130,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                SizedBox(height: AppSpacing.xs + 2),
+                                const SizedBox(height: AppSpacing.xs + 2),
                                 Text(
                                   l10n.forgotPasswordSubtitle,
                                   style: tt.bodyLarge?.copyWith(

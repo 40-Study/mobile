@@ -219,7 +219,7 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
               ),
             ),
 
-            SliverToBoxAdapter(child: AppSpacing.vGap24),
+            const SliverToBoxAdapter(child: AppSpacing.vGap24),
 
             // Completed Certificates
             if (_completedCertificates.isNotEmpty) ...[
@@ -245,7 +245,7 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
                   ),
                 ),
               ),
-              SliverToBoxAdapter(child: AppSpacing.vGap16),
+              const SliverToBoxAdapter(child: AppSpacing.vGap16),
             ],
 
             // In Progress Certificates
@@ -371,7 +371,7 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
       ),
 
       // In Progress
-      CertificateData(
+      const CertificateData(
         id: '5',
         courseTitle: 'Flutter & Dart Complete Course',
         instructorName: 'Sarah Wilson',
@@ -383,7 +383,7 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
         completedLessons: 86,
         duration: '48 giờ',
       ),
-      CertificateData(
+      const CertificateData(
         id: '6',
         courseTitle: 'Digital Marketing Masterclass',
         instructorName: 'Michael Brown',
@@ -395,7 +395,7 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
         completedLessons: 36,
         duration: '32 giờ',
       ),
-      CertificateData(
+      const CertificateData(
         id: '7',
         courseTitle: 'Figma UI Design Essential',
         instructorName: 'Emma Davis',
@@ -407,7 +407,7 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
         completedLessons: 17,
         duration: '20 giờ',
       ),
-      CertificateData(
+      const CertificateData(
         id: '8',
         courseTitle: 'English for Business Communication',
         instructorName: 'John Smith',

@@ -26,7 +26,7 @@ class _QuizScreenState extends State<QuizScreen> {
 
   // Mock questions
   final List<_QuizQuestion> _questions = [
-    _QuizQuestion(
+    const _QuizQuestion(
       question: 'Python là ngôn ngữ lập trình thuộc loại nào?',
       options: [
         'Ngôn ngữ biên dịch (Compiled)',
@@ -36,7 +36,7 @@ class _QuizScreenState extends State<QuizScreen> {
       ],
       correctAnswer: 1,
     ),
-    _QuizQuestion(
+    const _QuizQuestion(
       question: 'Cú pháp nào đúng để khai báo biến trong Python?',
       options: [
         'var x = 5',
@@ -46,7 +46,7 @@ class _QuizScreenState extends State<QuizScreen> {
       ],
       correctAnswer: 2,
     ),
-    _QuizQuestion(
+    const _QuizQuestion(
       question: 'Hàm print() trong Python dùng để làm gì?',
       options: [
         'Nhập dữ liệu từ bàn phím',
@@ -56,7 +56,7 @@ class _QuizScreenState extends State<QuizScreen> {
       ],
       correctAnswer: 1,
     ),
-    _QuizQuestion(
+    const _QuizQuestion(
       question: 'Kiểu dữ liệu nào sau đây KHÔNG có trong Python?',
       options: [
         'int',
@@ -66,7 +66,7 @@ class _QuizScreenState extends State<QuizScreen> {
       ],
       correctAnswer: 2,
     ),
-    _QuizQuestion(
+    const _QuizQuestion(
       question: 'Comment trong Python bắt đầu bằng ký tự gì?',
       options: [
         '//',
@@ -224,7 +224,7 @@ class _QuizScreenState extends State<QuizScreen> {
     final isLast = _currentQuestion == _questions.length - 1;
 
     return Container(
-      padding: EdgeInsets.fromLTRB(
+      padding: const EdgeInsets.fromLTRB(
         AppSpacing.screenPadding,
         AppSpacing.md,
         AppSpacing.screenPadding,
@@ -321,8 +321,8 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     // Calculate score
-    int correct = 0;
-    for (int i = 0; i < _questions.length; i++) {
+    var correct = 0;
+    for (var i = 0; i < _questions.length; i++) {
       if (_answers[i] == _questions[i].correctAnswer) {
         correct++;
       }
@@ -349,11 +349,11 @@ class _QuizScreenState extends State<QuizScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.orange),
             AppSpacing.hGap8,
-            const Text('Thoát bài kiểm tra?'),
+            Text('Thoát bài kiểm tra?'),
           ],
         ),
         content: const Text('Tiến độ làm bài của bạn sẽ không được lưu.'),
@@ -479,7 +479,7 @@ class QuizResultScreen extends StatelessWidget {
                                 margin: const EdgeInsets.symmetric(horizontal: 24),
                                 color: Colors.white24,
                               ),
-                              _ResultStat(label: 'Thời gian', value: '03:28'),
+                              const _ResultStat(label: 'Thời gian', value: '03:28'),
                               Container(
                                 width: 1,
                                 height: 40,
@@ -532,7 +532,7 @@ class QuizResultScreen extends StatelessWidget {
 
             // Bottom buttons
             Container(
-              padding: EdgeInsets.fromLTRB(
+              padding: const EdgeInsets.fromLTRB(
                 AppSpacing.screenPadding,
                 AppSpacing.md,
                 AppSpacing.screenPadding,
@@ -860,7 +860,7 @@ class _QuestionReviewCard extends StatelessWidget {
                     child: Text(option, style: tt.bodySmall),
                   ),
                   if (isCorrectAnswer)
-                    Icon(Icons.check_circle_rounded, size: 18, color: Colors.green)
+                    const Icon(Icons.check_circle_rounded, size: 18, color: Colors.green)
                   else if (isUserAnswer && !isCorrect)
                     Icon(Icons.cancel_rounded, size: 18, color: cs.error),
                 ],

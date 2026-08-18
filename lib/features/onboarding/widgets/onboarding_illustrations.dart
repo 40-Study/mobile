@@ -540,13 +540,13 @@ class CodeEditorIllustration extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     // Code lines
-                    _CodeLine(width: 60, opacity: 0.6),
+                    const _CodeLine(width: 60, opacity: 0.6),
                     const SizedBox(height: 8),
-                    _CodeLine(width: 140, opacity: 0.4),
+                    const _CodeLine(width: 140, opacity: 0.4),
                     const SizedBox(height: 8),
-                    _CodeLine(width: 100, opacity: 0.4),
+                    const _CodeLine(width: 100, opacity: 0.4),
                     const SizedBox(height: 8),
-                    _CodeLine(width: 120, opacity: 0.4),
+                    const _CodeLine(width: 120, opacity: 0.4),
                     const Spacer(),
                     // Run button
                     Container(
@@ -846,7 +846,7 @@ class _ConnectionLinesPainter extends CustomPainter {
 
     // Lines from center to each node
     final nodePositions = [
-      Offset(60, 94), // top-left
+      const Offset(60, 94), // top-left
       Offset(size.width - 54, 104), // top-right
       Offset(56, size.height - 94), // bottom-left
       Offset(size.width - 74, size.height - 114), // bottom-right

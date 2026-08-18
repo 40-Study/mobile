@@ -171,7 +171,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                   ),
 
-                  SliverToBoxAdapter(child: AppSpacing.vGap24),
+                  const SliverToBoxAdapter(child: AppSpacing.vGap24),
 
                   // Form
                   SliverToBoxAdapter(
@@ -243,7 +243,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               children: [
                                 BlocBuilder<AuthBloc, AuthState>(
                                   builder: (context, state) {
-                                    String email = '';
+                                    var email = '';
                                     if (state is AuthAuthenticated) {
                                       email = state.user.email;
                                     }
@@ -313,7 +313,7 @@ class _AvatarSection extends StatelessWidget {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         String? avatarUrl;
-        String initials = '?';
+        var initials = '?';
 
         if (state is AuthAuthenticated) {
           avatarUrl = state.user.avatarUrl;
@@ -617,7 +617,7 @@ class _EmailRow extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
+                const Icon(
                   Icons.check_circle_outline_rounded,
                   size: 14,
                   color: AchievementColors.green,

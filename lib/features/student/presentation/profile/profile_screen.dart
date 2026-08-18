@@ -50,12 +50,12 @@ class _ProfileContentState extends State<_ProfileContent> {
       avatarUrl: widget.user.avatarUrl,
       isPremium: true,
     ),
-    _ProfileData(
+    const _ProfileData(
       id: '2',
       name: 'Minh Tran',
       email: 'minh.tran@email.com',
     ),
-    _ProfileData(
+    const _ProfileData(
       id: '3',
       name: 'An Tran',
       email: 'an.tran@email.com',
@@ -267,7 +267,7 @@ class _ProfileContentState extends State<_ProfileContent> {
               ),
             ),
             AppSpacing.vGap24,
-            Icon(Icons.logout_rounded,
+            const Icon(Icons.logout_rounded,
                 size: 48, color: TogetherSemanticColors.error),
             AppSpacing.vGap16,
             Text(l10n.logout,
@@ -431,7 +431,7 @@ class _CurrentProfileCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.star_rounded,
                               size: 14,
                               color: AchievementColors.orange,
@@ -517,7 +517,7 @@ class _SwitchProfileSection extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
             itemCount: profiles.length + 1,
-            separatorBuilder: (_, __) => AppSpacing.hGap12,
+            separatorBuilder: (_, _) => AppSpacing.hGap12,
             itemBuilder: (context, index) {
               if (index == profiles.length) {
                 return _AddProfileCard(onTap: onAddProfile);

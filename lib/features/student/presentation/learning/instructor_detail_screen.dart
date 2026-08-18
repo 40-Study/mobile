@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:study/theme/theme.dart';
 
@@ -148,10 +149,11 @@ class InstructorDetailScreen extends StatelessWidget {
               ),
               child: ClipOval(
                 child: instructorAvatar != null
-                    ? Image.network(
-                        instructorAvatar!,
+                    ? CachedNetworkImage(
+                        imageUrl: instructorAvatar!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _AvatarPlaceholder(name: instructorName),
+                        placeholder: (_, _) => _AvatarPlaceholder(name: instructorName),
+                        errorWidget: (_, _, _) => _AvatarPlaceholder(name: instructorName),
                       )
                     : _AvatarPlaceholder(name: instructorName),
               ),
@@ -219,7 +221,7 @@ class InstructorDetailScreen extends StatelessWidget {
               AppSpacing.vGap12,
 
               // Tags
-              Wrap(
+              const Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
@@ -246,13 +248,13 @@ class InstructorDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _StatItem(icon: Icons.menu_book_outlined, value: '12', label: 'Khóa học'),
+          const _StatItem(icon: Icons.menu_book_outlined, value: '12', label: 'Khóa học'),
           _VerticalDivider(),
-          _StatItem(icon: Icons.people_outline, value: '2.4K', label: 'Học viên'),
+          const _StatItem(icon: Icons.people_outline, value: '2.4K', label: 'Học viên'),
           _VerticalDivider(),
-          _StatItem(icon: Icons.play_circle_outline, value: '128', label: 'Bài học'),
+          const _StatItem(icon: Icons.play_circle_outline, value: '128', label: 'Bài học'),
           _VerticalDivider(),
-          _StatItem(icon: Icons.star_outline_rounded, value: '4.9', label: 'Đánh giá'),
+          const _StatItem(icon: Icons.star_outline_rounded, value: '4.9', label: 'Đánh giá'),
         ],
       ),
     );
@@ -369,7 +371,7 @@ class InstructorDetailScreen extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             clipBehavior: Clip.none,
             children: [
-              _CourseCard(
+              const _CourseCard(
                 title: 'UI/UX Design Fundamentals',
                 lessonCount: 12,
                 duration: '6h 40m',
@@ -377,21 +379,21 @@ class InstructorDetailScreen extends StatelessWidget {
                 isEnrolled: true,
               ),
               AppSpacing.hGap12,
-              _CourseCard(
+              const _CourseCard(
                 title: 'Product Design Masterclass',
                 lessonCount: 18,
                 duration: '8h 20m',
                 progress: 0.40,
               ),
               AppSpacing.hGap12,
-              _CourseCard(
+              const _CourseCard(
                 title: 'Design Thinking for UX',
                 lessonCount: 10,
                 duration: '4h 15m',
                 progress: 0.20,
               ),
               AppSpacing.hGap12,
-              _CourseCard(
+              const _CourseCard(
                 title: 'User Research Methods',
                 lessonCount: 14,
                 duration: '5h 30m',
@@ -442,7 +444,7 @@ class InstructorDetailScreen extends StatelessWidget {
         AppSpacing.vGap16,
 
         // Review item
-        _ReviewItem(
+        const _ReviewItem(
           name: 'Nguyễn Hoàng Nam',
           avatar: null,
           isVerified: false,
@@ -703,7 +705,7 @@ class _CourseCard extends StatelessWidget {
                             color: Colors.white.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.play_arrow_rounded,
                             size: 20,
                             color: Colors.white,
@@ -825,7 +827,7 @@ class _RatingSummaryCard extends StatelessWidget {
                 style: tt.displaySmall?.copyWith(fontWeight: FontWeight.w700),
               ),
               Row(
-                children: List.generate(5, (i) => Icon(
+                children: List.generate(5, (i) => const Icon(
                   Icons.star_rounded,
                   size: 16,
                   color: Colors.amber,
@@ -841,7 +843,7 @@ class _RatingSummaryCard extends StatelessWidget {
           AppSpacing.hGap24,
 
           // Right: breakdown bars
-          Expanded(
+          const Expanded(
             child: Column(
               children: [
                 _RatingBar(stars: 5, count: 110, total: 128),
@@ -881,7 +883,7 @@ class _RatingBar extends StatelessWidget {
               style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
             ),
           ),
-          Icon(Icons.star_rounded, size: 12, color: Colors.amber),
+          const Icon(Icons.star_rounded, size: 12, color: Colors.amber),
           AppSpacing.hGap8,
           Expanded(
             child: ClipRRect(

@@ -297,7 +297,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
           AppSpacing.vGap24,
 
           // Slide section
-          _DocumentSection(
+          const _DocumentSection(
             icon: Icons.slideshow_outlined,
             title: 'Slide bài giảng',
             children: [
@@ -338,7 +338,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
             icon: Icons.library_books_outlined,
             title: 'Tài liệu tham khảo',
             children: [
-              _DocumentCard(
+              const _DocumentCard(
                 icon: Icons.description_outlined,
                 iconColor: Colors.blue,
                 title: 'Python Cheat Sheet',
@@ -363,8 +363,8 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.screenPadding),
+    return const SingleChildScrollView(
+      padding: EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1170,7 +1170,7 @@ class _DocumentCard extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.check_circle_rounded, size: 14, color: Colors.green),
+                  const Icon(Icons.check_circle_rounded, size: 14, color: Colors.green),
                   AppSpacing.hGap4,
                   Text(
                     'Đã tải',

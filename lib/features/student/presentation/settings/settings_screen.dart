@@ -198,7 +198,7 @@ class _SettingsTile extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (trailing != null) trailing!,
+          ?trailing,
           AppSpacing.hGap8,
           Icon(Icons.chevron_right, color: cs.onSurfaceVariant, size: 20),
         ],

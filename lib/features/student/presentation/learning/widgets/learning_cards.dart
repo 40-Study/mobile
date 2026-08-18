@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/student/presentation/learning/widgets/thumbnail_placeholder.dart';
@@ -88,11 +89,11 @@ class ContinueLearningCard extends StatelessWidget {
                     width: 120,
                     height: 140,
                     child: course?.thumbnailUrl != null
-                        ? Image.network(
-                            course!.thumbnailUrl!,
+                        ? CachedNetworkImage(
+                            imageUrl: course!.thumbnailUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                ThumbnailPlaceholder(cs: cs),
+                            placeholder: (_, _) => ThumbnailPlaceholder(cs: cs),
+                            errorWidget: (_, _, _) => ThumbnailPlaceholder(cs: cs),
                           )
                         : ThumbnailPlaceholder(cs: cs),
                   ),
@@ -264,10 +265,17 @@ class MyCourseCard extends StatelessWidget {
                       height: 100,
                       width: double.infinity,
                       child: course?.thumbnailUrl != null
-                          ? Image.network(
-                              course!.thumbnailUrl!,
+                          ? CachedNetworkImage(
+                              imageUrl: course!.thumbnailUrl!,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
+                              placeholder: (_, _) => Container(
+                                color: cs.primaryContainer,
+                                child: Icon(
+                                  Icons.auto_stories_outlined,
+                                  color: cs.onPrimaryContainer,
+                                ),
+                              ),
+                              errorWidget: (_, _, _) => Container(
                                 color: cs.primaryContainer,
                                 child: Icon(
                                   Icons.auto_stories_outlined,

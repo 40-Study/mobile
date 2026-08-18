@@ -351,7 +351,7 @@ class _AnimatedOnboardingPageContentState
         data.imagePath!,
         height: 200,
         fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => _buildIconFallback(colorScheme),
+        errorBuilder: (_, _, _) => _buildIconFallback(colorScheme),
       );
     }
     return _buildIconFallback(colorScheme);

@@ -14,7 +14,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   bool _isEditMode = true;
 
   // Mock data
-  _PortfolioProfile _profile = _PortfolioProfile(
+  _PortfolioProfile _profile = const _PortfolioProfile(
     name: 'Linh Nguyen',
     title: 'UI/UX Designer',
     location: 'Hà Nội, Việt Nam',
@@ -29,7 +29,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     ],
   );
 
-  final _stats = _PortfolioStats(
+  final _stats = const _PortfolioStats(
     yearsExperience: '3+',
     projectsCompleted: 18,
     certificates: 12,
@@ -51,8 +51,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     _sectionsInitialized = true;
   }
 
-  List<_Project> _projects = [
-    _Project(
+  final List<_Project> _projects = [
+    const _Project(
       title: 'EduFlow',
       subtitle: 'Hệ thống quản lý học tập',
       description: 'Thiết kế hệ thống dashboard và trải nghiệm học tập toàn diện.',
@@ -60,7 +60,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       tool: 'Figma',
       year: '2024',
     ),
-    _Project(
+    const _Project(
       title: 'Mindora',
       subtitle: 'Ứng dụng thiền và thư giãn',
       description: 'Thiết kế ứng dụng giúp người dùng thiền định và theo dõi thói quen.',
@@ -68,7 +68,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       tool: 'Figma',
       year: '2023',
     ),
-    _Project(
+    const _Project(
       title: 'GreenSpace',
       subtitle: 'Website thương hiệu',
       description: 'Thiết kế website giới thiệu sản phẩm và thương hiệu thân thiện.',
@@ -78,19 +78,19 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     ),
   ];
 
-  List<_Skill> _skills = [
-    _Skill(name: 'UI Design', level: 5),
-    _Skill(name: 'UX Research', level: 3),
-    _Skill(name: 'Prototyping', level: 4),
-    _Skill(name: 'Interaction Design', level: 4),
-    _Skill(name: 'Figma', level: 5),
-    _Skill(name: 'Design System', level: 4),
-    _Skill(name: 'Wireframing', level: 4),
-    _Skill(name: 'Usability Testing', level: 3),
+  final List<_Skill> _skills = [
+    const _Skill(name: 'UI Design', level: 5),
+    const _Skill(name: 'UX Research', level: 3),
+    const _Skill(name: 'Prototyping', level: 4),
+    const _Skill(name: 'Interaction Design', level: 4),
+    const _Skill(name: 'Figma', level: 5),
+    const _Skill(name: 'Design System', level: 4),
+    const _Skill(name: 'Wireframing', level: 4),
+    const _Skill(name: 'Usability Testing', level: 3),
   ];
 
-  List<_Experience> _experiences = [
-    _Experience(
+  final List<_Experience> _experiences = [
+    const _Experience(
       position: 'Senior UI/UX Designer',
       company: 'Vela Creative Studio',
       startDate: '03/2022',
@@ -175,7 +175,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   ),
                 ),
 
-                SliverToBoxAdapter(child: AppSpacing.vGap24),
+                const SliverToBoxAdapter(child: AppSpacing.vGap24),
 
                 // Dynamic sections based on order
                 ..._sections.asMap().entries.expand((entry) {
@@ -190,7 +190,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   ];
                 }),
 
-                SliverToBoxAdapter(child: AppSpacing.vGap24),
+                const SliverToBoxAdapter(child: AppSpacing.vGap24),
 
                 const SliverToBoxAdapter(child: SizedBox(height: 120)),
               ],
@@ -283,7 +283,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final titleController = TextEditingController();
     final subtitleController = TextEditingController();
     final descController = TextEditingController();
-    String category = 'UI/UX DESIGN';
+    var category = 'UI/UX DESIGN';
 
     showDialog(
       context: context,
@@ -340,7 +340,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 ),
                 AppSpacing.vGap12,
                 DropdownButtonFormField<String>(
-                  value: category,
+                  initialValue: category,
                   decoration: InputDecoration(
                     labelText: l10n.categoryLabel,
                     border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
@@ -393,7 +393,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   void _showAddSkillDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final nameController = TextEditingController();
-    int level = 3;
+    var level = 3;
 
     showDialog(
       context: context,
@@ -1800,7 +1800,7 @@ class _ProjectsSection extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
                 itemCount: projects.length,
-                separatorBuilder: (_, __) => AppSpacing.hGap12,
+                separatorBuilder: (_, _) => AppSpacing.hGap12,
                 itemBuilder: (context, index) => _ProjectCard(
                   project: projects[index],
                   isEditMode: isEditMode,

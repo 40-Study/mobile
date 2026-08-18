@@ -944,7 +944,7 @@ class _AccountScreenState extends State<AccountScreen>
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            SizedBox(height: AppSpacing.xl - 4),
+            const SizedBox(height: AppSpacing.xl - 4),
             ListTile(
               leading: _buildMenuIcon(context, Icons.edit_outlined),
               title: Text(l10n.editProfile),

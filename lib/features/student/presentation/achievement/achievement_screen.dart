@@ -65,7 +65,7 @@ class _AchievementScreenState extends State<AchievementScreen> {
           _CertificateCarousel(certificates: state.certificates),
           AppSpacing.vGap24,
         ],
-        _ContributionGrid(),
+        const _ContributionGrid(),
         AppSpacing.vGap24,
         _LearningTrendChart(stats: state.stats),
         const SizedBox(height: 100),
@@ -114,7 +114,7 @@ class _RecentBadges extends StatelessWidget {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: badges.take(4).length,
-            separatorBuilder: (_, __) => AppSpacing.hGap12,
+            separatorBuilder: (_, _) => AppSpacing.hGap12,
             itemBuilder: (context, i) => _BadgeItem(
               badge: badges[i],
               isNew: i == 0,

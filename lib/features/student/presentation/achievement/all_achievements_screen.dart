@@ -215,7 +215,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
               ),
             ),
 
-            SliverToBoxAdapter(child: AppSpacing.vGap24),
+            const SliverToBoxAdapter(child: AppSpacing.vGap24),
 
             // Earned Badges Section
             if (_earnedBadges.isNotEmpty) ...[
@@ -245,7 +245,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
                   ),
                 ),
               ),
-              SliverToBoxAdapter(child: AppSpacing.vGap32),
+              const SliverToBoxAdapter(child: AppSpacing.vGap32),
             ],
 
             // In Progress Badges Section
@@ -276,7 +276,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
                   ),
                 ),
               ),
-              SliverToBoxAdapter(child: AppSpacing.vGap32),
+              const SliverToBoxAdapter(child: AppSpacing.vGap32),
             ],
 
             // Locked Badges Section
@@ -451,7 +451,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
       }),
 
       // In progress badges
-      AchievementBadgeData(
+      const AchievementBadgeData(
         id: 'p1',
         title: 'Thảo luận tích cực',
         description: 'Tham gia thảo luận 10 lần',
@@ -462,7 +462,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
         progress: 6,
         target: 10,
       ),
-      AchievementBadgeData(
+      const AchievementBadgeData(
         id: 'p2',
         title: 'Hoàn thành bài tập',
         description: 'Nộp 5 bài tập',
@@ -473,7 +473,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
         progress: 2,
         target: 5,
       ),
-      AchievementBadgeData(
+      const AchievementBadgeData(
         id: 'p3',
         title: 'Học qua video',
         description: 'Xem 20 video',
@@ -484,7 +484,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
         progress: 14,
         target: 20,
       ),
-      AchievementBadgeData(
+      const AchievementBadgeData(
         id: 'p4',
         title: 'Duy trì đều đặn',
         description: 'Học 60 ngày liên tiếp',
@@ -526,7 +526,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
       }),
 
       // Locked badges
-      AchievementBadgeData(
+      const AchievementBadgeData(
         id: 'l1',
         title: 'Chuyên gia',
         description: 'Hoàn thành 50 bài học',
@@ -537,7 +537,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
         progress: 0,
         target: 50,
       ),
-      AchievementBadgeData(
+      const AchievementBadgeData(
         id: 'l2',
         title: 'Xuất sắc',
         description: 'Đạt 100% trong 10 bài kiểm tra',
@@ -548,7 +548,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
         progress: 0,
         target: 10,
       ),
-      AchievementBadgeData(
+      const AchievementBadgeData(
         id: 'l3',
         title: 'Bậc thầy',
         description: 'Hoàn thành 1 khóa học nâng cao',
@@ -559,7 +559,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
         progress: 0,
         target: 1,
       ),
-      AchievementBadgeData(
+      const AchievementBadgeData(
         id: 'l4',
         title: 'Thành tựu lớn',
         description: 'Hoàn thành 5 khóa học',

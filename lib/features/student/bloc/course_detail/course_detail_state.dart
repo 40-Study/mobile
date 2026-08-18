@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/course/data/models/course_model.dart';
+import 'package:study/features/course/data/models/enrollment_model.dart';
 
 sealed class CourseDetailState extends Equatable {
   const CourseDetailState();

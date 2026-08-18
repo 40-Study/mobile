@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/course/data/models/course_model.dart';
@@ -202,10 +203,11 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                   width: 140,
                   height: 100,
                   child: course?.thumbnailUrl != null
-                      ? Image.network(
-                          course!.thumbnailUrl!,
+                      ? CachedNetworkImage(
+                          imageUrl: course!.thumbnailUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => ThumbnailPlaceholder(cs: cs),
+                          placeholder: (_, _) => ThumbnailPlaceholder(cs: cs),
+                          errorWidget: (_, _, _) => ThumbnailPlaceholder(cs: cs),
                         )
                       : ThumbnailPlaceholder(cs: cs),
                 ),
@@ -300,7 +302,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                 // Rating + students
                 Row(
                   children: [
-                    Icon(Icons.star_rounded, color: Colors.amber, size: 16),
+                    const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
                     const SizedBox(width: 4),
                     Text(
                       course?.averageRating.toStringAsFixed(1) ?? '0.0',
@@ -407,12 +409,12 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
+                  const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.play_arrow_rounded, size: 18),
-                      const SizedBox(width: 4),
-                      const Text('Tiếp tục học'),
+                      SizedBox(width: 4),
+                      Text('Tiếp tục học'),
                     ],
                   ),
                   if (nextLesson != null)
@@ -475,7 +477,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
               label: 'Cấp độ',
             ),
             AppSpacing.hGap12,
-            _StatCard(
+            const _StatCard(
               icon: Icons.workspace_premium_outlined,
               value: 'Có',
               label: 'Chứng chỉ',
@@ -668,7 +670,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                       AppSpacing.vGap4,
                       Row(
                         children: [
-                          Icon(Icons.star_rounded, size: 14, color: Colors.amber),
+                          const Icon(Icons.star_rounded, size: 14, color: Colors.amber),
                           const SizedBox(width: 4),
                           Text('4.9', style: tt.labelSmall?.copyWith(fontWeight: FontWeight.w600)),
                           const SizedBox(width: 8),
@@ -687,7 +689,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
         ),
         AppSpacing.vGap24,
 
-        Row(
+        const Row(
           children: [
             _InstructorStat(icon: Icons.menu_book_outlined, value: '12', label: 'Khóa học'),
             AppSpacing.hGap16,

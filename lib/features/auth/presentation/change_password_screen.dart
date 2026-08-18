@@ -81,7 +81,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               children: [
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: EdgeInsets.all(AppSpacing.lg),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -89,7 +89,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         children: [
                           // Info card
                           Container(
-                            padding: EdgeInsets.all(AppSpacing.lg),
+                            padding: const EdgeInsets.all(AppSpacing.lg),
                             decoration: BoxDecoration(
                               color: cs.primaryContainer.withValues(alpha: 0.5),
                               borderRadius: BorderRadius.circular(12),
@@ -123,7 +123,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                 setState(() => _obscureOld = !_obscureOld),
                             enabled: !isLoading,
                           ),
-                          SizedBox(height: AppSpacing.xl - 4),
+                          const SizedBox(height: AppSpacing.xl - 4),
 
                           // New password
                           _buildLabel(l10n.newPasswordLabel),
@@ -142,7 +142,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                               return null;
                             },
                           ),
-                          SizedBox(height: AppSpacing.xl - 4),
+                          const SizedBox(height: AppSpacing.xl - 4),
 
                           // Confirm password
                           _buildLabel(l10n.confirmPasswordLabel),
@@ -192,13 +192,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
                 // Save button
                 Padding(
-                  padding: EdgeInsets.all(AppSpacing.lg),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
                   child: SizedBox(
                     width: double.infinity,
                     child: FilledButton(
                       onPressed: isLoading ? null : _changePassword,
                       style: FilledButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                         shape: RoundedRectangleBorder(
                           borderRadius: AppRadius.borderMd,
                         ),
@@ -261,7 +261,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         hintText: hint,
         filled: true,
         fillColor: cs.surface,
-        contentPadding: EdgeInsets.symmetric(
+        contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.lg - 2,
         ),

@@ -8,7 +8,6 @@ import 'package:study/features/student/bloc/learning/learning_event.dart';
 import 'package:study/features/student/bloc/learning/learning_state.dart';
 import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/widgets/learning_cards.dart';
-import 'package:study/features/student/presentation/learning/widgets/thumbnail_placeholder.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
 import 'package:study/features/student/presentation/search/search_screen.dart';
 import 'package:study/features/student/repository/student_repository_impl.dart';
@@ -103,8 +102,8 @@ class _LearningScreenState extends State<LearningScreen> {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: 3,
-            separatorBuilder: (_, __) => AppSpacing.hGap12,
-            itemBuilder: (_, __) => Container(
+            separatorBuilder: (_, _) => AppSpacing.hGap12,
+            itemBuilder: (_, _) => Container(
               width: 160,
               decoration: BoxDecoration(
                 color: cs.surfaceContainerLow,
@@ -341,7 +340,7 @@ class _LearningScreenState extends State<LearningScreen> {
                 ),
                 physics: const BouncingScrollPhysics(),
                 itemCount: state.enrollments.length,
-                separatorBuilder: (_, __) => AppSpacing.hGap12,
+                separatorBuilder: (_, _) => AppSpacing.hGap12,
                 itemBuilder: (context, index) {
                   final enrollment = state.enrollments[index];
                   return MyCourseCard(
@@ -374,9 +373,9 @@ class _LearningScreenState extends State<LearningScreen> {
           ),
 
           // Recent Learning
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
+              padding: EdgeInsets.symmetric(
                 horizontal: AppSpacing.screenPadding,
               ),
               child: SectionHeader(title: 'Gần đây'),
@@ -442,7 +441,7 @@ class _LearningScreenState extends State<LearningScreen> {
                 ),
                 physics: const BouncingScrollPhysics(),
                 itemCount: 4,
-                separatorBuilder: (_, __) => AppSpacing.hGap12,
+                separatorBuilder: (_, _) => AppSpacing.hGap12,
                 itemBuilder: (context, index) {
                   return _RecommendationCard(index: index);
                 },

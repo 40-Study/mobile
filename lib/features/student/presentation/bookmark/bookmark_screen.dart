@@ -53,7 +53,7 @@ class _BookmarkView extends StatelessWidget {
                   return ListView.separated(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     itemCount: items.length,
-                    separatorBuilder: (_, __) => AppSpacing.vGap12,
+                    separatorBuilder: (_, _) => AppSpacing.vGap12,
                     itemBuilder: (context, index) =>
                         _BookmarkItem(bookmark: items[index]),
                   );

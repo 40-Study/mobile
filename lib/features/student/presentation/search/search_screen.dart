@@ -91,7 +91,7 @@ class _SearchViewState extends State<_SearchView> {
                   child: ListView.separated(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     itemCount: state.filteredResults.length,
-                    separatorBuilder: (_, __) => AppSpacing.vGap12,
+                    separatorBuilder: (_, _) => AppSpacing.vGap12,
                     itemBuilder: (context, index) =>
                         _SearchResultItem(result: state.filteredResults[index]),
                   ),

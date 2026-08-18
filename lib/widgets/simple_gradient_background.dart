@@ -102,10 +102,10 @@ class _AuroraWavesLayerState extends State<_AuroraWavesLayer>
 }
 
 class _AuroraPainter extends CustomPainter {
-  final double progress;
-  final bool isDark;
 
   _AuroraPainter({required this.progress, required this.isDark});
+  final double progress;
+  final bool isDark;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -253,10 +253,10 @@ class _PastelCloudsLayerState extends State<_PastelCloudsLayer>
 }
 
 class _PastelCloudsPainter extends CustomPainter {
-  final double progress;
-  final bool isDark;
 
   _PastelCloudsPainter({required this.progress, required this.isDark});
+  final double progress;
+  final bool isDark;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -426,7 +426,6 @@ class _FloatingBubblesLayerState extends State<_FloatingBubblesLayer>
 }
 
 class _Bubble {
-  final double x, y, size, speed, opacity, phase, wobbleAmount;
 
   _Bubble({
     required this.x,
@@ -437,18 +436,19 @@ class _Bubble {
     required this.phase,
     required this.wobbleAmount,
   });
+  final double x, y, size, speed, opacity, phase, wobbleAmount;
 }
 
 class _BubblesPainter extends CustomPainter {
-  final List<_Bubble> bubbles;
-  final double progress;
-  final bool isDark;
 
   _BubblesPainter({
     required this.bubbles,
     required this.progress,
     required this.isDark,
   });
+  final List<_Bubble> bubbles;
+  final double progress;
+  final bool isDark;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -567,8 +567,6 @@ class _GlowingOrbsLayerState extends State<_GlowingOrbsLayer>
 }
 
 class _Orb {
-  final double x, y, size, phase, pulseSpeed;
-  final Color color;
 
   _Orb({
     required this.x,
@@ -578,18 +576,20 @@ class _Orb {
     required this.pulseSpeed,
     required this.color,
   });
+  final double x, y, size, phase, pulseSpeed;
+  final Color color;
 }
 
 class _OrbsPainter extends CustomPainter {
-  final List<_Orb> orbs;
-  final double progress;
-  final bool isDark;
 
   _OrbsPainter({
     required this.orbs,
     required this.progress,
     required this.isDark,
   });
+  final List<_Orb> orbs;
+  final double progress;
+  final bool isDark;
 
   @override
   void paint(Canvas canvas, Size size) {

@@ -71,15 +71,15 @@ class _NotificationView extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
               children: [
                 if (state.todayList.isNotEmpty) ...[
-                  _SectionHeader(title: 'Hom nay'),
+                  const _SectionHeader(title: 'Hom nay'),
                   ...state.todayList.map((n) => _NotificationItem(notification: n)),
                 ],
                 if (state.yesterdayList.isNotEmpty) ...[
-                  _SectionHeader(title: 'Hom qua'),
+                  const _SectionHeader(title: 'Hom qua'),
                   ...state.yesterdayList.map((n) => _NotificationItem(notification: n)),
                 ],
                 if (state.olderList.isNotEmpty) ...[
-                  _SectionHeader(title: 'Truoc do'),
+                  const _SectionHeader(title: 'Truoc do'),
                   ...state.olderList.map((n) => _NotificationItem(notification: n)),
                 ],
               ],

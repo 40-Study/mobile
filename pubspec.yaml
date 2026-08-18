@@ -25,7 +25,7 @@ dependencies:
   intl_utils: ^2.8.10
   flutter_svg: ^2.0.17
   gap: ^3.0.1
-  # cached_network_image: ^3.2.3
+  cached_network_image: ^3.4.1
   path_provider: ^2.1.5
   file: ^7.0.0
   get_it: 9.2.1

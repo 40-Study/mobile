@@ -164,7 +164,7 @@ class _DailyGoalsScreenState extends State<DailyGoalsScreen> {
                       horizontal: AppSpacing.lg,
                     ),
                     itemCount: _goals.length,
-                    separatorBuilder: (_, __) => AppSpacing.vGap8,
+                    separatorBuilder: (_, _) => AppSpacing.vGap8,
                     itemBuilder: (context, index) {
                       final goal = _goals[index];
                       return _GoalTile(

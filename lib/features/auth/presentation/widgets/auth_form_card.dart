@@ -16,8 +16,8 @@ class AuthFormCard extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      margin: EdgeInsets.symmetric(horizontal: AppSpacing.xl + 4),
-      padding: EdgeInsets.fromLTRB(
+      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xl + 4),
+      padding: const EdgeInsets.fromLTRB(
         AppSpacing.xl - 4,
         AppSpacing.xl + 4,
         AppSpacing.xl - 4,

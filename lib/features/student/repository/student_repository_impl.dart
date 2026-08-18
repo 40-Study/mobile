@@ -1,6 +1,6 @@
 import 'package:study/core/error/result.dart';
-import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/course/data/models/course_model.dart';
+import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/student/data/models/models.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 
@@ -26,7 +26,7 @@ class StudentRepositoryImpl implements StudentRepository {
     final hasEvent = (date.day - 1) % 3 == 0 || isToday;
 
     if (!hasEvent) {
-      return Result.success([]);
+      return const Result.success([]);
     }
 
     // Mock data
@@ -126,7 +126,7 @@ class StudentRepositoryImpl implements StudentRepository {
 
     return result.when(
       success: (enrollments) {
-        if (enrollments.isEmpty) return Result.success(null);
+        if (enrollments.isEmpty) return const Result.success(null);
 
         // Sort by last accessed
         enrollments.sort((a, b) {
@@ -155,7 +155,7 @@ class StudentRepositoryImpl implements StudentRepository {
         progressPercentage: 45,
         completedLessons: 9,
         totalLessons: 20,
-        course: CourseModel(
+        course: const CourseModel(
           id: 'course-1',
           title: 'Python cơ bản',
           shortDescription: 'Học lập trình Python từ cơ bản đến nâng cao',
@@ -174,12 +174,12 @@ class StudentRepositoryImpl implements StudentRepository {
                   id: 'lesson-1',
                   title: 'Python là gì?',
                   durationMinutes: 15,
-                  contents: const [
+                  contents: [
                     LessonContentModel(id: 'c1-1', type: 'video', title: 'Giới thiệu về Python', duration: 300),
                     LessonContentModel(id: 'c1-2', type: 'video', title: 'Lịch sử phát triển', duration: 240),
                     LessonContentModel(id: 'c1-3', type: 'exercise', title: 'Bài tập kiểm tra', duration: 180),
                   ],
-                  progress: const LessonProgressModel(
+                  progress: LessonProgressModel(
                     status: 'completed',
                     progressPercentage: 100,
                   ),
@@ -188,12 +188,12 @@ class StudentRepositoryImpl implements StudentRepository {
                   id: 'lesson-2',
                   title: 'Cài đặt môi trường',
                   durationMinutes: 20,
-                  contents: const [
+                  contents: [
                     LessonContentModel(id: 'c2-1', type: 'video', title: 'Cài đặt Python trên Windows', duration: 360),
                     LessonContentModel(id: 'c2-2', type: 'video', title: 'Cài đặt Python trên Mac', duration: 300),
                     LessonContentModel(id: 'c2-3', type: 'article', title: 'Cấu hình IDE', duration: 240),
                   ],
-                  progress: const LessonProgressModel(
+                  progress: LessonProgressModel(
                     status: 'completed',
                     progressPercentage: 100,
                   ),
@@ -202,16 +202,16 @@ class StudentRepositoryImpl implements StudentRepository {
                   id: 'lesson-3',
                   title: 'Hello World',
                   durationMinutes: 10,
-                  contents: const [
+                  contents: [
                     LessonContentModel(id: 'c3-1', type: 'video', title: 'Chương trình đầu tiên', duration: 300),
                     LessonContentModel(id: 'c3-2', type: 'exercise', title: 'Thực hành viết code', duration: 180),
                   ],
-                  progress: const LessonProgressModel(
+                  progress: LessonProgressModel(
                     status: 'in_progress',
                     progressPercentage: 50,
                   ),
                 ),
-                const LessonModel(
+                LessonModel(
                   id: 'lesson-4',
                   title: 'Biến và hằng',
                   durationMinutes: 25,
@@ -221,7 +221,7 @@ class StudentRepositoryImpl implements StudentRepository {
                     LessonContentModel(id: 'c4-3', type: 'exercise', title: 'Bài tập về biến', duration: 240),
                   ],
                 ),
-                const LessonModel(
+                LessonModel(
                   id: 'lesson-5',
                   title: 'Kiểu dữ liệu',
                   durationMinutes: 30,
@@ -239,7 +239,7 @@ class StudentRepositoryImpl implements StudentRepository {
               totalLessons: 5,
               totalDurationMins: 110,
               lessons: [
-                const LessonModel(
+                LessonModel(
                   id: 'lesson-6',
                   title: 'If-else',
                   durationMinutes: 20,
@@ -249,7 +249,7 @@ class StudentRepositoryImpl implements StudentRepository {
                     LessonContentModel(id: 'c6-3', type: 'exercise', title: 'Bài tập if-else', duration: 240),
                   ],
                 ),
-                const LessonModel(
+                LessonModel(
                   id: 'lesson-7',
                   title: 'Vòng lặp for',
                   durationMinutes: 25,
@@ -259,7 +259,7 @@ class StudentRepositoryImpl implements StudentRepository {
                     LessonContentModel(id: 'c7-3', type: 'exercise', title: 'Thực hành vòng lặp', duration: 300),
                   ],
                 ),
-                const LessonModel(
+                LessonModel(
                   id: 'lesson-8',
                   title: 'Vòng lặp while',
                   durationMinutes: 20,
@@ -268,7 +268,7 @@ class StudentRepositoryImpl implements StudentRepository {
                     LessonContentModel(id: 'c8-2', type: 'exercise', title: 'Bài tập while', duration: 240),
                   ],
                 ),
-                const LessonModel(
+                LessonModel(
                   id: 'lesson-9',
                   title: 'Break và continue',
                   durationMinutes: 15,
@@ -277,7 +277,7 @@ class StudentRepositoryImpl implements StudentRepository {
                     LessonContentModel(id: 'c9-2', type: 'video', title: 'Sử dụng continue', duration: 240),
                   ],
                 ),
-                const LessonModel(
+                LessonModel(
                   id: 'lesson-10',
                   title: 'Bài tập tổng hợp',
                   durationMinutes: 30,
@@ -346,7 +346,7 @@ class StudentRepositoryImpl implements StudentRepository {
   @override
   Future<ApiResult<void>> markLessonComplete(String lessonId) async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
-    return Result.success(null);
+    return const Result.success(null);
   }
 
   @override
@@ -401,8 +401,8 @@ class StudentRepositoryImpl implements StudentRepository {
   Future<ApiResult<StudentStatsModel>> getStats() async {
     await Future<void>.delayed(const Duration(milliseconds: 500));
 
-    return Result.success(
-      const StudentStatsModel(
+    return const Result.success(
+      StudentStatsModel(
         level: 5,
         currentXp: 750,
         nextLevelXp: 1000,
