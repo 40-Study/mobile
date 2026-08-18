@@ -28,6 +28,13 @@ class CourseFilterChips extends StatelessWidget {
           children: [
             Expanded(
               child: _FilterChip(
+                label: 'Tất cả',
+                isSelected: selectedFilter == EnrollmentFilter.all,
+                onTap: () => onFilterChanged(EnrollmentFilter.all),
+              ),
+            ),
+            Expanded(
+              child: _FilterChip(
                 label: 'Đang học',
                 isSelected: selectedFilter == EnrollmentFilter.inProgress,
                 onTap: () => onFilterChanged(EnrollmentFilter.inProgress),
@@ -38,13 +45,6 @@ class CourseFilterChips extends StatelessWidget {
                 label: 'Hoàn thành',
                 isSelected: selectedFilter == EnrollmentFilter.completed,
                 onTap: () => onFilterChanged(EnrollmentFilter.completed),
-              ),
-            ),
-            Expanded(
-              child: _FilterChip(
-                label: 'Sắp tới',
-                isSelected: selectedFilter == EnrollmentFilter.upcoming,
-                onTap: () => onFilterChanged(EnrollmentFilter.upcoming),
               ),
             ),
           ],

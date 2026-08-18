@@ -42,7 +42,7 @@ class LearningBloc extends Bloc<LearningEvent, LearningState> {
       success: (enrollments) {
         emit(LearningSuccess(
           enrollments: enrollments,
-          filter: preserveFilter?.filter ?? EnrollmentFilter.inProgress,
+          filter: preserveFilter?.filter ?? EnrollmentFilter.all,
           searchQuery: preserveFilter?.searchQuery ?? '',
         ));
       },

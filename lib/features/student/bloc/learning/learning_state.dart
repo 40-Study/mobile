@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:study/features/course/data/models/enrollment_model.dart';
 
-enum EnrollmentFilter { inProgress, completed, upcoming }
+enum EnrollmentFilter { all, inProgress, completed, upcoming }
 
 sealed class LearningState extends Equatable {
   const LearningState();
@@ -21,7 +21,7 @@ final class LearningInProgress extends LearningState {
 final class LearningSuccess extends LearningState {
   const LearningSuccess({
     this.enrollments = const [],
-    this.filter = EnrollmentFilter.inProgress,
+    this.filter = EnrollmentFilter.all,
     this.searchQuery = '',
   });
 
@@ -32,6 +32,7 @@ final class LearningSuccess extends LearningState {
   List<EnrollmentModel> get filteredEnrollments {
     var result = enrollments.where((e) {
       return switch (filter) {
+        EnrollmentFilter.all => true,
         EnrollmentFilter.inProgress =>
           e.status == 'active' && (e.progressPercentage) < 100,
         EnrollmentFilter.completed =>
