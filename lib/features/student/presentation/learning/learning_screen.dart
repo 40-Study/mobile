@@ -7,6 +7,7 @@ import 'package:study/features/student/bloc/learning/learning_bloc.dart';
 import 'package:study/features/student/bloc/learning/learning_event.dart';
 import 'package:study/features/student/bloc/learning/learning_state.dart';
 import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
+import 'package:study/features/student/presentation/learning/widgets/thumbnail_placeholder.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
 import 'package:study/features/student/presentation/search/search_screen.dart';
 import 'package:study/features/student/repository/student_repository_impl.dart';
@@ -586,9 +587,9 @@ class _ContinueLearningCard extends StatelessWidget {
                             course!.thumbnailUrl!,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) =>
-                                _ThumbnailPlaceholder(cs: cs),
+                                ThumbnailPlaceholder(cs: cs),
                           )
-                        : _ThumbnailPlaceholder(cs: cs),
+                        : ThumbnailPlaceholder(cs: cs),
                   ),
                 ),
                 AppSpacing.hGap16,
@@ -715,24 +716,6 @@ class _ContinueLearningCard extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ThumbnailPlaceholder extends StatelessWidget {
-  const _ThumbnailPlaceholder({required this.cs});
-
-  final ColorScheme cs;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: cs.primaryContainer,
-      child: Icon(
-        Icons.auto_stories_outlined,
-        color: cs.onPrimaryContainer,
-        size: 32,
-      ),
     );
   }
 }

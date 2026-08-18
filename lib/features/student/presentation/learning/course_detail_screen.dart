@@ -8,6 +8,7 @@ import 'package:study/features/student/bloc/lesson/lesson_bloc.dart';
 import 'package:study/features/student/bloc/lesson/lesson_event.dart';
 import 'package:study/features/student/presentation/learning/instructor_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
+import 'package:study/features/student/presentation/learning/widgets/thumbnail_placeholder.dart';
 import 'package:study/features/student/repository/student_repository_impl.dart';
 import 'package:study/theme/theme.dart';
 
@@ -203,9 +204,9 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                       ? Image.network(
                           course!.thumbnailUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _ThumbnailPlaceholder(cs: cs),
+                          errorBuilder: (_, __, ___) => ThumbnailPlaceholder(cs: cs),
                         )
-                      : _ThumbnailPlaceholder(cs: cs),
+                      : ThumbnailPlaceholder(cs: cs),
                 ),
               ),
               // Play button overlay
@@ -880,19 +881,6 @@ class _SoftIconButton extends StatelessWidget {
   }
 }
 
-class _ThumbnailPlaceholder extends StatelessWidget {
-  const _ThumbnailPlaceholder({required this.cs});
-  final ColorScheme cs;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: cs.primaryContainer,
-      child: Icon(Icons.auto_stories_outlined, color: cs.onPrimaryContainer, size: 32),
-    );
-  }
-}
-
 class _StatCard extends StatelessWidget {
   const _StatCard({required this.icon, required this.value, required this.label});
   final IconData icon;
@@ -1386,88 +1374,6 @@ class _SectionLessonItemState extends State<_SectionLessonItem> {
             ),
           ),
       ],
-    );
-  }
-}
-
-class _LessonListItem extends StatelessWidget {
-  const _LessonListItem({
-    required this.index,
-    required this.lesson,
-    required this.allLessons,
-    required this.onTap,
-  });
-
-  final int index;
-  final LessonModel lesson;
-  final List<LessonModel> allLessons;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-    final isCompleted = lesson.progress?.status == 'completed';
-    final isInProgress = lesson.progress?.status == 'in_progress';
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: isInProgress
-                ? cs.primary.withValues(alpha: 0.05)
-                : cs.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(AppRadius.sm),
-            border: Border(
-              left: isInProgress
-                  ? BorderSide(color: cs.primary, width: 3)
-                  : BorderSide.none,
-            ),
-          ),
-          child: Row(
-            children: [
-              _LessonStatusIcon(isCompleted: isCompleted, isInProgress: isInProgress),
-              AppSpacing.hGap12,
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${index + 1}. ${lesson.title}',
-                      style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      '${lesson.durationMinutes}:00',
-                      style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-
-              if (isCompleted)
-                Text('Hoàn thành', style: tt.labelSmall?.copyWith(color: cs.primary))
-              else if (isInProgress)
-                Text('Đang học', style: tt.labelSmall?.copyWith(color: cs.primary))
-              else
-                Text('Chưa mở khóa', style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
-
-              AppSpacing.hGap4,
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 18,
-                color: isCompleted || isInProgress ? cs.primary : cs.onSurfaceVariant,
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
