@@ -1111,4 +1111,270 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get badges => 'Badges';
+
+  @override
+  String get goodMorning => 'Good morning';
+
+  @override
+  String get goodAfternoon => 'Good afternoon';
+
+  @override
+  String get goodEvening => 'Good evening';
+
+  @override
+  String get yourAccount => 'Your account';
+
+  @override
+  String get switchProfile => 'Switch profile';
+
+  @override
+  String get addProfile => 'Add profile';
+
+  @override
+  String get updatePersonalDetails => 'Update your personal details';
+
+  @override
+  String get passwordSecurityHint => 'Password, 2FA, login devices';
+
+  @override
+  String get subscription => 'Subscription';
+
+  @override
+  String get managePlanBilling => 'Manage your plan and billing';
+
+  @override
+  String get customizeNotifications => 'Customize your notifications';
+
+  @override
+  String get privacy => 'Privacy';
+
+  @override
+  String get managePrivacySettings => 'Manage your privacy settings';
+
+  @override
+  String get general => 'General';
+
+  @override
+  String get helpCenter => 'Help center';
+
+  @override
+  String get faqAndSupport => 'FAQ and support';
+
+  @override
+  String version(Object version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get signOutHint => 'Sign out from your current account';
+
+  @override
+  String get premium => 'Premium';
+
+  @override
+  String get student => 'Student';
+
+  @override
+  String get changePhoto => 'Change photo';
+
+  @override
+  String get bioHint => 'Tell us about yourself...';
+
+  @override
+  String get verified => 'Verified';
+
+  @override
+  String get portfolio => 'Portfolio';
+
+  @override
+  String get myPortfolio => 'My Portfolio';
+
+  @override
+  String get editPortfolio => 'Edit';
+
+  @override
+  String get previewPortfolio => 'Preview';
+
+  @override
+  String get introduction => 'Introduction';
+
+  @override
+  String get featuredProjects => 'Featured Projects';
+
+  @override
+  String get experience => 'Experience';
+
+  @override
+  String get education => 'Education';
+
+  @override
+  String get yearsExperience => 'Years experience';
+
+  @override
+  String get projectsCompleted => 'Projects completed';
+
+  @override
+  String get followers => 'Followers';
+
+  @override
+  String get addProject => 'Add project';
+
+  @override
+  String get addExperience => 'Add experience';
+
+  @override
+  String get addEducation => 'Add education';
+
+  @override
+  String get addSkill => 'Add skill';
+
+  @override
+  String get present => 'Present';
+
+  @override
+  String get customizePortfolio => 'Customize portfolio';
+
+  @override
+  String get manageLayout => 'Manage layout';
+
+  @override
+  String get toggleVisibility => 'Toggle section visibility';
+
+  @override
+  String get publicPortfolio => 'Public';
+
+  @override
+  String get privatePortfolio => 'Only me';
+
+  @override
+  String get linkOnlyPortfolio => 'People with link';
+
+  @override
+  String get saved => 'Saved';
+
+  @override
+  String get saving => 'Saving...';
+
+  @override
+  String get viewPortfolio => 'View Portfolio';
+
+  @override
+  String get projectName => 'Project name';
+
+  @override
+  String get projectNameHint => 'E.g: EduFlow';
+
+  @override
+  String get shortDescription => 'Short description';
+
+  @override
+  String get shortDescriptionHint => 'E.g: Learning management system';
+
+  @override
+  String get details => 'Details';
+
+  @override
+  String get categoryLabel => 'Category';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String get skillName => 'Skill name';
+
+  @override
+  String get skillNameHint => 'E.g: UI Design, Figma, React...';
+
+  @override
+  String get proficiencyLevel => 'Proficiency level';
+
+  @override
+  String get position => 'Position';
+
+  @override
+  String get positionHint => 'E.g: UI/UX Designer';
+
+  @override
+  String get company => 'Company';
+
+  @override
+  String get companyHint => 'E.g: Google, Vela Studio...';
+
+  @override
+  String get jobDescription => 'Job description';
+
+  @override
+  String get editIntroduction => 'Edit introduction';
+
+  @override
+  String get fullName => 'Full name';
+
+  @override
+  String get jobTitle => 'Job title';
+
+  @override
+  String get jobTitleHint => 'E.g: UI/UX Designer';
+
+  @override
+  String get locationLabel => 'Location';
+
+  @override
+  String get locationHint => 'E.g: Hanoi, Vietnam';
+
+  @override
+  String get websiteLabel => 'Website';
+
+  @override
+  String get websiteHint => 'E.g: yourname.design';
+
+  @override
+  String get aboutYourself => 'About yourself';
+
+  @override
+  String get aboutYourselfHint => 'Write a few lines about you...';
+
+  @override
+  String get dragToReorder => 'Drag to reorder sections';
+
+  @override
+  String get privacySettings => 'Privacy';
+
+  @override
+  String get everyoneCanView => 'Everyone can view';
+
+  @override
+  String get onlyYouCanView => 'Only you can view';
+
+  @override
+  String get onlyWithLink => 'Only people with link can view';
+
+  @override
+  String get linkCopiedToShare => 'Link copied for sharing';
+
+  @override
+  String get linkCopied => 'Link copied';
+
+  @override
+  String get creatingPdf => 'Creating PDF...';
+
+  @override
+  String get viewAsOthers => 'View portfolio as others see it';
+
+  @override
+  String get shareOnSocial => 'Share portfolio on social media';
+
+  @override
+  String get copyPortfolioLink => 'Copy portfolio link';
+
+  @override
+  String get downloadPortfolioPdf => 'Download portfolio as PDF';
+
+  @override
+  String get addItem => 'Add item';
 }

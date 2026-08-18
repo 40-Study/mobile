@@ -1113,4 +1113,270 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get badges => 'Huy hiệu';
+
+  @override
+  String get goodMorning => 'Chào buổi sáng';
+
+  @override
+  String get goodAfternoon => 'Chào buổi chiều';
+
+  @override
+  String get goodEvening => 'Chào buổi tối';
+
+  @override
+  String get yourAccount => 'Tài khoản của bạn';
+
+  @override
+  String get switchProfile => 'Chuyển hồ sơ';
+
+  @override
+  String get addProfile => 'Thêm hồ sơ';
+
+  @override
+  String get updatePersonalDetails => 'Cập nhật thông tin cá nhân';
+
+  @override
+  String get passwordSecurityHint => 'Mật khẩu, 2FA, thiết bị đăng nhập';
+
+  @override
+  String get subscription => 'Gói đăng ký';
+
+  @override
+  String get managePlanBilling => 'Quản lý gói và thanh toán';
+
+  @override
+  String get customizeNotifications => 'Tùy chỉnh thông báo';
+
+  @override
+  String get privacy => 'Quyền riêng tư';
+
+  @override
+  String get managePrivacySettings => 'Quản lý cài đặt quyền riêng tư';
+
+  @override
+  String get general => 'Chung';
+
+  @override
+  String get helpCenter => 'Trung tâm hỗ trợ';
+
+  @override
+  String get faqAndSupport => 'Câu hỏi thường gặp và hỗ trợ';
+
+  @override
+  String version(Object version) {
+    return 'Phiên bản $version';
+  }
+
+  @override
+  String get signOutHint => 'Đăng xuất khỏi tài khoản hiện tại';
+
+  @override
+  String get premium => 'Cao cấp';
+
+  @override
+  String get student => 'Học sinh';
+
+  @override
+  String get changePhoto => 'Đổi ảnh';
+
+  @override
+  String get bioHint => 'Giới thiệu về bản thân...';
+
+  @override
+  String get verified => 'Đã xác minh';
+
+  @override
+  String get portfolio => 'Portfolio';
+
+  @override
+  String get myPortfolio => 'Portfolio của tôi';
+
+  @override
+  String get editPortfolio => 'Chỉnh sửa';
+
+  @override
+  String get previewPortfolio => 'Xem trước';
+
+  @override
+  String get introduction => 'Giới thiệu';
+
+  @override
+  String get featuredProjects => 'Dự án nổi bật';
+
+  @override
+  String get experience => 'Kinh nghiệm';
+
+  @override
+  String get education => 'Học vấn';
+
+  @override
+  String get yearsExperience => 'Năm kinh nghiệm';
+
+  @override
+  String get projectsCompleted => 'Dự án hoàn thành';
+
+  @override
+  String get followers => 'Người theo dõi';
+
+  @override
+  String get addProject => 'Thêm dự án';
+
+  @override
+  String get addExperience => 'Thêm kinh nghiệm';
+
+  @override
+  String get addEducation => 'Thêm học vấn';
+
+  @override
+  String get addSkill => 'Thêm kỹ năng';
+
+  @override
+  String get present => 'Hiện tại';
+
+  @override
+  String get customizePortfolio => 'Tùy chỉnh portfolio';
+
+  @override
+  String get manageLayout => 'Quản lý bố cục';
+
+  @override
+  String get toggleVisibility => 'Bật/tắt hiển thị';
+
+  @override
+  String get publicPortfolio => 'Công khai';
+
+  @override
+  String get privatePortfolio => 'Chỉ mình tôi';
+
+  @override
+  String get linkOnlyPortfolio => 'Người có liên kết';
+
+  @override
+  String get saved => 'Đã lưu';
+
+  @override
+  String get saving => 'Đang lưu...';
+
+  @override
+  String get viewPortfolio => 'Xem Portfolio';
+
+  @override
+  String get projectName => 'Tên dự án';
+
+  @override
+  String get projectNameHint => 'VD: EduFlow';
+
+  @override
+  String get shortDescription => 'Mô tả ngắn';
+
+  @override
+  String get shortDescriptionHint => 'VD: Hệ thống quản lý học tập';
+
+  @override
+  String get details => 'Chi tiết';
+
+  @override
+  String get categoryLabel => 'Danh mục';
+
+  @override
+  String get add => 'Thêm';
+
+  @override
+  String get save => 'Lưu';
+
+  @override
+  String get done => 'Xong';
+
+  @override
+  String get skillName => 'Tên kỹ năng';
+
+  @override
+  String get skillNameHint => 'VD: UI Design, Figma, React...';
+
+  @override
+  String get proficiencyLevel => 'Mức độ thành thạo';
+
+  @override
+  String get position => 'Vị trí';
+
+  @override
+  String get positionHint => 'VD: UI/UX Designer';
+
+  @override
+  String get company => 'Công ty';
+
+  @override
+  String get companyHint => 'VD: Google, Vela Studio...';
+
+  @override
+  String get jobDescription => 'Mô tả công việc';
+
+  @override
+  String get editIntroduction => 'Chỉnh sửa giới thiệu';
+
+  @override
+  String get fullName => 'Họ tên';
+
+  @override
+  String get jobTitle => 'Chức danh';
+
+  @override
+  String get jobTitleHint => 'VD: UI/UX Designer';
+
+  @override
+  String get locationLabel => 'Vị trí';
+
+  @override
+  String get locationHint => 'VD: Hà Nội, Việt Nam';
+
+  @override
+  String get websiteLabel => 'Website';
+
+  @override
+  String get websiteHint => 'VD: yourname.design';
+
+  @override
+  String get aboutYourself => 'Giới thiệu bản thân';
+
+  @override
+  String get aboutYourselfHint => 'Viết vài dòng về bạn...';
+
+  @override
+  String get dragToReorder => 'Kéo để sắp xếp thứ tự hiển thị';
+
+  @override
+  String get privacySettings => 'Quyền riêng tư';
+
+  @override
+  String get everyoneCanView => 'Mọi người có thể xem';
+
+  @override
+  String get onlyYouCanView => 'Chỉ mình bạn xem được';
+
+  @override
+  String get onlyWithLink => 'Chỉ người có liên kết mới xem được';
+
+  @override
+  String get linkCopiedToShare => 'Đã sao chép liên kết để chia sẻ';
+
+  @override
+  String get linkCopied => 'Đã sao chép liên kết';
+
+  @override
+  String get creatingPdf => 'Đang tạo PDF...';
+
+  @override
+  String get viewAsOthers => 'Xem portfolio như người khác nhìn thấy';
+
+  @override
+  String get shareOnSocial => 'Chia sẻ portfolio qua mạng xã hội';
+
+  @override
+  String get copyPortfolioLink => 'Sao chép liên kết portfolio';
+
+  @override
+  String get downloadPortfolioPdf => 'Tải portfolio dạng PDF';
+
+  @override
+  String get addItem => 'Thêm mục';
 }
