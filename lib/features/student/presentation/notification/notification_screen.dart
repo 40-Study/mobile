@@ -5,6 +5,7 @@ import 'package:study/features/student/bloc/notification/notification_event.dart
 import 'package:study/features/student/bloc/notification/notification_state.dart';
 import 'package:study/features/student/data/models/models.dart';
 import 'package:study/theme/theme.dart';
+import 'package:study/widgets/app_header_bar.dart';
 import 'package:study/widgets/empty_state.dart';
 
 class NotificationScreen extends StatelessWidget {
@@ -27,8 +28,10 @@ class _NotificationView extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Thong bao'),
+      appBar: AppHeaderBar(
+        title: 'Thông báo',
+        showBackButton: true,
+        showNotification: false,
         actions: [
           BlocBuilder<NotificationBloc, NotificationState>(
             builder: (context, state) {
@@ -38,7 +41,7 @@ class _NotificationView extends StatelessWidget {
                       .read<NotificationBloc>()
                       .add(const NotificationMarkedAllRead()),
                   child: Text(
-                    'Doc tat ca',
+                    'Đọc tất cả',
                     style: TextStyle(color: cs.primary),
                   ),
                 );

@@ -6,6 +6,7 @@ import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
+import 'package:study/widgets/app_header_bar.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -50,9 +51,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       value: _cubit,
       child: Scaffold(
         backgroundColor: cs.surfaceContainerLowest,
-        appBar: AppBar(
+        appBar: AppHeaderBar(
+          title: l10n.changePasswordTitle,
+          showBackButton: true,
+          showNotification: false,
           backgroundColor: cs.surfaceContainerLowest,
-          title: Text(l10n.changePasswordTitle),
         ),
         body: BlocConsumer<SecurityCubit, SecurityState>(
           listener: (context, state) {

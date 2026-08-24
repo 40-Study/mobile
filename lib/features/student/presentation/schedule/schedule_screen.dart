@@ -13,6 +13,7 @@ import 'package:study/features/student/presentation/learning/course_detail_scree
 import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
 import 'package:study/features/student/presentation/schedule/widgets/calendar_widget.dart';
 import 'package:study/features/student/repository/student_repository_impl.dart';
+import 'package:study/widgets/app_header_bar.dart';
 import 'package:study/theme/theme.dart';
 
 class ScheduleScreen extends StatefulWidget {
@@ -35,18 +36,12 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final tt = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 56,
-        title: Text(
-          'Lịch học',
-          style: tt.titleLarge?.copyWith(
-            color: cs.onSurface,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+      appBar: AppHeaderBar(
+        title: 'Lịch học',
+        showNotification: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.today_outlined),
+            icon: Icon(Icons.today_outlined, color: cs.onSurface),
             tooltip: 'Về hôm nay',
             onPressed: () {
               context.read<ScheduleBloc>().add(

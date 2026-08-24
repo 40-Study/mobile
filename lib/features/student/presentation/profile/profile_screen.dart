@@ -10,6 +10,7 @@ import 'package:study/features/student/presentation/portfolio/portfolio_screen.d
 import 'package:study/features/student/presentation/settings/settings_screen.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
+import 'package:study/widgets/app_header_bar.dart';
 import 'package:study/widgets/cached_avatar.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -72,10 +73,9 @@ class _ProfileContentState extends State<_ProfileContent> {
 
     return Scaffold(
       backgroundColor: cs.surface,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        title: Text(l10n.profileTitle),
+      appBar: AppHeaderBar(
+        title: l10n.profileTitle,
+        showNotification: false,
       ),
       body: ListView(
         padding: EdgeInsets.zero,

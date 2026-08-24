@@ -5,6 +5,7 @@ import 'package:study/features/student/bloc/bookmark/bookmark_event.dart';
 import 'package:study/features/student/bloc/bookmark/bookmark_state.dart';
 import 'package:study/features/student/data/models/models.dart';
 import 'package:study/theme/theme.dart';
+import 'package:study/widgets/app_header_bar.dart';
 import 'package:study/widgets/empty_state.dart';
 
 class BookmarkScreen extends StatelessWidget {
@@ -25,7 +26,11 @@ class _BookmarkView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Da luu')),
+      appBar: const AppHeaderBar(
+        title: 'Đã lưu',
+        showBackButton: true,
+        showNotification: false,
+      ),
       body: Column(
         children: [
           const _FilterChips(),

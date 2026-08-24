@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/bloc/theme/app_theme.dart';
 import 'package:study/bloc/theme/theme_cubit.dart';
 import 'package:study/theme/theme.dart';
+import 'package:study/widgets/app_header_bar.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -23,7 +24,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final tt = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cài đặt')),
+      appBar: const AppHeaderBar(
+        title: 'Cài đặt',
+        showBackButton: true,
+        showNotification: false,
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.screenPadding,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study/theme/theme.dart';
+import 'package:study/widgets/app_header_bar.dart';
 
 class DailyGoalsScreen extends StatefulWidget {
   const DailyGoalsScreen({
@@ -60,8 +61,10 @@ class _DailyGoalsScreenState extends State<DailyGoalsScreen> {
     final completedCount = _goals.where((g) => g.isCompleted).length;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Mục tiêu ngày ${widget.date.day}/${widget.date.month}'),
+      appBar: AppHeaderBar(
+        title: 'Mục tiêu ngày ${widget.date.day}/${widget.date.month}',
+        showBackButton: true,
+        showNotification: false,
       ),
       body: Column(
         children: [

@@ -8,6 +8,7 @@ import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/presentation/change_password_screen.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/l10n/app_localizations.dart';
+import 'package:study/widgets/app_header_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SecurityScreen extends StatefulWidget {
@@ -51,9 +52,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
       value: _cubit,
       child: Scaffold(
         backgroundColor: cs.surfaceContainerLowest,
-        appBar: AppBar(
+        appBar: AppHeaderBar(
+          title: l10n.passwordAndSecurity,
+          showBackButton: true,
+          showNotification: false,
           backgroundColor: cs.surfaceContainerLowest,
-          title: Text(l10n.passwordAndSecurity),
         ),
         body: BlocConsumer<SecurityCubit, SecurityState>(
           listener: (context, state) {

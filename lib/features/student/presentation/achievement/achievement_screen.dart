@@ -12,6 +12,7 @@ import 'package:study/features/student/presentation/achievement/all_certificates
 import 'package:study/features/student/presentation/achievement/certificate_detail_screen.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
+import 'package:study/widgets/app_header_bar.dart';
 
 class AchievementScreen extends StatefulWidget {
   const AchievementScreen({super.key});
@@ -35,9 +36,10 @@ class _AchievementScreenState extends State<AchievementScreen> {
 
     return Scaffold(
       backgroundColor: cs.surface,
-      appBar: AppBar(
+      appBar: AppHeaderBar(
+        title: AppLocalizations.of(context)!.achievementTitle,
+        showNotification: false,
         backgroundColor: cs.surface,
-        title: Text(AppLocalizations.of(context)!.achievementTitle),
       ),
       body: BlocBuilder<AchievementBloc, AchievementState>(
           builder: (context, state) {
