@@ -5,6 +5,7 @@ import 'package:study/features/auth/bloc/account/account_state.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
+import 'package:study/widgets/cached_avatar.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -343,20 +344,17 @@ class _AvatarSection extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: CircleAvatar(
+                  child: CachedAvatar(
+                    url: avatarUrl,
                     radius: 52,
                     backgroundColor: cs.primaryContainer,
-                    backgroundImage:
-                        avatarUrl != null ? NetworkImage(avatarUrl) : null,
-                    child: avatarUrl == null
-                        ? Text(
-                            initials,
-                            style: tt.headlineLarge?.copyWith(
-                              color: cs.onPrimaryContainer,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          )
-                        : null,
+                    placeholder: Text(
+                      initials,
+                      style: tt.headlineLarge?.copyWith(
+                        color: cs.onPrimaryContainer,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ),
                 // Camera button

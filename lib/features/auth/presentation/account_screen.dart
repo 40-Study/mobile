@@ -11,6 +11,7 @@ import 'package:study/features/auth/presentation/utils/role_utils.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
+import 'package:study/widgets/cached_avatar.dart';
 
 enum AccountRoleType { teacher, student, parent, organization }
 
@@ -222,23 +223,11 @@ class _AccountScreenState extends State<AccountScreen>
                   shape: BoxShape.circle,
                   color: cs.surface,
                 ),
-                child: CircleAvatar(
+                child: CachedAvatar(
+                  url: user.avatarUrl,
                   radius: 56,
                   backgroundColor: cs.surfaceTintedPrimary,
-                  backgroundImage: user.avatarUrl != null
-                      ? NetworkImage(user.avatarUrl!)
-                      : null,
-                  child: user.avatarUrl == null
-                      ? Text(
-                          _getInitials(
-                            user.fullName ?? user.username ?? 'User',
-                          ),
-                          style: tt.headlineMedium?.copyWith(
-                            color: cs.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
-                      : null,
+                  name: user.fullName ?? user.username ?? 'User',
                 ),
               ),
             ),
@@ -658,25 +647,11 @@ class _AccountScreenState extends State<AccountScreen>
                               shape: BoxShape.circle,
                               color: cs.surface,
                             ),
-                            child: CircleAvatar(
+                            child: CachedAvatar(
+                              url: user.avatarUrl,
                               radius: 44,
                               backgroundColor: cs.primaryContainer,
-                              backgroundImage: user.avatarUrl != null
-                                  ? NetworkImage(user.avatarUrl!)
-                                  : null,
-                              child: user.avatarUrl == null
-                                  ? Text(
-                                      _getInitials(
-                                        user.fullName ??
-                                            user.username ??
-                                            'User',
-                                      ),
-                                      style: tt.headlineMedium?.copyWith(
-                                        color: cs.primary,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    )
-                                  : null,
+                              name: user.fullName ?? user.username ?? 'User',
                             ),
                           ),
                         ),
@@ -1170,23 +1145,17 @@ class _AccountScreenState extends State<AccountScreen>
                   shape: BoxShape.circle,
                   color: cs.surface,
                 ),
-                child: CircleAvatar(
+                child: CachedAvatar(
+                  url: user.avatarUrl,
                   radius: 56,
                   backgroundColor: cs.tertiaryContainer.withValues(alpha: 0.3),
-                  backgroundImage: user.avatarUrl != null
-                      ? NetworkImage(user.avatarUrl!)
-                      : null,
-                  child: user.avatarUrl == null
-                      ? Text(
-                          _getInitials(
-                            user.fullName ?? user.username ?? 'User',
-                          ),
-                          style: tt.headlineMedium?.copyWith(
-                            color: cs.tertiary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
-                      : null,
+                  placeholder: Text(
+                    _getInitials(user.fullName ?? user.username ?? 'User'),
+                    style: tt.headlineMedium?.copyWith(
+                      color: cs.tertiary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ),

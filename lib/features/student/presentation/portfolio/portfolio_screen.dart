@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/features/student/bloc/portfolio/portfolio_cubit.dart';
+import 'package:study/features/student/bloc/portfolio/portfolio_state.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
 
@@ -11,9 +14,9 @@ class PortfolioScreen extends StatefulWidget {
 }
 
 class _PortfolioScreenState extends State<PortfolioScreen> {
-  bool _isEditMode = true;
+  late final PortfolioCubit _cubit;
 
-  // Mock data
+  // Mock data - sẽ từ API sau
   _PortfolioProfile _profile = const _PortfolioProfile(
     name: 'Linh Nguyen',
     title: 'UI/UX Designer',
@@ -36,9 +39,21 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     followers: 120,
   );
 
-  // Section titles set in build via l10n
+  // Section titles depend on l10n, init in didChangeDependencies
   late List<_PortfolioSection> _sections;
   bool _sectionsInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit = PortfolioCubit();
+  }
+
+  @override
+  void dispose() {
+    _cubit.close();
+    super.dispose();
+  }
 
   void _initSections(AppLocalizations l10n) {
     if (_sectionsInitialized) return;
@@ -106,7 +121,13 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final l10n = AppLocalizations.of(context)!;
     _initSections(l10n);
 
-    return Scaffold(
+    return BlocProvider.value(
+      value: _cubit,
+      child: BlocBuilder<PortfolioCubit, PortfolioState>(
+        buildWhen: (prev, curr) => prev.isEditMode != curr.isEditMode,
+        builder: (context, state) {
+          final isEditMode = state.isEditMode;
+          return Scaffold(
       backgroundColor: cs.surface,
       body: SafeArea(
             child: CustomScrollView(
@@ -131,12 +152,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   actions: [
                     // Edit/Preview toggle
                     _ModeToggleButton(
-                      isEditMode: _isEditMode,
-                      onToggle: () => setState(() => _isEditMode = !_isEditMode),
+                      isEditMode: isEditMode,
+                      onToggle: () => _cubit.toggleEditMode(),
                     ),
                     AppSpacing.hGap8,
                     // Layout editor button (only in edit mode)
-                    if (_isEditMode)
+                    if (isEditMode)
                       Container(
                         decoration: BoxDecoration(
                           color: cs.surface,
@@ -149,7 +170,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                           tooltip: 'Quản lý bố cục',
                         ),
                       ),
-                    if (_isEditMode) AppSpacing.hGap8,
+                    if (isEditMode) AppSpacing.hGap8,
                     // More menu
                     Container(
                       margin: const EdgeInsets.only(right: AppSpacing.md),
@@ -170,7 +191,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                 SliverToBoxAdapter(
                   child: _ProfileHero(
                     profile: _profile,
-                    isEditMode: _isEditMode,
+                    isEditMode: isEditMode,
                     onEdit: () => _showEditProfileDialog(context),
                   ),
                 ),
@@ -183,7 +204,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   final section = entry.value;
                   return [
                     SliverToBoxAdapter(
-                      child: _buildSection(context, section, index),
+                      child: _buildSection(context, section, index, isEditMode),
                     ),
                     if (index < _sections.length - 1)
                       const SliverToBoxAdapter(child: SizedBox(height: 16)),
@@ -197,13 +218,16 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
           ),
       // FAB for adding sections
-      floatingActionButton: _isEditMode
+      floatingActionButton: isEditMode
           ? FloatingActionButton(
               onPressed: () => _showAddSectionSheet(context),
               backgroundColor: cs.primary,
               child: const Icon(Icons.add, color: Colors.white),
             )
           : null,
+    );
+        },
+      ),
     );
   }
 
@@ -732,12 +756,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     });
   }
 
-  Widget _buildSection(BuildContext context, _PortfolioSection section, int index) {
+  Widget _buildSection(BuildContext context, _PortfolioSection section, int index, bool isEditMode) {
     switch (section.id) {
       case 'intro':
         return _IntroSection(
           stats: _stats,
-          isEditMode: _isEditMode,
+          isEditMode: isEditMode,
           visible: section.visible,
           onToggleVisibility: () {
             setState(() => _sections[index].visible = !_sections[index].visible);
@@ -746,7 +770,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       case 'projects':
         return _ProjectsSection(
           projects: _projects,
-          isEditMode: _isEditMode,
+          isEditMode: isEditMode,
           visible: section.visible,
           onToggleVisibility: () {
             setState(() => _sections[index].visible = !_sections[index].visible);
@@ -757,7 +781,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       case 'skills':
         return _SkillsSection(
           skills: _skills,
-          isEditMode: _isEditMode,
+          isEditMode: isEditMode,
           visible: section.visible,
           onToggleVisibility: () {
             setState(() => _sections[index].visible = !_sections[index].visible);
@@ -768,7 +792,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       case 'experience':
         return _ExperienceSection(
           experiences: _experiences,
-          isEditMode: _isEditMode,
+          isEditMode: isEditMode,
           visible: section.visible,
           onToggleVisibility: () {
             setState(() => _sections[index].visible = !_sections[index].visible);
@@ -875,7 +899,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               iconColor: cs.onSurfaceVariant,
               title: l10n.privacySettings,
               subtitle: _getVisibilityText(l10n),
-              trailing: _VisibilityBadge(visibility: _visibility),
+              trailing: _VisibilityBadge(visibility: _cubit.state.visibility),
               onTap: () {
                 Navigator.pop(ctx);
                 _showVisibilitySettings(context);
@@ -888,10 +912,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     );
   }
 
-  String _visibility = 'public';
-
   String _getVisibilityText(AppLocalizations l10n) {
-    switch (_visibility) {
+    switch (_cubit.state.visibility) {
       case 'public':
         return l10n.everyoneCanView;
       case 'private':
@@ -996,9 +1018,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               icon: Icons.public,
               title: l10n.publicPortfolio,
               subtitle: l10n.everyoneCanView,
-              isSelected: _visibility == 'public',
+              isSelected: _cubit.state.visibility == 'public',
               onTap: () {
-                setState(() => _visibility = 'public');
+                _cubit.setVisibility('public');
                 Navigator.pop(ctx);
               },
             ),
@@ -1006,9 +1028,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               icon: Icons.link,
               title: l10n.linkOnlyPortfolio,
               subtitle: l10n.onlyWithLink,
-              isSelected: _visibility == 'link',
+              isSelected: _cubit.state.visibility == 'link',
               onTap: () {
-                setState(() => _visibility = 'link');
+                _cubit.setVisibility('link');
                 Navigator.pop(ctx);
               },
             ),
@@ -1016,9 +1038,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               icon: Icons.lock_outline,
               title: l10n.privatePortfolio,
               subtitle: l10n.onlyYouCanView,
-              isSelected: _visibility == 'private',
+              isSelected: _cubit.state.visibility == 'private',
               onTap: () {
-                setState(() => _visibility = 'private');
+                _cubit.setVisibility('private');
                 Navigator.pop(ctx);
               },
             ),

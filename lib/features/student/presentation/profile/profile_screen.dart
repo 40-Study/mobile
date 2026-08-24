@@ -10,6 +10,7 @@ import 'package:study/features/student/presentation/portfolio/portfolio_screen.d
 import 'package:study/features/student/presentation/settings/settings_screen.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
+import 'package:study/widgets/cached_avatar.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -380,21 +381,11 @@ class _CurrentProfileCard extends StatelessWidget {
                     width: 2,
                   ),
                 ),
-                child: CircleAvatar(
+                child: CachedAvatar(
+                  url: profile.avatarUrl,
                   radius: 34,
                   backgroundColor: cs.primaryContainer,
-                  backgroundImage: profile.avatarUrl != null
-                      ? NetworkImage(profile.avatarUrl!)
-                      : null,
-                  child: profile.avatarUrl == null
-                      ? Text(
-                          _getInitials(profile.name),
-                          style: tt.titleLarge?.copyWith(
-                            color: cs.onPrimaryContainer,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        )
-                      : null,
+                  name: profile.name,
                 ),
               ),
               AppSpacing.hGap16,
@@ -580,21 +571,11 @@ class _ProfileSwitcherCard extends StatelessWidget {
           children: [
             Stack(
               children: [
-                CircleAvatar(
+                CachedAvatar(
+                  url: profile.avatarUrl,
                   radius: 28,
                   backgroundColor: cs.primaryContainer,
-                  backgroundImage: profile.avatarUrl != null
-                      ? NetworkImage(profile.avatarUrl!)
-                      : null,
-                  child: profile.avatarUrl == null
-                      ? Text(
-                          _getInitials(profile.name),
-                          style: tt.titleSmall?.copyWith(
-                            color: cs.onPrimaryContainer,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        )
-                      : null,
+                  name: profile.name,
                 ),
                 if (isSelected)
                   Positioned(

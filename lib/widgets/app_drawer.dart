@@ -1,6 +1,7 @@
 // lib/widgets/app_drawer.dart
 import 'package:flutter/material.dart';
 import 'package:study/theme/app_spacing.dart';
+import 'package:study/widgets/cached_avatar.dart';
 
 /// Drawer menu chính của app — hiển thị user info và các menu items
 class AppDrawer extends StatelessWidget {
@@ -65,15 +66,11 @@ class AppDrawer extends StatelessWidget {
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: Row(
                 children: [
-                  CircleAvatar(
+                  CachedAvatar(
+                    url: userAvatar,
                     radius: 24,
                     backgroundColor: cs.primary.withValues(alpha: 0.1),
-                    backgroundImage: userAvatar != null
-                        ? NetworkImage(userAvatar!)
-                        : null,
-                    child: userAvatar == null
-                        ? Icon(Icons.person, color: cs.primary)
-                        : null,
+                    placeholder: Icon(Icons.person, color: cs.primary),
                   ),
                   AppSpacing.hGap12,
                   Expanded(

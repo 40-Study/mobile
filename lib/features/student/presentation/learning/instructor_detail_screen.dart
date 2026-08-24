@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:study/theme/theme.dart';
+import 'package:study/widgets/cached_avatar.dart';
 
 class InstructorDetailScreen extends StatelessWidget {
   const InstructorDetailScreen({
@@ -945,16 +946,11 @@ class _ReviewItem extends StatelessWidget {
         children: [
           Row(
             children: [
-              CircleAvatar(
+              CachedAvatar(
+                url: avatar,
                 radius: 20,
                 backgroundColor: cs.primaryContainer,
-                backgroundImage: avatar != null ? NetworkImage(avatar!) : null,
-                child: avatar == null
-                    ? Text(
-                        name[0].toUpperCase(),
-                        style: tt.labelLarge?.copyWith(color: cs.onPrimaryContainer),
-                      )
-                    : null,
+                name: name,
               ),
               AppSpacing.hGap12,
               Expanded(

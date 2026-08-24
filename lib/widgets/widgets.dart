@@ -1,4 +1,5 @@
 export 'app_drawer.dart';
+export 'cached_avatar.dart';
 export 'app_header_bar.dart';
 export 'bottom_sheet_dialog.dart';
 export 'bottom_sheet_dialog_icon.dart';

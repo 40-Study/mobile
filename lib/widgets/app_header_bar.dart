@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/widgets/cached_avatar.dart';
 
 class AppHeaderBar extends StatelessWidget implements PreferredSizeWidget {
   const AppHeaderBar({
@@ -52,15 +53,11 @@ class AppHeaderBar extends StatelessWidget implements PreferredSizeWidget {
           : showLeadingAvatar
           ? Padding(
               padding: const EdgeInsets.only(left: 16),
-              child: CircleAvatar(
+              child: CachedAvatar(
+                url: leadingAvatarUrl,
                 radius: 20,
                 backgroundColor: leadingBg,
-                backgroundImage: leadingAvatarUrl != null
-                    ? NetworkImage(leadingAvatarUrl!)
-                    : null,
-                child: leadingAvatarUrl == null
-                    ? Icon(Icons.person, color: titleColor, size: 20)
-                    : null,
+                placeholder: Icon(Icons.person, color: titleColor, size: 20),
               ),
             )
           : null,

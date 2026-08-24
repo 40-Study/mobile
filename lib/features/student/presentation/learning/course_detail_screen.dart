@@ -13,6 +13,7 @@ import 'package:study/features/student/presentation/learning/widgets/section/sec
 import 'package:study/features/student/presentation/learning/widgets/thumbnail_placeholder.dart';
 import 'package:study/features/student/repository/student_repository_impl.dart';
 import 'package:study/theme/theme.dart';
+import 'package:study/widgets/cached_avatar.dart';
 
 class CourseDetailScreen extends StatefulWidget {
   const CourseDetailScreen({super.key});
@@ -265,21 +266,11 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                 // Instructor
                 Row(
                   children: [
-                    CircleAvatar(
+                    CachedAvatar(
+                      url: course?.instructorAvatar,
                       radius: 12,
                       backgroundColor: cs.primaryContainer,
-                      backgroundImage: course?.instructorAvatar != null
-                          ? NetworkImage(course!.instructorAvatar!)
-                          : null,
-                      child: course?.instructorAvatar == null
-                          ? Text(
-                              (course?.instructorName ?? 'T')[0].toUpperCase(),
-                              style: tt.labelSmall?.copyWith(
-                                color: cs.onPrimaryContainer,
-                                fontSize: 10,
-                              ),
-                            )
-                          : null,
+                      name: course?.instructorName ?? 'T',
                     ),
                     AppSpacing.hGap8,
                     Expanded(
@@ -641,18 +632,11 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
             ),
             child: Row(
               children: [
-                CircleAvatar(
+                CachedAvatar(
+                  url: course?.instructorAvatar,
                   radius: 36,
                   backgroundColor: cs.primaryContainer,
-                  backgroundImage: course?.instructorAvatar != null
-                      ? NetworkImage(course!.instructorAvatar!)
-                      : null,
-                  child: course?.instructorAvatar == null
-                      ? Text(
-                          (course?.instructorName ?? 'T')[0].toUpperCase(),
-                          style: tt.headlineSmall?.copyWith(color: cs.onPrimaryContainer),
-                        )
-                      : null,
+                  name: course?.instructorName ?? 'T',
                 ),
                 AppSpacing.hGap16,
                 Expanded(
