@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/features/student/data/quiz_result_storage.dart';
 import 'package:study/features/student/presentation/learning/quiz_screen.dart';
 import 'package:study/theme/theme.dart';
 
@@ -18,27 +19,35 @@ class ExerciseProgressCard extends StatelessWidget {
   final int total;
   final int percent;
 
+  bool get isCompleted => percent >= 70;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    // Dùng primary cho cả 2 trạng thái, đồng bộ với theme
+    final color = cs.primary;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: cs.primary.withValues(alpha: 0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: cs.primary.withValues(alpha: 0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: cs.primary.withValues(alpha: 0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
-            child: Icon(Icons.emoji_events_outlined, color: cs.primary, size: 28),
+            child: Icon(
+              isCompleted ? Icons.check_circle_rounded : Icons.emoji_events_outlined,
+              color: color,
+              size: 28,
+            ),
           ),
           AppSpacing.hGap16,
           Expanded(
@@ -46,12 +55,16 @@ class ExerciseProgressCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hoàn thành bài tập để nắm vững kiến thức',
+                  isCompleted
+                      ? 'Xuất sắc! Bạn đã hoàn thành bài tập'
+                      : 'Hoàn thành bài tập để nắm vững kiến thức',
                   style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 AppSpacing.vGap4,
                 Text(
-                  'Bạn cần đạt ít nhất 70% để hoàn thành bài học',
+                  isCompleted
+                      ? 'Tiếp tục phát huy nhé!'
+                      : 'Bạn cần đạt ít nhất 70% để hoàn thành bài học',
                   style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                 ),
               ],
@@ -64,24 +77,22 @@ class ExerciseProgressCard extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                CircularProgressIndicator(
-                  value: percent / 100,
-                  strokeWidth: 5,
-                  backgroundColor: cs.surfaceContainerHighest,
-                  color: cs.primary,
+                SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: CircularProgressIndicator(
+                    value: percent / 100,
+                    strokeWidth: 4,
+                    backgroundColor: cs.surfaceContainerHighest,
+                    color: color,
+                  ),
                 ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '$percent%',
-                      style: tt.labelLarge?.copyWith(fontWeight: FontWeight.w700, color: cs.primary),
-                    ),
-                    Text(
-                      '$completed/$total bài',
-                      style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant, fontSize: 9),
-                    ),
-                  ],
+                Text(
+                  '$percent%',
+                  style: tt.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
                 ),
               ],
             ),
@@ -292,9 +303,10 @@ class CodeExerciseCard extends StatelessWidget {
   }
 }
 
-class QuizCard extends StatelessWidget {
+class QuizCard extends StatefulWidget {
   const QuizCard({
     super.key,
+    required this.quizId,
     required this.index,
     required this.title,
     required this.difficulty,
@@ -304,6 +316,7 @@ class QuizCard extends StatelessWidget {
     this.difficultyColor,
   });
 
+  final String quizId;
   final int index;
   final String title;
   final String difficulty;
@@ -313,9 +326,28 @@ class QuizCard extends StatelessWidget {
   final int points;
 
   @override
+  State<QuizCard> createState() => _QuizCardState();
+}
+
+class _QuizCardState extends State<QuizCard> {
+  QuizResultData? _result;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadResult();
+  }
+
+  Future<void> _loadResult() async {
+    final result = await QuizResultStorage.getResult(widget.quizId);
+    if (mounted) setState(() => _result = result);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final hasResult = _result != null;
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -330,10 +362,16 @@ class QuizCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: cs.primary.withValues(alpha: 0.1),
+              color: hasResult
+                  ? cs.primary.withValues(alpha: 0.1)
+                  : cs.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppRadius.sm),
             ),
-            child: Icon(Icons.help_outline_rounded, color: cs.primary, size: 20),
+            child: Icon(
+              hasResult ? Icons.check_circle_rounded : Icons.help_outline_rounded,
+              color: hasResult ? cs.primary : cs.primary,
+              size: 20,
+            ),
           ),
           AppSpacing.hGap12,
           Expanded(
@@ -344,44 +382,78 @@ class QuizCard extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(
-                        '$index. $title',
+                        '${widget.index}. ${widget.title}',
                         style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     AppSpacing.hGap8,
-                    DifficultyBadge(text: difficulty, color: difficultyColor),
+                    DifficultyBadge(
+                      text: widget.difficulty,
+                      color: widget.difficultyColor,
+                    ),
                   ],
                 ),
                 AppSpacing.vGap4,
                 Text(
-                  '$questions câu hỏi • $duration phút • $points điểm',
-                  style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  hasResult
+                      ? 'Điểm: ${_result!.score.round()}% (${_result!.correctCount}/${_result!.totalCount})'
+                      : '${widget.questions} câu hỏi • ${widget.duration} phút • ${widget.points} điểm',
+                  style: tt.bodySmall?.copyWith(
+                    color: hasResult ? cs.primary : cs.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
           ),
           AppSpacing.hGap8,
-          OutlinedButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => QuizScreen(
-                    quizId: 'quiz-$index',
-                    title: title,
-                    totalQuestions: questions,
-                    duration: duration,
+          hasResult
+              ? FilledButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => QuizResultScreen(
+                          title: widget.title,
+                          correct: _result!.correctCount,
+                          total: _result!.totalCount,
+                          score: _result!.score,
+                          quizId: widget.quizId,
+                          duration: widget.duration,
+                        ),
+                      ),
+                    );
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: cs.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                    ),
                   ),
+                  child: const Text('Xem điểm'),
+                )
+              : OutlinedButton(
+                  onPressed: () async {
+                    await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => QuizScreen(
+                          quizId: widget.quizId,
+                          title: widget.title,
+                          duration: widget.duration,
+                        ),
+                      ),
+                    );
+                    _loadResult();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
+                    ),
+                  ),
+                  child: const Text('Làm bài'),
                 ),
-              );
-            },
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
-            ),
-            child: const Text('Làm bài'),
-          ),
         ],
       ),
     );
