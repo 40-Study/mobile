@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/student/bloc/lesson/lesson_event.dart';
 import 'package:study/features/student/bloc/lesson/lesson_state.dart';
+import 'package:study/features/student/data/models/models.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 
 class LessonBloc extends Bloc<LessonEvent, LessonState> {
@@ -23,10 +24,20 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
 
     final result = await _repository.getLessonDetail(event.lessonId);
 
-    result.when(
-      success: (lesson) {
+    await result.when(
+      success: (lesson) async {
         final isCompleted = lesson.progress?.status == 'completed';
-        emit(LessonSuccess(lesson: lesson, isCompleted: isCompleted));
+        // Fetch quizzes for this lesson
+        final quizzesResult = await _repository.getQuizzesByLesson(event.lessonId);
+        final quizzes = quizzesResult.when(
+          success: (q) => q,
+          failure: (_) => <QuizModel>[],
+        );
+        emit(LessonSuccess(
+          lesson: lesson,
+          isCompleted: isCompleted,
+          quizzes: quizzes,
+        ));
       },
       failure: (error) {
         emit(LessonFailure(error.message ?? 'Loi khong xac dinh'));

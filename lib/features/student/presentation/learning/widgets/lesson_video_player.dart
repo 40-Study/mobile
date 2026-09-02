@@ -1,5 +1,7 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/theme/theme.dart';
 import 'package:video_player/video_player.dart';
 
@@ -16,9 +18,10 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
   ChewieController? _chewieController;
   bool _isInitialized = false;
   String? _error;
+  bool _usedFallback = false;
 
-  // Sample video để test
-  static const _sampleVideoUrl =
+  // Fallback video khi URL chính lỗi
+  static const _fallbackVideoUrl =
       'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
 
   @override
@@ -29,10 +32,31 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
     }
   }
 
-  Future<void> _initializeVideo() async {
+  Future<void> _initializeVideo({bool useFallback = false}) async {
     try {
-      final url = widget.videoUrl ?? _sampleVideoUrl;
-      final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      final url = useFallback
+          ? _fallbackVideoUrl
+          : (widget.videoUrl ?? _fallbackVideoUrl);
+
+      // Only add auth headers for our API domain
+      final headers = <String, String>{};
+      final uri = Uri.parse(url);
+      final isOurApi = uri.host.contains('40study') ||
+          uri.host.contains('api.') ||
+          uri.host.contains('localhost');
+
+      if (isOurApi) {
+        final authStorage = diContainer<AuthStorage>();
+        final token = await authStorage.getAccessToken();
+        if (token != null) {
+          headers['Authorization'] = 'Bearer $token';
+        }
+      }
+
+      final controller = VideoPlayerController.networkUrl(
+        uri,
+        httpHeaders: headers,
+      );
       _videoController = controller;
 
       await controller.initialize();
@@ -73,9 +97,22 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
         ),
       );
 
-      if (mounted) setState(() => _isInitialized = true);
-    } catch (e, st) {
-      debugPrint('Video init error: $e\n$st');
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+          _usedFallback = useFallback;
+        });
+      }
+    } catch (e) {
+      debugPrint('Video init error: $e');
+
+      // Try fallback nếu chưa dùng
+      if (!useFallback && widget.videoUrl != null) {
+        debugPrint('Trying fallback video...');
+        await _initializeVideo(useFallback: true);
+        return;
+      }
+
       if (mounted) setState(() => _error = e.toString());
     }
   }
@@ -85,6 +122,19 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
     _videoController?.dispose();
     _chewieController?.dispose();
     super.dispose();
+  }
+
+  void _retry() {
+    setState(() {
+      _error = null;
+      _isInitialized = false;
+      _usedFallback = false;
+    });
+    _videoController?.dispose();
+    _chewieController?.dispose();
+    _videoController = null;
+    _chewieController = null;
+    _initializeVideo();
   }
 
   @override
@@ -98,9 +148,26 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                AppSpacing.vGap8,
-                Text('Lỗi: $_error', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                const Icon(
+                  Icons.videocam_off_rounded,
+                  color: Colors.white54,
+                  size: 48,
+                ),
+                AppSpacing.vGap12,
+                const Text(
+                  'Không thể tải video',
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+                AppSpacing.vGap16,
+                OutlinedButton.icon(
+                  onPressed: _retry,
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  label: const Text('Thử lại'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white70,
+                    side: const BorderSide(color: Colors.white30),
+                  ),
+                ),
               ],
             ),
           ),
@@ -120,7 +187,28 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
 
     return AspectRatio(
       aspectRatio: 16 / 9,
-      child: Chewie(controller: _chewieController!),
+      child: Stack(
+        children: [
+          Chewie(controller: _chewieController!),
+          // Banner khi dùng fallback video
+          if (_usedFallback)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text(
+                  'Video mẫu',
+                  style: TextStyle(color: Colors.white70, fontSize: 10),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
