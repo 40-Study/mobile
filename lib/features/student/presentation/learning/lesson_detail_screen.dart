@@ -3,6 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/course/data/models/course_model.dart';
 import 'package:study/features/student/bloc/lesson/lesson_bloc.dart';
 import 'package:study/features/student/bloc/lesson/lesson_state.dart';
+import 'package:study/features/student/data/models/models.dart';
+import 'package:study/features/student/data/quiz_result_storage.dart';
+import 'package:study/features/student/presentation/learning/quiz_screen.dart';
 import 'package:study/features/student/presentation/learning/widgets/exercise/exercise_widgets.dart';
 import 'package:study/features/student/presentation/learning/widgets/lesson_video_player.dart';
 import 'package:study/theme/theme.dart';
@@ -99,8 +102,13 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
         // App Bar
         _buildAppBar(context, lesson),
 
-        // Video Player
-        LessonVideoPlayer(videoUrl: state.videoUrl),
+        // Video Player - constrain height on landscape
+        ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.4,
+          ),
+          child: LessonVideoPlayer(videoUrl: state.videoUrl),
+        ),
 
         // Tabs
         _buildTabs(context),
@@ -112,7 +120,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
             children: [
               _buildContentTab(context, state),
               _buildDocumentsTab(context),
-              _buildExerciseTab(context),
+              _buildExerciseTab(context, state),
               _buildNotesTab(context),
             ],
           ),
@@ -359,102 +367,84 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
     );
   }
 
-  Widget _buildExerciseTab(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
+  Widget _buildExerciseTab(BuildContext context, LessonSuccess state) {
+    final quizzes = state.quizzes;
+    final total = quizzes.length;
 
-    return const SingleChildScrollView(
-      padding: EdgeInsets.all(AppSpacing.screenPadding),
+    return FutureBuilder<int>(
+      future: _countCompletedQuizzes(quizzes),
+      builder: (context, snapshot) {
+        final completed = snapshot.data ?? 0;
+        final percent = total > 0 ? (completed / total * 100).round() : 0;
+
+        return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.screenPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Progress card
-          ExerciseProgressCard(completed: 2, total: 5, percent: 40),
+          ExerciseProgressCard(completed: completed, total: total, percent: percent),
           AppSpacing.vGap24,
 
-          // Bài tập code section
-          ExerciseSection(
-            icon: Icons.code_rounded,
-            title: 'Bài tập code',
-            subtitle: 'Thực hành viết và chạy code trên trình duyệt',
-            children: [
-              CodeExerciseCard(
-                index: 1,
-                title: 'In dòng chữ đầu tiên',
-                difficulty: 'Dễ',
-                description: 'Viết chương trình in ra dòng chữ "Xin chào, Python!"',
-                duration: 10,
-                points: 10,
-                completionRate: 80,
-              ),
-            ],
-            infoText: 'Bài tập code chỉ có thể thực hiện trên website để đảm bảo trải nghiệm tốt nhất.',
-          ),
-          AppSpacing.vGap24,
+          // Quiz section - from API
+          if (quizzes.isNotEmpty)
+            ExerciseSection(
+              icon: Icons.quiz_outlined,
+              title: 'Quiz',
+              subtitle: 'Trả lời câu hỏi trắc nghiệm',
+              children: quizzes.asMap().entries.map((entry) {
+                final i = entry.key;
+                final quiz = entry.value;
+                return _QuizCardFromModel(index: i + 1, quiz: quiz);
+              }).toList(),
+            ),
 
-          // Quiz section
-          ExerciseSection(
-            icon: Icons.quiz_outlined,
-            title: 'Quiz',
-            subtitle: 'Trả lời câu hỏi trắc nghiệm',
-            children: [
-              QuizCard(
-                index: 2,
-                title: 'Kiểm tra kiến thức',
-                difficulty: 'Dễ',
-                questions: 5,
-                duration: 5,
-                points: 10,
-              ),
-              QuizCard(
-                index: 3,
-                title: 'Biến và kiểu dữ liệu',
-                difficulty: 'Trung bình',
-                difficultyColor: Colors.orange,
-                questions: 8,
-                duration: 8,
-                points: 20,
-              ),
-            ],
-          ),
-          AppSpacing.vGap24,
+          if (quizzes.isEmpty)
+            _buildEmptyExercises(context),
 
-          // Bài tập tự luận section
-          ExerciseSection(
-            icon: Icons.edit_outlined,
-            title: 'Bài tập tự luận',
-            subtitle: 'Trả lời câu hỏi ngắn hoặc giải thích',
-            children: [
-              EssayCard(
-                index: 4,
-                title: 'Giải thích ngắn',
-                difficulty: 'Dễ',
-                description: 'Giải thích sự khác nhau giữa biến và hằng.',
-                points: 10,
-              ),
-            ],
-          ),
-          AppSpacing.vGap24,
-
-          // Thử thách thêm section
-          ExerciseSection(
-            icon: Icons.star_outline_rounded,
-            title: 'Thử thách thêm',
-            titleSuffix: '(Không bắt buộc)',
-            subtitle: 'Bài tập nâng cao để luyện kỹ năng',
-            children: [
-              ChallengeCard(
-                index: 5,
-                title: 'Tính tổng các số',
-                difficulty: 'Trung bình',
-                difficultyColor: Colors.orange,
-                description: 'Viết chương trình tính tổng của n số tự nhiên đầu tiên.',
-                duration: 20,
-                points: 20,
-              ),
-            ],
-          ),
           AppSpacing.vGap32,
+        ],
+      ),
+        );
+      },
+    );
+  }
+
+  Future<int> _countCompletedQuizzes(List<QuizModel> quizzes) async {
+    var count = 0;
+    for (final quiz in quizzes) {
+      if (await QuizResultStorage.hasResult(quiz.id)) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  Widget _buildEmptyExercises(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.quiz_outlined, size: 48, color: cs.onSurfaceVariant.withValues(alpha: 0.5)),
+          AppSpacing.vGap16,
+          Text(
+            'Chưa có bài tập',
+            style: tt.titleSmall?.copyWith(color: cs.onSurfaceVariant),
+          ),
+          AppSpacing.vGap8,
+          Text(
+            'Bài học này chưa có bài tập hoặc quiz',
+            style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant.withValues(alpha: 0.7)),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -506,6 +496,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final hasPrev = widget.currentIndex > 0;
+    final hasNext = widget.currentIndex < widget.totalLessons - 1;
     final lesson = state.lesson;
     final contents = lesson.contents ?? [];
     final currentIdx = contents.length > 1 ? 1 : 0;
@@ -578,13 +569,15 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
           ),
           AppSpacing.hGap12,
 
-          // Tiếp tục học
+          // Tiếp tục học / Bài tiếp theo
           Expanded(
             child: FilledButton(
-              onPressed: () {},
+              onPressed: hasNext ? () => widget.onNavigate?.call(1) : null,
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -593,18 +586,18 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text('Tiếp tục học', style: tt.labelMedium?.copyWith(color: cs.onPrimary)),
-                        if (currentContent != null)
-                          Text(
-                            '${currentIdx + 1}. ${currentContent.title}',
-                            style: tt.labelSmall?.copyWith(color: cs.onPrimary.withValues(alpha: 0.8)),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                        Text(
+                          hasNext ? 'Bài tiếp theo' : 'Hoàn thành',
+                          style: tt.labelMedium?.copyWith(color: cs.onPrimary),
+                        ),
                       ],
                     ),
                   ),
-                  Icon(Icons.chevron_right_rounded, size: 20, color: cs.onPrimary),
+                  Icon(
+                    hasNext ? Icons.chevron_right_rounded : Icons.check_rounded,
+                    size: 20,
+                    color: cs.onPrimary,
+                  ),
                 ],
               ),
             ),
@@ -1199,6 +1192,27 @@ class _DocumentCard extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+// Quiz card from API model - dùng QuizCard widget
+class _QuizCardFromModel extends StatelessWidget {
+  const _QuizCardFromModel({required this.index, required this.quiz});
+
+  final int index;
+  final QuizModel quiz;
+
+  @override
+  Widget build(BuildContext context) {
+    return QuizCard(
+      quizId: quiz.id,
+      index: index,
+      title: quiz.title,
+      difficulty: 'Dễ',
+      questions: quiz.questionCount ?? 0,
+      duration: quiz.timeLimitMinutes ?? 10,
+      points: 10,
     );
   }
 }

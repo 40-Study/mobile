@@ -11,7 +11,8 @@ import 'package:study/features/student/presentation/learning/instructor_detail_s
 import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/widgets/section/section_widgets.dart';
 import 'package:study/features/student/presentation/learning/widgets/thumbnail_placeholder.dart';
-import 'package:study/features/student/repository/student_repository_impl.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/cached_avatar.dart';
 
@@ -47,11 +48,18 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => LessonBloc(StudentRepositoryImpl())
+          create: (_) => LessonBloc(diContainer<StudentRepository>())
             ..add(LessonStarted(lesson.id)),
           child: LessonDetailScreen(
             currentIndex: index >= 0 ? index : 0,
             totalLessons: allLessons.length,
+            onNavigate: (direction) {
+              final newIndex = (index >= 0 ? index : 0) + direction;
+              if (newIndex >= 0 && newIndex < allLessons.length) {
+                Navigator.of(context).pop();
+                _navigateToLesson(context, allLessons[newIndex], allLessons);
+              }
+            },
           ),
         ),
       ),
@@ -348,8 +356,10 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                 children: [
                   Row(
                     children: [
-                      Text('Tiến độ học tập', style: tt.labelMedium),
-                      const Spacer(),
+                      Flexible(
+                        child: Text('Tiến độ', style: tt.labelMedium),
+                      ),
+                      const SizedBox(width: 4),
                       Text(
                         '${enrollment.progressPercentage.toStringAsFixed(0)}%',
                         style: tt.labelLarge?.copyWith(
