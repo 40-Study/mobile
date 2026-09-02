@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/di/di_container.dart';
 import 'package:study/features/student/bloc/notification/notification_bloc.dart';
 import 'package:study/features/student/bloc/notification/notification_event.dart';
 import 'package:study/features/student/bloc/notification/notification_state.dart';
 import 'package:study/features/student/data/models/models.dart';
+import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/app_header_bar.dart';
 import 'package:study/widgets/empty_state.dart';
@@ -14,7 +16,8 @@ class NotificationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => NotificationBloc()..add(const NotificationStarted()),
+      create: (_) => NotificationBloc(diContainer<StudentRepository>())
+        ..add(const NotificationStarted()),
       child: const _NotificationView(),
     );
   }

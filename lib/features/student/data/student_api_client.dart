@@ -38,6 +38,9 @@ abstract class StudentApiClient {
   @GET('/api/quizzes/{quizId}/questions')
   Future<HttpResponse<dynamic>> getQuizQuestions(@Path('quizId') String quizId);
 
+  @GET('/api/quizzes')
+  Future<HttpResponse<dynamic>> getQuizzesByLesson(@Query('lesson_id') String lessonId);
+
   @POST('/api/quizzes/{quizId}/start')
   Future<HttpResponse<dynamic>> startQuiz(@Path('quizId') String quizId);
 
@@ -56,9 +59,23 @@ abstract class StudentApiClient {
   });
 
   // Calendar events
-  @GET('/api/me/events/')
+  @GET('/api/me/events')
   Future<HttpResponse<dynamic>> getMyEvents({
     @Query('start_date') String? startDate,
     @Query('end_date') String? endDate,
   });
+
+  // Timetable - student's weekly schedule
+  @GET('/api/me/timetable')
+  Future<HttpResponse<dynamic>> getMyTimetable();
+
+  // Class detail
+  @GET('/api/classes/{classId}')
+  Future<HttpResponse<dynamic>> getClass(@Path('classId') String classId);
+
+  // Public profile with contribution activity
+  @GET('/api/users/{userId}/public-profile')
+  Future<HttpResponse<dynamic>> getPublicProfile(
+    @Path('userId') String userId,
+  );
 }

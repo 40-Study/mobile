@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:study/features/student/data/models/models.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
 
@@ -42,7 +43,9 @@ class AchievementBadgeData {
 }
 
 class AllAchievementsScreen extends StatefulWidget {
-  const AllAchievementsScreen({super.key});
+  const AllAchievementsScreen({super.key, required this.badges});
+
+  final List<BadgeModel> badges;
 
   @override
   State<AllAchievementsScreen> createState() => _AllAchievementsScreenState();
@@ -51,8 +54,7 @@ class AllAchievementsScreen extends StatefulWidget {
 class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
   BadgeCategory _selectedCategory = BadgeCategory.all;
 
-  // Mock data
-  late final List<AchievementBadgeData> _allBadges = _generateMockBadges();
+  late final List<AchievementBadgeData> _allBadges = _mapBadges(widget.badges);
 
   List<AchievementBadgeData> get _filteredBadges {
     if (_selectedCategory == BadgeCategory.all) return _allBadges;
@@ -338,264 +340,69 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
     );
   }
 
-  List<AchievementBadgeData> _generateMockBadges() {
-    return [
-      // Earned badges
-      AchievementBadgeData(
-        id: '1',
-        title: 'Học tập chăm chỉ',
-        description: 'Học 7 ngày liên tiếp',
-        status: BadgeStatus.earned,
-        category: BadgeCategory.habit,
-        icon: Icons.menu_book_rounded,
-        color: AchievementColors.purple,
-        earnedAt: DateTime(2024, 5, 5),
-        isNew: true,
-      ),
-      AchievementBadgeData(
-        id: '2',
-        title: 'Người chinh phục',
-        description: 'Hoàn thành 10 bài học',
-        status: BadgeStatus.earned,
-        category: BadgeCategory.learning,
-        icon: Icons.star_rounded,
-        color: AchievementColors.orange,
-        earnedAt: DateTime(2024, 5, 3),
-      ),
-      AchievementBadgeData(
-        id: '3',
-        title: 'Tập trung cao độ',
-        description: 'Học 120 phút/ngày',
-        status: BadgeStatus.earned,
-        category: BadgeCategory.habit,
-        icon: Icons.track_changes_rounded,
-        color: AchievementColors.green,
-        earnedAt: DateTime(2024, 5, 2),
-      ),
-      AchievementBadgeData(
-        id: '4',
-        title: 'Lửa đam mê',
-        description: 'Học 30 ngày liên tiếp',
-        status: BadgeStatus.earned,
-        category: BadgeCategory.habit,
-        icon: Icons.local_fire_department_rounded,
-        color: AchievementColors.blue,
-        earnedAt: DateTime(2024, 4, 30),
-      ),
-      AchievementBadgeData(
-        id: '5',
-        title: 'Tăng tốc',
-        description: 'Hoàn thành 5 bài học trong 1 ngày',
-        status: BadgeStatus.earned,
-        category: BadgeCategory.achievement,
-        icon: Icons.bolt_rounded,
-        color: AchievementColors.violet,
-        earnedAt: DateTime(2024, 4, 28),
-      ),
-      AchievementBadgeData(
-        id: '6',
-        title: 'Kiên trì bền bỉ',
-        description: 'Học 15 ngày liên tiếp',
-        status: BadgeStatus.earned,
-        category: BadgeCategory.habit,
-        icon: Icons.workspace_premium_rounded,
-        color: AchievementColors.deepOrange,
-        earnedAt: DateTime(2024, 4, 25),
-      ),
-      AchievementBadgeData(
-        id: '7',
-        title: 'Quản lý thời gian',
-        description: 'Học đúng giờ 10 lần',
-        status: BadgeStatus.earned,
-        category: BadgeCategory.habit,
-        icon: Icons.schedule_rounded,
-        color: AchievementColors.lightBlue,
-        earnedAt: DateTime(2024, 4, 22),
-      ),
-      AchievementBadgeData(
-        id: '8',
-        title: 'Giúp đỡ bạn bè',
-        description: 'Trả lời 3 câu hỏi trong thảo luận',
-        status: BadgeStatus.earned,
-        category: BadgeCategory.achievement,
-        icon: Icons.favorite_rounded,
-        color: AchievementColors.pink,
-        earnedAt: DateTime(2024, 4, 20),
-      ),
-      // More earned
-      ...List.generate(10, (i) {
-        final icons = [
-          Icons.school_rounded,
-          Icons.lightbulb_rounded,
-          Icons.psychology_rounded,
-          Icons.auto_awesome_rounded,
-          Icons.rocket_launch_rounded,
-        ];
-        final colors = [
-          AchievementColors.purple,
-          AchievementColors.green,
-          AchievementColors.blue,
-          AchievementColors.orange,
-          AchievementColors.pink,
-        ];
-        return AchievementBadgeData(
-          id: 'e${i + 9}',
-          title: 'Thành tích ${i + 9}',
-          description: 'Mô tả thành tích ${i + 9}',
-          status: BadgeStatus.earned,
-          category: BadgeCategory.values[(i % 3) + 1],
-          icon: icons[i % icons.length],
-          color: colors[i % colors.length],
-          earnedAt: DateTime(2024, 4, 15 - i),
-        );
-      }),
-
-      // In progress badges
-      const AchievementBadgeData(
-        id: 'p1',
-        title: 'Thảo luận tích cực',
-        description: 'Tham gia thảo luận 10 lần',
-        status: BadgeStatus.inProgress,
-        category: BadgeCategory.achievement,
-        icon: Icons.chat_bubble_rounded,
-        color: AchievementColors.purple,
-        progress: 6,
-        target: 10,
-      ),
-      const AchievementBadgeData(
-        id: 'p2',
-        title: 'Hoàn thành bài tập',
-        description: 'Nộp 5 bài tập',
-        status: BadgeStatus.inProgress,
-        category: BadgeCategory.learning,
-        icon: Icons.edit_note_rounded,
-        color: AchievementColors.deepOrange,
-        progress: 2,
-        target: 5,
-      ),
-      const AchievementBadgeData(
-        id: 'p3',
-        title: 'Học qua video',
-        description: 'Xem 20 video',
-        status: BadgeStatus.inProgress,
-        category: BadgeCategory.learning,
-        icon: Icons.play_circle_rounded,
-        color: AchievementColors.red,
-        progress: 14,
-        target: 20,
-      ),
-      const AchievementBadgeData(
-        id: 'p4',
-        title: 'Duy trì đều đặn',
-        description: 'Học 60 ngày liên tiếp',
-        status: BadgeStatus.inProgress,
-        category: BadgeCategory.habit,
-        icon: Icons.grid_view_rounded,
-        color: AchievementColors.violet,
-        progress: 18,
-        target: 60,
-      ),
-      ...List.generate(6, (i) {
-        final icons = [
-          Icons.quiz_rounded,
-          Icons.trending_up_rounded,
-          Icons.workspace_premium_rounded,
-          Icons.auto_graph_rounded,
-          Icons.emoji_events_rounded,
-          Icons.military_tech_rounded,
-        ];
-        final colors = [
-          AchievementColors.lightBlue,
-          AchievementColors.green,
-          AchievementColors.orange,
-          AchievementColors.blue,
-          AchievementColors.pink,
-          AchievementColors.purple,
-        ];
-        return AchievementBadgeData(
-          id: 'p${i + 5}',
-          title: 'Tiến độ ${i + 5}',
-          description: 'Mục tiêu ${i + 5}',
-          status: BadgeStatus.inProgress,
-          category: BadgeCategory.values[(i % 3) + 1],
-          icon: icons[i % icons.length],
-          color: colors[i % colors.length],
-          progress: (i + 1) * 10,
-          target: 100,
-        );
-      }),
-
-      // Locked badges
-      const AchievementBadgeData(
-        id: 'l1',
-        title: 'Chuyên gia',
-        description: 'Hoàn thành 50 bài học',
-        status: BadgeStatus.locked,
-        category: BadgeCategory.learning,
-        icon: Icons.school_rounded,
-        color: AchievementColors.purple,
-        progress: 0,
-        target: 50,
-      ),
-      const AchievementBadgeData(
-        id: 'l2',
-        title: 'Xuất sắc',
-        description: 'Đạt 100% trong 10 bài kiểm tra',
-        status: BadgeStatus.locked,
-        category: BadgeCategory.achievement,
-        icon: Icons.workspace_premium_rounded,
-        color: AchievementColors.orange,
-        progress: 0,
-        target: 10,
-      ),
-      const AchievementBadgeData(
-        id: 'l3',
-        title: 'Bậc thầy',
-        description: 'Hoàn thành 1 khóa học nâng cao',
-        status: BadgeStatus.locked,
-        category: BadgeCategory.learning,
-        icon: Icons.diamond_rounded,
-        color: AchievementColors.lightBlue,
-        progress: 0,
-        target: 1,
-      ),
-      const AchievementBadgeData(
-        id: 'l4',
-        title: 'Thành tựu lớn',
-        description: 'Hoàn thành 5 khóa học',
-        status: BadgeStatus.locked,
-        category: BadgeCategory.achievement,
-        icon: Icons.key_rounded,
-        color: AchievementColors.pink,
-        progress: 0,
-        target: 5,
-      ),
-      ...List.generate(4, (i) {
-        final icons = [
-          Icons.military_tech_rounded,
-          Icons.stars_rounded,
-          Icons.verified_rounded,
-          Icons.shield_rounded,
-        ];
-        final colors = [
-          AchievementColors.purple,
-          AchievementColors.green,
-          AchievementColors.blue,
-          AchievementColors.orange,
-        ];
-        return AchievementBadgeData(
-          id: 'l${i + 5}',
-          title: 'Mục tiêu ${i + 5}',
-          description: 'Yêu cầu ${i + 5}',
-          status: BadgeStatus.locked,
-          category: BadgeCategory.values[(i % 3) + 1],
-          icon: icons[i % icons.length],
-          color: colors[i % colors.length],
-          progress: 0,
-          target: 100,
-        );
-      }),
+  List<AchievementBadgeData> _mapBadges(List<BadgeModel> badges) {
+    final colors = [
+      AchievementColors.purple,
+      AchievementColors.orange,
+      AchievementColors.green,
+      AchievementColors.blue,
+      AchievementColors.pink,
+      AchievementColors.violet,
+      AchievementColors.deepOrange,
+      AchievementColors.lightBlue,
     ];
+
+    final icons = [
+      Icons.emoji_events_rounded,
+      Icons.star_rounded,
+      Icons.menu_book_rounded,
+      Icons.local_fire_department_rounded,
+      Icons.bolt_rounded,
+      Icons.workspace_premium_rounded,
+      Icons.school_rounded,
+      Icons.lightbulb_rounded,
+    ];
+
+    return badges.asMap().entries.map((entry) {
+      final i = entry.key;
+      final badge = entry.value;
+
+      final status = badge.isEarned
+          ? BadgeStatus.earned
+          : BadgeStatus.locked;
+
+      final category = _mapCategory(badge.category);
+
+      return AchievementBadgeData(
+        id: badge.id,
+        title: badge.name,
+        description: badge.description ?? '',
+        status: status,
+        category: category,
+        icon: icons[i % icons.length],
+        color: colors[i % colors.length],
+        earnedAt: badge.earnedAt,
+        isNew: badge.earnedAt != null &&
+            DateTime.now().difference(badge.earnedAt!).inDays < 7,
+      );
+    }).toList();
+  }
+
+  BadgeCategory _mapCategory(String? category) {
+    switch (category) {
+      case 'learning':
+        return BadgeCategory.learning;
+      case 'habit':
+      case 'streak':
+        return BadgeCategory.habit;
+      case 'achievement':
+      case 'course':
+      case 'quiz':
+      case 'speed':
+        return BadgeCategory.achievement;
+      default:
+        return BadgeCategory.learning;
+    }
   }
 }
 

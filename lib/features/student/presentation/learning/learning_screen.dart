@@ -6,11 +6,13 @@ import 'package:study/features/student/bloc/course_detail/course_detail_event.da
 import 'package:study/features/student/bloc/learning/learning_bloc.dart';
 import 'package:study/features/student/bloc/learning/learning_event.dart';
 import 'package:study/features/student/bloc/learning/learning_state.dart';
+import 'package:study/features/student/presentation/learning/all_courses_screen.dart';
 import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/widgets/learning_cards.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
 import 'package:study/features/student/presentation/search/search_screen.dart';
-import 'package:study/features/student/repository/student_repository_impl.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/empty_state.dart';
 import 'package:study/widgets/section_header.dart';
@@ -33,7 +35,7 @@ class _LearningScreenState extends State<LearningScreen> {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => CourseDetailBloc(StudentRepositoryImpl())
+          create: (_) => CourseDetailBloc(diContainer<StudentRepository>())
             ..add(CourseDetailStarted(enrollmentId)),
           child: const CourseDetailScreen(),
         ),
@@ -466,7 +468,10 @@ class _LearningScreenState extends State<LearningScreen> {
           title: 'Bạn chưa tham gia khóa học nào',
           message: 'Khám phá các khóa học phù hợp với bạn.',
           actionLabel: 'Khám phá khóa học',
-          onAction: () {},
+          onAction: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AllCoursesScreen()),
+          ),
         ),
       ),
     );

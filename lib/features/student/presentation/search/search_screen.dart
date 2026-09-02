@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/di/di_container.dart';
 import 'package:study/features/student/bloc/search/search_bloc.dart';
 import 'package:study/features/student/bloc/search/search_event.dart';
 import 'package:study/features/student/bloc/search/search_state.dart';
+import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/empty_state.dart';
 
@@ -12,7 +14,7 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => SearchBloc(),
+      create: (_) => SearchBloc(diContainer<StudentRepository>()),
       child: const _SearchView(),
     );
   }

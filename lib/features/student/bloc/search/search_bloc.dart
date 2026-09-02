@@ -1,13 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/student/bloc/search/search_event.dart';
 import 'package:study/features/student/bloc/search/search_state.dart';
+import 'package:study/features/student/repository/student_repository.dart';
 
 class SearchBloc extends Bloc<SearchEvent, SearchState> {
-  SearchBloc() : super(const SearchInitial(recentSearches: ['Flutter', 'Bloc', 'UI Design'])) {
+  SearchBloc(this._repository)
+      : super(const SearchInitial(recentSearches: ['Flutter', 'Bloc', 'UI Design'])) {
     on<SearchQueryChanged>(_onQueryChanged);
     on<SearchFilterChanged>(_onFilterChanged);
     on<SearchCleared>(_onCleared);
   }
+
+  final StudentRepository _repository;
 
   Future<void> _onQueryChanged(
     SearchQueryChanged event,
@@ -25,55 +29,27 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
 
     emit(SearchInProgress(query: query, filter: currentFilter));
 
-    await Future<void>.delayed(const Duration(milliseconds: 300));
+    final result = await _repository.searchCourses(query);
 
-    // Mock search
-    final allResults = [
-      const SearchResult(
-        id: '1',
-        title: 'Flutter Advanced',
-        subtitle: 'Khoa hoc - 24 bai',
-        type: SearchFilter.course,
-      ),
-      const SearchResult(
-        id: '2',
-        title: 'State Management voi Bloc',
-        subtitle: 'Bai hoc - Flutter Advanced',
-        type: SearchFilter.lesson,
-      ),
-      const SearchResult(
-        id: '3',
-        title: 'Flutter Widgets Quiz',
-        subtitle: 'Quiz - 20 cau hoi',
-        type: SearchFilter.quiz,
-      ),
-      const SearchResult(
-        id: '4',
-        title: 'UI/UX Design Basics',
-        subtitle: 'Khoa hoc - 18 bai',
-        type: SearchFilter.course,
-      ),
-      const SearchResult(
-        id: '5',
-        title: 'Navigation trong Flutter',
-        subtitle: 'Bai hoc - Flutter Basics',
-        type: SearchFilter.lesson,
-      ),
-    ];
+    result.when(
+      success: (courses) {
+        final results = courses.map((course) => SearchResult(
+          id: course.id,
+          title: course.title,
+          subtitle: '${course.categoryName ?? 'Khoa hoc'} - ${course.totalLessons ?? 0} bai',
+          type: SearchFilter.course,
+        )).toList();
 
-    final results = allResults
-        .where((r) => r.title.toLowerCase().contains(query.toLowerCase()))
-        .toList();
-
-    if (results.isEmpty) {
-      emit(SearchEmpty(query: query));
-    } else {
-      emit(SearchSuccess(
-        query: query,
-        filter: currentFilter,
-        results: results,
-      ));
-    }
+        if (results.isEmpty) {
+          emit(SearchEmpty(query: query));
+        } else {
+          emit(SearchSuccess(query: query, filter: currentFilter, results: results));
+        }
+      },
+      failure: (_) {
+        emit(SearchEmpty(query: query));
+      },
+    );
   }
 
   void _onFilterChanged(

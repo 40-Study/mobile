@@ -14,7 +14,9 @@ import 'package:study/features/student/presentation/profile/profile_screen.dart'
 import 'package:study/features/student/presentation/schedule/schedule_screen.dart';
 import 'package:study/features/student/presentation/search/search_screen.dart';
 import 'package:study/features/student/presentation/settings/settings_screen.dart';
-import 'package:study/features/student/repository/student_repository_impl.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/features/auth/repository/auth_repository.dart';
+import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/widgets/app_drawer.dart';
 
 enum StudentTab { home, learning, schedule, achievement, profile }
@@ -99,10 +101,13 @@ class _StudentShellState extends State<StudentShell> {
       ),
       body: MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => HomeBloc(StudentRepositoryImpl())),
-          BlocProvider(create: (_) => LearningBloc(StudentRepositoryImpl())),
-          BlocProvider(create: (_) => ScheduleBloc(StudentRepositoryImpl())),
-          BlocProvider(create: (_) => AchievementBloc(StudentRepositoryImpl())),
+          BlocProvider(create: (_) => HomeBloc(diContainer<StudentRepository>())),
+          BlocProvider(create: (_) => LearningBloc(diContainer<StudentRepository>())),
+          BlocProvider(create: (_) => ScheduleBloc(diContainer<StudentRepository>())),
+          BlocProvider(create: (_) => AchievementBloc(
+            diContainer<StudentRepository>(),
+            diContainer<AuthRepository>(),
+          )),
         ],
         child: IndexedStack(
           index: _currentTab.index,

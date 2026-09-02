@@ -6,6 +6,7 @@ import 'package:study/features/student/bloc/achievement/achievement_bloc.dart';
 import 'package:study/features/student/bloc/achievement/achievement_event.dart';
 import 'package:study/features/student/bloc/achievement/achievement_state.dart';
 import 'package:study/features/student/data/models/badge_model.dart';
+import 'package:study/features/student/data/models/contribution_model.dart';
 import 'package:study/features/student/data/models/student_stats_model.dart';
 import 'package:study/features/student/presentation/achievement/all_achievements_screen.dart';
 import 'package:study/features/student/presentation/achievement/all_certificates_screen.dart';
@@ -67,7 +68,7 @@ class _AchievementScreenState extends State<AchievementScreen> {
           _CertificateCarousel(certificates: state.certificates),
           AppSpacing.vGap24,
         ],
-        const _ContributionGrid(),
+        _ContributionGrid(contributionData: state.contributions),
         AppSpacing.vGap24,
         _LearningTrendChart(stats: state.stats),
         const SizedBox(height: 100),
@@ -102,7 +103,7 @@ class _RecentBadges extends StatelessWidget {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (_) => const AllAchievementsScreen()),
+                    builder: (_) => AllAchievementsScreen(badges: badges)),
               ),
               child: Text(l10n.viewAll,
                   style: tt.labelLarge?.copyWith(
@@ -111,19 +112,34 @@ class _RecentBadges extends StatelessWidget {
           ],
         ),
         AppSpacing.vGap16,
-        SizedBox(
-          height: 150,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: badges.take(4).length,
-            separatorBuilder: (_, _) => AppSpacing.hGap12,
-            itemBuilder: (context, i) => _BadgeItem(
-              badge: badges[i],
-              isNew: i == 0,
-              colorIndex: i,
+        if (badges.isEmpty)
+          Container(
+            height: 100,
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: Center(
+              child: Text(
+                'Chưa có huy hiệu nào. Học tập để nhận huy hiệu!',
+                style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+              ),
+            ),
+          )
+        else
+          SizedBox(
+            height: 150,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: badges.take(4).length,
+              separatorBuilder: (_, _) => AppSpacing.hGap12,
+              itemBuilder: (context, i) => _BadgeItem(
+                badge: badges[i],
+                isNew: i == 0,
+                colorIndex: i,
+              ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -335,7 +351,7 @@ class _CertificateCarouselState extends State<_CertificateCarousel> {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (_) => const AllCertificatesScreen()),
+                    builder: (_) => AllCertificatesScreen(certificates: widget.certificates)),
               ),
               child: Text(l10n.viewAll,
                   style: tt.labelLarge
@@ -663,8 +679,9 @@ class _SparklinePainter extends CustomPainter {
 // GITHUB-STYLE CONTRIBUTION GRID
 // ============================================================
 class _ContributionGrid extends StatelessWidget {
-  const _ContributionGrid();
+  const _ContributionGrid({this.contributionData = const []});
 
+  final List<ContributionModel> contributionData;
   static const _weeks = 12;
 
   @override
@@ -672,7 +689,7 @@ class _ContributionGrid extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
-    final contributions = _generateContributions();
+    final contributions = _mapToLevels(contributionData);
     final totalDays = contributions.where((l) => l > 0).length;
 
     return Container(
@@ -802,16 +819,32 @@ class _ContributionGrid extends StatelessWidget {
     );
   }
 
-  List<int> _generateContributions() {
-    final random = DateTime.now().day;
-    return List.generate(_weeks * 7, (i) {
-      final seed = (random * 7 + i * 13) % 100;
-      if (seed < 20) return 0;
-      if (seed < 40) return 1;
-      if (seed < 60) return 2;
-      if (seed < 80) return 3;
-      return 4;
-    });
+  // Map API contributions to grid levels
+  List<int> _mapToLevels(List<ContributionModel> data) {
+    if (data.isEmpty) return List.filled(_weeks * 7, 0);
+
+    final now = DateTime.now();
+    final result = List.filled(_weeks * 7, 0);
+    final startDate = now.subtract(Duration(days: _weeks * 7 - 1));
+
+    for (final item in data) {
+      final date = DateTime.tryParse(item.date);
+      if (date == null) continue;
+
+      final diff = date.difference(startDate).inDays;
+      if (diff >= 0 && diff < _weeks * 7) {
+        // Map count to level 0-4
+        final level = switch (item.count) {
+          0 => 0,
+          1 => 1,
+          2 || 3 => 2,
+          4 || 5 => 3,
+          _ => 4,
+        };
+        result[diff] = level;
+      }
+    }
+    return result;
   }
 }
 

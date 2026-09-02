@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/course/data/models/certificate_model.dart';
 import 'package:study/features/student/bloc/achievement/achievement_event.dart';
 import 'package:study/features/student/bloc/achievement/achievement_state.dart';
@@ -6,12 +7,14 @@ import 'package:study/features/student/data/models/models.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 
 class AchievementBloc extends Bloc<AchievementEvent, AchievementState> {
-  AchievementBloc(this._repository) : super(const AchievementInitial()) {
+  AchievementBloc(this._repository, this._authRepository)
+      : super(const AchievementInitial()) {
     on<AchievementStarted>(_onStarted);
     on<AchievementTabChanged>(_onTabChanged);
   }
 
   final StudentRepository _repository;
+  final AuthRepository _authRepository;
 
   Future<void> _onStarted(
     AchievementStarted event,
@@ -19,9 +22,14 @@ class AchievementBloc extends Bloc<AchievementEvent, AchievementState> {
   ) async {
     emit(const AchievementInProgress());
 
-    final (stats, badges) = await (
+    // Get userId for contributions
+    final user = await _authRepository.getSavedUser();
+    final userId = user?.id;
+
+    final (stats, badges, certificates) = await (
       _repository.getStats(),
       _repository.getBadges(),
+      _repository.getCertificates(),
     ).wait;
 
     if (stats.isFailure) {
@@ -29,44 +37,17 @@ class AchievementBloc extends Bloc<AchievementEvent, AchievementState> {
       return;
     }
 
+    // Fetch contributions if userId available
+    final contributions = userId != null
+        ? (await _repository.getContributions(userId)).valueOrNull ?? []
+        : <ContributionModel>[];
+
     emit(AchievementSuccess(
       stats: stats.valueOrNull ?? const StudentStatsModel(),
       badges: badges.valueOrNull ?? [],
-      certificates: _mockCertificates(),
+      certificates: certificates.valueOrNull ?? [],
+      contributions: contributions,
     ));
-  }
-
-  List<CertificateModel> _mockCertificates() {
-    return [
-      CertificateModel(
-        id: '1',
-        certificateNumber: 'CERT-2024-001',
-        courseTitle: 'UI/UX Design Fundamentals',
-        instructorName: 'Alex Johnson',
-        issueDate: DateTime(2024, 4, 20),
-      ),
-      CertificateModel(
-        id: '2',
-        certificateNumber: 'CERT-2024-002',
-        courseTitle: 'Design Thinking for Designers',
-        instructorName: 'David Chen',
-        issueDate: DateTime(2024, 4, 5),
-      ),
-      CertificateModel(
-        id: '3',
-        certificateNumber: 'CERT-2024-003',
-        courseTitle: 'Python từ cơ bản đến nâng cao',
-        instructorName: 'Nguyễn Minh Anh',
-        issueDate: DateTime(2024, 3, 15),
-      ),
-      CertificateModel(
-        id: '4',
-        certificateNumber: 'CERT-2024-004',
-        courseTitle: 'Lập trình Web với React',
-        instructorName: 'Trần Hoàng Nam',
-        issueDate: DateTime(2024, 2, 28),
-      ),
-    ];
   }
 
   void _onTabChanged(

@@ -21,7 +21,8 @@ import 'package:study/features/student/presentation/home/widgets/weekly_achievem
 import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
-import 'package:study/features/student/repository/student_repository_impl.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/section_header.dart';
 
@@ -355,7 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
         context,
         MaterialPageRoute<void>(
           builder: (_) => BlocProvider(
-            create: (_) => LessonBloc(StudentRepositoryImpl())
+            create: (_) => LessonBloc(diContainer<StudentRepository>())
               ..add(LessonStarted(item.lessonId!)),
             child: const LessonDetailScreen(),
           ),
@@ -366,7 +367,7 @@ class _HomeScreenState extends State<HomeScreen> {
         context,
         MaterialPageRoute<void>(
           builder: (_) => BlocProvider(
-            create: (_) => CourseDetailBloc(StudentRepositoryImpl())
+            create: (_) => CourseDetailBloc(diContainer<StudentRepository>())
               ..add(CourseDetailStarted(item.courseId!)),
             child: const CourseDetailScreen(),
           ),
@@ -385,7 +386,7 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
           create: (_) =>
-              CourseDetailBloc(StudentRepositoryImpl())
+              CourseDetailBloc(diContainer<StudentRepository>())
                 ..add(CourseDetailStarted(enrollmentId)),
           child: const CourseDetailScreen(),
         ),

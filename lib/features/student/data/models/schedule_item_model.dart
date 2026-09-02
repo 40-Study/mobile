@@ -13,6 +13,7 @@ abstract class ScheduleItemModel with _$ScheduleItemModel {
     @JsonKey(name: 'end_time') required DateTime endTime,
     @JsonKey(name: 'course_name') String? courseName,
     @JsonKey(name: 'course_id') String? courseId,
+    @JsonKey(name: 'class_id') String? classId,
     @JsonKey(name: 'lesson_id') String? lessonId,
     @JsonKey(name: 'instructor_name') String? instructorName,
     String? location,

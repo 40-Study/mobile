@@ -5,6 +5,8 @@ import 'package:study/features/student/presentation/achievement/certificate_deta
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
 
+// Certificate types for UI only (no in-progress from API)
+
 enum CertificateStatus { completed, inProgress }
 
 enum CertificateCategory { all, design, programming, business, language }
@@ -42,7 +44,9 @@ class CertificateData {
 }
 
 class AllCertificatesScreen extends StatefulWidget {
-  const AllCertificatesScreen({super.key});
+  const AllCertificatesScreen({super.key, required this.certificates});
+
+  final List<CertificateModel> certificates;
 
   @override
   State<AllCertificatesScreen> createState() => _AllCertificatesScreenState();
@@ -51,7 +55,7 @@ class AllCertificatesScreen extends StatefulWidget {
 class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
   CertificateCategory _selectedCategory = CertificateCategory.all;
 
-  late final List<CertificateData> _allCertificates = _generateMockData();
+  late final List<CertificateData> _allCertificates = _mapCertificates(widget.certificates);
 
   List<CertificateData> get _filteredCertificates {
     if (_selectedCategory == CertificateCategory.all) return _allCertificates;
@@ -322,104 +326,54 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
     }
   }
 
-  List<CertificateData> _generateMockData() {
-    return [
-      // Completed
-      CertificateData(
-        id: '1',
-        courseTitle: 'UI/UX Design Fundamentals',
-        instructorName: 'Alex Johnson',
-        status: CertificateStatus.completed,
-        category: CertificateCategory.design,
-        color: AchievementColors.purple,
-        certificateNumber: 'CERT-2024-001',
-        issueDate: DateTime(2024, 4, 20),
-        duration: '24 giờ',
-      ),
-      CertificateData(
-        id: '2',
-        courseTitle: 'Design Thinking for Designers',
-        instructorName: 'David Chen',
-        status: CertificateStatus.completed,
-        category: CertificateCategory.design,
-        color: AchievementColors.lightBlue,
-        certificateNumber: 'CERT-2024-002',
-        issueDate: DateTime(2024, 4, 5),
-        duration: '18 giờ',
-      ),
-      CertificateData(
-        id: '3',
-        courseTitle: 'Python từ cơ bản đến nâng cao',
-        instructorName: 'Nguyễn Minh Anh',
-        status: CertificateStatus.completed,
-        category: CertificateCategory.programming,
-        color: AchievementColors.blue,
-        certificateNumber: 'CERT-2024-003',
-        issueDate: DateTime(2024, 3, 15),
-        duration: '40 giờ',
-      ),
-      CertificateData(
-        id: '4',
-        courseTitle: 'Lập trình Web với React',
-        instructorName: 'Trần Hoàng Nam',
-        status: CertificateStatus.completed,
-        category: CertificateCategory.programming,
-        color: AchievementColors.green,
-        certificateNumber: 'CERT-2024-004',
-        issueDate: DateTime(2024, 2, 28),
-        duration: '36 giờ',
-      ),
-
-      // In Progress
-      const CertificateData(
-        id: '5',
-        courseTitle: 'Flutter & Dart Complete Course',
-        instructorName: 'Sarah Wilson',
-        status: CertificateStatus.inProgress,
-        category: CertificateCategory.programming,
-        color: AchievementColors.violet,
-        progress: 0.72,
-        totalLessons: 120,
-        completedLessons: 86,
-        duration: '48 giờ',
-      ),
-      const CertificateData(
-        id: '6',
-        courseTitle: 'Digital Marketing Masterclass',
-        instructorName: 'Michael Brown',
-        status: CertificateStatus.inProgress,
-        category: CertificateCategory.business,
-        color: AchievementColors.orange,
-        progress: 0.45,
-        totalLessons: 80,
-        completedLessons: 36,
-        duration: '32 giờ',
-      ),
-      const CertificateData(
-        id: '7',
-        courseTitle: 'Figma UI Design Essential',
-        instructorName: 'Emma Davis',
-        status: CertificateStatus.inProgress,
-        category: CertificateCategory.design,
-        color: AchievementColors.pink,
-        progress: 0.28,
-        totalLessons: 60,
-        completedLessons: 17,
-        duration: '20 giờ',
-      ),
-      const CertificateData(
-        id: '8',
-        courseTitle: 'English for Business Communication',
-        instructorName: 'John Smith',
-        status: CertificateStatus.inProgress,
-        category: CertificateCategory.language,
-        color: AchievementColors.red,
-        progress: 0.60,
-        totalLessons: 50,
-        completedLessons: 30,
-        duration: '25 giờ',
-      ),
+  List<CertificateData> _mapCertificates(List<CertificateModel> certificates) {
+    final colors = [
+      AchievementColors.purple,
+      AchievementColors.lightBlue,
+      AchievementColors.blue,
+      AchievementColors.green,
+      AchievementColors.violet,
+      AchievementColors.orange,
+      AchievementColors.pink,
+      AchievementColors.red,
     ];
+
+    return certificates.asMap().entries.map((entry) {
+      final i = entry.key;
+      final cert = entry.value;
+
+      // Map category từ course title
+      final category = _mapCategory(cert.courseTitle ?? '');
+
+      return CertificateData(
+        id: cert.id,
+        courseTitle: cert.courseTitle ?? '',
+        instructorName: cert.instructorName ?? '',
+        status: CertificateStatus.completed,
+        category: category,
+        color: colors[i % colors.length],
+        certificateNumber: cert.certificateNumber,
+        issueDate: cert.issueDate,
+      );
+    }).toList();
+  }
+
+  CertificateCategory _mapCategory(String title) {
+    final lower = title.toLowerCase();
+    if (lower.contains('design') || lower.contains('ui') || lower.contains('ux') || lower.contains('figma')) {
+      return CertificateCategory.design;
+    }
+    if (lower.contains('python') || lower.contains('react') || lower.contains('flutter') ||
+        lower.contains('dart') || lower.contains('web') || lower.contains('programming')) {
+      return CertificateCategory.programming;
+    }
+    if (lower.contains('business') || lower.contains('marketing') || lower.contains('kinh doanh')) {
+      return CertificateCategory.business;
+    }
+    if (lower.contains('english') || lower.contains('tiếng') || lower.contains('language')) {
+      return CertificateCategory.language;
+    }
+    return CertificateCategory.programming;
   }
 }
 

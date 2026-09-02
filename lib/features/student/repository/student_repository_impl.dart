@@ -1,140 +1,206 @@
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:study/core/error/failures.dart';
 import 'package:study/core/error/result.dart';
+import 'package:study/features/auth/repository/auth_repository.dart';
+import 'package:study/features/course/data/course_api_client.dart';
+import 'package:study/features/course/data/models/certificate_model.dart';
 import 'package:study/features/course/data/models/course_model.dart';
 import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/student/data/models/models.dart';
+import 'package:study/features/student/data/student_api_client.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 
-/// Mock implementation — replace với real API client sau
 class StudentRepositoryImpl implements StudentRepository {
-  @override
-  Future<ApiResult<List<ScheduleItemModel>>> getTodaySchedule() async {
-    return getScheduleByDate(DateTime.now());
+  StudentRepositoryImpl({
+    required StudentApiClient studentApi,
+    required CourseApiClient courseApi,
+    required AuthRepository authRepository,
+  })  : _studentApi = studentApi,
+        _courseApi = courseApi,
+        _authRepository = authRepository;
+
+  final StudentApiClient _studentApi;
+  final CourseApiClient _courseApi;
+  final AuthRepository _authRepository;
+
+  Future<String?> _getCurrentUserId() async {
+    final user = await _authRepository.getSavedUser();
+    return user?.id;
   }
 
   @override
-  Future<ApiResult<List<ScheduleItemModel>>> getScheduleByDate(
-    DateTime date,
-  ) async {
-    // TODO: Wire up với real API
-    await Future<void>.delayed(const Duration(milliseconds: 500));
+  Future<ApiResult<List<ScheduleItemModel>>> getTodaySchedule() {
+    return getScheduleByDate(DateTime.now());
+  }
 
-    // Chỉ trả data cho những ngày có event (sync với _generateMockEventDates)
-    final now = DateTime.now();
-    final isToday = date.year == now.year &&
-        date.month == now.month &&
-        date.day == now.day;
-    final hasEvent = (date.day - 1) % 3 == 0 || isToday;
-
-    if (!hasEvent) {
-      return const Result.success([]);
+  List<dynamic> _extractList(dynamic data) {
+    if (data == null) return [];
+    if (data is List) return data;
+    if (data is Map) {
+      // Check common wrapper keys
+      for (final key in ['items', 'data', 'courses', 'enrollments', 'notifications', 'badges', 'certificates']) {
+        final nested = data[key];
+        if (nested is List) return nested;
+      }
+      // Handle Map with numeric string keys like {"0": ..., "1": ...}
+      if (data.keys.every((k) => int.tryParse(k.toString()) != null)) {
+        return data.values.toList();
+      }
     }
+    return [];
+  }
 
-    // Mock data
-    return Result.success([
-      ScheduleItemModel(
-        id: '1',
-        title: 'Toán cao cấp A1',
-        type: 'livestream',
-        startTime: date.copyWith(hour: 9, minute: 0),
-        endTime: date.copyWith(hour: 10, minute: 30),
-        courseName: 'Toán 10',
-        courseId: '1',
-        lessonId: 'lesson-1',
-        instructorName: 'Nguyễn Văn An',
-        location: 'Phòng A101',
-      ),
-      ScheduleItemModel(
-        id: '2',
-        title: 'Python cơ bản - Bài 2.3',
-        type: 'video',
-        startTime: date.copyWith(hour: 14, minute: 0),
-        endTime: date.copyWith(hour: 15, minute: 30),
-        courseName: 'Python cơ bản',
-        courseId: '1',
-        lessonId: 'lesson-2',
-        instructorName: 'Trần Minh Bình',
-      ),
-    ]);
+  // Flatten nested instructor/category to top-level fields for CourseModel
+  Map<String, dynamic> _normalizeCourse(Map<String, dynamic> json) {
+    final result = Map<String, dynamic>.from(json);
+    final instructor = json['instructor'];
+    if (instructor is Map) {
+      result['instructor_name'] ??= instructor['name'];
+      // API returns 'avatar', model expects 'instructor_avatar'
+      result['instructor_avatar'] ??= instructor['avatar'] ?? instructor['avatar_url'];
+    }
+    final category = json['category'];
+    if (category is Map) {
+      result['category_name'] ??= category['name'];
+    }
+    // Handle price as String from API
+    if (result['price'] is String) {
+      result['price'] = double.tryParse(result['price'] as String) ?? 0;
+    }
+    return result;
+  }
+
+  @override
+  Future<ApiResult<List<ScheduleItemModel>>> getScheduleByDate(DateTime date) async {
+    try {
+      final response = await _studentApi.getMyTimetable();
+      final entries = _extractList(response.data['data']?['entries']);
+
+      // Filter by day_of_week (0=Sunday, 1=Monday matching DateTime.weekday where 1=Monday, 7=Sunday)
+      final targetDayOfWeek = date.weekday == 7 ? 0 : date.weekday;
+      final filtered = entries.where((e) => e['day_of_week'] == targetDayOfWeek);
+
+      // Transform to ScheduleItemModel format
+      final items = filtered.map((e) {
+        final startTimeStr = e['start_time'] as String? ?? '00:00:00';
+        final endTimeStr = e['end_time'] as String? ?? '00:00:00';
+        final startParts = startTimeStr.split(':');
+        final endParts = endTimeStr.split(':');
+
+        return ScheduleItemModel(
+          id: e['schedule_id'] as String? ?? '',
+          title: e['class_name'] as String? ?? 'Class',
+          type: 'class',
+          classId: e['class_id'] as String?,
+          startTime: DateTime(date.year, date.month, date.day,
+            int.tryParse(startParts[0]) ?? 0, int.tryParse(startParts[1]) ?? 0),
+          endTime: DateTime(date.year, date.month, date.day,
+            int.tryParse(endParts[0]) ?? 0, int.tryParse(endParts[1]) ?? 0),
+          location: e['room'] as String?,
+        );
+      }).toList();
+
+      return Result.success(items);
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<Set<DateTime>>> getEventDates(DateTime month) async {
+    try {
+      // Get timetable to know which days have classes
+      final response = await _studentApi.getMyTimetable();
+      final entries = _extractList(response.data['data']?['entries']);
+
+      // Get all day_of_week values from timetable
+      final daysOfWeek = entries
+          .map((e) => e['day_of_week'] as int)
+          .toSet();
+
+      // Generate all dates in month that match those days
+      final dates = <DateTime>{};
+      final firstDay = DateTime(month.year, month.month, 1);
+      final lastDay = DateTime(month.year, month.month + 1, 0);
+
+      for (var d = firstDay; !d.isAfter(lastDay); d = d.add(const Duration(days: 1))) {
+        final dow = d.weekday == 7 ? 0 : d.weekday;
+        if (daysOfWeek.contains(dow)) {
+          dates.add(DateTime(d.year, d.month, d.day));
+        }
+      }
+
+      return Result.success(dates);
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
   }
 
   @override
   Future<ApiResult<List<AssignmentModel>>> getPendingAssignments() async {
-    await Future<void>.delayed(const Duration(milliseconds: 500));
+    try {
+      // Use enrollments to get pending assignments
+      final response = await _courseApi.getMyEnrollments(status: 'active');
+      final data = _extractList(response.data['data']);
 
-    return Result.success([
-      AssignmentModel(
-        id: '1',
-        title: 'Quiz: Biến và kiểu dữ liệu',
-        type: 'quiz',
-        courseName: 'Python cơ bản',
-        questionCount: 10,
-        dueDate: DateTime.now().add(const Duration(days: 2)),
-      ),
-      AssignmentModel(
-        id: '2',
-        title: 'Bài tập: Hàm số',
-        type: 'assignment',
-        courseName: 'Toán 10',
-        questionCount: 5,
-        dueDate: DateTime.now().add(const Duration(days: 5)),
-      ),
-    ]);
+      // Collect assignments from enrollments
+      final assignments = <AssignmentModel>[];
+      for (final enrollment in data) {
+        final assignmentList = enrollment['pending_assignments'] as List? ?? [];
+        assignments.addAll(
+          assignmentList.map((e) => AssignmentModel.fromJson(e as Map<String, dynamic>)),
+        );
+      }
+      return Result.success(assignments);
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  // Transform flat course_* fields to nested course object
+  Map<String, dynamic> _normalizeEnrollment(Map<String, dynamic> json) {
+    final result = Map<String, dynamic>.from(json);
+    // If no nested course but has course_* fields, build course object
+    if (result['course'] == null && result['course_id'] != null) {
+      result['course'] = {
+        'id': result['course_id'],
+        'title': result['course_title'],
+        'slug': result['course_slug'],
+        'thumbnail_url': result['course_thumbnail'],
+        'category_name': result['course_category'],
+      };
+    } else if (result['course'] is Map<String, dynamic>) {
+      // Normalize existing course (flatten instructor/category)
+      result['course'] = _normalizeCourse(result['course'] as Map<String, dynamic>);
+    }
+    return result;
   }
 
   @override
   Future<ApiResult<List<EnrollmentModel>>> getActiveEnrollments() async {
-    await Future<void>.delayed(const Duration(milliseconds: 500));
-
-    // Mock data
-    return Result.success([
-      EnrollmentModel(
-        id: '1',
-        status: 'active',
-        progressPercentage: 45,
-        completedLessons: 9,
-        totalLessons: 20,
-        lastAccessedAt: DateTime.now().subtract(const Duration(hours: 2)),
-        course: const CourseModel(
-          id: 'course-1',
-          title: 'Python từ cơ bản đến ứng dụng',
-          instructorName: 'Nguyễn Minh Anh',
-          categoryName: 'Lập trình',
-          totalLessons: 20,
-        ),
-      ),
-      EnrollmentModel(
-        id: '2',
-        status: 'active',
-        progressPercentage: 80,
-        completedLessons: 16,
-        totalLessons: 20,
-        lastAccessedAt: DateTime.now().subtract(const Duration(days: 1)),
-        course: const CourseModel(
-          id: 'course-2',
-          title: 'Toán tư duy lớp 10',
-          instructorName: 'Trần Hoàng Nam',
-          categoryName: 'Toán học',
-          totalLessons: 20,
-        ),
-      ),
-    ]);
+    try {
+      final response = await _courseApi.getMyEnrollments(status: 'active');
+      final list = _extractList(response.data['data']);
+      return Result.success(
+        list.map((e) => EnrollmentModel.fromJson(_normalizeEnrollment(e as Map<String, dynamic>))).toList(),
+      );
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
   }
 
   @override
   Future<ApiResult<EnrollmentModel?>> getContinueLearning() async {
     final result = await getActiveEnrollments();
-
     return result.when(
       success: (enrollments) {
         if (enrollments.isEmpty) return const Result.success(null);
-
-        // Sort by last accessed
         enrollments.sort((a, b) {
           final aTime = a.lastAccessedAt ?? DateTime(1970);
           final bTime = b.lastAccessedAt ?? DateTime(1970);
           return bTime.compareTo(aTime);
         });
-
         return Result.success(enrollments.first);
       },
       failure: Result.failure,
@@ -142,279 +208,282 @@ class StudentRepositoryImpl implements StudentRepository {
   }
 
   @override
-  Future<ApiResult<EnrollmentModel>> getCourseDetail(
-    String enrollmentId,
-  ) async {
-    await Future<void>.delayed(const Duration(milliseconds: 500));
+  Future<ApiResult<EnrollmentModel>> getCourseDetail(String enrollmentId) async {
+    try {
+      final response = await _courseApi.getEnrollment(enrollmentId);
+      final enrollmentJson = response.data['data'] as Map<String, dynamic>;
 
-    // Mock data với sections và lessons
-    return Result.success(
-      EnrollmentModel(
-        id: enrollmentId,
-        status: 'active',
-        progressPercentage: 45,
-        completedLessons: 9,
-        totalLessons: 20,
-        course: const CourseModel(
-          id: 'course-1',
-          title: 'Python cơ bản',
-          shortDescription: 'Học lập trình Python từ cơ bản đến nâng cao',
-          instructorName: 'Nguyễn Văn An',
-          totalLessons: 20,
-          totalSections: 4,
-          totalDurationMins: 480,
-          sections: [
-            SectionModel(
-              id: 'section-1',
-              title: 'Giới thiệu Python',
-              totalLessons: 5,
-              totalDurationMins: 100,
-              lessons: [
-                LessonModel(
-                  id: 'lesson-1',
-                  title: 'Python là gì?',
-                  durationMinutes: 15,
-                  contents: [
-                    LessonContentModel(id: 'c1-1', type: 'video', title: 'Giới thiệu về Python', duration: 300),
-                    LessonContentModel(id: 'c1-2', type: 'video', title: 'Lịch sử phát triển', duration: 240),
-                    LessonContentModel(id: 'c1-3', type: 'exercise', title: 'Bài tập kiểm tra', duration: 180),
-                  ],
-                  progress: LessonProgressModel(
-                    status: 'completed',
-                    progressPercentage: 100,
-                  ),
-                ),
-                LessonModel(
-                  id: 'lesson-2',
-                  title: 'Cài đặt môi trường',
-                  durationMinutes: 20,
-                  contents: [
-                    LessonContentModel(id: 'c2-1', type: 'video', title: 'Cài đặt Python trên Windows', duration: 360),
-                    LessonContentModel(id: 'c2-2', type: 'video', title: 'Cài đặt Python trên Mac', duration: 300),
-                    LessonContentModel(id: 'c2-3', type: 'article', title: 'Cấu hình IDE', duration: 240),
-                  ],
-                  progress: LessonProgressModel(
-                    status: 'completed',
-                    progressPercentage: 100,
-                  ),
-                ),
-                LessonModel(
-                  id: 'lesson-3',
-                  title: 'Hello World',
-                  durationMinutes: 10,
-                  contents: [
-                    LessonContentModel(id: 'c3-1', type: 'video', title: 'Chương trình đầu tiên', duration: 300),
-                    LessonContentModel(id: 'c3-2', type: 'exercise', title: 'Thực hành viết code', duration: 180),
-                  ],
-                  progress: LessonProgressModel(
-                    status: 'in_progress',
-                    progressPercentage: 50,
-                  ),
-                ),
-                LessonModel(
-                  id: 'lesson-4',
-                  title: 'Biến và hằng',
-                  durationMinutes: 25,
-                  contents: [
-                    LessonContentModel(id: 'c4-1', type: 'video', title: 'Khai báo biến', duration: 420),
-                    LessonContentModel(id: 'c4-2', type: 'video', title: 'Hằng số trong Python', duration: 300),
-                    LessonContentModel(id: 'c4-3', type: 'exercise', title: 'Bài tập về biến', duration: 240),
-                  ],
-                ),
-                LessonModel(
-                  id: 'lesson-5',
-                  title: 'Kiểu dữ liệu',
-                  durationMinutes: 30,
-                  contents: [
-                    LessonContentModel(id: 'c5-1', type: 'video', title: 'Các kiểu dữ liệu cơ bản', duration: 480),
-                    LessonContentModel(id: 'c5-2', type: 'video', title: 'Ép kiểu dữ liệu', duration: 360),
-                    LessonContentModel(id: 'c5-3', type: 'exercise', title: 'Thực hành kiểu dữ liệu', duration: 300),
-                  ],
-                ),
-              ],
-            ),
-            SectionModel(
-              id: 'section-2',
-              title: 'Cấu trúc điều khiển',
-              totalLessons: 5,
-              totalDurationMins: 110,
-              lessons: [
-                LessonModel(
-                  id: 'lesson-6',
-                  title: 'If-else',
-                  durationMinutes: 20,
-                  contents: [
-                    LessonContentModel(id: 'c6-1', type: 'video', title: 'Câu lệnh if', duration: 360),
-                    LessonContentModel(id: 'c6-2', type: 'video', title: 'Câu lệnh if-else', duration: 300),
-                    LessonContentModel(id: 'c6-3', type: 'exercise', title: 'Bài tập if-else', duration: 240),
-                  ],
-                ),
-                LessonModel(
-                  id: 'lesson-7',
-                  title: 'Vòng lặp for',
-                  durationMinutes: 25,
-                  contents: [
-                    LessonContentModel(id: 'c7-1', type: 'video', title: 'Cú pháp vòng lặp for', duration: 420),
-                    LessonContentModel(id: 'c7-2', type: 'video', title: 'Range trong Python', duration: 300),
-                    LessonContentModel(id: 'c7-3', type: 'exercise', title: 'Thực hành vòng lặp', duration: 300),
-                  ],
-                ),
-                LessonModel(
-                  id: 'lesson-8',
-                  title: 'Vòng lặp while',
-                  durationMinutes: 20,
-                  contents: [
-                    LessonContentModel(id: 'c8-1', type: 'video', title: 'Cú pháp while', duration: 360),
-                    LessonContentModel(id: 'c8-2', type: 'exercise', title: 'Bài tập while', duration: 240),
-                  ],
-                ),
-                LessonModel(
-                  id: 'lesson-9',
-                  title: 'Break và continue',
-                  durationMinutes: 15,
-                  contents: [
-                    LessonContentModel(id: 'c9-1', type: 'video', title: 'Sử dụng break', duration: 240),
-                    LessonContentModel(id: 'c9-2', type: 'video', title: 'Sử dụng continue', duration: 240),
-                  ],
-                ),
-                LessonModel(
-                  id: 'lesson-10',
-                  title: 'Bài tập tổng hợp',
-                  durationMinutes: 30,
-                  contents: [
-                    LessonContentModel(id: 'c10-1', type: 'article', title: 'Hướng dẫn bài tập', duration: 300),
-                    LessonContentModel(id: 'c10-2', type: 'exercise', title: 'Bài tập 1: FizzBuzz', duration: 600),
-                    LessonContentModel(id: 'c10-3', type: 'exercise', title: 'Bài tập 2: Tìm số nguyên tố', duration: 600),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
+      // Fetch course detail with sections/lessons if courseId exists
+      final courseId = enrollmentJson['course_id'] as String?;
+      if (courseId != null) {
+        try {
+          final courseResponse = await _courseApi.getCourse(courseId);
+          final courseJson = courseResponse.data['data'] as Map<String, dynamic>?;
+          if (courseJson != null) {
+            // Normalize course to flatten instructor/category
+            enrollmentJson['course'] = _normalizeCourse(courseJson);
+          }
+        } catch (_) {
+          // Course fetch failed, continue with enrollment only
+        }
+      }
+
+      return Result.success(
+        EnrollmentModel.fromJson(_normalizeEnrollment(enrollmentJson)),
+      );
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
   }
 
   @override
   Future<ApiResult<LessonModel>> getLessonDetail(String lessonId) async {
-    await Future<void>.delayed(const Duration(milliseconds: 500));
+    try {
+      final response = await _courseApi.getLesson(lessonId);
+      final data = response.data['data'] as Map<String, dynamic>;
 
-    return Result.success(
-      LessonModel(
-        id: lessonId,
-        title: 'Python là gì?',
-        description:
-            'Tìm hiểu về ngôn ngữ lập trình Python và ứng dụng của nó trong phát triển phần mềm, khoa học dữ liệu, và trí tuệ nhân tạo.',
-        durationMinutes: 15,
-        contents: const [
-          LessonContentModel(
-            id: 'content-1',
-            type: 'video',
-            title: 'Giới thiệu tổng quan về Python',
-            videoUrl: 'https://example.com/video1.mp4',
-            duration: 300,
-          ),
-          LessonContentModel(
-            id: 'content-2',
-            type: 'video',
-            title: 'Lịch sử phát triển Python',
-            videoUrl: 'https://example.com/video2.mp4',
-            duration: 240,
-          ),
-          LessonContentModel(
-            id: 'content-3',
-            type: 'article',
-            title: 'Tài liệu tham khảo',
-            duration: 180,
-          ),
-          LessonContentModel(
-            id: 'content-4',
-            type: 'exercise',
-            title: 'Bài tập kiểm tra kiến thức',
-            duration: 300,
-          ),
-        ],
-        progress: const LessonProgressModel(
-          status: 'in_progress',
-          progressPercentage: 50,
-          videoWatchedSeconds: 450,
-        ),
-      ),
-    );
+      // Debug: check if API returns video content
+      debugPrint('Lesson API response: $data');
+      final contents = data['contents'] as List?;
+      if (contents != null) {
+        for (final c in contents) {
+          debugPrint('Content: type=${c['type']}, video_url=${c['video_url']}');
+        }
+      }
+
+      return Result.success(LessonModel.fromJson(data));
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
   }
 
   @override
   Future<ApiResult<void>> markLessonComplete(String lessonId) async {
-    await Future<void>.delayed(const Duration(milliseconds: 300));
-    return const Result.success(null);
+    try {
+      await _courseApi.updateLessonProgress(lessonId, {
+        'status': 'completed',
+        'progress_percentage': 100,
+      });
+      return const Result.success(null);
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<List<NotificationModel>>> getNotifications() async {
+    try {
+      final response = await _studentApi.getNotifications();
+      final list = _extractList(response.data['data']);
+      return Result.success(
+        list.map((e) => NotificationModel.fromJson(e as Map<String, dynamic>)).toList(),
+      );
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<int>> getUnreadNotificationCount() async {
+    try {
+      final response = await _studentApi.getUnreadCount();
+      final count = response.data['data']['count'] as int? ?? 0;
+      return Result.success(count);
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<void>> markNotificationRead(String id) async {
+    try {
+      await _studentApi.markRead(id);
+      return const Result.success(null);
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<void>> markAllNotificationsRead() async {
+    try {
+      await _studentApi.markAllRead();
+      return const Result.success(null);
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
   }
 
   @override
   Future<ApiResult<List<BadgeModel>>> getBadges() async {
-    await Future<void>.delayed(const Duration(milliseconds: 500));
+    try {
+      final response = await _studentApi.getMyAchievements();
+      final data = response.data['data'];
+      // Backend returns array directly, not nested under 'badges'
+      final list = _extractList(data);
+      return Result.success(
+        list.map((e) => BadgeModel.fromJson(e as Map<String, dynamic>)).toList(),
+      );
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
 
-    return Result.success([
-      BadgeModel(
-        id: '1',
-        name: 'Người mới bắt đầu',
-        description: 'Hoàn thành bài học đầu tiên',
-        isEarned: true,
-        earnedAt: DateTime.now().subtract(const Duration(days: 10)),
-        category: 'learning',
-      ),
-      BadgeModel(
-        id: '2',
-        name: 'Học sinh chăm chỉ',
-        description: 'Học 7 ngày liên tục',
-        isEarned: true,
-        earnedAt: DateTime.now().subtract(const Duration(days: 3)),
-        category: 'streak',
-      ),
-      const BadgeModel(
-        id: '3',
-        name: 'Master Python',
-        description: 'Hoàn thành khóa Python',
-        category: 'course',
-      ),
-      const BadgeModel(
-        id: '4',
-        name: 'Quiz Champion',
-        description: 'Đạt 100 điểm 5 bài quiz',
-        category: 'quiz',
-      ),
-      const BadgeModel(
-        id: '5',
-        name: 'Người học nhanh',
-        description: 'Hoàn thành 10 bài học trong 1 ngày',
-        category: 'speed',
-      ),
-      const BadgeModel(
-        id: '6',
-        name: 'Học sinh xuất sắc',
-        description: 'Hoàn thành 3 khóa học',
-        category: 'learning',
-      ),
-    ]);
+  @override
+  Future<ApiResult<List<CertificateModel>>> getCertificates() async {
+    try {
+      final response = await _courseApi.getMyCertificates();
+      final list = _extractList(response.data['data']);
+      return Result.success(
+        list.map((e) => CertificateModel.fromJson(e as Map<String, dynamic>)).toList(),
+      );
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
   }
 
   @override
   Future<ApiResult<StudentStatsModel>> getStats() async {
-    await Future<void>.delayed(const Duration(milliseconds: 500));
+    try {
+      // Get userId from auth to fetch public profile stats
+      final userId = await _getCurrentUserId();
+      if (userId == null) {
+        return const Result.success(StudentStatsModel());
+      }
+      final response = await _studentApi.getPublicProfile(userId);
+      final data = response.data['data'] as Map<String, dynamic>?;
+      if (data == null) {
+        return const Result.success(StudentStatsModel());
+      }
+      final stats = data['stats'] as Map<String, dynamic>?;
+      if (stats == null) {
+        return const Result.success(StudentStatsModel());
+      }
+      return Result.success(StudentStatsModel.fromJson(stats));
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
 
-    return const Result.success(
-      StudentStatsModel(
-        level: 5,
-        currentXp: 750,
-        nextLevelXp: 1000,
-        streakDays: 7,
-        totalCourses: 3,
-        completedCourses: 1,
-        totalLessons: 60,
-        completedLessons: 25,
-        totalQuizScore: 85.5,
-        totalStudyHours: 24.5,
-        weeklyStudyHours: [2.5, 3.0, 1.5, 4.0, 2.0, 5.5, 3.5],
-      ),
-    );
+  @override
+  Future<ApiResult<List<QuizQuestionModel>>> getQuizQuestions(String quizId) async {
+    try {
+      final response = await _studentApi.getQuizQuestions(quizId);
+      final list = _extractList(response.data['data']);
+      return Result.success(
+        list.map((e) => QuizQuestionModel.fromJson(e as Map<String, dynamic>)).toList(),
+      );
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<({List<QuizQuestionModel> questions, int timeLimitMinutes})>> startQuiz(String quizId) async {
+    try {
+      final response = await _studentApi.startQuiz(quizId);
+      final data = response.data['data'] as Map<String, dynamic>;
+      final list = _extractList(data['questions']);
+      final timeLimitMinutes = (data['time_limit_minutes'] as num?)?.toInt() ?? 10;
+      return Result.success((
+        questions: list.map((e) => QuizQuestionModel.fromJson(e as Map<String, dynamic>)).toList(),
+        timeLimitMinutes: timeLimitMinutes,
+      ));
+    } on DioException catch (e) {
+      final message = e.response?.data?['error'] as String? ??
+          e.response?.data?['message'] as String? ??
+          'Không thể bắt đầu quiz';
+      // Translate common errors
+      final displayMessage = switch (message) {
+        'max attempts reached' => 'Bạn đã hết lượt làm bài kiểm tra này',
+        _ => message,
+      };
+      return Result.failure(ServerFailure(message: displayMessage));
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<QuizSubmitResult>> submitQuiz(
+    String quizId,
+    List<Map<String, String>> answers,
+  ) async {
+    try {
+      final response = await _studentApi.submitQuiz(quizId, {'answers': answers});
+      return Result.success(
+        QuizSubmitResult.fromJson(response.data['data'] as Map<String, dynamic>),
+      );
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<List<QuizModel>>> getQuizzesByLesson(String lessonId) async {
+    try {
+      final response = await _studentApi.getQuizzesByLesson(lessonId);
+      final list = _extractList(response.data['data']);
+      return Result.success(
+        list.map((e) => QuizModel.fromJson(e as Map<String, dynamic>)).toList(),
+      );
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<List<CourseModel>>> searchCourses(String query) async {
+    try {
+      final response = await _studentApi.searchCourses(query: query);
+      final list = _extractList(response.data['data']);
+      return Result.success(
+        list.map((e) => CourseModel.fromJson(_normalizeCourse(e as Map<String, dynamic>))).toList(),
+      );
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<List<CourseModel>>> getAllCourses({int page = 1}) async {
+    try {
+      final response = await _courseApi.getCourses(page: page);
+      final list = _extractList(response.data['data']);
+      return Result.success(
+        list.map((e) => CourseModel.fromJson(_normalizeCourse(e as Map<String, dynamic>))).toList(),
+      );
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<List<ContributionModel>>> getContributions(String userId) async {
+    try {
+      final response = await _studentApi.getPublicProfile(userId);
+      final data = response.data['data'] as Map<String, dynamic>?;
+      if (data == null) return const Result.success([]);
+
+      final activityList = data['activity'] as List<dynamic>? ?? [];
+      final contributions = activityList
+          .map((e) => ContributionModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+
+      return Result.success(contributions);
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<String?>> getCourseIdFromClass(String classId) async {
+    try {
+      final response = await _studentApi.getClass(classId);
+      final courseId = response.data['data']?['course_id'] as String?;
+      return Result.success(courseId);
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
   }
 }

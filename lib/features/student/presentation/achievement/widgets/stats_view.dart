@@ -3,9 +3,14 @@ import 'package:study/features/student/data/models/models.dart';
 import 'package:study/theme/theme.dart';
 
 class StatsView extends StatelessWidget {
-  const StatsView({super.key, required this.stats});
+  const StatsView({
+    super.key,
+    required this.stats,
+    this.contributions = const [],
+  });
 
   final StudentStatsModel stats;
+  final List<ContributionModel> contributions;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +25,7 @@ class StatsView extends StatelessWidget {
           style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         AppSpacing.vGap12,
-        const _ContributionGrid(),
+        _ContributionGrid(contributions: contributions),
         AppSpacing.vGap24,
 
         // Stats grid
@@ -36,16 +41,17 @@ class StatsView extends StatelessWidget {
 }
 
 class _ContributionGrid extends StatelessWidget {
-  const _ContributionGrid();
+  const _ContributionGrid({this.contributions = const []});
+
+  final List<ContributionModel> contributions;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    // Generate mock data cho 12 tuần (84 ngày)
     final now = DateTime.now();
-    final contributions = _generateMockContributions(now);
+    final counts = _mapContributionsToCounts(contributions, now);
     final weeks = 12;
 
     return Container(
@@ -97,8 +103,8 @@ class _ContributionGrid extends StatelessWidget {
                       return Column(
                         children: List.generate(7, (dayIndex) {
                           final index = weekIndex * 7 + dayIndex;
-                          final level = index < contributions.length
-                              ? contributions[index]
+                          final level = index < counts.length
+                              ? counts[index]
                               : 0;
                           return _ContributionCell(level: level);
                         }),
@@ -179,17 +185,31 @@ class _ContributionGrid extends StatelessWidget {
     return months[month - 1];
   }
 
-  List<int> _generateMockContributions(DateTime now) {
-    // Mock data - random levels 0-4
-    final random = DateTime.now().millisecondsSinceEpoch;
-    return List.generate(84, (i) {
-      final seed = (random + i * 17) % 100;
-      if (seed < 30) return 0;
-      if (seed < 50) return 1;
-      if (seed < 70) return 2;
-      if (seed < 85) return 3;
-      return 4;
-    });
+  // Map API contributions to 84-day grid (12 weeks)
+  List<int> _mapContributionsToCounts(List<ContributionModel> data, DateTime now) {
+    if (data.isEmpty) return List.filled(84, 0);
+
+    final result = List.filled(84, 0);
+    final startDate = now.subtract(const Duration(days: 83));
+
+    for (final item in data) {
+      final date = DateTime.tryParse(item.date);
+      if (date == null) continue;
+
+      final diff = date.difference(startDate).inDays;
+      if (diff >= 0 && diff < 84) {
+        // Map count to level 0-4
+        final level = switch (item.count) {
+          0 => 0,
+          1 => 1,
+          2 || 3 => 2,
+          4 || 5 => 3,
+          _ => 4,
+        };
+        result[diff] = level;
+      }
+    }
+    return result;
   }
 }
 

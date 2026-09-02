@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:study/core/utils/json_converters.dart';
 import 'package:study/features/course/data/models/course_model.dart';
 
 part 'enrollment_model.freezed.dart';
@@ -12,7 +13,7 @@ abstract class EnrollmentModel with _$EnrollmentModel {
     @JsonKey(name: 'course_id') String? courseId,
     CourseModel? course,
     String? status,
-    @JsonKey(name: 'progress_percentage') @Default(0) double progressPercentage,
+    @StringToDoubleConverter() @JsonKey(name: 'progress_percentage') @Default(0) double progressPercentage,
     @JsonKey(name: 'completed_lessons') @Default(0) int completedLessons,
     @JsonKey(name: 'total_lessons') @Default(0) int totalLessons,
     @JsonKey(name: 'last_accessed_at') DateTime? lastAccessedAt,
