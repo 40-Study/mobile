@@ -4,7 +4,7 @@ part 'child_model.freezed.dart';
 part 'child_model.g.dart';
 
 @freezed
-class ChildModel with _$ChildModel {
+abstract class ChildModel with _$ChildModel {
   const factory ChildModel({
     required String id,
     required String fullName,

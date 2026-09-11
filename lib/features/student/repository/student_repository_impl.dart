@@ -93,6 +93,9 @@ class StudentRepositoryImpl implements StudentRepository {
           title: e['class_name'] as String? ?? 'Class',
           type: 'class',
           classId: e['class_id'] as String?,
+          courseId: e['course_id'] as String?,
+          lessonId: e['lesson_id'] as String?,
+          instructorName: e['instructor_name'] as String?,
           startTime: DateTime(date.year, date.month, date.day,
             int.tryParse(startParts[0]) ?? 0, int.tryParse(startParts[1]) ?? 0),
           endTime: DateTime(date.year, date.month, date.day,
@@ -452,6 +455,19 @@ class StudentRepositoryImpl implements StudentRepository {
       final list = _extractList(response.data['data']);
       return Result.success(
         list.map((e) => CourseModel.fromJson(_normalizeCourse(e as Map<String, dynamic>))).toList(),
+      );
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<CourseModel>> getCourseById(String courseId) async {
+    try {
+      final response = await _courseApi.getCourse(courseId);
+      final data = response.data['data'] as Map<String, dynamic>;
+      return Result.success(
+        CourseModel.fromJson(_normalizeCourse(data)),
       );
     } catch (e) {
       return Result.failure(ServerFailure(message: e.toString()));

@@ -8,12 +8,13 @@ sealed class CourseDetailEvent extends Equatable {
 }
 
 final class CourseDetailStarted extends CourseDetailEvent {
-  const CourseDetailStarted(this.enrollmentId);
+  const CourseDetailStarted(this.id, {this.isEnrollment = true});
 
-  final String enrollmentId;
+  final String id;
+  final bool isEnrollment;
 
   @override
-  List<Object?> get props => [enrollmentId];
+  List<Object?> get props => [id, isEnrollment];
 }
 
 final class CourseDetailRefreshed extends CourseDetailEvent {

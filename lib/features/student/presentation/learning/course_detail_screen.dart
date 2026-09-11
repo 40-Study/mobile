@@ -335,6 +335,69 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final enrollment = state.enrollment;
+    final course = state.course;
+    // Check enrolled: có enrollment ID thực (không rỗng) = đã enroll
+    final isEnrolled = enrollment.id.isNotEmpty &&
+        enrollment.status != 'preview';
+
+    debugPrint('Enrollment id: ${enrollment.id}, status: ${enrollment.status}, isEnrolled: $isEnrolled');
+
+    // Non-enrolled: show enroll card
+    if (!isEnrolled) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [cs.primary, cs.primary.withValues(alpha: 0.8)],
+            ),
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      course?.isFree == true ? 'Miễn phí' : '${course?.price.toStringAsFixed(0) ?? 0}đ',
+                      style: tt.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    AppSpacing.vGap4,
+                    Text(
+                      '${course?.totalLessons ?? 0} bài học • ${course?.totalDurationMins ?? 0} phút',
+                      style: tt.bodySmall?.copyWith(color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+              FilledButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Chức năng đăng ký đang phát triển')),
+                  );
+                },
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: cs.primary,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.md,
+                  ),
+                ),
+                child: const Text('Đăng ký ngay'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Enrolled: show progress
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
     final nextLesson = _getNextLesson(state);
 
@@ -349,7 +412,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
         ),
         child: Row(
           children: [
-            // Progress info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -387,8 +449,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
               ),
             ),
             AppSpacing.hGap16,
-
-            // Continue button
             FilledButton(
               onPressed: () {
                 if (nextLesson != null) {

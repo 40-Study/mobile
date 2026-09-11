@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:study/features/course/data/models/course_model.dart';
 import 'package:study/features/course/data/models/enrollment_model.dart';
 
 enum EnrollmentFilter { all, inProgress, completed, upcoming }
@@ -21,11 +22,13 @@ final class LearningInProgress extends LearningState {
 final class LearningSuccess extends LearningState {
   const LearningSuccess({
     this.enrollments = const [],
+    this.recommendedCourses = const [],
     this.filter = EnrollmentFilter.all,
     this.searchQuery = '',
   });
 
   final List<EnrollmentModel> enrollments;
+  final List<CourseModel> recommendedCourses;
   final EnrollmentFilter filter;
   final String searchQuery;
 
@@ -52,15 +55,17 @@ final class LearningSuccess extends LearningState {
   }
 
   @override
-  List<Object?> get props => [enrollments, filter, searchQuery];
+  List<Object?> get props => [enrollments, recommendedCourses, filter, searchQuery];
 
   LearningSuccess copyWith({
     List<EnrollmentModel>? enrollments,
+    List<CourseModel>? recommendedCourses,
     EnrollmentFilter? filter,
     String? searchQuery,
   }) {
     return LearningSuccess(
       enrollments: enrollments ?? this.enrollments,
+      recommendedCourses: recommendedCourses ?? this.recommendedCourses,
       filter: filter ?? this.filter,
       searchQuery: searchQuery ?? this.searchQuery,
     );

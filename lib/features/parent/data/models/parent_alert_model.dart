@@ -7,7 +7,7 @@ enum AlertSeverity { critical, warning, info }
 enum AlertType { missedClass, lowScore, courseExpiring, completed }
 
 @freezed
-class ParentAlertModel with _$ParentAlertModel {
+abstract class ParentAlertModel with _$ParentAlertModel {
   const factory ParentAlertModel({
     required String id,
     required AlertType type,

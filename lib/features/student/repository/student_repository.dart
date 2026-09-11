@@ -48,6 +48,7 @@ abstract class StudentRepository {
 
   // Courses
   Future<ApiResult<List<CourseModel>>> getAllCourses({int page = 1});
+  Future<ApiResult<CourseModel>> getCourseById(String courseId);
 
   // Contributions (activity grid)
   Future<ApiResult<List<ContributionModel>>> getContributions(String userId);

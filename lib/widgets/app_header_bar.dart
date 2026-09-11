@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:study/widgets/cached_avatar.dart';
 
 class AppHeaderBar extends StatelessWidget implements PreferredSizeWidget {
@@ -40,10 +41,15 @@ class AppHeaderBar extends StatelessWidget implements PreferredSizeWidget {
     final subtitleColor = cs.onSurface.withValues(alpha: 0.6);
     final leadingBg = leadingBackgroundColor ?? cs.surfaceContainerHighest;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return AppBar(
       backgroundColor: backgroundColor ?? Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
+      systemOverlayStyle: isDark
+          ? SystemUiOverlayStyle.light
+          : SystemUiOverlayStyle.dark,
       leadingWidth: showBackButton || showLeadingAvatar ? 56 : null,
       leading: showBackButton
           ? IconButton(

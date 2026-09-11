@@ -4,7 +4,7 @@ part 'child_overview_model.freezed.dart';
 part 'child_overview_model.g.dart';
 
 @freezed
-class ChildOverviewModel with _$ChildOverviewModel {
+abstract class ChildOverviewModel with _$ChildOverviewModel {
   const factory ChildOverviewModel({
     required String childId,
     @Default(0) double progressPercent,

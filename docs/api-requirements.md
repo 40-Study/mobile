@@ -33,7 +33,54 @@ Query params: `page`, `page_size`, `category_id`, `level`, `search`, `sort_by`, 
 ```
 
 ### GET /api/courses/{id}
-Chi tiết khóa học
+Chi tiết khóa học (public view)
+
+**⚠️ SECURITY REQUIREMENT:**
+
+API này cần phân biệt response cho enrolled vs non-enrolled users:
+
+**Non-enrolled users** chỉ được xem:
+- Course info (title, description, price, instructor, etc.)
+- Section/lesson structure (titles only)
+- Preview lessons (`is_preview: true`)
+
+**KHÔNG được trả về:**
+- `video_url` của lessons (trừ preview)
+- Quiz content/questions
+- Full lesson content
+
+**Enrolled users** (qua `/api/enrollments/{id}`) mới được xem full content.
+
+```json
+// Non-enrolled response
+{
+  "data": {
+    "id": "course-1",
+    "title": "Flutter từ cơ bản",
+    "price": 500000,
+    "sections": [
+      {
+        "id": "section-1",
+        "title": "Giới thiệu",
+        "lessons": [
+          {
+            "id": "lesson-1",
+            "title": "Bài 1: Setup",
+            "is_preview": true,
+            "video_url": "https://..." // chỉ preview lessons có URL
+          },
+          {
+            "id": "lesson-2",
+            "title": "Bài 2: Widgets",
+            "is_preview": false,
+            "video_url": null // non-preview không có URL
+          }
+        ]
+      }
+    ]
+  }
+}
+```
 
 ---
 
@@ -319,6 +366,77 @@ Query params: `query`
 | In-Progress Certificates | Courses đang học với progress | |
 | Badge Progress | Progress toward next badge | |
 | Sparkline Data | Trend data cho mỗi stat | |
+| Pending Assignments | `pending_assignments` trong enrollment response | `home_screen.dart` - section "Bài tập cần hoàn thành" |
+
+---
+
+## ⚠️ Hardcoded Data trong Frontend
+
+Các giá trị đang hardcode trong code, cần backend trả về:
+
+### 1. `course_detail_screen.dart` - Tab Giảng viên
+
+| Line | Hardcoded Value | Cần field |
+|------|-----------------|-----------|
+| 729 | `'4.9'` (rating) | `instructor.average_rating` |
+| 731 | `'12 khóa học • 15k học viên'` | `instructor.course_count`, `instructor.student_count` |
+| 748 | `'12'` (courses) | `instructor.course_count` |
+| 750 | `'4.8'` (rating) | `instructor.average_rating` |
+| 752 | `'15k'` (students) | `instructor.student_count` |
+
+### 2. `instructor_detail_screen.dart` - Trang giảng viên
+
+| Line | Hardcoded Value | Cần field |
+|------|-----------------|-----------|
+| 204 | `'UI/UX Design Instructor'` | `instructor.title` |
+| 214 | `'Chuyên gia thiết kế...'` | `instructor.short_bio` |
+| 252 | `'12'` (courses) | `instructor.course_count` |
+| 254 | `'2.4K'` (students) | `instructor.student_count` |
+| 256 | `'128'` (lessons) | `instructor.lesson_count` |
+| 258 | `'4.9'` (rating) | `instructor.average_rating` |
+| 277-279 | Bio dài `'Cô Minh Anh...'` | `instructor.bio` |
+| 310-315 | Skills array | `instructor.skills[]` |
+| 376 | Course title | API `/instructors/:id/courses` |
+| 455 | Review text | API `/instructors/:id/reviews` |
+| 827 | `'4.9'` (rating) | `instructor.average_rating` |
+| 839 | `'(128 đánh giá)'` | `instructor.total_reviews` |
+| 850-854 | Rating breakdown | `instructor.rating_distribution` |
+
+### 3. `learning_screen.dart`
+
+| Line | Hardcoded Value | Cần field |
+|------|-----------------|-----------|
+| 683 | `'Video'` content type | `lesson.content_type` hoặc detect từ `lesson.type` |
+
+### 4. `home/widgets/continue_learning_card.dart`
+
+| Line | Hardcoded Value | Cần field |
+|------|-----------------|-----------|
+| 170-173 | `'assets/images/python-course-cover.png'` | Dùng `course.thumbnailUrl` thay vì ảnh cố định |
+
+### 5. `achievement_screen.dart`
+
+| Line | Hardcoded Value | Cần field |
+|------|-----------------|-----------|
+| 561 | `'18'` (badge count) | FE cần pass `earnedBadges.length` hoặc API trả `total_badges` trong stats |
+| 652 | `[0.3, 0.5, 0.4, 0.7, 0.6, 0.8, 0.75]` | Sparkline trend data - cần API `/me/stats/trends` |
+| 892 | `[30, 45, 60, 50, 80, 105, 70]` fallback | API cần trả `weekly_study_hours` trong stats response |
+
+### 6. API fields trả 0/null
+
+| Field | Vị trí FE | Note |
+|-------|-----------|------|
+| `total_duration_mins` | learning_cards.dart:132, course_detail_screen.dart:372,531 | API cần tính tổng duration từ lessons |
+| `total_students` | course_detail_screen.dart:319 | Aggregate từ enrollments |
+| `average_rating` | course_detail_screen.dart:307,792 | Aggregate từ reviews |
+
+### Fix Priority
+
+1. **High**: `total_duration_mins` - hiển thị "0 phút" gây confuse
+2. **High**: Instructor stats trong course detail - user thấy ngay
+3. **High**: `ContinueLearningCard` thumbnail - home screen, user thấy đầu tiên
+4. **Medium**: Instructor detail screen - chỉ khi click vào
+5. **Low**: Content type "Video" - đúng hầu hết trường hợp
 
 ---
 
@@ -635,3 +753,143 @@ Query params: `period` (7d|30d|90d)
 - Bookmarks hiện dùng local storage, cần migrate sang server
 - Contribution grid cần track daily activity (lessons, quizzes, study time)
 - Badge progress cần định nghĩa badge criteria trong DB
+
+### Hardcode Issues
+
+- **total_duration_mins**: Backend cần tính `SUM(lessons.duration)` cho mỗi course/section
+- **Instructor stats**: Aggregate `COUNT(courses)`, `COUNT(enrollments)`, `AVG(reviews.rating)`
+- **Rating distribution**: `GROUP BY rating` từ reviews table
+- FE đang show placeholder data, gây misleading cho user
+
+### Missing API Fields
+
+- **pending_assignments**: FE cần API lấy bài tập chưa hoàn thành. Options:
+  1. `GET /me/assignments?status=pending` - API riêng cho user's assignments
+  2. `GET /assignments?enrolled=true&status=pending` - Filter theo enrolled courses
+  3. Thêm `pending_assignments` vào enrollment response (hiện tại FE đang expect field này nhưng API không trả)
+
+- **timetable course/lesson IDs**: `GET /me/timetable` cần trả thêm:
+  - `course_id` - để navigate đến course detail
+  - `lesson_id` - để navigate đến lesson detail
+  - `instructor_name` - hiển thị tên giảng viên
+  - FE đã sẵn sàng nhận các field này
+
+- **timetable cho tất cả courses**: Hiện `/me/timetable` chỉ trả schedule từ classes user join. Nhưng enrollment không link đến class → user enroll nhiều course nhưng chỉ thấy lịch 1 course.
+  - Option 1: Auto-add user vào class khi enroll course
+  - Option 2: Generate timetable từ course lessons (không qua class)
+  - Option 3: Thêm `class_id` vào enrollment và link khi enroll
+
+  **Backend Root Cause** (`schedule_repository.go:301-307`):
+  ```go
+  func GetStudentClassIDs(studentID uuid.UUID) ([]uuid.UUID, error) {
+      // Query từ bảng student_classes
+      Table("student_classes").Where("student_id = ?", studentID)
+  }
+  ```
+  - Timetable lấy từ `student_classes` table
+  - Enrollment lưu ở `enrollments` table
+  - 2 bảng KHÔNG liên kết → enroll course không tự động join class
+
+  **Fix suggestions:**
+  1. Enrollment service: khi enroll → insert vào `student_classes`
+  2. Hoặc modify `GetStudentClassIDs` để JOIN với enrollments:
+     ```go
+     // Lấy classes từ courses đã enroll
+     SELECT c.id FROM classes c
+     JOIN courses ON courses.id = c.course_id
+     JOIN enrollments e ON e.course_id = courses.id
+     WHERE e.user_id = ? AND e.status = 'active'
+     ```
+
+---
+
+## 10. Profile Tab - Hardcodes & Missing APIs
+
+### `settings_screen.dart`
+
+| Line | Hardcoded Value | Cần |
+|------|-----------------|-----|
+| 118 | `'24 MB'` cache size | Tính động từ system |
+| 129 | `'1.0.0'` version | Dùng `package_info` hoặc API `/app/version` |
+
+### `security_screen.dart` - Missing l10n
+
+| Line | Hardcoded Value | Cần |
+|------|-----------------|-----|
+| 642 | `'Không có thông tin'` | `l10n.noInfo` |
+| 652 | `'Vừa xong'` | `l10n.justNow` |
+| 653 | `'phút trước'` | `l10n.minutesAgo` |
+| 654 | `'giờ trước'` | `l10n.hoursAgo` |
+| 655 | `'Hôm qua'` | `l10n.yesterday` |
+| 656 | `'ngày trước'` | `l10n.daysAgo` |
+| 787 | `'Đã liên kết'` / `'Chưa liên kết'` | `l10n.linked` / `l10n.notLinked` |
+| 805 | `'Hủy'` / `'Liên kết'` | `l10n.unlink` / `l10n.link` |
+
+### `portfolio_screen.dart` - **Toàn bộ mock data**
+
+| Lines | Mock Data | Cần API |
+|-------|-----------|---------|
+| 20-33 | Profile info (name, title, location, bio...) | `GET /me/portfolio` |
+| 35-40 | Stats (years, projects, certificates) | Portfolio stats |
+| 69-94 | Projects array | `GET /me/portfolio/projects` |
+| 96-105 | Skills array | `GET /me/portfolio/skills` |
+| 107-116 | Experiences array | `GET /me/portfolio/experiences` |
+
+### Cần API mới: Portfolio
+
+**GET /api/me/portfolio**
+
+```json
+{
+  "data": {
+    "profile": {
+      "title": "UI/UX Designer",
+      "location": "Hà Nội, Việt Nam",
+      "website": "example.com",
+      "bio": "Mô tả về bản thân...",
+      "social_links": [
+        { "type": "linkedin", "url": "..." },
+        { "type": "github", "url": "..." }
+      ]
+    },
+    "stats": {
+      "years_experience": 3,
+      "projects_count": 18,
+      "certificates_count": 12,
+      "followers_count": 120
+    },
+    "projects": [
+      {
+        "id": "project-1",
+        "title": "EduFlow",
+        "subtitle": "Hệ thống quản lý học tập",
+        "description": "...",
+        "category": "UI/UX DESIGN",
+        "tool": "Figma",
+        "year": "2024",
+        "thumbnail_url": "..."
+      }
+    ],
+    "skills": [
+      { "name": "UI Design", "level": 5 },
+      { "name": "Figma", "level": 5 }
+    ],
+    "experiences": [
+      {
+        "id": "exp-1",
+        "position": "Senior UI/UX Designer",
+        "company": "Vela Creative Studio",
+        "start_date": "2022-03",
+        "end_date": null,
+        "description": "..."
+      }
+    ]
+  }
+}
+```
+
+**PUT /api/me/portfolio** - Update portfolio
+
+**POST /api/me/portfolio/projects** - Add project
+
+**DELETE /api/me/portfolio/projects/:id** - Delete project

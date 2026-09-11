@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/features/course/data/models/course_model.dart';
 import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
@@ -8,6 +9,7 @@ import 'package:study/features/student/bloc/learning/learning_event.dart';
 import 'package:study/features/student/bloc/learning/learning_state.dart';
 import 'package:study/features/student/presentation/learning/all_courses_screen.dart';
 import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
+import 'package:study/features/student/presentation/learning/explore_courses_screen.dart';
 import 'package:study/features/student/presentation/learning/widgets/learning_cards.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
 import 'package:study/features/student/presentation/search/search_screen.dart';
@@ -328,7 +330,10 @@ class _LearningScreenState extends State<LearningScreen> {
               child: SectionHeader(
                 title: 'Khóa học của tôi',
                 actionLabel: 'Xem tất cả',
-                onActionTap: () {},
+                onActionTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AllCoursesScreen()),
+                ),
               ),
             ),
           ),
@@ -418,38 +423,47 @@ class _LearningScreenState extends State<LearningScreen> {
             ),
 
           // Recommendations
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.screenPadding,
-                AppSpacing.xl,
-                AppSpacing.screenPadding,
-                AppSpacing.md,
-              ),
-              child: SectionHeader(
-                title: 'Gợi ý cho bạn',
-                actionLabel: 'Xem tất cả',
-                onActionTap: () {},
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 140,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.screenPadding,
+          if (state.recommendedCourses.isNotEmpty) ...[
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.screenPadding,
+                  AppSpacing.xl,
+                  AppSpacing.screenPadding,
+                  AppSpacing.md,
                 ),
-                physics: const BouncingScrollPhysics(),
-                itemCount: 4,
-                separatorBuilder: (_, _) => AppSpacing.hGap12,
-                itemBuilder: (context, index) {
-                  return _RecommendationCard(index: index);
-                },
+                child: SectionHeader(
+                  title: 'Gợi ý cho bạn',
+                  actionLabel: 'Xem tất cả',
+                  onActionTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ExploreCoursesScreen()),
+                  ),
+                ),
               ),
             ),
-          ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 180,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screenPadding,
+                  ),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: state.recommendedCourses.length > 6
+                      ? 6
+                      : state.recommendedCourses.length,
+                  separatorBuilder: (_, __) => AppSpacing.hGap12,
+                  itemBuilder: (context, index) {
+                    return _RecommendationCard(
+                      course: state.recommendedCourses[index],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
 
           // Bottom padding
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -763,29 +777,138 @@ class _RecentLearningItem extends StatelessWidget {
 // ============================================================================
 
 class _RecommendationCard extends StatelessWidget {
-  const _RecommendationCard({required this.index});
+  const _RecommendationCard({required this.course});
 
-  final int index;
+  final CourseModel course;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppRadius.md),
-      child: SizedBox(
-        width: 160,
-        height: 120,
-        child: Container(
-          color: cs.surfaceContainerLow,
-          child: Center(
-            child: Icon(
-              Icons.auto_stories_outlined,
-              color: cs.onSurfaceVariant,
-              size: 32,
+    return GestureDetector(
+      onTap: () => _navigateToCourse(context),
+      child: Container(
+        width: 200,
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.3)),
+          boxShadow: [
+            BoxShadow(
+              color: cs.shadow.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
-          ),
+          ],
         ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Thumbnail
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppRadius.md),
+              ),
+              child: AspectRatio(
+                aspectRatio: 16 / 9,
+                child: course.thumbnailUrl != null
+                    ? Image.network(
+                        course.thumbnailUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _Placeholder(),
+                      )
+                    : _Placeholder(),
+              ),
+            ),
+            // Content
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      course.title,
+                      style: tt.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        if (course.level != null) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: cs.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              course.level!,
+                              style: tt.labelSmall?.copyWith(
+                                color: cs.primary,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                        ],
+                        if (course.isFree)
+                          Text(
+                            'Miễn phí',
+                            style: tt.labelSmall?.copyWith(
+                              color: Colors.green,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          )
+                        else if (course.price > 0)
+                          Text(
+                            '${course.price.toStringAsFixed(0)}đ',
+                            style: tt.labelSmall?.copyWith(
+                              color: cs.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _navigateToCourse(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider(
+          create: (_) => CourseDetailBloc(diContainer<StudentRepository>())
+            ..add(CourseDetailStarted(course.id, isEnrollment: false)),
+          child: const CourseDetailScreen(),
+        ),
+      ),
+    );
+  }
+}
+
+class _Placeholder extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      color: cs.surfaceContainerHighest,
+      child: Center(
+        child: Icon(Icons.school_rounded, color: cs.outline, size: 24),
       ),
     );
   }

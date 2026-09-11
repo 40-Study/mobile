@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/account/account_cubit.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
-import 'package:study/features/auth/data/models/user_model.dart';
+import 'package:study/features/auth/bloc/profile/profile_cubit.dart';
+import 'package:study/features/auth/bloc/profile/profile_state.dart';
+import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/presentation/edit_profile_screen.dart';
 import 'package:study/features/auth/presentation/security_screen.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
@@ -25,46 +27,22 @@ class ProfileScreen extends StatelessWidget {
             body: Center(child: CircularProgressIndicator(strokeWidth: 2.5)),
           );
         }
-        return _ProfileContent(user: state.user);
+        return BlocProvider(
+          create: (_) => ProfileCubit(
+            authRepository: context.read<AuthRepository>(),
+          )..loadProfiles(),
+          child: _ProfileContent(user: state.user, activeProfile: state.activeProfile),
+        );
       },
     );
   }
 }
 
-class _ProfileContent extends StatefulWidget {
-  const _ProfileContent({required this.user});
+class _ProfileContent extends StatelessWidget {
+  const _ProfileContent({required this.user, this.activeProfile});
 
   final UserModel user;
-
-  @override
-  State<_ProfileContent> createState() => _ProfileContentState();
-}
-
-class _ProfileContentState extends State<_ProfileContent> {
-  int _selectedProfileIndex = 0;
-
-  // Mock profiles for demo
-  late final List<_ProfileData> _profiles = [
-    _ProfileData(
-      id: '1',
-      name: widget.user.fullName ?? 'User',
-      email: widget.user.email,
-      avatarUrl: widget.user.avatarUrl,
-      isPremium: true,
-    ),
-    const _ProfileData(
-      id: '2',
-      name: 'Minh Tran',
-      email: 'minh.tran@email.com',
-    ),
-    const _ProfileData(
-      id: '3',
-      name: 'An Tran',
-      email: 'an.tran@email.com',
-    ),
-  ];
-
-  _ProfileData get _currentProfile => _profiles[_selectedProfileIndex];
+  final ProfileModel? activeProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -89,18 +67,47 @@ class _ProfileContentState extends State<_ProfileContent> {
               AppSpacing.lg,
             ),
             child: _CurrentProfileCard(
-              profile: _currentProfile,
+              user: user,
+              activeProfile: activeProfile,
               onEditProfile: () => _navigateToEditProfile(context),
             ),
           ),
           AppSpacing.vGap8,
-          _SwitchProfileSection(
-            profiles: _profiles,
-            selectedIndex: _selectedProfileIndex,
-            onProfileSelected: (index) {
-              setState(() => _selectedProfileIndex = index);
+          // Role switching section từ API
+          BlocConsumer<ProfileCubit, ProfileState>(
+            listener: (context, state) {
+              if (state is ProfileSwitched && state.authResponse != null) {
+                // Update AuthBloc với profile mới
+                context.read<AuthBloc>().add(
+                  AuthProfileSwitched(state.authResponse!),
+                );
+              } else if (state is ProfileSwitchFailure) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              }
             },
-            onAddProfile: () {},
+            builder: (context, state) {
+              final profiles = switch (state) {
+                ProfileLoaded(:final profiles) => profiles,
+                ProfileSwitching(:final profiles) => profiles,
+                ProfileSwitched(:final profiles) => profiles,
+                ProfileSwitchFailure(:final profiles) => profiles,
+                _ => <ProfileModel>[],
+              };
+              if (profiles.length <= 1) return const SizedBox.shrink();
+              return _SwitchProfileSection(
+                profiles: profiles,
+                activeProfile: activeProfile,
+                isLoading: state is ProfileSwitching,
+                switchingId: state is ProfileSwitching
+                    ? state.switchingProfileId
+                    : null,
+                onProfileSelected: (profile) {
+                  context.read<ProfileCubit>().switchProfile(profile);
+                },
+              );
+            },
           ),
           AppSpacing.vGap16,
 
@@ -310,34 +317,17 @@ class _ProfileContentState extends State<_ProfileContent> {
 }
 
 // ============================================================
-// PROFILE DATA MODEL
-// ============================================================
-class _ProfileData {
-  const _ProfileData({
-    required this.id,
-    required this.name,
-    required this.email,
-    this.avatarUrl,
-    this.isPremium = false,
-  });
-
-  final String id;
-  final String name;
-  final String email;
-  final String? avatarUrl;
-  final bool isPremium;
-}
-
-// ============================================================
 // CURRENT PROFILE CARD
 // ============================================================
 class _CurrentProfileCard extends StatelessWidget {
   const _CurrentProfileCard({
-    required this.profile,
+    required this.user,
+    this.activeProfile,
     required this.onEditProfile,
   });
 
-  final _ProfileData profile;
+  final UserModel user;
+  final ProfileModel? activeProfile;
   final VoidCallback onEditProfile;
 
   @override
@@ -382,10 +372,10 @@ class _CurrentProfileCard extends StatelessWidget {
                   ),
                 ),
                 child: CachedAvatar(
-                  url: profile.avatarUrl,
+                  url: user.avatarUrl,
                   radius: 34,
                   backgroundColor: cs.primaryContainer,
-                  name: profile.name,
+                  name: user.fullName ?? 'User',
                 ),
               ),
               AppSpacing.hGap16,
@@ -395,49 +385,39 @@ class _CurrentProfileCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      profile.name,
+                      user.fullName ?? 'User',
                       style: tt.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     AppSpacing.vGap4,
                     Text(
-                      profile.email,
+                      user.email,
                       style: tt.bodySmall?.copyWith(
                         color: cs.onSurfaceVariant,
                       ),
                     ),
-                    AppSpacing.vGap8,
-                    // Premium badge
-                    if (profile.isPremium)
+                    if (activeProfile != null) ...[
+                      AppSpacing.vGap8,
+                      // Role badge
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AchievementColors.orange.withValues(alpha: 0.1),
+                          color: cs.primary.withValues(alpha: 0.1),
                           borderRadius: AppRadius.borderFull,
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.star_rounded,
-                              size: 14,
-                              color: AchievementColors.orange,
-                            ),
-                            AppSpacing.hGap4,
-                            Text(
-                              l10n.premium,
-                              style: tt.labelSmall?.copyWith(
-                                color: AchievementColors.orange,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          activeProfile!.displayName ?? activeProfile!.roleName,
+                          style: tt.labelSmall?.copyWith(
+                            color: cs.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
+                    ],
                   ],
                 ),
               ),
@@ -460,31 +440,25 @@ class _CurrentProfileCard extends StatelessWidget {
       ),
     );
   }
-
-  String _getInitials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.length >= 2) {
-      return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
-    }
-    return parts.first.substring(0, 2).toUpperCase();
-  }
 }
 
 // ============================================================
-// SWITCH PROFILE SECTION
+// SWITCH PROFILE SECTION (Role switching)
 // ============================================================
 class _SwitchProfileSection extends StatelessWidget {
   const _SwitchProfileSection({
     required this.profiles,
-    required this.selectedIndex,
+    this.activeProfile,
+    this.isLoading = false,
+    this.switchingId,
     required this.onProfileSelected,
-    required this.onAddProfile,
   });
 
-  final List<_ProfileData> profiles;
-  final int selectedIndex;
-  final ValueChanged<int> onProfileSelected;
-  final VoidCallback onAddProfile;
+  final List<ProfileModel> profiles;
+  final ProfileModel? activeProfile;
+  final bool isLoading;
+  final String? switchingId;
+  final ValueChanged<ProfileModel> onProfileSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -507,16 +481,17 @@ class _SwitchProfileSection extends StatelessWidget {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-            itemCount: profiles.length + 1,
-            separatorBuilder: (_, _) => AppSpacing.hGap12,
+            itemCount: profiles.length,
+            separatorBuilder: (_, __) => AppSpacing.hGap12,
             itemBuilder: (context, index) {
-              if (index == profiles.length) {
-                return _AddProfileCard(onTap: onAddProfile);
-              }
+              final profile = profiles[index];
+              final isSelected = activeProfile?.id == profile.id;
+              final isSwitching = switchingId == profile.id;
               return _ProfileSwitcherCard(
-                profile: profiles[index],
-                isSelected: index == selectedIndex,
-                onTap: () => onProfileSelected(index),
+                profile: profile,
+                isSelected: isSelected,
+                isLoading: isSwitching,
+                onTap: isLoading ? null : () => onProfileSelected(profile),
               );
             },
           ),
@@ -530,17 +505,20 @@ class _ProfileSwitcherCard extends StatelessWidget {
   const _ProfileSwitcherCard({
     required this.profile,
     required this.isSelected,
-    required this.onTap,
+    this.isLoading = false,
+    this.onTap,
   });
 
-  final _ProfileData profile;
+  final ProfileModel profile;
   final bool isSelected;
-  final VoidCallback onTap;
+  final bool isLoading;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final displayName = profile.displayName ?? profile.roleName;
 
     return GestureDetector(
       onTap: onTap,
@@ -571,13 +549,31 @@ class _ProfileSwitcherCard extends StatelessWidget {
           children: [
             Stack(
               children: [
-                CachedAvatar(
-                  url: profile.avatarUrl,
-                  radius: 28,
-                  backgroundColor: cs.primaryContainer,
-                  name: profile.name,
+                // Icon thay vì avatar vì đây là role, không phải user
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? cs.primary.withValues(alpha: 0.1)
+                        : cs.surfaceContainerHighest,
+                    shape: BoxShape.circle,
+                  ),
+                  child: isLoading
+                      ? const Center(
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : Icon(
+                          _getRoleIcon(profile.roleName),
+                          size: 28,
+                          color: isSelected ? cs.primary : cs.onSurfaceVariant,
+                        ),
                 ),
-                if (isSelected)
+                if (isSelected && !isLoading)
                   Positioned(
                     top: 0,
                     right: 0,
@@ -600,91 +596,33 @@ class _ProfileSwitcherCard extends StatelessWidget {
             ),
             AppSpacing.vGap8,
             Text(
-              profile.name,
+              displayName,
               style: tt.labelMedium?.copyWith(fontWeight: FontWeight.w600),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
             ),
-            Text(
-              profile.isPremium
-                  ? AppLocalizations.of(context)!.premium
-                  : AppLocalizations.of(context)!.student,
-              style: tt.labelSmall?.copyWith(
-                color: profile.isPremium
-                    ? AchievementColors.orange
-                    : cs.onSurfaceVariant,
+            if (profile.organizationName != null)
+              Text(
+                profile.organizationName!,
+                style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
           ],
         ),
       ),
     );
   }
 
-  String _getInitials(String name) {
-    final parts = name.trim().split(' ');
-    if (parts.length >= 2) {
-      return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
-    }
-    return parts.first.substring(0, 2).toUpperCase();
-  }
-}
-
-class _AddProfileCard extends StatelessWidget {
-  const _AddProfileCard({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-    final l10n = AppLocalizations.of(context)!;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 110,
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: cs.surface,
-          borderRadius: AppRadius.borderMd,
-          border: Border.all(
-            color: cs.outlineVariant.withValues(alpha: 0.5),
-            style: BorderStyle.solid,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: cs.outlineVariant,
-                  style: BorderStyle.solid,
-                ),
-              ),
-              child: Icon(
-                Icons.add,
-                color: cs.onSurfaceVariant,
-                size: 24,
-              ),
-            ),
-            AppSpacing.vGap8,
-            Text(
-              l10n.addProfile,
-              style: tt.labelMedium?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  IconData _getRoleIcon(String roleName) {
+    return switch (roleName.toUpperCase()) {
+      'TEACHER' => Icons.school_outlined,
+      'STUDENT' => Icons.person_outline,
+      'ADMIN' => Icons.admin_panel_settings_outlined,
+      'PARENT' => Icons.family_restroom_outlined,
+      _ => Icons.badge_outlined,
+    };
   }
 }
 

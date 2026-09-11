@@ -373,9 +373,64 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       );
+    } else if (item.classId != null) {
+      _navigateToClassCourse(context, item.classId!);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Mở: ${item.title}')),
+      );
+    }
+  }
+
+  Future<void> _navigateToClassCourse(BuildContext context, String classId) async {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final repo = diContainer<StudentRepository>();
+      final classResult = await repo.getCourseIdFromClass(classId);
+      if (!context.mounted) return;
+
+      final courseId = classResult.valueOrNull;
+      if (courseId == null) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không tìm thấy khóa học')),
+        );
+        return;
+      }
+
+      final enrollmentsResult = await repo.getActiveEnrollments();
+      if (!context.mounted) return;
+      Navigator.pop(context);
+
+      final enrollments = enrollmentsResult.valueOrNull ?? [];
+      final enrollment = enrollments.where((e) => e.courseId == courseId).firstOrNull;
+
+      if (enrollment != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+            builder: (_) => BlocProvider(
+              create: (_) => CourseDetailBloc(diContainer<StudentRepository>())
+                ..add(CourseDetailStarted(enrollment.id)),
+              child: const CourseDetailScreen(),
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Bạn chưa đăng ký khóa học này')),
+        );
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi: $e')),
       );
     }
   }
