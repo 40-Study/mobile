@@ -14,6 +14,7 @@ import 'package:flutter/material.dart' as _i409;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:study/data/bookmark_storage.dart' as _i830;
+import 'package:study/data/last_accessed_course_storage.dart' as _i340;
 import 'package:study/data/onboarding_storage.dart' as _i38;
 import 'package:study/data/theme_storage.dart' as _i1013;
 import 'package:study/di/di_app_module.dart' as _i183;
@@ -60,6 +61,9 @@ extension GetItInjectableX on _i174.GetIt {
       () => dIDataModule.onboardingStorage,
     );
     gh.lazySingleton<_i450.AuthStorage>(() => dIDataModule.authStorage);
+    gh.lazySingleton<_i340.LastAccessedCourseStorage>(
+      () => dIDataModule.lastAccessedCourseStorage,
+    );
     gh.lazySingleton<_i785.SessionExpiredNotifier>(
       () => dIDataModule.sessionExpiredNotifier,
     );
@@ -105,6 +109,7 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i583.StudentApiClient>(),
         gh<_i511.CourseApiClient>(),
         gh<_i584.AuthRepository>(),
+        gh<_i340.LastAccessedCourseStorage>(),
       ),
     );
     return this;

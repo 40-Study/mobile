@@ -43,9 +43,34 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
     BuildContext context,
     LessonModel lesson,
     List<LessonModel> allLessons,
-  ) {
+    List<SectionModel> sections,
+  ) async {
     final index = allLessons.indexWhere((l) => l.id == lesson.id);
-    Navigator.of(context).push(
+
+    // Check bài trước đã hoàn thành chưa
+    if (index > 0) {
+      final prevLesson = allLessons[index - 1];
+      final prevCompleted = prevLesson.progress?.status == 'completed';
+      if (!prevCompleted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bạn cần hoàn thành bài học trước để mở khoá bài này'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+    }
+    // Find section and lesson index within section
+    final sectionIndex = sections.indexWhere(
+      (s) => s.lessons?.any((l) => l.id == lesson.id) ?? false,
+    );
+    final sectionNumber = sectionIndex >= 0 ? sectionIndex + 1 : 1;
+    final lessonInSection = sectionIndex >= 0
+        ? (sections[sectionIndex].lessons?.indexWhere((l) => l.id == lesson.id) ?? 0) + 1
+        : 1;
+
+    await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
           create: (_) => LessonBloc(diContainer<StudentRepository>())
@@ -53,17 +78,28 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
           child: LessonDetailScreen(
             currentIndex: index >= 0 ? index : 0,
             totalLessons: allLessons.length,
+            sectionNumber: sectionNumber,
+            lessonInSection: lessonInSection,
             onNavigate: (direction) {
               final newIndex = (index >= 0 ? index : 0) + direction;
               if (newIndex >= 0 && newIndex < allLessons.length) {
                 Navigator.of(context).pop();
-                _navigateToLesson(context, allLessons[newIndex], allLessons);
+                _navigateToLesson(
+                  context,
+                  allLessons[newIndex],
+                  allLessons,
+                  sections,
+                );
               }
             },
           ),
         ),
       ),
     );
+    // Refresh enrollment data sau khi quay lại
+    if (context.mounted) {
+      context.read<CourseDetailBloc>().add(const CourseDetailRefreshed());
+    }
   }
 
   @override
@@ -455,7 +491,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                   final allLessons = state.sections
                       .expand((s) => s.lessons ?? <LessonModel>[])
                       .toList();
-                  _navigateToLesson(context, nextLesson, allLessons);
+                  _navigateToLesson(context, nextLesson, allLessons, state.sections);
                 }
               },
               style: FilledButton.styleFrom(
@@ -590,26 +626,23 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
         AppSpacing.vGap12,
 
         // Preview lessons
-        ...state.sections
-            .expand((s) => s.lessons ?? <LessonModel>[])
-            .take(5)
-            .toList()
-            .asMap()
-            .entries
-            .map((entry) {
-          final index = entry.key;
-          final lesson = entry.value;
-          return _LessonPreviewItem(
-            index: index,
-            lesson: lesson,
-            onTap: () {
-              final allLessons = state.sections
-                  .expand((s) => s.lessons ?? <LessonModel>[])
-                  .toList();
-              _navigateToLesson(context, lesson, allLessons);
-            },
-          );
-        }),
+        ...() {
+          final allLessons = state.sections
+              .expand((s) => s.lessons ?? <LessonModel>[])
+              .toList();
+          return allLessons.take(5).toList().asMap().entries.map((entry) {
+            final index = entry.key;
+            final lesson = entry.value;
+            final isLocked = index > 0 &&
+                allLessons[index - 1].progress?.status != 'completed';
+            return _LessonPreviewItem(
+              index: index,
+              lesson: lesson,
+              isLocked: isLocked,
+              onTap: () => _navigateToLesson(context, lesson, allLessons, state.sections),
+            );
+          });
+        }(),
 
         AppSpacing.vGap32,
       ],
@@ -651,21 +684,28 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
         AppSpacing.vGap12,
 
         // Sections (Buổi)
-        ...state.sections.asMap().entries.map((entry) {
-          final sectionIndex = entry.key;
-          final section = entry.value;
-          return SectionCard(
-            sectionIndex: sectionIndex,
-            section: section,
-            isExpanded: state.expandedSections.contains(section.id),
-            onToggle: () {
-              context.read<CourseDetailBloc>().add(
-                CourseDetailSectionToggled(section.id),
-              );
-            },
-            onLessonTap: (lesson) => _navigateToLesson(context, lesson, allLessons),
-          );
-        }),
+        ...() {
+          int globalIndex = 0;
+          return state.sections.asMap().entries.map((entry) {
+            final sectionIndex = entry.key;
+            final section = entry.value;
+            final startIndex = globalIndex;
+            globalIndex += section.lessons?.length ?? 0;
+            return SectionCard(
+              sectionIndex: sectionIndex,
+              section: section,
+              isExpanded: state.expandedSections.contains(section.id),
+              allLessons: allLessons,
+              globalStartIndex: startIndex,
+              onToggle: () {
+                context.read<CourseDetailBloc>().add(
+                  CourseDetailSectionToggled(section.id),
+                );
+              },
+              onLessonTap: (lesson) => _navigateToLesson(context, lesson, allLessons, state.sections),
+            );
+          });
+        }(),
 
         AppSpacing.vGap32,
       ],
@@ -1013,11 +1053,13 @@ class _LessonPreviewItem extends StatelessWidget {
     required this.index,
     required this.lesson,
     required this.onTap,
+    this.isLocked = false,
   });
 
   final int index;
   final LessonModel lesson;
   final VoidCallback onTap;
+  final bool isLocked;
 
   @override
   Widget build(BuildContext context) {
@@ -1029,7 +1071,7 @@ class _LessonPreviewItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: InkWell(
-        onTap: onTap,
+        onTap: isLocked ? null : onTap,
         borderRadius: BorderRadius.circular(AppRadius.sm),
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.md),
@@ -1047,7 +1089,7 @@ class _LessonPreviewItem extends StatelessWidget {
           child: Row(
             children: [
               // Status icon
-              LessonStatusIcon(isCompleted: isCompleted, isInProgress: isInProgress),
+              LessonStatusIcon(isCompleted: isCompleted, isInProgress: isInProgress, isLocked: isLocked),
               AppSpacing.hGap12,
 
               // Info

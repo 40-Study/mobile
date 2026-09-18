@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:study/data/last_accessed_course_storage.dart';
 import 'package:study/data/onboarding_storage.dart';
 import 'package:study/data/theme_storage.dart';
 import 'package:study/di/di_container.dart';
@@ -19,6 +20,10 @@ abstract class DIDataModule {
   @lazySingleton
   AuthStorage get authStorage =>
       SharedPreferencesAuthStorage(diContainer.get<SharedPreferences>());
+
+  @lazySingleton
+  LastAccessedCourseStorage get lastAccessedCourseStorage =>
+      LastAccessedCourseStorage(diContainer.get<SharedPreferences>());
 
   @lazySingleton
   SessionExpiredNotifier get sessionExpiredNotifier => SessionExpiredNotifier();

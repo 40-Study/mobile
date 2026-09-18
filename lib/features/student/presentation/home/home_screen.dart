@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/data/daily_goals_storage.dart';
 import 'package:study/features/student/bloc/achievement/achievement_bloc.dart';
 import 'package:study/features/student/bloc/achievement/achievement_event.dart';
 import 'package:study/features/student/bloc/achievement/achievement_state.dart';
@@ -229,6 +230,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     enrollment: state.continueLearning!,
                     onContinueTap: () =>
                         _navigateToCourse(context, state.continueLearning!.id),
+                  )
+                else
+                  _ExploreCoursesCard(
+                    onTap: () => widget.onNavigateToTab?.call(1),
                   ),
               ],
             ),
@@ -285,23 +290,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   }).toList(),
                 ),
                 AppSpacing.vGap24,
-                if (state.continueLearning != null) ...[
-                  SectionHeader(
-                    title: 'Mục tiêu hôm nay',
-                    iconColor: cs.secondary,
-                  ),
-                  AppSpacing.vGap12,
-                  DailyGoalCard(
-                    enrollment: state.continueLearning!,
-                    onTap: () {
-                      context.read<ScheduleBloc>().add(
-                        ScheduleDateSelected(DateTime.now()),
-                      );
-                      widget.onNavigateToTab?.call(2);
-                    },
-                  ),
-                  AppSpacing.vGap24,
-                ],
+                SectionHeader(
+                  title: 'Mục tiêu hôm nay',
+                  iconColor: cs.secondary,
+                  actionLabel: 'Xem tất cả',
+                  onActionTap: () => widget.onNavigateToTab?.call(2),
+                ),
+                AppSpacing.vGap12,
+                _DailyGoalsCard(
+                  onTap: () => widget.onNavigateToTab?.call(2),
+                ),
+                AppSpacing.vGap24,
                 SectionHeader(
                   title: 'Bài tập cần hoàn thành',
                   iconColor: cs.tertiary,
@@ -350,9 +349,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _onScheduleItemTap(BuildContext context, ScheduleItemModel item) {
+  Future<void> _onScheduleItemTap(BuildContext context, ScheduleItemModel item) async {
     if (item.lessonId != null) {
-      Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute<void>(
           builder: (_) => BlocProvider(
@@ -363,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     } else if (item.courseId != null) {
-      Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute<void>(
           builder: (_) => BlocProvider(
@@ -374,11 +373,16 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     } else if (item.classId != null) {
-      _navigateToClassCourse(context, item.classId!);
+      await _navigateToClassCourse(context, item.classId!);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Mở: ${item.title}')),
       );
+      return;
+    }
+    // Refresh home data khi quay về
+    if (context.mounted) {
+      context.read<HomeBloc>().add(const HomeRefreshed());
     }
   }
 
@@ -411,7 +415,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final enrollment = enrollments.where((e) => e.courseId == courseId).firstOrNull;
 
       if (enrollment != null) {
-        Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute<void>(
             builder: (_) => BlocProvider(
@@ -435,8 +439,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _navigateToCourse(BuildContext context, String enrollmentId) {
-    Navigator.push(
+  Future<void> _navigateToCourse(BuildContext context, String enrollmentId) async {
+    await Navigator.push(
       context,
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
@@ -447,6 +451,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+    // Refresh home data khi quay về
+    if (context.mounted) {
+      context.read<HomeBloc>().add(const HomeRefreshed());
+    }
   }
 
   String _formatTimeRange(DateTime start, DateTime end) {
@@ -648,6 +656,206 @@ class _AchievementPlaceholder extends StatelessWidget {
                   ),
                 ),
                 Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DailyGoalsCard extends StatelessWidget {
+  const _DailyGoalsCard({this.onTap});
+
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final goalColor = cs.secondary;
+
+    final storage = DailyGoalsStorage.instance;
+    final goals = storage.getGoals(DateTime.now());
+    final (completed, total) = storage.getTodayProgress();
+    final progress = total > 0 ? completed / total : 0.0;
+
+    // Tìm goal chưa hoàn thành đầu tiên
+    final nextGoal = goals.where((g) => !g.isCompleted).firstOrNull;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        boxShadow: AppShadows.layeredCard,
+      ),
+      child: Material(
+        color: cs.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          side: BorderSide(color: cs.outline),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: goals.isEmpty
+                ? Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: goalColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                        ),
+                        child: Icon(Icons.flag_rounded, color: goalColor),
+                      ),
+                      AppSpacing.hGap16,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Chưa có mục tiêu',
+                              style: tt.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            AppSpacing.vGap4,
+                            Text(
+                              'Thêm mục tiêu để bắt đầu ngày mới!',
+                              style: tt.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.add_rounded, color: goalColor),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      SizedBox.square(
+                        dimension: 66,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            SizedBox.expand(
+                              child: CircularProgressIndicator(
+                                value: progress,
+                                color: goalColor,
+                                strokeWidth: 7,
+                                strokeCap: StrokeCap.round,
+                                backgroundColor: goalColor.withValues(alpha: 0.1),
+                              ),
+                            ),
+                            Text(
+                              '$completed/$total',
+                              style: tt.labelLarge?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      AppSpacing.hGap16,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              completed == total
+                                  ? 'Hoàn thành tất cả!'
+                                  : 'Còn ${total - completed} mục tiêu',
+                              style: tt.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            AppSpacing.vGap4,
+                            Text(
+                              nextGoal?.title ?? 'Tuyệt vời! Bạn đã hoàn thành.',
+                              style: tt.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      AppSpacing.hGap8,
+                      Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ExploreCoursesCard extends StatelessWidget {
+  const _ExploreCoursesCard({this.onTap});
+
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        boxShadow: AppShadows.layeredCard,
+      ),
+      child: Material(
+        color: cs.primaryContainer,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.card),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.card),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: cs.primary,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                  child: Icon(Icons.school_rounded, color: cs.onPrimary),
+                ),
+                AppSpacing.hGap16,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Bắt đầu học ngay!',
+                        style: tt.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: cs.onPrimaryContainer,
+                        ),
+                      ),
+                      AppSpacing.vGap4,
+                      Text(
+                        'Khám phá các khóa học phù hợp với bạn',
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.onPrimaryContainer.withValues(alpha: 0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.arrow_forward_rounded, color: cs.onPrimaryContainer),
               ],
             ),
           ),

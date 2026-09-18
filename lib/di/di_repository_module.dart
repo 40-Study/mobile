@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:study/data/bookmark_storage.dart';
+import 'package:study/data/last_accessed_course_storage.dart';
 import 'package:study/data/onboarding_storage.dart';
 import 'package:study/data/theme_storage.dart';
 import 'package:study/di/di_container.dart';
@@ -46,10 +47,12 @@ abstract class RepositoryModule {
     StudentApiClient studentApi,
     CourseApiClient courseApi,
     AuthRepository authRepository,
+    LastAccessedCourseStorage lastAccessedStorage,
   ) => StudentRepositoryImpl(
         studentApi: studentApi,
         courseApi: courseApi,
         authRepository: authRepository,
+        lastAccessedStorage: lastAccessedStorage,
       );
 
   @lazySingleton

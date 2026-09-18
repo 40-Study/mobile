@@ -62,7 +62,10 @@ class ContinueLearningCard extends StatelessWidget {
 
                     return Row(
                       children: [
-                        _CourseCover(size: imageSize),
+                        _CourseCover(
+                          size: imageSize,
+                          imageUrl: course?.thumbnailUrl,
+                        ),
                         AppSpacing.hGap16,
                         Expanded(
                           child: SizedBox(
@@ -152,9 +155,10 @@ class ContinueLearningCard extends StatelessWidget {
 }
 
 class _CourseCover extends StatelessWidget {
-  const _CourseCover({required this.size});
+  const _CourseCover({required this.size, this.imageUrl});
 
   final double size;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -167,10 +171,14 @@ class _CourseCover extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.asset(
-              'assets/images/python-course-cover.png',
-              fit: BoxFit.cover,
-            ),
+            if (imageUrl != null && imageUrl!.isNotEmpty)
+              Image.network(
+                imageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => _PlaceholderCover(cs: cs),
+              )
+            else
+              _PlaceholderCover(cs: cs),
             Center(
               child: Container(
                 width: 34,
@@ -189,6 +197,24 @@ class _CourseCover extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PlaceholderCover extends StatelessWidget {
+  const _PlaceholderCover({required this.cs});
+
+  final ColorScheme cs;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: cs.primaryContainer,
+      child: Icon(
+        Icons.school_rounded,
+        size: 32,
+        color: cs.primary,
       ),
     );
   }

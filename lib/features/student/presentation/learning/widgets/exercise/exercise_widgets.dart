@@ -314,6 +314,7 @@ class QuizCard extends StatefulWidget {
     required this.duration,
     required this.points,
     this.difficultyColor,
+    this.onComplete,
   });
 
   final String quizId;
@@ -324,6 +325,7 @@ class QuizCard extends StatefulWidget {
   final int questions;
   final int duration;
   final int points;
+  final VoidCallback? onComplete;
 
   @override
   State<QuizCard> createState() => _QuizCardState();
@@ -444,7 +446,8 @@ class _QuizCardState extends State<QuizCard> {
                         ),
                       ),
                     );
-                    _loadResult();
+                    await _loadResult();
+                    if (_result != null) widget.onComplete?.call();
                   },
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

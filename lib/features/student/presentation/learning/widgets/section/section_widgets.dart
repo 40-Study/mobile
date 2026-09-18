@@ -10,6 +10,8 @@ class SectionCard extends StatelessWidget {
     required this.isExpanded,
     required this.onToggle,
     required this.onLessonTap,
+    required this.allLessons,
+    required this.globalStartIndex,
   });
 
   final int sectionIndex;
@@ -17,6 +19,8 @@ class SectionCard extends StatelessWidget {
   final bool isExpanded;
   final VoidCallback onToggle;
   final void Function(LessonModel) onLessonTap;
+  final List<LessonModel> allLessons;
+  final int globalStartIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -129,10 +133,15 @@ class SectionCard extends StatelessWidget {
                 children: lessons.asMap().entries.map((entry) {
                   final lessonIndex = entry.key;
                   final lesson = entry.value;
+                  final globalIndex = globalStartIndex + lessonIndex;
+                  // Bài đầu tiên luôn mở, các bài sau phải chờ bài trước hoàn thành
+                  final isLocked = globalIndex > 0 &&
+                      allLessons[globalIndex - 1].progress?.status != 'completed';
                   return SectionLessonItem(
                     lessonIndex: lessonIndex,
                     lesson: lesson,
                     isLast: lessonIndex == lessons.length - 1,
+                    isLocked: isLocked,
                     onTap: () => onLessonTap(lesson),
                   );
                 }).toList(),
@@ -151,11 +160,13 @@ class SectionLessonItem extends StatefulWidget {
     required this.lesson,
     required this.isLast,
     required this.onTap,
+    this.isLocked = false,
   });
 
   final int lessonIndex;
   final LessonModel lesson;
   final bool isLast;
+  final bool isLocked;
   final VoidCallback onTap;
 
   @override
@@ -181,7 +192,7 @@ class _SectionLessonItemState extends State<SectionLessonItem> {
         InkWell(
           onTap: hasContents
               ? () => setState(() => _isExpanded = !_isExpanded)
-              : widget.onTap,
+              : widget.isLocked ? null : widget.onTap,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
             decoration: BoxDecoration(
@@ -192,7 +203,11 @@ class _SectionLessonItemState extends State<SectionLessonItem> {
             ),
             child: Row(
               children: [
-                LessonStatusIcon(isCompleted: isCompleted, isInProgress: isInProgress),
+                LessonStatusIcon(
+                  isCompleted: isCompleted,
+                  isInProgress: isInProgress,
+                  isLocked: widget.isLocked,
+                ),
                 AppSpacing.hGap12,
                 Expanded(
                   child: Column(
@@ -260,7 +275,7 @@ class _SectionLessonItemState extends State<SectionLessonItem> {
                 final content = entry.value;
                 final durationMins = (content.duration / 60).ceil();
                 return InkWell(
-                  onTap: widget.onTap,
+                  onTap: widget.isLocked ? null : widget.onTap,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
                     child: Row(
@@ -307,9 +322,15 @@ class _SectionLessonItemState extends State<SectionLessonItem> {
 }
 
 class LessonStatusIcon extends StatelessWidget {
-  const LessonStatusIcon({super.key, required this.isCompleted, required this.isInProgress});
+  const LessonStatusIcon({
+    super.key,
+    required this.isCompleted,
+    required this.isInProgress,
+    this.isLocked = false,
+  });
   final bool isCompleted;
   final bool isInProgress;
+  final bool isLocked;
 
   @override
   Widget build(BuildContext context) {
@@ -321,6 +342,18 @@ class LessonStatusIcon extends StatelessWidget {
         height: 28,
         decoration: BoxDecoration(color: cs.primary, shape: BoxShape.circle),
         child: Icon(Icons.check_rounded, color: cs.onPrimary, size: 16),
+      );
+    }
+
+    if (isLocked) {
+      return Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerHigh,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(Icons.lock_outline_rounded, color: cs.onSurfaceVariant, size: 14),
       );
     }
 
@@ -337,14 +370,15 @@ class LessonStatusIcon extends StatelessWidget {
       );
     }
 
+    // Bài chưa bắt đầu nhưng có thể truy cập
     return Container(
       width: 28,
       height: 28,
       decoration: BoxDecoration(
-        color: cs.surfaceContainerHigh,
+        color: cs.surfaceContainerHighest,
         shape: BoxShape.circle,
       ),
-      child: Icon(Icons.lock_outline_rounded, color: cs.onSurfaceVariant, size: 14),
+      child: Icon(Icons.play_arrow_rounded, color: cs.onSurfaceVariant, size: 16),
     );
   }
 }

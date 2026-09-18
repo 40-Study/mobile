@@ -46,6 +46,9 @@ class CourseDetailBloc extends Bloc<CourseDetailEvent, CourseDetailState> {
 
     result.when(
       success: (enrollment) {
+        // Lưu last accessed course
+        _repository.setLastAccessedCourse(enrollment.id);
+
         final firstSectionId = enrollment.course?.sections?.firstOrNull?.id;
         emit(CourseDetailSuccess(
           enrollment: enrollment,
