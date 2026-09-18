@@ -1,7 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/di/di_container.dart';
 import 'package:study/features/course/data/models/course_model.dart';
+import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/features/student/bloc/lesson/lesson_bloc.dart';
+import 'package:study/features/student/bloc/lesson/lesson_event.dart';
 import 'package:study/features/student/bloc/lesson/lesson_state.dart';
 import 'package:study/features/student/data/models/models.dart';
 import 'package:study/features/student/data/quiz_result_storage.dart';
@@ -15,11 +19,15 @@ class LessonDetailScreen extends StatefulWidget {
     super.key,
     this.currentIndex = 0,
     this.totalLessons = 1,
+    this.sectionNumber = 1,
+    this.lessonInSection = 1,
     this.onNavigate,
   });
 
   final int currentIndex;
   final int totalLessons;
+  final int sectionNumber;
+  final int lessonInSection;
   final void Function(int direction)? onNavigate;
 
   @override
@@ -29,6 +37,7 @@ class LessonDetailScreen extends StatefulWidget {
 class _LessonDetailScreenState extends State<LessonDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _videoWatched = false;
 
   @override
   void initState() {
@@ -42,11 +51,66 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
     super.dispose();
   }
 
+  Future<void> _markComplete(
+    String lessonId, {
+    List<List<int>>? playedRanges,
+    int? durationSeconds,
+  }) async {
+    final result = await diContainer<StudentRepository>().markLessonComplete(
+      lessonId,
+      playedRanges: playedRanges,
+      durationSeconds: durationSeconds,
+    );
+    result.when(
+      success: (courseCompleted) {
+        if (courseCompleted && mounted) {
+          _showCourseCompletedDialog();
+        }
+      },
+      failure: (_) {},
+    );
+  }
+
+  void _showCourseCompletedDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('🎉 Chúc mừng!'),
+        content: const Text(
+          'Bạn đã hoàn thành khoá học!\n\nChứng chỉ của bạn đã sẵn sàng.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pop(context); // Back to course
+            },
+            child: const Text('Đóng'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pop(context);
+              // TODO: Navigate to certificate screen
+            },
+            child: const Text('Xem chứng chỉ'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: BlocBuilder<LessonBloc, LessonState>(
+      body: BlocConsumer<LessonBloc, LessonState>(
+        listenWhen: (prev, curr) =>
+            curr is LessonSuccess &&
+            curr.courseCompleted &&
+            (prev is! LessonSuccess || !prev.courseCompleted),
+        listener: (context, state) => _showCourseCompletedDialog(),
         builder: (context, state) {
           return switch (state) {
             LessonInitial() || LessonInProgress() => const Center(
@@ -107,7 +171,17 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(context).size.height * 0.4,
           ),
-          child: LessonVideoPlayer(videoUrl: state.videoUrl),
+          child: LessonVideoPlayer(
+            videoUrl: state.videoUrl,
+            onProgressThreshold: (ranges, duration) {
+              _videoWatched = true;
+              _markComplete(
+                state.lesson.id,
+                playedRanges: ranges,
+                durationSeconds: duration,
+              );
+            },
+          ),
         ),
 
         // Tabs
@@ -196,11 +270,18 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
   }
 
   Widget _buildContentTab(BuildContext context, LessonSuccess state) {
-    final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final lesson = state.lesson;
     final contents = lesson.contents ?? [];
-    final progress = lesson.progress?.progressPercentage ?? 0;
+
+    // Tính duration từ content (giây)
+    final totalSeconds = contents.fold<int>(0, (sum, c) => sum + (c.duration));
+
+    String formatTime(int seconds) {
+      final m = seconds ~/ 60;
+      final s = seconds % 60;
+      return '$m:${s.toString().padLeft(2, '0')}';
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -209,11 +290,12 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
         children: [
           // Session info card
           _SessionInfoCard(
-            sessionNumber: 1,
+            sessionNumber: widget.sectionNumber,
+            lessonInSection: widget.lessonInSection,
             sessionTitle: lesson.title,
-            progress: progress,
-            currentTime: '${(lesson.durationMinutes * progress / 100).toStringAsFixed(0)}:00',
-            totalTime: '${lesson.durationMinutes}:00',
+            progress: state.isCompleted ? 100 : 0,
+            currentTime: state.isCompleted ? formatTime(totalSeconds) : '0:00',
+            totalTime: formatTime(totalSeconds),
           ),
           AppSpacing.vGap16,
 
@@ -371,11 +453,27 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
     final quizzes = state.quizzes;
     final total = quizzes.length;
 
+    // Nếu không có bài tập thì mặc định hoàn thành
+    if (total == 0) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ExerciseProgressCard(completed: 0, total: 0, percent: 100),
+            AppSpacing.vGap24,
+            _buildEmptyExercises(context),
+            AppSpacing.vGap32,
+          ],
+        ),
+      );
+    }
+
     return FutureBuilder<int>(
       future: _countCompletedQuizzes(quizzes),
       builder: (context, snapshot) {
         final completed = snapshot.data ?? 0;
-        final percent = total > 0 ? (completed / total * 100).round() : 0;
+        final percent = (completed / total * 100).round();
 
         return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -395,7 +493,11 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
               children: quizzes.asMap().entries.map((entry) {
                 final i = entry.key;
                 final quiz = entry.value;
-                return _QuizCardFromModel(index: i + 1, quiz: quiz);
+                return _QuizCardFromModel(
+                  index: i + 1,
+                  quiz: quiz,
+                  onComplete: () => _checkAllQuizzesComplete(state.lesson.id, quizzes),
+                );
               }).toList(),
             ),
 
@@ -420,11 +522,91 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
     return count;
   }
 
+  Future<void> _checkAllQuizzesComplete(String lessonId, List<QuizModel> quizzes) async {
+    if (quizzes.isEmpty) return;
+    final completed = await _countCompletedQuizzes(quizzes);
+    if (completed >= quizzes.length) {
+      _markComplete(lessonId);
+    }
+  }
+
+  Future<void> _onNextPressed(LessonSuccess state, bool hasNext) async {
+    // Check video chưa xem 80%
+    if (!_videoWatched && state.videoUrl != null) {
+      final confirm = await _showSkipVideoDialog();
+      if (confirm != true) return;
+    }
+
+    // Check quiz chưa làm
+    final quizzes = state.quizzes;
+    if (quizzes.isNotEmpty) {
+      final completed = await _countCompletedQuizzes(quizzes);
+      if (completed < quizzes.length) {
+        final confirm = await _showSkipQuizDialog(quizzes.length - completed);
+        if (confirm != true) return;
+      }
+    }
+
+    await _markComplete(state.lesson.id);
+    if (hasNext) widget.onNavigate?.call(1);
+  }
+
+  Future<bool?> _showSkipVideoDialog() {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Chưa xem hết video'),
+        content: const Text(
+          'Bạn chưa xem đủ 80% video bài học.\n\nBạn có chắc muốn qua bài tiếp theo?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx, false);
+              _tabController.animateTo(0); // Tab video index = 0
+            },
+            child: const Text('Xem tiếp'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Bỏ qua'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool?> _showSkipQuizDialog(int remaining) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Chưa hoàn thành bài tập'),
+        content: Text(
+          'Bạn còn $remaining bài tập chưa làm.\n\nBạn có chắc muốn qua bài tiếp theo?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx, false);
+              _tabController.animateTo(2); // Tab quiz index = 2
+            },
+            child: const Text('Làm bài tập'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Bỏ qua'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildEmptyExercises(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.xl),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
@@ -432,6 +614,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
         border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.quiz_outlined, size: 48, color: cs.onSurfaceVariant.withValues(alpha: 0.5)),
           AppSpacing.vGap16,
@@ -572,7 +755,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
           // Tiếp tục học / Bài tiếp theo
           Expanded(
             child: FilledButton(
-              onPressed: hasNext ? () => widget.onNavigate?.call(1) : null,
+              onPressed: () => _onNextPressed(state, hasNext),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                 shape: RoundedRectangleBorder(
@@ -615,6 +798,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
 class _SessionInfoCard extends StatelessWidget {
   const _SessionInfoCard({
     required this.sessionNumber,
+    required this.lessonInSection,
     required this.sessionTitle,
     required this.progress,
     required this.currentTime,
@@ -622,6 +806,7 @@ class _SessionInfoCard extends StatelessWidget {
   });
 
   final int sessionNumber;
+  final int lessonInSection;
   final String sessionTitle;
   final double progress;
   final String currentTime;
@@ -1198,10 +1383,15 @@ class _DocumentCard extends StatelessWidget {
 
 // Quiz card from API model - dùng QuizCard widget
 class _QuizCardFromModel extends StatelessWidget {
-  const _QuizCardFromModel({required this.index, required this.quiz});
+  const _QuizCardFromModel({
+    required this.index,
+    required this.quiz,
+    this.onComplete,
+  });
 
   final int index;
   final QuizModel quiz;
+  final VoidCallback? onComplete;
 
   @override
   Widget build(BuildContext context) {
@@ -1213,6 +1403,7 @@ class _QuizCardFromModel extends StatelessWidget {
       questions: quiz.questionCount ?? 0,
       duration: quiz.timeLimitMinutes ?? 10,
       points: 10,
+      onComplete: onComplete,
     );
   }
 }

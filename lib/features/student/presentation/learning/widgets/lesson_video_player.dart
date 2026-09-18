@@ -6,8 +6,16 @@ import 'package:study/theme/theme.dart';
 import 'package:video_player/video_player.dart';
 
 class LessonVideoPlayer extends StatefulWidget {
-  const LessonVideoPlayer({super.key, this.videoUrl});
+  const LessonVideoPlayer({
+    super.key,
+    this.videoUrl,
+    this.onProgressThreshold,
+    this.progressThreshold = 0.8,
+  });
   final String? videoUrl;
+  /// Called when threshold reached. Params: playedRanges, durationSeconds
+  final void Function(List<List<int>> playedRanges, int durationSeconds)? onProgressThreshold;
+  final double progressThreshold;
 
   @override
   State<LessonVideoPlayer> createState() => _LessonVideoPlayerState();
@@ -19,6 +27,12 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
   bool _isInitialized = false;
   String? _error;
   bool _usedFallback = false;
+  bool _thresholdTriggered = false;
+
+  // Track played ranges
+  final List<List<int>> _playedRanges = [];
+  int? _currentRangeStart;
+  bool _wasPlaying = false;
 
   // Fallback video khi URL chính lỗi
   static const _fallbackVideoUrl =
@@ -97,6 +111,9 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
         ),
       );
 
+      // Listen progress để trigger callback khi đạt threshold
+      controller.addListener(_onVideoProgress);
+
       if (mounted) {
         setState(() {
           _isInitialized = true;
@@ -104,11 +121,8 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
         });
       }
     } catch (e) {
-      debugPrint('Video init error: $e');
-
       // Try fallback nếu chưa dùng
       if (!useFallback && widget.videoUrl != null) {
-        debugPrint('Trying fallback video...');
         await _initializeVideo(useFallback: true);
         return;
       }
@@ -117,8 +131,46 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
     }
   }
 
+  void _onVideoProgress() {
+    final controller = _videoController;
+    if (controller == null || !controller.value.isInitialized) return;
+
+    final durationMs = controller.value.duration.inMilliseconds;
+    final positionMs = controller.value.position.inMilliseconds;
+    if (durationMs <= 0) return;
+
+    final isPlaying = controller.value.isPlaying;
+    final positionSec = controller.value.position.inSeconds;
+
+    // Track play/pause để build played ranges
+    if (isPlaying && !_wasPlaying) {
+      _currentRangeStart = positionSec;
+    } else if (!isPlaying && _wasPlaying && _currentRangeStart != null) {
+      _playedRanges.add([_currentRangeStart!, positionSec]);
+      _currentRangeStart = null;
+    }
+    _wasPlaying = isPlaying;
+
+    // Check threshold
+    if (_thresholdTriggered) return;
+    final progress = positionMs / durationMs;
+    if (progress >= widget.progressThreshold) {
+      _thresholdTriggered = true;
+      // Close current range nếu đang play
+      if (_currentRangeStart != null) {
+        _playedRanges.add([_currentRangeStart!, positionSec]);
+        _currentRangeStart = null;
+      }
+      widget.onProgressThreshold?.call(
+        List.from(_playedRanges),
+        controller.value.duration.inSeconds,
+      );
+    }
+  }
+
   @override
   void dispose() {
+    _videoController?.removeListener(_onVideoProgress);
     _videoController?.dispose();
     _chewieController?.dispose();
     super.dispose();

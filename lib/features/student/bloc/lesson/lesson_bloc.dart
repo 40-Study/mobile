@@ -9,7 +9,6 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
     on<LessonStarted>(_onStarted);
     on<LessonContentTabChanged>(_onTabChanged);
     on<LessonCompleted>(_onCompleted);
-    on<LessonVideoProgressUpdated>(_onVideoProgress);
   }
 
   final StudentRepository _repository;
@@ -62,15 +61,14 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
     final currentState = state;
     if (currentState is! LessonSuccess || _lessonId == null) return;
 
-    await _repository.markLessonComplete(_lessonId!);
-    emit(currentState.copyWith(isCompleted: true));
-  }
-
-  void _onVideoProgress(
-    LessonVideoProgressUpdated event,
-    Emitter<LessonState> emit,
-  ) {
-    // Track video progress locally
-    // TODO: Sync với server nếu cần
+    final result = await _repository.markLessonComplete(_lessonId!);
+    final courseCompleted = result.when(
+      success: (completed) => completed,
+      failure: (_) => false,
+    );
+    emit(currentState.copyWith(
+      isCompleted: true,
+      courseCompleted: courseCompleted,
+    ));
   }
 }
