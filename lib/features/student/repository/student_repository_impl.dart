@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:study/core/error/failures.dart';
 import 'package:study/core/error/result.dart';
+import 'package:study/data/last_accessed_course_storage.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/course/data/course_api_client.dart';
 import 'package:study/features/course/data/models/certificate_model.dart';
@@ -16,13 +17,16 @@ class StudentRepositoryImpl implements StudentRepository {
     required StudentApiClient studentApi,
     required CourseApiClient courseApi,
     required AuthRepository authRepository,
+    required LastAccessedCourseStorage lastAccessedStorage,
   })  : _studentApi = studentApi,
         _courseApi = courseApi,
-        _authRepository = authRepository;
+        _authRepository = authRepository,
+        _lastAccessedStorage = lastAccessedStorage;
 
   final StudentApiClient _studentApi;
   final CourseApiClient _courseApi;
   final AuthRepository _authRepository;
+  final LastAccessedCourseStorage _lastAccessedStorage;
 
   Future<String?> _getCurrentUserId() async {
     final user = await _authRepository.getSavedUser();
@@ -199,6 +203,15 @@ class StudentRepositoryImpl implements StudentRepository {
     return result.when(
       success: (enrollments) {
         if (enrollments.isEmpty) return const Result.success(null);
+
+        // Ưu tiên local storage
+        final lastId = _lastAccessedStorage.getLastEnrollmentId();
+        if (lastId != null) {
+          final match = enrollments.where((e) => e.id == lastId).firstOrNull;
+          if (match != null) return Result.success(match);
+        }
+
+        // Fallback: sort by lastAccessedAt từ API
         enrollments.sort((a, b) {
           final aTime = a.lastAccessedAt ?? DateTime(1970);
           final bTime = b.lastAccessedAt ?? DateTime(1970);
@@ -208,6 +221,11 @@ class StudentRepositoryImpl implements StudentRepository {
       },
       failure: Result.failure,
     );
+  }
+
+  @override
+  Future<void> setLastAccessedCourse(String enrollmentId) async {
+    await _lastAccessedStorage.setLastAccessed(enrollmentId);
   }
 
   @override
@@ -261,13 +279,21 @@ class StudentRepositoryImpl implements StudentRepository {
   }
 
   @override
-  Future<ApiResult<void>> markLessonComplete(String lessonId) async {
+  Future<ApiResult<bool>> markLessonComplete(
+    String lessonId, {
+    List<List<int>>? playedRanges,
+    int? durationSeconds,
+  }) async {
     try {
-      await _courseApi.updateLessonProgress(lessonId, {
+      final body = <String, dynamic>{
         'status': 'completed',
         'progress_percentage': 100,
-      });
-      return const Result.success(null);
+      };
+      if (playedRanges != null) body['played_ranges'] = playedRanges;
+      if (durationSeconds != null) body['duration_seconds'] = durationSeconds;
+      final response = await _courseApi.updateLessonProgress(lessonId, body);
+      final courseCompleted = response.data['data']?['course_completed'] == true;
+      return Result.success(courseCompleted);
     } catch (e) {
       return Result.failure(ServerFailure(message: e.toString()));
     }
@@ -382,13 +408,15 @@ class StudentRepositoryImpl implements StudentRepository {
   }
 
   @override
-  Future<ApiResult<({List<QuizQuestionModel> questions, int timeLimitMinutes})>> startQuiz(String quizId) async {
+  Future<ApiResult<({String attemptId, List<QuizQuestionModel> questions, int timeLimitMinutes})>> startQuiz(String quizId) async {
     try {
       final response = await _studentApi.startQuiz(quizId);
       final data = response.data['data'] as Map<String, dynamic>;
+      final attemptId = data['attempt_id'] as String? ?? '';
       final list = _extractList(data['questions']);
       final timeLimitMinutes = (data['time_limit_minutes'] as num?)?.toInt() ?? 10;
       return Result.success((
+        attemptId: attemptId,
         questions: list.map((e) => QuizQuestionModel.fromJson(e as Map<String, dynamic>)).toList(),
         timeLimitMinutes: timeLimitMinutes,
       ));
@@ -396,7 +424,6 @@ class StudentRepositoryImpl implements StudentRepository {
       final message = e.response?.data?['error'] as String? ??
           e.response?.data?['message'] as String? ??
           'Không thể bắt đầu quiz';
-      // Translate common errors
       final displayMessage = switch (message) {
         'max attempts reached' => 'Bạn đã hết lượt làm bài kiểm tra này',
         _ => message,
@@ -410,10 +437,14 @@ class StudentRepositoryImpl implements StudentRepository {
   @override
   Future<ApiResult<QuizSubmitResult>> submitQuiz(
     String quizId,
-    List<Map<String, String>> answers,
+    String attemptId,
+    List<Map<String, dynamic>> answers,
   ) async {
     try {
-      final response = await _studentApi.submitQuiz(quizId, {'answers': answers});
+      final response = await _studentApi.submitQuiz(quizId, {
+        'attempt_id': attemptId,
+        'answers': answers,
+      });
       return Result.success(
         QuizSubmitResult.fromJson(response.data['data'] as Map<String, dynamic>),
       );

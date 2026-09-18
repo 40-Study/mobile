@@ -18,10 +18,16 @@ abstract class StudentRepository {
   Future<ApiResult<List<EnrollmentModel>>> getActiveEnrollments();
   Future<ApiResult<EnrollmentModel?>> getContinueLearning();
   Future<ApiResult<EnrollmentModel>> getCourseDetail(String enrollmentId);
+  Future<void> setLastAccessedCourse(String enrollmentId);
 
   // Lesson
   Future<ApiResult<LessonModel>> getLessonDetail(String lessonId);
-  Future<ApiResult<void>> markLessonComplete(String lessonId);
+  /// Returns true if course is completed after this lesson
+  Future<ApiResult<bool>> markLessonComplete(
+    String lessonId, {
+    List<List<int>>? playedRanges,
+    int? durationSeconds,
+  });
 
   // Notifications
   Future<ApiResult<List<NotificationModel>>> getNotifications();
@@ -37,10 +43,11 @@ abstract class StudentRepository {
   // Quiz
   Future<ApiResult<List<QuizQuestionModel>>> getQuizQuestions(String quizId);
   Future<ApiResult<List<QuizModel>>> getQuizzesByLesson(String lessonId);
-  Future<ApiResult<({List<QuizQuestionModel> questions, int timeLimitMinutes})>> startQuiz(String quizId);
+  Future<ApiResult<({String attemptId, List<QuizQuestionModel> questions, int timeLimitMinutes})>> startQuiz(String quizId);
   Future<ApiResult<QuizSubmitResult>> submitQuiz(
     String quizId,
-    List<Map<String, String>> answers,
+    String attemptId,
+    List<Map<String, dynamic>> answers,
   );
 
   // Search
