@@ -197,7 +197,7 @@ class _QuizErrorView extends StatelessWidget {
                           Icon(Icons.info_outline, size: 16, color: cs.onSurfaceVariant),
                           AppSpacing.hGap8,
                           Text(
-                            'Mỗi bài kiểm tra giới hạn 3 lượt',
+                            'Mỗi bài kiểm tra giới hạn 5 lượt',
                             style: tt.labelMedium?.copyWith(color: cs.onSurfaceVariant),
                           ),
                         ],

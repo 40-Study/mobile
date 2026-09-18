@@ -19,6 +19,7 @@ final class QuizLoading extends QuizState {
 final class QuizReady extends QuizState {
   const QuizReady({
     required this.quizId,
+    required this.attemptId,
     required this.questions,
     required this.currentIndex,
     required this.answers,
@@ -26,6 +27,7 @@ final class QuizReady extends QuizState {
   });
 
   final String quizId;
+  final String attemptId;
   final List<QuizQuestionModel> questions;
   final int currentIndex;
   final Map<int, int> answers;
@@ -44,6 +46,7 @@ final class QuizReady extends QuizState {
   }) {
     return QuizReady(
       quizId: quizId,
+      attemptId: attemptId,
       questions: questions,
       currentIndex: currentIndex ?? this.currentIndex,
       answers: answers ?? this.answers,
@@ -52,7 +55,7 @@ final class QuizReady extends QuizState {
   }
 
   @override
-  List<Object?> get props => [quizId, questions, currentIndex, answers, timeLimitMinutes];
+  List<Object?> get props => [quizId, attemptId, questions, currentIndex, answers, timeLimitMinutes];
 }
 
 final class QuizSubmitting extends QuizState {

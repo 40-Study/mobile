@@ -33,6 +33,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
         }
         emit(QuizReady(
           quizId: event.quizId,
+          attemptId: data.attemptId,
           questions: data.questions,
           currentIndex: 0,
           answers: const {},
@@ -100,8 +101,8 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
 
     emit(const QuizSubmitting());
 
-    // Convert answers: questionIndex -> answerIndex to [{question_id, answer_id}]
-    final apiAnswers = <Map<String, String>>[];
+    // Convert answers: questionIndex -> answerIndex to [{question_id, selected_answer_ids}]
+    final apiAnswers = <Map<String, dynamic>>[];
     for (final entry in current.answers.entries) {
       final questionIndex = entry.key;
       final answerIndex = entry.value;
@@ -109,35 +110,30 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       if (answerIndex < question.answers.length) {
         apiAnswers.add({
           'question_id': question.id,
-          'answer_id': question.answers[answerIndex].id,
+          'selected_answer_ids': [question.answers[answerIndex].id],
         });
       }
     }
 
-    final result = await _repository.submitQuiz(current.quizId, apiAnswers);
+    final result = await _repository.submitQuiz(current.quizId, current.attemptId, apiAnswers);
 
     switch (result) {
       case Success(value: final submitResult):
-        // Tính correct count từ answers
-        var correctCount = 0;
-        for (var i = 0; i < current.questions.length; i++) {
-          final answer = current.answers[i];
-          if (answer != null && answer == current.questions[i].correctAnswer) {
-            correctCount++;
-          }
-        }
+        // Tính correct count từ percentage (vì backend không gửi is_correct)
+        final totalCount = current.questions.length;
+        final correctCount = (submitResult.percentage * totalCount / 100).round();
 
         // Lưu kết quả vào local storage
         await QuizResultStorage.saveResult(
           quizId: current.quizId,
           correctCount: correctCount,
-          totalCount: current.questions.length,
+          totalCount: totalCount,
           score: submitResult.percentage,
         );
 
         emit(QuizCompleted(
           correctCount: correctCount,
-          totalCount: current.questions.length,
+          totalCount: totalCount,
           score: submitResult.percentage,
           timeLimitMinutes: current.timeLimitMinutes,
         ));
