@@ -130,8 +130,8 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, state) {
           return switch (state) {
             HomeInitial() || HomeInProgress() => const Center(
-              child: CircularProgressIndicator(strokeWidth: 2.5),
-            ),
+                  child: CircularProgressIndicator(strokeWidth: 2.5),
+                ),
             HomeFailure(:final message) => _buildError(context, message),
             HomeSuccess() => _buildContent(context, state),
           };
@@ -186,7 +186,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildContent(BuildContext context, HomeSuccess state) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
     final activeScheduleId = _activeScheduleId(state.scheduleItems);
 
     return RefreshIndicator(
@@ -200,27 +199,27 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.screenPadding,
-              AppSpacing.xs,
+              AppSpacing.md,
+              AppSpacing.screenPadding,
+              0,
+            ),
+            child: Text(
+              '${_greeting()}, ${_firstName(widget.userName)}',
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screenPadding,
+              0,
               AppSpacing.screenPadding,
               AppSpacing.lg,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '${_greeting()}, ${_firstName(widget.userName)}',
-                  style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                ),
-                AppSpacing.vGap4,
-                Text(
-                  'Tiếp tục hành trình\nhọc tập của bạn.',
-                  style: tt.headlineMedium?.copyWith(
-                    color: cs.onSurface,
-                    fontWeight: FontWeight.w700,
-                    height: 1.2,
-                  ),
-                ),
-                AppSpacing.vGap12,
                 _TodaySummary(
                   scheduleCount: state.scheduleItems.length,
                   assignmentCount: state.assignments.length,

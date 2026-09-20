@@ -37,10 +37,9 @@ final class LearningSuccess extends LearningState {
       return switch (filter) {
         EnrollmentFilter.all => true,
         EnrollmentFilter.inProgress =>
-          e.status == 'active' && (e.progressPercentage) < 100,
-        EnrollmentFilter.completed =>
-          e.completedAt != null || (e.progressPercentage) >= 100,
-        EnrollmentFilter.upcoming => e.status == 'pending',
+          e.progressPercentage > 0 && e.progressPercentage < 100,
+        EnrollmentFilter.completed => e.progressPercentage >= 100,
+        EnrollmentFilter.upcoming => e.progressPercentage == 0,
       };
     }).toList();
 

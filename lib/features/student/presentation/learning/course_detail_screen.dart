@@ -7,11 +7,13 @@ import 'package:study/features/student/bloc/course_detail/course_detail_event.da
 import 'package:study/features/student/bloc/course_detail/course_detail_state.dart';
 import 'package:study/features/student/bloc/lesson/lesson_bloc.dart';
 import 'package:study/features/student/bloc/lesson/lesson_event.dart';
+import 'package:study/features/student/presentation/achievement/certificate_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/instructor_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/widgets/section/section_widgets.dart';
 import 'package:study/features/student/presentation/learning/widgets/thumbnail_placeholder.dart';
 import 'package:study/di/di_container.dart';
+import 'package:study/features/course/repository/course_repository.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/cached_avatar.dart';
@@ -100,6 +102,61 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
     if (context.mounted) {
       context.read<CourseDetailBloc>().add(const CourseDetailRefreshed());
     }
+  }
+
+  Future<void> _navigateToCertificate(
+    BuildContext context,
+    String enrollmentId,
+  ) async {
+    final bloc = context.read<CourseDetailBloc>();
+    final courseId = (bloc.state as CourseDetailSuccess?)?.course?.id;
+    if (courseId == null) return;
+
+    final studentRepo = diContainer<StudentRepository>();
+    final result = await studentRepo.getCertificates();
+
+    if (!context.mounted) return;
+
+    result.when(
+      success: (certs) async {
+        var cert = certs.where((c) => c.courseId == courseId).firstOrNull;
+
+        // Nếu chưa có chứng chỉ, cấp mới
+        if (cert == null) {
+          try {
+            final courseRepo = diContainer<CourseRepository>();
+            cert = await courseRepo.issueCertificate(courseId, enrollmentId);
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Lỗi cấp chứng chỉ: $e'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+            return;
+          }
+        }
+
+        if (context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CertificateDetailScreen(certificate: cert!),
+            ),
+          );
+        }
+      },
+      failure: (f) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: ${f.message}'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -226,7 +283,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
     final tt = Theme.of(context).textTheme;
     final course = state.course;
     final enrollment = state.enrollment;
-    final isActive = enrollment.status == 'active';
+    final isCompleted = enrollment.progressPercentage >= 100;
+    final isActive = enrollment.progressPercentage > 0;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -280,15 +338,25 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: isActive
-                        ? cs.primary.withValues(alpha: 0.1)
-                        : cs.surfaceContainerHighest,
+                    color: isCompleted
+                        ? Colors.green.withValues(alpha: 0.1)
+                        : isActive
+                            ? cs.primary.withValues(alpha: 0.1)
+                            : cs.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(AppRadius.full),
                   ),
                   child: Text(
-                    isActive ? 'Đang học' : 'Chưa bắt đầu',
+                    isCompleted
+                        ? 'Hoàn thành'
+                        : isActive
+                            ? 'Đang học'
+                            : 'Chưa bắt đầu',
                     style: tt.labelSmall?.copyWith(
-                      color: isActive ? cs.primary : cs.onSurfaceVariant,
+                      color: isCompleted
+                          ? Colors.green
+                          : isActive
+                              ? cs.primary
+                              : cs.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -433,10 +501,37 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
       );
     }
 
-    // Enrolled: show progress
+    // Enrolled: show progress or certificate button
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
     final nextLesson = _getNextLesson(state);
+    final isCompleted = enrollment.progressPercentage >= 100;
 
+    // Completed: just show certificate button
+    if (isCompleted) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+        child: FilledButton(
+          onPressed: () => _navigateToCertificate(context, enrollment.id),
+          style: FilledButton.styleFrom(
+            backgroundColor: Colors.green,
+            padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+          ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.workspace_premium_rounded, size: 18),
+              SizedBox(width: 4),
+              Text('Xem chứng chỉ'),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // In progress: show card with progress
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
       child: Container(
@@ -503,26 +598,12 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
               ),
-              child: Column(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.play_arrow_rounded, size: 18),
-                      SizedBox(width: 4),
-                      Text('Tiếp tục học'),
-                    ],
-                  ),
-                  if (nextLesson != null)
-                    Text(
-                      'Bài ${_getLessonIndex(state, nextLesson) + 1} • ${nextLesson.title}',
-                      style: tt.labelSmall?.copyWith(
-                        color: cs.onPrimary.withValues(alpha: 0.8),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  Icon(Icons.play_arrow_rounded, size: 18),
+                  SizedBox(width: 4),
+                  Text('Tiếp tục học'),
                 ],
               ),
             ),
@@ -554,32 +635,35 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
         AppSpacing.vGap24,
 
         // Stats row
-        Row(
-          children: [
-            _StatCard(
-              icon: Icons.play_circle_outline,
-              value: '${course?.totalLessons ?? 0}',
-              label: 'Bài học',
-            ),
-            AppSpacing.hGap12,
-            _StatCard(
-              icon: Icons.access_time_rounded,
-              value: _formatDuration(course?.totalDurationMins ?? 0),
-              label: 'Thời lượng',
-            ),
-            AppSpacing.hGap12,
-            _StatCard(
-              icon: Icons.signal_cellular_alt_rounded,
-              value: course?.level ?? 'Cơ bản',
-              label: 'Cấp độ',
-            ),
-            AppSpacing.hGap12,
-            const _StatCard(
-              icon: Icons.workspace_premium_outlined,
-              value: 'Có',
-              label: 'Chứng chỉ',
-            ),
-          ],
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _StatCard(
+                icon: Icons.play_circle_outline,
+                value: '${course?.totalLessons ?? 0}',
+                label: 'Bài học',
+              ),
+              AppSpacing.hGap8,
+              _StatCard(
+                icon: Icons.access_time_rounded,
+                value: _formatDuration(course?.totalDurationMins ?? 0),
+                label: 'Thời lượng',
+              ),
+              AppSpacing.hGap8,
+              _StatCard(
+                icon: Icons.signal_cellular_alt_rounded,
+                value: course?.level ?? 'Cơ bản',
+                label: 'Cấp độ',
+              ),
+              AppSpacing.hGap8,
+              const _StatCard(
+                icon: Icons.workspace_premium_outlined,
+                value: 'Có',
+                label: 'Chứng chỉ',
+              ),
+            ],
+          ),
         ),
         AppSpacing.vGap24,
 

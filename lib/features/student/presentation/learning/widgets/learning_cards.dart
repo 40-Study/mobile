@@ -20,6 +20,7 @@ class ContinueLearningCard extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final course = enrollment.course;
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
+    final isCompleted = enrollment.progressPercentage >= 100;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,28 +39,35 @@ class ContinueLearningCard extends StatelessWidget {
                 vertical: 6,
               ),
               decoration: BoxDecoration(
-                color: cs.primary.withValues(alpha: 0.08),
+                color: isCompleted
+                    ? Colors.green.withValues(alpha: 0.08)
+                    : cs.primary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(AppRadius.full),
                 border: Border.all(
-                  color: cs.primary.withValues(alpha: 0.2),
+                  color: isCompleted
+                      ? Colors.green.withValues(alpha: 0.2)
+                      : cs.primary.withValues(alpha: 0.2),
                 ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: cs.primary,
-                      shape: BoxShape.circle,
+                  if (isCompleted)
+                    const Icon(Icons.check_rounded, size: 14, color: Colors.green)
+                  else
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: cs.primary,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
                   const SizedBox(width: 6),
                   Text(
-                    'Đang học',
+                    isCompleted ? 'Hoàn thành' : 'Đang học',
                     style: tt.labelSmall?.copyWith(
-                      color: cs.primary,
+                      color: isCompleted ? Colors.green : cs.primary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -136,84 +144,105 @@ class ContinueLearningCard extends StatelessWidget {
                       ),
                       AppSpacing.vGap12,
 
-                      // Progress bar
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(3),
-                              child: LinearProgressIndicator(
-                                value: progress,
-                                minHeight: 6,
-                                backgroundColor: cs.surfaceContainerHighest,
+                      // Progress bar or completed text
+                      if (isCompleted)
+                        Row(
+                          children: [
+                            Icon(Icons.check_circle_rounded,
+                                size: 18, color: Colors.green),
+                            AppSpacing.hGap8,
+                            Text(
+                              'Đã hoàn thành khóa học',
+                              style: tt.labelMedium?.copyWith(
+                                color: Colors.green,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                          ),
-                          AppSpacing.hGap12,
-                          Text(
-                            '${enrollment.progressPercentage.toStringAsFixed(0)}%',
-                            style: tt.labelSmall?.copyWith(
-                              color: cs.onSurfaceVariant,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      AppSpacing.vGap12,
-
-                      // Buttons
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(AppRadius.sm),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: cs.primary.withValues(alpha: 0.2),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
+                          ],
+                        )
+                      else ...[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(3),
+                                child: LinearProgressIndicator(
+                                  value: progress,
+                                  minHeight: 6,
+                                  backgroundColor: cs.surfaceContainerHighest,
+                                ),
                               ),
-                              child: FilledButton.icon(
-                                onPressed: onContinue,
-                                icon: const Icon(Icons.play_arrow_rounded, size: 18),
-                                label: const Text('Tiếp tục học'),
-                                style: FilledButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                            ),
+                            AppSpacing.hGap12,
+                            Text(
+                              '${enrollment.progressPercentage.toStringAsFixed(0)}%',
+                              style: tt.labelSmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        AppSpacing.vGap12,
+                        // Buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.circular(AppRadius.sm),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: cs.primary.withValues(alpha: 0.2),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: FilledButton.icon(
+                                  onPressed: onContinue,
+                                  icon: const Icon(Icons.play_arrow_rounded,
+                                      size: 18),
+                                  label: const Text('Tiếp tục học'),
+                                  style: FilledButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(AppRadius.sm),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          AppSpacing.hGap8,
-                          Container(
-                            decoration: BoxDecoration(
-                              color: cs.surfaceContainerLowest,
-                              borderRadius: BorderRadius.circular(AppRadius.sm),
-                              border: Border.all(
-                                color: cs.outlineVariant.withValues(alpha: 0.5),
+                            AppSpacing.hGap8,
+                            Container(
+                              decoration: BoxDecoration(
+                                color: cs.surfaceContainerLowest,
+                                borderRadius:
+                                    BorderRadius.circular(AppRadius.sm),
+                                border: Border.all(
+                                  color:
+                                      cs.outlineVariant.withValues(alpha: 0.5),
+                                ),
+                              ),
+                              child: IconButton(
+                                onPressed: () {},
+                                icon: Icon(
+                                  Icons.more_horiz_rounded,
+                                  color: cs.onSurfaceVariant,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 44,
+                                  minHeight: 44,
+                                ),
                               ),
                             ),
-                            child: IconButton(
-                              onPressed: () {},
-                              icon: Icon(
-                                Icons.more_horiz_rounded,
-                                color: cs.onSurfaceVariant,
-                              ),
-                              constraints: const BoxConstraints(
-                                minWidth: 44,
-                                minHeight: 44,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -242,6 +271,7 @@ class MyCourseCard extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final course = enrollment.course;
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
+    final isCompleted = enrollment.progressPercentage >= 100;
 
     return SizedBox(
       width: 160,
@@ -254,7 +284,7 @@ class MyCourseCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Thumbnail with progress badge
+              // Thumbnail with badge
               Stack(
                 children: [
                   ClipRRect(
@@ -292,7 +322,7 @@ class MyCourseCard extends StatelessWidget {
                             ),
                     ),
                   ),
-                  // Progress badge
+                  // Badge
                   Positioned(
                     left: AppSpacing.sm,
                     bottom: AppSpacing.sm,
@@ -302,7 +332,9 @@ class MyCourseCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: cs.surfaceContainerLowest.withValues(alpha: 0.95),
+                        color: isCompleted
+                            ? Colors.green
+                            : cs.surfaceContainerLowest.withValues(alpha: 0.95),
                         borderRadius: BorderRadius.circular(AppRadius.full),
                         boxShadow: [
                           BoxShadow(
@@ -312,13 +344,28 @@ class MyCourseCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: Text(
-                        '${enrollment.progressPercentage.toStringAsFixed(0)}%',
-                        style: tt.labelSmall?.copyWith(
-                          color: cs.primary,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                      child: isCompleted
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.check_rounded, size: 12, color: Colors.white),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Hoàn thành',
+                                  style: tt.labelSmall?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Text(
+                              '${enrollment.progressPercentage.toStringAsFixed(0)}%',
+                              style: tt.labelSmall?.copyWith(
+                                color: cs.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -370,28 +417,37 @@ class MyCourseCard extends StatelessWidget {
                     ),
                     AppSpacing.vGap8,
 
-                    // Progress bar
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(2),
-                            child: LinearProgressIndicator(
-                              value: progress,
-                              minHeight: 4,
-                              backgroundColor: cs.surfaceContainerHighest,
+                    // Progress bar or completed text
+                    if (isCompleted)
+                      Text(
+                        'Đã hoàn thành khóa học',
+                        style: tt.labelSmall?.copyWith(
+                          color: Colors.green,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      )
+                    else
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(2),
+                              child: LinearProgressIndicator(
+                                value: progress,
+                                minHeight: 4,
+                                backgroundColor: cs.surfaceContainerHighest,
+                              ),
                             ),
                           ),
-                        ),
-                        AppSpacing.hGap8,
-                        Text(
-                          '${enrollment.progressPercentage.toStringAsFixed(0)}%',
-                          style: tt.labelSmall?.copyWith(
-                            color: cs.onSurfaceVariant,
+                          AppSpacing.hGap8,
+                          Text(
+                            '${enrollment.progressPercentage.toStringAsFixed(0)}%',
+                            style: tt.labelSmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
                   ],
                 ),
               ),

@@ -18,6 +18,7 @@ import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/empty_state.dart';
 import 'package:study/widgets/section_header.dart';
+import 'package:study/widgets/tab_screen_header.dart';
 
 class LearningScreen extends StatefulWidget {
   const LearningScreen({super.key});
@@ -182,121 +183,10 @@ class _LearningScreenState extends State<LearningScreen> {
       child: CustomScrollView(
         slivers: [
           // Header
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.screenPadding,
-                AppSpacing.lg,
-                AppSpacing.screenPadding,
-                AppSpacing.sm,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Learning',
-                              style: tt.headlineLarge?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: cs.onSurface,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Mỗi ngày một bước tiến.',
-                              style: tt.bodyMedium?.copyWith(
-                                color: cs.onSurfaceVariant,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Search
-                      Container(
-                        decoration: BoxDecoration(
-                          color: cs.surfaceContainerLowest,
-                          borderRadius: BorderRadius.circular(AppRadius.sm),
-                          border: Border.all(
-                            color: cs.outlineVariant.withValues(alpha: 0.5),
-                          ),
-                        ),
-                        child: IconButton(
-                          onPressed: () => Navigator.push(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: (_) => const SearchScreen(),
-                            ),
-                          ),
-                          icon: Icon(
-                            Icons.search_rounded,
-                            color: cs.onSurfaceVariant,
-                            size: 22,
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 42,
-                            minHeight: 42,
-                          ),
-                        ),
-                      ),
-                      AppSpacing.hGap8,
-                      // Notification
-                      Stack(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: cs.surfaceContainerLowest,
-                              borderRadius: BorderRadius.circular(AppRadius.sm),
-                              border: Border.all(
-                                color: cs.outlineVariant.withValues(alpha: 0.5),
-                              ),
-                            ),
-                            child: IconButton(
-                              onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute<void>(
-                                  builder: (_) => const NotificationScreen(),
-                                ),
-                              ),
-                              icon: Icon(
-                                Icons.notifications_outlined,
-                                color: cs.onSurfaceVariant,
-                                size: 22,
-                              ),
-                              constraints: const BoxConstraints(
-                                minWidth: 42,
-                                minHeight: 42,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            right: 8,
-                            top: 8,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                color: cs.primary,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: cs.surfaceContainerLowest,
-                                  width: 1.5,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+          const SliverToBoxAdapter(
+            child: TabScreenHeader(
+              title: 'Learning',
+              subtitle: 'Mỗi ngày một bước tiến.',
             ),
           ),
 
@@ -340,22 +230,34 @@ class _LearningScreenState extends State<LearningScreen> {
           SliverToBoxAdapter(
             child: SizedBox(
               height: 230,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.screenPadding,
-                ),
-                physics: const BouncingScrollPhysics(),
-                itemCount: state.enrollments.length,
-                separatorBuilder: (_, _) => AppSpacing.hGap12,
-                itemBuilder: (context, index) {
-                  final enrollment = state.enrollments[index];
-                  return MyCourseCard(
-                    enrollment: enrollment,
-                    onTap: () => _navigateToCourseDetail(enrollment.id),
-                  );
-                },
-              ),
+              child: Builder(builder: (context) {
+                // Sort: in-progress first, completed last
+                final sorted = List.of(state.enrollments)
+                  ..sort((a, b) {
+                    final aCompleted = a.progressPercentage >= 100;
+                    final bCompleted = b.progressPercentage >= 100;
+                    if (aCompleted != bCompleted) {
+                      return aCompleted ? 1 : -1;
+                    }
+                    return 0;
+                  });
+                return ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.screenPadding,
+                  ),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: sorted.length,
+                  separatorBuilder: (_, _) => AppSpacing.hGap12,
+                  itemBuilder: (context, index) {
+                    final enrollment = sorted[index];
+                    return MyCourseCard(
+                      enrollment: enrollment,
+                      onTap: () => _navigateToCourseDetail(enrollment.id),
+                    );
+                  },
+                );
+              }),
             ),
           ),
 

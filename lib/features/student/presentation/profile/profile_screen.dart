@@ -51,11 +51,8 @@ class _ProfileContent extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: cs.surface,
-      appBar: AppHeaderBar(
-        title: l10n.profileTitle,
-        showNotification: false,
-      ),
-      body: ListView(
+      body: SafeArea(
+        child: ListView(
         padding: EdgeInsets.zero,
         children: [
           // Top section - Profile Card
@@ -212,6 +209,7 @@ class _ProfileContent extends StatelessWidget {
             ),
           ),
         ],
+      ),
       ),
     );
   }

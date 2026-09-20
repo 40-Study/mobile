@@ -108,12 +108,9 @@ class _AccountScreenState extends State<AccountScreen>
                   return _buildParentProfile(context, user, profile);
                 }
 
-                // Student uses the original tabbed layout
-                return NestedScrollView(
-                  headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                    _buildSliverAppBar(context, user, profile),
-                  ],
-                  body: _buildTabContent(context, user),
+                // Student uses simple layout without header
+                return SafeArea(
+                  child: _buildTabContent(context, user),
                 );
               },
             );

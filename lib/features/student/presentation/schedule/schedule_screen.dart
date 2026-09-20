@@ -15,8 +15,8 @@ import 'package:study/features/student/presentation/learning/lesson_detail_scree
 import 'package:study/features/student/presentation/schedule/widgets/calendar_widget.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/student/repository/student_repository.dart';
-import 'package:study/widgets/app_header_bar.dart';
 import 'package:study/theme/theme.dart';
+import 'package:study/widgets/tab_screen_header.dart';
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
@@ -38,31 +38,18 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final tt = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppHeaderBar(
-        title: 'Lịch học',
-        showNotification: false,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.today_outlined, color: cs.onSurface),
-            tooltip: 'Về hôm nay',
-            onPressed: () {
-              context.read<ScheduleBloc>().add(
-                ScheduleDateSelected(DateTime.now()),
-              );
-            },
-          ),
-        ],
-      ),
-      body: BlocBuilder<ScheduleBloc, ScheduleState>(
-        builder: (context, state) {
-          return switch (state) {
-            ScheduleInitial() || ScheduleInProgress() => const Center(
-              child: CircularProgressIndicator(strokeWidth: 2.5),
-            ),
-            ScheduleFailure(:final message) => _buildError(context, message),
-            ScheduleSuccess() => _buildContent(context, state),
-          };
-        },
+      body: SafeArea(
+        child: BlocBuilder<ScheduleBloc, ScheduleState>(
+          builder: (context, state) {
+            return switch (state) {
+              ScheduleInitial() || ScheduleInProgress() => const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                  ),
+              ScheduleFailure(:final message) => _buildError(context, message),
+              ScheduleSuccess() => _buildContent(context, state),
+            };
+          },
+        ),
       ),
     );
   }
@@ -122,6 +109,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
+          const TabScreenHeader(
+            title: 'Lịch học',
+            subtitle: 'Quản lý thời gian học tập.',
+          ),
           // Calendar section
           Padding(
             padding: const EdgeInsets.fromLTRB(

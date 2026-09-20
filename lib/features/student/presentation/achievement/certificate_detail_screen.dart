@@ -35,14 +35,6 @@ class CertificateDetailScreen extends StatelessWidget {
                         const _CertificateActions(),
                         AppSpacing.vGap24,
                         _CourseInformation(certificate: certificate),
-                        AppSpacing.vGap24,
-                        const _SkillsSection(skills: [
-                          'User Research',
-                          'Wireframing',
-                          'UI Design',
-                          'Prototyping',
-                          'Design System',
-                        ]),
                         const SizedBox(height: 100),
                       ],
                     ),
@@ -655,7 +647,7 @@ class _CourseInformation extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+        border: Border.all(color: cs.primary.withValues(alpha: 0.3)),
       ),
       child: Builder(builder: (context) {
         final l10n = AppLocalizations.of(context)!;
@@ -737,20 +729,25 @@ class _InfoRow extends StatelessWidget {
           AppSpacing.hGap12,
           Text(label,
               style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
-          const Spacer(),
+          AppSpacing.hGap12,
           if (isHighlighted)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: cs.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(AppRadius.sm),
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: cs.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: Text(value,
+                      style: tt.labelMedium?.copyWith(
+                          color: cs.primary, fontWeight: FontWeight.w600)),
+                ),
               ),
-              child: Text(value,
-                  style: tt.labelMedium?.copyWith(
-                      color: cs.primary, fontWeight: FontWeight.w600)),
             )
           else
-            Flexible(
+            Expanded(
               child: Text(value,
                   style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                   textAlign: TextAlign.end,
