@@ -33,10 +33,21 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
 
     result.when(
       success: (courses) {
-        final results = courses.map((course) => SearchResult(
+        // Client-side filter nếu backend không filter
+        final lowerQuery = query.toLowerCase();
+        final filtered = courses.where((course) {
+          final title = course.title.toLowerCase();
+          final category = (course.categoryName ?? '').toLowerCase();
+          final instructor = (course.instructorName ?? '').toLowerCase();
+          return title.contains(lowerQuery) ||
+              category.contains(lowerQuery) ||
+              instructor.contains(lowerQuery);
+        }).toList();
+
+        final results = filtered.map((course) => SearchResult(
           id: course.id,
           title: course.title,
-          subtitle: '${course.categoryName ?? 'Khoa hoc'} - ${course.totalLessons ?? 0} bai',
+          subtitle: '${course.categoryName ?? 'Khóa học'} · ${course.totalLessons ?? 0} bài',
           type: SearchFilter.course,
         )).toList();
 
