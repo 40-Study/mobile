@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 /// Together AI Design - Unified Settings Components
@@ -234,7 +235,7 @@ class TogetherSettingsToggle extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: cs.primary,
+            activeThumbColor: cs.primary,
           ),
         ],
       ),
@@ -294,10 +295,11 @@ class TogetherProfileHeader extends StatelessWidget {
             child: avatarUrl != null
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(6),
-                    child: Image.network(
-                      avatarUrl!,
+                    child: CachedNetworkImage(
+                      imageUrl: avatarUrl!,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _buildDefaultAvatar(cs),
+                      placeholder: (_, _) => _buildDefaultAvatar(cs),
+                      errorWidget: (_, _, _) => _buildDefaultAvatar(cs),
                     ),
                   )
                 : _buildDefaultAvatar(cs),

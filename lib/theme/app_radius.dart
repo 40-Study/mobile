@@ -39,13 +39,13 @@ abstract class AppRadius {
   static final borderAvatar = BorderRadius.circular(avatar);
 
   // Top only
-  static final borderTopMd = BorderRadius.vertical(top: Radius.circular(md));
-  static final borderTopLg = BorderRadius.vertical(top: Radius.circular(lg));
-  static final borderTopXl = BorderRadius.vertical(top: Radius.circular(xl));
+  static final borderTopMd = const BorderRadius.vertical(top: Radius.circular(md));
+  static final borderTopLg = const BorderRadius.vertical(top: Radius.circular(lg));
+  static final borderTopXl = const BorderRadius.vertical(top: Radius.circular(xl));
 
   // Bottom only
   static final borderBottomMd =
-      BorderRadius.vertical(bottom: Radius.circular(md));
+      const BorderRadius.vertical(bottom: Radius.circular(md));
   static final borderBottomLg =
-      BorderRadius.vertical(bottom: Radius.circular(lg));
+      const BorderRadius.vertical(bottom: Radius.circular(lg));
 }

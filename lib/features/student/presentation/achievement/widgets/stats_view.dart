@@ -3,40 +3,263 @@ import 'package:study/features/student/data/models/models.dart';
 import 'package:study/theme/theme.dart';
 
 class StatsView extends StatelessWidget {
-  const StatsView({super.key, required this.stats});
+  const StatsView({
+    super.key,
+    required this.stats,
+    this.contributions = const [],
+  });
 
   final StudentStatsModel stats;
+  final List<ContributionModel> contributions;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // GitHub-style contribution grid
+        Text(
+          'Hoạt động học tập',
+          style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        AppSpacing.vGap12,
+        _ContributionGrid(contributions: contributions),
+        AppSpacing.vGap24,
+
+        // Stats grid
+        Text(
+          'Thống kê chi tiết',
+          style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        AppSpacing.vGap12,
+        _StatsGrid(stats: stats),
+      ],
+    );
+  }
+}
+
+class _ContributionGrid extends StatelessWidget {
+  const _ContributionGrid({this.contributions = const []});
+
+  final List<ContributionModel> contributions;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Weekly chart
-        Text(
-          'Gio hoc trong tuan',
-          style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        AppSpacing.vGap12,
-        _WeeklyChart(hours: stats.weeklyStudyHours ?? []),
-        AppSpacing.vGap24,
+    final now = DateTime.now();
+    final counts = _mapContributionsToCounts(contributions, now);
+    final weeks = 12;
 
-        // Stats grid
-        Text(
-          'Thong ke chi tiet',
-          style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        AppSpacing.vGap12,
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: cs.outline.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Month labels
+          Padding(
+            padding: const EdgeInsets.only(left: 24, bottom: 8),
+            child: Row(
+              children: _buildMonthLabels(now, weeks, tt, cs),
+            ),
+          ),
+
+          // Grid với day labels
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Day labels
+              Column(
+                children: ['', 'T2', '', 'T4', '', 'T6', '']
+                    .map((d) => SizedBox(
+                          height: 12,
+                          child: Text(
+                            d,
+                            style: tt.labelSmall?.copyWith(
+                              fontSize: 9,
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        ))
+                    .toList(),
+              ),
+              AppSpacing.hGap4,
+
+              // Contribution squares
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  reverse: true,
+                  child: Row(
+                    children: List.generate(weeks, (weekIndex) {
+                      return Column(
+                        children: List.generate(7, (dayIndex) {
+                          final index = weekIndex * 7 + dayIndex;
+                          final level = index < counts.length
+                              ? counts[index]
+                              : 0;
+                          return _ContributionCell(level: level);
+                        }),
+                      );
+                    }),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          AppSpacing.vGap12,
+
+          // Legend
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text(
+                'Ít',
+                style: tt.labelSmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                  fontSize: 10,
+                ),
+              ),
+              AppSpacing.hGap4,
+              ...List.generate(5, (i) => _ContributionCell(level: i)),
+              AppSpacing.hGap4,
+              Text(
+                'Nhiều',
+                style: tt.labelSmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                  fontSize: 10,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildMonthLabels(
+    DateTime now,
+    int weeks,
+    TextTheme tt,
+    ColorScheme cs,
+  ) {
+    final months = <String>[];
+    final startDate = now.subtract(Duration(days: weeks * 7));
+
+    for (var i = 0; i < weeks; i += 4) {
+      final date = startDate.add(Duration(days: i * 7));
+      final monthName = _monthShort(date.month);
+      if (months.isEmpty || months.last != monthName) {
+        months.add(monthName);
+      }
+    }
+
+    return months
+        .map((m) => Padding(
+              padding: const EdgeInsets.only(right: 24),
+              child: Text(
+                m,
+                style: tt.labelSmall?.copyWith(
+                  fontSize: 10,
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ))
+        .toList();
+  }
+
+  String _monthShort(int month) {
+    const months = [
+      'Th1', 'Th2', 'Th3', 'Th4', 'Th5', 'Th6',
+      'Th7', 'Th8', 'Th9', 'Th10', 'Th11', 'Th12',
+    ];
+    return months[month - 1];
+  }
+
+  // Map API contributions to 84-day grid (12 weeks)
+  List<int> _mapContributionsToCounts(List<ContributionModel> data, DateTime now) {
+    if (data.isEmpty) return List.filled(84, 0);
+
+    final result = List.filled(84, 0);
+    final startDate = now.subtract(const Duration(days: 83));
+
+    for (final item in data) {
+      final date = DateTime.tryParse(item.date);
+      if (date == null) continue;
+
+      final diff = date.difference(startDate).inDays;
+      if (diff >= 0 && diff < 84) {
+        // Map count to level 0-4
+        final level = switch (item.count) {
+          0 => 0,
+          1 => 1,
+          2 || 3 => 2,
+          4 || 5 => 3,
+          _ => 4,
+        };
+        result[diff] = level;
+      }
+    }
+    return result;
+  }
+}
+
+class _ContributionCell extends StatelessWidget {
+  const _ContributionCell({required this.level});
+
+  final int level;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    final color = switch (level) {
+      0 => cs.surfaceContainer,
+      1 => cs.primary.withValues(alpha: 0.2),
+      2 => cs.primary.withValues(alpha: 0.4),
+      3 => cs.primary.withValues(alpha: 0.7),
+      _ => cs.primary,
+    };
+
+    return Container(
+      width: 10,
+      height: 10,
+      margin: const EdgeInsets.all(1),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(2),
+      ),
+    );
+  }
+}
+
+class _StatsGrid extends StatelessWidget {
+  const _StatsGrid({required this.stats});
+
+  final StudentStatsModel stats;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Column(
+      children: [
         Row(
           children: [
             Expanded(
               child: _StatCard(
                 icon: Icons.school,
                 value: '${stats.completedCourses}/${stats.totalCourses}',
-                label: 'Khoa hoc',
+                label: 'Khóa học',
                 color: cs.primary,
               ),
             ),
@@ -45,7 +268,7 @@ class StatsView extends StatelessWidget {
               child: _StatCard(
                 icon: Icons.play_lesson,
                 value: '${stats.completedLessons}/${stats.totalLessons}',
-                label: 'Bai hoc',
+                label: 'Bài học',
                 color: Colors.green,
               ),
             ),
@@ -58,7 +281,7 @@ class StatsView extends StatelessWidget {
               child: _StatCard(
                 icon: Icons.quiz,
                 value: '${stats.totalQuizScore.toStringAsFixed(1)}%',
-                label: 'Diem quiz TB',
+                label: 'Điểm quiz TB',
                 color: Colors.orange,
               ),
             ),
@@ -67,68 +290,13 @@ class StatsView extends StatelessWidget {
               child: _StatCard(
                 icon: Icons.access_time,
                 value: '${stats.totalStudyHours.toStringAsFixed(1)}h',
-                label: 'Tong gio hoc',
+                label: 'Tổng giờ học',
                 color: Colors.purple,
               ),
             ),
           ],
         ),
       ],
-    );
-  }
-}
-
-class _WeeklyChart extends StatelessWidget {
-  const _WeeklyChart({required this.hours});
-
-  final List<double> hours;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-    final days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
-    final maxHour = hours.isEmpty ? 1.0 : hours.reduce((a, b) => a > b ? a : b);
-
-    return Container(
-      height: 120,
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: List.generate(7, (index) {
-          final value = index < hours.length ? hours[index] : 0.0;
-          final height = maxHour > 0 ? (value / maxHour) * 60 : 0.0;
-
-          return Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Container(
-                    height: height.clamp(4.0, 60.0),
-                    decoration: BoxDecoration(
-                      color: cs.primary,
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(4),
-                      ),
-                    ),
-                  ),
-                  AppSpacing.vGap4,
-                  Text(
-                    days[index],
-                    style: tt.labelSmall?.copyWith(color: cs.outline),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }),
-      ),
     );
   }
 }

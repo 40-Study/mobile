@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
+import 'package:study/features/parent/presentation/parent_shell.dart';
 import 'package:study/features/student/presentation/student_shell.dart';
 
 /// Main screen sau khi login - route đến shell theo role
@@ -23,11 +24,11 @@ class MainScreen extends StatelessWidget {
         switch (roleName.toLowerCase()) {
           case 'student':
             return const StudentShell();
+          case 'parent':
+            return const ParentShell();
           // TODO: Add other role shells
           // case 'teacher':
           //   return const TeacherShell();
-          // case 'parent':
-          //   return const ParentShell();
           default:
             return const StudentShell();
         }

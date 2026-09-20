@@ -44,8 +44,7 @@ class AssignmentItem extends StatelessWidget {
       subtitle: Padding(
         padding: const EdgeInsets.only(top: AppSpacing.xs),
         child: Text(
-          '${assignment.courseName ?? "Khóa học"} • '
-          '${assignment.questionCount} câu hỏi',
+          assignment.courseName ?? 'Khóa học',
           style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

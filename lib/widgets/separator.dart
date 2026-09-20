@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:study/index.dart';
 import 'package:gap/gap.dart';
+import 'package:study/index.dart';
 
 class Separator {
   static Widget spacer([double space = Space.medium]) => Gap(space);

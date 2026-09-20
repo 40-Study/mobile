@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/theme/theme.dart';
@@ -32,7 +33,7 @@ class CourseCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                   image: course?.thumbnailUrl != null
                       ? DecorationImage(
-                          image: NetworkImage(course!.thumbnailUrl!),
+                          image: CachedNetworkImageProvider(course!.thumbnailUrl!),
                           fit: BoxFit.cover,
                         )
                       : null,

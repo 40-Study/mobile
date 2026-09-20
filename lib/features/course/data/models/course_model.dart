@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:study/core/utils/json_converters.dart';
 
 part 'course_model.freezed.dart';
 part 'course_model.g.dart';
@@ -18,15 +19,15 @@ abstract class CourseModel with _$CourseModel {
     @JsonKey(name: 'instructor_avatar') String? instructorAvatar,
     @JsonKey(name: 'category_id') String? categoryId,
     @JsonKey(name: 'category_name') String? categoryName,
-    @Default(0) double price,
-    @JsonKey(name: 'discount_price') double? discountPrice,
+    @StringToDoubleConverter() @Default(0) double price,
+    @StringToNullableDoubleConverter() @JsonKey(name: 'discount_price') double? discountPrice,
     @JsonKey(name: 'discount_expires_at') DateTime? discountExpiresAt,
     String? level,
     String? language,
     @JsonKey(name: 'is_free') @Default(false) bool isFree,
     @JsonKey(name: 'is_published') @Default(false) bool isPublished,
     String? status,
-    @JsonKey(name: 'average_rating') @Default(0) double averageRating,
+    @StringToDoubleConverter() @JsonKey(name: 'average_rating') @Default(0) double averageRating,
     @JsonKey(name: 'total_ratings') @Default(0) int totalRatings,
     @JsonKey(name: 'total_students') @Default(0) int totalStudents,
     @JsonKey(name: 'total_lessons') @Default(0) int totalLessons,
@@ -38,7 +39,7 @@ abstract class CourseModel with _$CourseModel {
     List<TagModel>? tags,
     List<SectionModel>? sections,
     @JsonKey(name: 'is_enrolled') @Default(false) bool isEnrolled,
-    @JsonKey(name: 'enrollment_progress') double? enrollmentProgress,
+    @StringToNullableDoubleConverter() @JsonKey(name: 'enrollment_progress') double? enrollmentProgress,
     @JsonKey(name: 'created_at') DateTime? createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _CourseModel;
@@ -95,7 +96,7 @@ abstract class LessonContentModel with _$LessonContentModel {
     required String type,
     required String title,
     @JsonKey(name: 'video_url') String? videoUrl,
-    @Default(0) int duration,
+    @StringToIntConverter() @Default(0) int duration,
     @JsonKey(name: 'exercise_id') String? exerciseId,
     @JsonKey(name: 'is_mandatory') @Default(true) bool isMandatory,
     @JsonKey(name: 'display_order') @Default(0) int displayOrder,
@@ -111,7 +112,7 @@ abstract class LessonContentModel with _$LessonContentModel {
 abstract class LessonProgressModel with _$LessonProgressModel {
   const factory LessonProgressModel({
     String? status,
-    @JsonKey(name: 'progress_percentage') @Default(0) double progressPercentage,
+    @StringToDoubleConverter() @JsonKey(name: 'progress_percentage') @Default(0) double progressPercentage,
     @JsonKey(name: 'video_watched_seconds') @Default(0) int videoWatchedSeconds,
     @JsonKey(name: 'completed_at') DateTime? completedAt,
   }) = _LessonProgressModel;

@@ -1,13 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:study/features/auth/data/models/user_model.dart';
+import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/student/bloc/profile/profile_event.dart';
 import 'package:study/features/student/bloc/profile/profile_state.dart';
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
-  ProfileBloc() : super(const ProfileInitial()) {
+  ProfileBloc(this._authRepository) : super(const ProfileInitial()) {
     on<ProfileStarted>(_onStarted);
     on<ProfileLogoutRequested>(_onLogoutRequested);
   }
+
+  final AuthRepository _authRepository;
 
   Future<void> _onStarted(
     ProfileStarted event,
@@ -15,25 +17,25 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ) async {
     emit(const ProfileInProgress());
 
-    // Mock user data — replace với real auth service
-    await Future<void>.delayed(const Duration(milliseconds: 300));
-
-    emit(const ProfileSuccess(
-      user: UserModel(
-        id: 'user-1',
-        email: 'student@example.com',
-        fullName: 'Nguyen Van A',
-        phone: '0901234567',
-        bio: 'Hoc sinh lop 10A1',
-      ),
-    ));
+    try {
+      final user = await _authRepository.getMe();
+      emit(ProfileSuccess(user: user));
+    } catch (e) {
+      // Fallback to saved user nếu API fail
+      final savedUser = await _authRepository.getSavedUser();
+      if (savedUser != null) {
+        emit(ProfileSuccess(user: savedUser));
+      } else {
+        emit(ProfileFailure(e.toString()));
+      }
+    }
   }
 
   Future<void> _onLogoutRequested(
     ProfileLogoutRequested event,
     Emitter<ProfileState> emit,
   ) async {
-    // TODO: Call auth service logout
+    await _authRepository.logout();
     emit(const ProfileLoggedOut());
   }
 }

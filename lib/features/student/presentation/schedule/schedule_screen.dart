@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/data/daily_goals_storage.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
 import 'package:study/features/student/bloc/lesson/lesson_bloc.dart';
@@ -12,8 +13,10 @@ import 'package:study/features/student/presentation/home/widgets/schedule_timeli
 import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
 import 'package:study/features/student/presentation/schedule/widgets/calendar_widget.dart';
-import 'package:study/features/student/repository/student_repository_impl.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/theme/theme.dart';
+import 'package:study/widgets/tab_screen_header.dart';
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
@@ -35,37 +38,18 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final tt = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 56,
-        title: Text(
-          'Lịch học',
-          style: tt.titleLarge?.copyWith(
-            color: cs.onSurface,
-            fontWeight: FontWeight.w700,
-          ),
+      body: SafeArea(
+        child: BlocBuilder<ScheduleBloc, ScheduleState>(
+          builder: (context, state) {
+            return switch (state) {
+              ScheduleInitial() || ScheduleInProgress() => const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2.5),
+                  ),
+              ScheduleFailure(:final message) => _buildError(context, message),
+              ScheduleSuccess() => _buildContent(context, state),
+            };
+          },
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.today_outlined),
-            tooltip: 'Về hôm nay',
-            onPressed: () {
-              context.read<ScheduleBloc>().add(
-                ScheduleDateSelected(DateTime.now()),
-              );
-            },
-          ),
-        ],
-      ),
-      body: BlocBuilder<ScheduleBloc, ScheduleState>(
-        builder: (context, state) {
-          return switch (state) {
-            ScheduleInitial() || ScheduleInProgress() => const Center(
-              child: CircularProgressIndicator(strokeWidth: 2.5),
-            ),
-            ScheduleFailure(:final message) => _buildError(context, message),
-            ScheduleSuccess() => _buildContent(context, state),
-          };
-        },
       ),
     );
   }
@@ -125,6 +109,10 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
+          const TabScreenHeader(
+            title: 'Lịch học',
+            subtitle: 'Quản lý thời gian học tập.',
+          ),
           // Calendar section
           Padding(
             padding: const EdgeInsets.fromLTRB(
@@ -238,7 +226,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         context,
         MaterialPageRoute<void>(
           builder: (_) => BlocProvider(
-            create: (_) => LessonBloc(StudentRepositoryImpl())
+            create: (_) => LessonBloc(diContainer<StudentRepository>())
               ..add(LessonStarted(item.lessonId!)),
             child: const LessonDetailScreen(),
           ),
@@ -249,16 +237,75 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         context,
         MaterialPageRoute<void>(
           builder: (_) => BlocProvider(
-            create: (_) => CourseDetailBloc(StudentRepositoryImpl())
+            create: (_) => CourseDetailBloc(diContainer<StudentRepository>())
               ..add(CourseDetailStarted(item.courseId!)),
             child: const CourseDetailScreen(),
           ),
         ),
       );
+    } else if (item.classId != null) {
+      // Navigate to course for this class
+      _navigateToClassCourse(context, item.classId!);
     } else {
-      // Show snackbar for items without navigation
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Mở: ${item.title}')),
+      );
+    }
+  }
+
+  Future<void> _navigateToClassCourse(BuildContext context, String classId) async {
+    // Show loading
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final repo = diContainer<StudentRepository>();
+
+      // Get course_id from class
+      final classResult = await repo.getCourseIdFromClass(classId);
+      if (!context.mounted) return;
+
+      final courseId = classResult.valueOrNull;
+      if (courseId == null) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Không tìm thấy khóa học')),
+        );
+        return;
+      }
+
+      // Find enrollment for this course
+      final enrollmentsResult = await repo.getActiveEnrollments();
+      if (!context.mounted) return;
+      Navigator.pop(context);
+
+      final enrollments = enrollmentsResult.valueOrNull ?? [];
+      final enrollment = enrollments.where((e) => e.courseId == courseId).firstOrNull;
+
+      if (enrollment != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute<void>(
+            builder: (_) => BlocProvider(
+              create: (_) => CourseDetailBloc(diContainer<StudentRepository>())
+                ..add(CourseDetailStarted(enrollment.id)),
+              child: const CourseDetailScreen(),
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Bạn chưa đăng ký khóa học này')),
+        );
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Lỗi: $e')),
       );
     }
   }
@@ -499,10 +546,12 @@ class _FreeDay extends StatelessWidget {
             size: 24,
           ),
           AppSpacing.hGap12,
-          Text(
-            'Hôm nay free! Nghỉ ngơi hoặc học thêm nhé.',
-            style: tt.bodyMedium?.copyWith(
-              color: cs.onSecondaryContainer,
+          Expanded(
+            child: Text(
+              'Hôm nay free! Nghỉ ngơi hoặc học thêm nhé.',
+              style: tt.bodyMedium?.copyWith(
+                color: cs.onSecondaryContainer,
+              ),
             ),
           ),
         ],
@@ -521,22 +570,16 @@ class _DailyGoalsSection extends StatefulWidget {
 }
 
 class _DailyGoalsSectionState extends State<_DailyGoalsSection> {
-  // Goals lưu theo ngày
-  static final _goalsByDate = <String, List<_GoalItem>>{};
-
+  final _storage = DailyGoalsStorage.instance;
   final _controller = TextEditingController();
   bool _isAdding = false;
 
-  String get _dateKey =>
-      '${widget.date.year}-${widget.date.month}-${widget.date.day}';
-
-  List<_GoalItem> get _goals => _goalsByDate[_dateKey] ?? [];
+  List<DailyGoalItem> get _goals => _storage.getGoals(widget.date);
 
   @override
   void didUpdateWidget(covariant _DailyGoalsSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Reset adding state khi đổi ngày
-    if (_dateKey != '${oldWidget.date.year}-${oldWidget.date.month}-${oldWidget.date.day}') {
+    if (widget.date != oldWidget.date) {
       _isAdding = false;
       _controller.clear();
     }
@@ -553,12 +596,7 @@ class _DailyGoalsSectionState extends State<_DailyGoalsSection> {
     if (text.isEmpty) return;
 
     setState(() {
-      final goals = List<_GoalItem>.from(_goals);
-      goals.add(_GoalItem(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        title: text,
-      ));
-      _goalsByDate[_dateKey] = goals;
+      _storage.addGoal(widget.date, text);
       _controller.clear();
       _isAdding = false;
     });
@@ -566,22 +604,13 @@ class _DailyGoalsSectionState extends State<_DailyGoalsSection> {
 
   void _toggleGoal(String id) {
     setState(() {
-      final goals = List<_GoalItem>.from(_goals);
-      final index = goals.indexWhere((g) => g.id == id);
-      if (index != -1) {
-        goals[index] = goals[index].copyWith(
-          isCompleted: !goals[index].isCompleted,
-        );
-        _goalsByDate[_dateKey] = goals;
-      }
+      _storage.toggleGoal(widget.date, id);
     });
   }
 
   void _deleteGoal(String id) {
     setState(() {
-      final goals = List<_GoalItem>.from(_goals);
-      goals.removeWhere((g) => g.id == id);
-      _goalsByDate[_dateKey] = goals;
+      _storage.deleteGoal(widget.date, id);
     });
   }
 
@@ -759,26 +788,6 @@ class _DailyGoalsSectionState extends State<_DailyGoalsSection> {
   }
 }
 
-class _GoalItem {
-  _GoalItem({
-    required this.id,
-    required this.title,
-    this.isCompleted = false,
-  });
-
-  final String id;
-  final String title;
-  final bool isCompleted;
-
-  _GoalItem copyWith({bool? isCompleted}) {
-    return _GoalItem(
-      id: id,
-      title: title,
-      isCompleted: isCompleted ?? this.isCompleted,
-    );
-  }
-}
-
 class _GoalTile extends StatelessWidget {
   const _GoalTile({
     required this.goal,
@@ -786,7 +795,7 @@ class _GoalTile extends StatelessWidget {
     required this.onDelete,
   });
 
-  final _GoalItem goal;
+  final DailyGoalItem goal;
   final VoidCallback onToggle;
   final VoidCallback onDelete;
 

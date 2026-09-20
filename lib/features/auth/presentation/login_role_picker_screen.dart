@@ -26,12 +26,11 @@ class LoginRolePickerScreen extends StatefulWidget {
 }
 
 class _LoginRolePickerScreenState extends State<LoginRolePickerScreen>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late final LoginBloc _loginBloc;
   late final PageController _pageController;
   late final AnimationController _fadeController;
-
-  double _currentPageValue = 0;
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -40,20 +39,11 @@ class _LoginRolePickerScreenState extends State<LoginRolePickerScreen>
       authRepository: context.read<AuthRepository>(),
       deviceInfoHelper: DeviceInfoHelper(context.read<AuthStorage>()),
     );
-
-    _pageController = PageController(viewportFraction: 0.8);
-    _pageController.addListener(_onPageChanged);
-
+    _pageController = PageController(viewportFraction: 0.82);
     _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     )..forward();
-  }
-
-  void _onPageChanged() {
-    setState(() {
-      _currentPageValue = _pageController.page ?? 0;
-    });
   }
 
   @override
@@ -95,32 +85,72 @@ class _LoginRolePickerScreenState extends State<LoginRolePickerScreen>
               SnackBar(
                 content: Text(state.message),
                 behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
               ),
             );
           }
         },
         child: Scaffold(
           backgroundColor: cs.surface,
-          body: SafeArea(
-            child: BlocBuilder<LoginBloc, LoginState>(
-              builder: (context, state) {
-                if (state is LoginInProgress) {
-                  return Center(
-                    child: CircularProgressIndicator(color: cs.primary),
-                  );
-                }
-
-                return FadeTransition(
-                  opacity: _fadeController,
-                  child: Column(
-                    children: [
-                      _buildHeader(context),
-                      Expanded(child: _buildContent(context)),
-                    ],
-                  ),
+          body: BlocBuilder<LoginBloc, LoginState>(
+            builder: (context, state) {
+              if (state is LoginInProgress) {
+                return Center(
+                  child: CircularProgressIndicator(color: cs.brandBlue),
                 );
-              },
-            ),
+              }
+              return Stack(
+                children: [
+                  // Subtle background decoration
+                  Positioned(
+                    top: -120,
+                    right: -80,
+                    child: Container(
+                      width: 280,
+                      height: 280,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: cs.blue100.withValues(alpha: 0.4),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: -60,
+                    left: -100,
+                    child: Container(
+                      width: 220,
+                      height: 220,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: cs.blue50.withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ),
+                  // Content
+                  SafeArea(
+                    child: FadeTransition(
+                      opacity: CurvedAnimation(
+                        parent: _fadeController,
+                        curve: Curves.easeOut,
+                      ),
+                      child: Column(
+                        children: [
+                          AppSpacing.vGap8,
+                          _buildHeader(context),
+                          Expanded(child: _buildCarousel(context)),
+                          _buildPageIndicator(context),
+                          AppSpacing.vGap16,
+                          _buildContinueButton(context),
+                          AppSpacing.vGap12,
+                          _buildSwitchAccountLink(context),
+                          AppSpacing.vGap16,
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -133,82 +163,65 @@ class _LoginRolePickerScreenState extends State<LoginRolePickerScreen>
     final l10n = AppLocalizations.of(context)!;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 4, 20, 6),
-      child: Row(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xl,
+        vertical: AppSpacing.sm,
+      ),
+      child: Column(
         children: [
-          IconButton(
-            onPressed: () => Navigator.of(context).pop(),
-            icon: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: cs.onSurfaceVariant,
-              size: 20,
+          // Title
+          Text(
+            l10n.chooseProfileTitle,
+            style: tt.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: cs.onSurface,
+              letterSpacing: -0.3,
             ),
+            textAlign: TextAlign.center,
           ),
-          AppSpacing.hGap8,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l10n.chooseProfileTitle,
-                  style: tt.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: cs.onSurface,
-                  ),
-                ),
-                AppSpacing.vGap4,
-                Text(
-                  l10n.chooseProfileSubtitle,
-                  style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+          AppSpacing.vGap4,
+          // Subtitle
+          Text(
+            l10n.chooseProfileSubtitle,
+            style: tt.bodySmall?.copyWith(
+              color: cs.slate500,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(height: 2),
-        Expanded(
-          child: PageView.builder(
-            controller: _pageController,
-            physics: const BouncingScrollPhysics(),
-            itemCount: widget.roles.length,
-            itemBuilder: (context, index) {
-              return _buildAnimatedCard(context, widget.roles[index], index);
-            },
-          ),
-        ),
-        AppSpacing.vGap12,
-        _buildPageIndicator(context),
-        AppSpacing.vGap16,
-        _buildConfirmButton(context),
-        AppSpacing.vGap16,
-      ],
-    );
-  }
-
-  Widget _buildAnimatedCard(BuildContext context, RoleModel role, int index) {
-    final diff = (_currentPageValue - index);
-    final scale = 1 - (diff.abs() * 0.1).clamp(0.0, 0.2);
-    final opacity = 1 - (diff.abs() * 0.3).clamp(0.0, 0.5);
-
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: scale, end: scale),
-      duration: const Duration(milliseconds: 150),
-      builder: (context, scaleValue, child) {
-        return Transform.scale(
-          scale: scaleValue,
-          child: Opacity(
-            opacity: opacity,
-            child: _CompactRoleCard(role: role, isActive: diff.abs() < 0.5),
+  Widget _buildCarousel(BuildContext context) {
+    return PageView.builder(
+      controller: _pageController,
+      onPageChanged: (index) => setState(() => _currentIndex = index),
+      physics: const BouncingScrollPhysics(),
+      itemCount: widget.roles.length,
+      itemBuilder: (context, index) {
+        final role = widget.roles[index];
+        final isSelected = index == _currentIndex;
+        return AnimatedScale(
+          scale: isSelected ? 1.0 : 0.92,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          child: AnimatedOpacity(
+            opacity: isSelected ? 1.0 : 0.7,
+            duration: const Duration(milliseconds: 250),
+            child: _RoleCard(
+              role: role,
+              isSelected: isSelected,
+              onTap: () {
+                if (!isSelected) {
+                  _pageController.animateToPage(
+                    index,
+                    duration: const Duration(milliseconds: 350),
+                    curve: Curves.easeOutCubic,
+                  );
+                }
+              },
+            ),
           ),
         );
       },
@@ -217,664 +230,335 @@ class _LoginRolePickerScreenState extends State<LoginRolePickerScreen>
 
   Widget _buildPageIndicator(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final currentIndex = _currentPageValue.round();
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(widget.roles.length, (index) {
-        final isActive = currentIndex == index;
-
+        final isActive = index == _currentIndex;
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.symmetric(horizontal: 3),
-          width: isActive ? 20 : 6,
-          height: 6,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: isActive ? 28 : 8,
+          height: 8,
           decoration: BoxDecoration(
-            color: isActive ? cs.brandBlue : cs.slate300,
-            borderRadius: BorderRadius.circular(3),
+            color: isActive ? cs.brandBlue : cs.slate200,
+            borderRadius: AppRadius.borderFull,
           ),
         );
       }),
     );
   }
 
-  Widget _buildConfirmButton(BuildContext context) {
+  Widget _buildContinueButton(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
-    final currentIndex = _currentPageValue.round().clamp(
-      0,
-      widget.roles.length - 1,
-    );
-    final currentRole = widget.roles[currentIndex];
+    final currentRole = widget.roles[_currentIndex];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: SizedBox(
-        width: double.infinity,
-        height: 48,
-        child: FilledButton(
-          onPressed: () => _onRoleSelected(currentRole),
-          style: FilledButton.styleFrom(
-            backgroundColor: cs.brandBlue,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+      padding: AppSpacing.paddingHorizontalXl,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.borderMd,
+          boxShadow: [
+            BoxShadow(
+              color: cs.brandBlue.withValues(alpha: 0.25),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: SizedBox(
+          width: double.infinity,
+          height: 54,
+          child: FilledButton(
+            onPressed: () => _onRoleSelected(currentRole),
+            style: FilledButton.styleFrom(
+              backgroundColor: cs.brandBlue,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
+              elevation: 0,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  l10n.loginWithThisProfile,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+                AppSpacing.hGap8,
+                const Icon(Icons.arrow_forward_rounded, size: 20),
+              ],
+            ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSwitchAccountLink(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
+    return TextButton(
+      onPressed: () {
+        context.read<AuthBloc>().add(AuthLoggedOut());
+        Navigator.of(context).pop();
+      },
+      style: TextButton.styleFrom(
+        foregroundColor: cs.brandBlue,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.sm,
+        ),
+      ),
+      child: Text(
+        '${l10n.logout} & ${l10n.switchProfile}',
+        style: TextStyle(
+          color: cs.brandBlue,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+}
+
+/// Role card - soft, refined design
+class _RoleCard extends StatelessWidget {
+  const _RoleCard({
+    required this.role,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final RoleModel role;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    final label = role.displayName ?? RoleUtils.getLabel(role.name);
+    final description = role.description?.isNotEmpty == true
+        ? role.description!
+        : RoleUtils.getDescription(role.name);
+    final icon = RoleUtils.getIcon(role.name);
+    final capabilities = _getCapabilities(role.name);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: AppRadius.borderXl,
+          border: Border.all(
+            color: isSelected ? cs.brandBlue.withValues(alpha: 0.5) : cs.slate200,
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isSelected
+                  ? cs.brandBlue.withValues(alpha: 0.12)
+                  : cs.slate900.withValues(alpha: 0.06),
+              blurRadius: isSelected ? 24 : 12,
+              offset: Offset(0, isSelected ? 8 : 4),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
             children: [
-              Text(
-                l10n.loginWithThisProfile,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+              // Selected badge
+              AnimatedOpacity(
+                opacity: isSelected ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 200),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: cs.blue50,
+                    borderRadius: AppRadius.borderFull,
+                    border: Border.all(
+                      color: cs.brandBlue.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Text(
+                    'Đang chọn',
+                    style: tt.labelSmall?.copyWith(
+                      color: cs.brandBlue,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
-              AppSpacing.hGap8,
-              const Icon(Icons.arrow_forward_rounded, size: 18),
+
+              AppSpacing.vGap16,
+
+              // Icon with soft background
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: cs.blue50,
+                  borderRadius: AppRadius.borderLg,
+                ),
+                child: Icon(icon, size: 36, color: cs.brandBlue),
+              ),
+
+              AppSpacing.vGap16,
+
+              // Role name
+              Text(
+                label,
+                style: tt.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                  letterSpacing: -0.2,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              AppSpacing.vGap8,
+
+              // Description
+              Text(
+                description,
+                style: tt.bodyMedium?.copyWith(
+                  color: cs.slate500,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+
+              AppSpacing.vGap24,
+
+              // Capabilities
+              Expanded(
+                child: Column(
+                  children: capabilities.map((cap) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: cs.blue50,
+                              borderRadius: AppRadius.borderSm,
+                            ),
+                            child: Icon(
+                              cap.icon,
+                              size: 18,
+                              color: cs.brandBlue,
+                            ),
+                          ),
+                          AppSpacing.hGap12,
+                          Expanded(
+                            child: Text(
+                              cap.label,
+                              style: tt.bodyMedium?.copyWith(
+                                color: cs.slate700,
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              // Radio indicator
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOutCubic,
+                width: 26,
+                height: 26,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected ? cs.brandBlue : Colors.transparent,
+                  border: Border.all(
+                    color: isSelected ? cs.brandBlue : cs.slate300,
+                    width: 2,
+                  ),
+                ),
+                child: isSelected
+                    ? const Icon(
+                        Icons.check_rounded,
+                        size: 16,
+                        color: Colors.white,
+                      )
+                    : null,
+              ),
             ],
           ),
         ),
       ),
     );
   }
-}
 
-/// Compact role card - nhỏ gọn, xinh xắn
-class _CompactRoleCard extends StatelessWidget {
-  const _CompactRoleCard({required this.role, required this.isActive});
-
-  final RoleModel role;
-  final bool isActive;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-    final l10n = AppLocalizations.of(context)!;
-    final theme = _RoleTheme.fromName(role.name, cs);
-    final label = role.displayName ?? RoleUtils.getLabel(role.name);
-    final description = role.description?.isNotEmpty == true
-        ? role.description!
-        : RoleUtils.getDescription(role.name);
-    final orgName = role.organizationName;
-    final isOrgRole = role.type == 'organization';
-    final roleName = role.name;
-    final benefits = _roleBenefits(roleName);
-    final spotlight = _roleSpotlight(roleName);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        decoration: BoxDecoration(
-          color: cs.surface,
-          borderRadius: AppRadius.borderXl,
-          border: Border.all(
-            color: isActive ? theme.primaryColor : cs.slate200,
-            width: isActive ? 2 : 1,
-          ),
-          boxShadow: isActive ? cs.shadowPrimary : cs.shadowCard,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          children: [
-            Positioned(
-              top: -46,
-              right: -32,
-              child: Container(
-                width: 148,
-                height: 148,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: theme.primaryColor.withValues(alpha: 0.08),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: -34,
-              left: -28,
-              child: Container(
-                width: 112,
-                height: 112,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: theme.secondaryColor.withValues(alpha: 0.08),
-                ),
-              ),
-            ),
-            Column(
-              children: [
-                Container(
-                  height: 10,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [theme.primaryColor, theme.secondaryColor],
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 64,
-                              height: 64,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    theme.primaryColor,
-                                    theme.secondaryColor,
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: AppRadius.borderLg,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: theme.primaryColor.withValues(
-                                      alpha: 0.22,
-                                    ),
-                                    blurRadius: 18,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                theme.icon,
-                                size: 32,
-                                color: Colors.white,
-                              ),
-                            ),
-                            AppSpacing.hGap16,
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    label,
-                                    style: tt.titleLarge?.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                      color: cs.onSurface,
-                                      height: 1.15,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  AppSpacing.vGap8,
-                                  _ProfilePill(
-                                    color: theme.primaryColor,
-                                    icon: isOrgRole
-                                        ? Icons.business_center_rounded
-                                        : Icons.verified_user_rounded,
-                                    label: isOrgRole
-                                        ? l10n.organizationProfile
-                                        : l10n.systemProfile,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        AppSpacing.vGap16,
-                        Text(
-                          description,
-                          style: tt.bodyMedium?.copyWith(
-                            color: cs.slate600,
-                            height: 1.45,
-                          ),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (orgName != null && orgName.isNotEmpty) ...[
-                          AppSpacing.vGap12,
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: cs.slate50,
-                              borderRadius: AppRadius.borderMd,
-                              border: Border.all(color: cs.slate200),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    color: theme.primaryColor.withValues(
-                                      alpha: 0.1,
-                                    ),
-                                    borderRadius: AppRadius.borderSm,
-                                  ),
-                                  child: Icon(
-                                    Icons.apartment_rounded,
-                                    size: 18,
-                                    color: theme.primaryColor,
-                                  ),
-                                ),
-                                AppSpacing.hGap12,
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Tổ chức',
-                                        style: tt.labelSmall?.copyWith(
-                                          color: cs.slate500,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        orgName,
-                                        style: tt.bodySmall?.copyWith(
-                                          color: cs.slate700,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        AppSpacing.vGap12,
-                        Expanded(
-                          child: _SpotlightPanel(
-                            color: theme.primaryColor,
-                            icon: spotlight.icon,
-                            title: spotlight.title,
-                            body: spotlight.body,
-                          ),
-                        ),
-                        AppSpacing.vGap12,
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: benefits
-                              .map(
-                                (benefit) => _BenefitChip(
-                                  icon: benefit.icon,
-                                  label: benefit.label,
-                                  color: theme.primaryColor,
-                                ),
-                              )
-                              .toList(),
-                        ),
-                        AppSpacing.vGap12,
-                        AnimatedOpacity(
-                          duration: const Duration(milliseconds: 200),
-                          opacity: isActive ? 1 : 0.54,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isActive
-                                  ? theme.primaryColor.withValues(alpha: 0.1)
-                                  : cs.slate50,
-                              borderRadius: AppRadius.borderMd,
-                              border: Border.all(
-                                color: isActive
-                                    ? theme.primaryColor.withValues(alpha: 0.18)
-                                    : cs.slate200,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  isActive
-                                      ? Icons.check_circle_rounded
-                                      : Icons.swipe_rounded,
-                                  size: 18,
-                                  color: isActive
-                                      ? theme.primaryColor
-                                      : cs.slate500,
-                                ),
-                                AppSpacing.hGap8,
-                                Expanded(
-                                  child: Text(
-                                    isActive
-                                        ? l10n.tapToSelect
-                                        : 'Lướt để xem profile này',
-                                    style: tt.labelMedium?.copyWith(
-                                      color: isActive
-                                          ? theme.primaryColor
-                                          : cs.slate500,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  List<_RoleBenefit> _roleBenefits(String roleName) {
+  List<_Capability> _getCapabilities(String roleName) {
     final name = roleName.toUpperCase();
 
     if (name.contains('STUDENT')) {
       return const [
-        _RoleBenefit(Icons.play_lesson_rounded, 'Bài học'),
-        _RoleBenefit(Icons.timeline_rounded, 'Tiến độ'),
-        _RoleBenefit(Icons.emoji_events_rounded, 'Thành tích'),
-      ];
-    }
-
-    if (name.contains('TEACHER')) {
-      return const [
-        _RoleBenefit(Icons.edit_note_rounded, 'Soạn bài'),
-        _RoleBenefit(Icons.groups_rounded, 'Lớp học'),
-        _RoleBenefit(Icons.insights_rounded, 'Báo cáo'),
+        _Capability(Icons.menu_book_outlined, 'Học tập mọi lúc mọi nơi'),
+        _Capability(Icons.assignment_outlined, 'Làm bài và kiểm tra'),
+        _Capability(Icons.insights_outlined, 'Theo dõi tiến độ cá nhân'),
       ];
     }
 
     if (name.contains('PARENT')) {
       return const [
-        _RoleBenefit(Icons.child_care_rounded, 'Con em'),
-        _RoleBenefit(Icons.fact_check_rounded, 'Kết quả'),
-        _RoleBenefit(Icons.notifications_active_rounded, 'Nhắc nhở'),
+        _Capability(Icons.visibility_outlined, 'Theo dõi tiến độ học tập'),
+        _Capability(Icons.notifications_outlined, 'Nhận thông báo, báo cáo'),
+        _Capability(Icons.chat_outlined, 'Kết nối với giáo viên'),
+      ];
+    }
+
+    if (name.contains('TEACHER')) {
+      return const [
+        _Capability(Icons.groups_outlined, 'Quản lý lớp học dễ dàng'),
+        _Capability(Icons.add_task_outlined, 'Tạo và giao bài giảng'),
+        _Capability(Icons.analytics_outlined, 'Theo dõi kết quả học sinh'),
       ];
     }
 
     if (name.contains('OWNER') || name.contains('ORG')) {
       return const [
-        _RoleBenefit(Icons.domain_rounded, 'Tổ chức'),
-        _RoleBenefit(Icons.people_alt_rounded, 'Nhân sự'),
-        _RoleBenefit(Icons.bar_chart_rounded, 'Vận hành'),
+        _Capability(Icons.domain_outlined, 'Quản lý tổ chức'),
+        _Capability(Icons.people_outline, 'Quản lý nhân sự'),
+        _Capability(Icons.bar_chart_outlined, 'Báo cáo và thống kê'),
       ];
     }
 
     return const [
-      _RoleBenefit(Icons.dashboard_customize_rounded, 'Không gian riêng'),
-      _RoleBenefit(Icons.security_rounded, 'Quyền truy cập'),
-      _RoleBenefit(Icons.bolt_rounded, 'Tiếp tục nhanh'),
+      _Capability(Icons.dashboard_outlined, 'Không gian làm việc riêng'),
+      _Capability(Icons.security_outlined, 'Quyền truy cập phù hợp'),
     ];
   }
-
-  _RoleSpotlight _roleSpotlight(String roleName) {
-    final name = roleName.toUpperCase();
-
-    if (name.contains('STUDENT')) {
-      return const _RoleSpotlight(
-        Icons.auto_stories_rounded,
-        'Vào lớp học của bạn',
-        'Tiếp tục bài đang học, xem lịch học và cập nhật thành tích mới nhất.',
-      );
-    }
-
-    if (name.contains('TEACHER')) {
-      return const _RoleSpotlight(
-        Icons.workspace_premium_rounded,
-        'Không gian giảng dạy',
-        'Quản lý lớp, giao bài và theo dõi tiến độ học sinh trong một nơi.',
-      );
-    }
-
-    if (name.contains('PARENT')) {
-      return const _RoleSpotlight(
-        Icons.family_restroom_rounded,
-        'Theo sát con em',
-        'Xem kết quả, lịch học và những cập nhật quan trọng từ giáo viên.',
-      );
-    }
-
-    if (name.contains('OWNER') || name.contains('ORG')) {
-      return const _RoleSpotlight(
-        Icons.query_stats_rounded,
-        'Bảng điều hành tổ chức',
-        'Nắm nhanh học viên, giáo viên, doanh thu và hiệu suất vận hành.',
-      );
-    }
-
-    return const _RoleSpotlight(
-      Icons.dashboard_customize_rounded,
-      'Không gian làm việc',
-      'Mở đúng quyền truy cập và tiếp tục công việc của bạn.',
-    );
-  }
 }
 
-class _SpotlightPanel extends StatelessWidget {
-  const _SpotlightPanel({
-    required this.color,
-    required this.icon,
-    required this.title,
-    required this.body,
-  });
-
-  final Color color;
-  final IconData icon;
-  final String title;
-  final String body;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: AppRadius.borderLg,
-        border: Border.all(color: color.withValues(alpha: 0.14)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: AppRadius.borderMd,
-            ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          AppSpacing.hGap12,
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: tt.titleSmall?.copyWith(
-                    color: cs.slate800,
-                    fontWeight: FontWeight.w800,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                AppSpacing.vGap4,
-                Text(
-                  body,
-                  style: tt.bodySmall?.copyWith(
-                    color: cs.slate600,
-                    height: 1.35,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfilePill extends StatelessWidget {
-  const _ProfilePill({
-    required this.color,
-    required this.icon,
-    required this.label,
-  });
-
-  final Color color;
+class _Capability {
+  const _Capability(this.icon, this.label);
   final IconData icon;
   final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final tt = Theme.of(context).textTheme;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: AppRadius.borderFull,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              label,
-              style: tt.labelSmall?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w700,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BenefitChip extends StatelessWidget {
-  const _BenefitChip({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: AppRadius.borderFull,
-        border: Border.all(color: color.withValues(alpha: 0.16)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 15, color: color),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: tt.labelSmall?.copyWith(
-              color: cs.slate700,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RoleBenefit {
-  const _RoleBenefit(this.icon, this.label);
-
-  final IconData icon;
-  final String label;
-}
-
-class _RoleSpotlight {
-  const _RoleSpotlight(this.icon, this.title, this.body);
-
-  final IconData icon;
-  final String title;
-  final String body;
-}
-
-/// Role theme - Professional Blue variations
-class _RoleTheme {
-  const _RoleTheme({
-    required this.icon,
-    required this.primaryColor,
-    required this.secondaryColor,
-  });
-
-  factory _RoleTheme.fromName(String roleName, ColorScheme cs) {
-    final name = roleName.toUpperCase();
-
-    if (name.contains('STUDENT')) {
-      return const _RoleTheme(
-        icon: Icons.school_rounded,
-        primaryColor: RoleColors.studentPrimary,
-        secondaryColor: RoleColors.studentSecondary,
-      );
-    }
-
-    if (name.contains('TEACHER')) {
-      return const _RoleTheme(
-        icon: Icons.psychology_rounded,
-        primaryColor: RoleColors.teacherPrimary,
-        secondaryColor: RoleColors.teacherSecondary,
-      );
-    }
-
-    if (name.contains('PARENT')) {
-      return const _RoleTheme(
-        icon: Icons.family_restroom_rounded,
-        primaryColor: RoleColors.parentPrimary,
-        secondaryColor: RoleColors.parentSecondary,
-      );
-    }
-
-    if (name.contains('OWNER') || name.contains('ORG')) {
-      return const _RoleTheme(
-        icon: Icons.domain_rounded,
-        primaryColor: RoleColors.orgPrimary,
-        secondaryColor: RoleColors.orgSecondary,
-      );
-    }
-
-    return _RoleTheme(
-      icon: Icons.person_rounded,
-      primaryColor: cs.slate500,
-      secondaryColor: cs.slate300,
-    );
-  }
-
-  final IconData icon;
-  final Color primaryColor;
-  final Color secondaryColor;
 }

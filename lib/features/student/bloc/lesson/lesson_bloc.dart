@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/student/bloc/lesson/lesson_event.dart';
 import 'package:study/features/student/bloc/lesson/lesson_state.dart';
+import 'package:study/features/student/data/models/models.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 
 class LessonBloc extends Bloc<LessonEvent, LessonState> {
@@ -8,7 +9,6 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
     on<LessonStarted>(_onStarted);
     on<LessonContentTabChanged>(_onTabChanged);
     on<LessonCompleted>(_onCompleted);
-    on<LessonVideoProgressUpdated>(_onVideoProgress);
   }
 
   final StudentRepository _repository;
@@ -23,10 +23,20 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
 
     final result = await _repository.getLessonDetail(event.lessonId);
 
-    result.when(
-      success: (lesson) {
+    await result.when(
+      success: (lesson) async {
         final isCompleted = lesson.progress?.status == 'completed';
-        emit(LessonSuccess(lesson: lesson, isCompleted: isCompleted));
+        // Fetch quizzes for this lesson
+        final quizzesResult = await _repository.getQuizzesByLesson(event.lessonId);
+        final quizzes = quizzesResult.when(
+          success: (q) => q,
+          failure: (_) => <QuizModel>[],
+        );
+        emit(LessonSuccess(
+          lesson: lesson,
+          isCompleted: isCompleted,
+          quizzes: quizzes,
+        ));
       },
       failure: (error) {
         emit(LessonFailure(error.message ?? 'Loi khong xac dinh'));
@@ -51,15 +61,14 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
     final currentState = state;
     if (currentState is! LessonSuccess || _lessonId == null) return;
 
-    await _repository.markLessonComplete(_lessonId!);
-    emit(currentState.copyWith(isCompleted: true));
-  }
-
-  void _onVideoProgress(
-    LessonVideoProgressUpdated event,
-    Emitter<LessonState> emit,
-  ) {
-    // Track video progress locally
-    // TODO: Sync với server nếu cần
+    final result = await _repository.markLessonComplete(_lessonId!);
+    final courseCompleted = result.when(
+      success: (completed) => completed,
+      failure: (_) => false,
+    );
+    emit(currentState.copyWith(
+      isCompleted: true,
+      courseCompleted: courseCompleted,
+    ));
   }
 }

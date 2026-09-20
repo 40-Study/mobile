@@ -1843,6 +1843,882 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You have multiple profiles. Choose one to continue.'**
   String get chooseProfileSubtitle;
+
+  /// No description provided for @achievementTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement'**
+  String get achievementTitle;
+
+  /// No description provided for @allBadges.
+  ///
+  /// In en, this message translates to:
+  /// **'All Badges'**
+  String get allBadges;
+
+  /// No description provided for @badgesEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'{earned} / {total} badges earned'**
+  String badgesEarned(Object earned, Object total);
+
+  /// No description provided for @overallProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall Progress'**
+  String get overallProgress;
+
+  /// No description provided for @earned.
+  ///
+  /// In en, this message translates to:
+  /// **'Earned'**
+  String get earned;
+
+  /// No description provided for @inProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress'**
+  String get inProgress;
+
+  /// No description provided for @notEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Earned'**
+  String get notEarned;
+
+  /// No description provided for @filter.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get filter;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// No description provided for @learning.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning'**
+  String get learning;
+
+  /// No description provided for @habit.
+  ///
+  /// In en, this message translates to:
+  /// **'Habit'**
+  String get habit;
+
+  /// No description provided for @achievement.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement'**
+  String get achievement;
+
+  /// No description provided for @status.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get status;
+
+  /// No description provided for @category.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// No description provided for @apply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get apply;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @newBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW'**
+  String get newBadge;
+
+  /// No description provided for @certificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate'**
+  String get certificate;
+
+  /// No description provided for @yourCertificates.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Certificates'**
+  String get yourCertificates;
+
+  /// No description provided for @certificatesEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} certificates earned'**
+  String certificatesEarned(Object count);
+
+  /// No description provided for @completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get completed;
+
+  /// No description provided for @studying.
+  ///
+  /// In en, this message translates to:
+  /// **'Studying'**
+  String get studying;
+
+  /// No description provided for @design.
+  ///
+  /// In en, this message translates to:
+  /// **'Design'**
+  String get design;
+
+  /// No description provided for @programming.
+  ///
+  /// In en, this message translates to:
+  /// **'Programming'**
+  String get programming;
+
+  /// No description provided for @business.
+  ///
+  /// In en, this message translates to:
+  /// **'Business'**
+  String get business;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @lessons.
+  ///
+  /// In en, this message translates to:
+  /// **'lessons'**
+  String get lessons;
+
+  /// No description provided for @certificateDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate Detail'**
+  String get certificateDetail;
+
+  /// No description provided for @certificateConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This certificate confirms you have completed the course and mastered the fundamentals.'**
+  String get certificateConfirm;
+
+  /// No description provided for @download.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get download;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @addToLinkedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to\nLinkedIn'**
+  String get addToLinkedIn;
+
+  /// No description provided for @printCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get printCertificate;
+
+  /// No description provided for @courseInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Information'**
+  String get courseInfo;
+
+  /// No description provided for @course.
+  ///
+  /// In en, this message translates to:
+  /// **'Course'**
+  String get course;
+
+  /// No description provided for @completionDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Completion Date'**
+  String get completionDate;
+
+  /// No description provided for @duration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get duration;
+
+  /// No description provided for @instructor.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructor'**
+  String get instructor;
+
+  /// No description provided for @level.
+  ///
+  /// In en, this message translates to:
+  /// **'Level'**
+  String get level;
+
+  /// No description provided for @basic.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic'**
+  String get basic;
+
+  /// No description provided for @skillsEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'Skills Earned'**
+  String get skillsEarned;
+
+  /// No description provided for @downloadPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Download PDF'**
+  String get downloadPdf;
+
+  /// No description provided for @copyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Link'**
+  String get copyLink;
+
+  /// No description provided for @showQrCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Show QR Code'**
+  String get showQrCode;
+
+  /// No description provided for @reportIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Report Issue'**
+  String get reportIssue;
+
+  /// No description provided for @viewCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'View Certificate'**
+  String get viewCertificate;
+
+  /// No description provided for @continueLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Learning'**
+  String get continueLearning;
+
+  /// No description provided for @recentBadges.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Badges'**
+  String get recentBadges;
+
+  /// No description provided for @learningActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Activity'**
+  String get learningActivity;
+
+  /// No description provided for @daysLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days learned'**
+  String daysLearned(Object count);
+
+  /// No description provided for @less.
+  ///
+  /// In en, this message translates to:
+  /// **'Less'**
+  String get less;
+
+  /// No description provided for @more.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// No description provided for @learningTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Trend'**
+  String get learningTrend;
+
+  /// No description provided for @last7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 7 days'**
+  String get last7Days;
+
+  /// No description provided for @minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'min'**
+  String get minutes;
+
+  /// No description provided for @studyHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Study Hours'**
+  String get studyHours;
+
+  /// No description provided for @completedLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed Lessons'**
+  String get completedLessons;
+
+  /// No description provided for @badges.
+  ///
+  /// In en, this message translates to:
+  /// **'Badges'**
+  String get badges;
+
+  /// No description provided for @goodMorning.
+  ///
+  /// In en, this message translates to:
+  /// **'Good morning'**
+  String get goodMorning;
+
+  /// No description provided for @goodAfternoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Good afternoon'**
+  String get goodAfternoon;
+
+  /// No description provided for @goodEvening.
+  ///
+  /// In en, this message translates to:
+  /// **'Good evening'**
+  String get goodEvening;
+
+  /// No description provided for @yourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account'**
+  String get yourAccount;
+
+  /// No description provided for @switchProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch profile'**
+  String get switchProfile;
+
+  /// No description provided for @addProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Add profile'**
+  String get addProfile;
+
+  /// No description provided for @updatePersonalDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your personal details'**
+  String get updatePersonalDetails;
+
+  /// No description provided for @passwordSecurityHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Password, 2FA, login devices'**
+  String get passwordSecurityHint;
+
+  /// No description provided for @subscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get subscription;
+
+  /// No description provided for @managePlanBilling.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your plan and billing'**
+  String get managePlanBilling;
+
+  /// No description provided for @customizeNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize your notifications'**
+  String get customizeNotifications;
+
+  /// No description provided for @privacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get privacy;
+
+  /// No description provided for @managePrivacySettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your privacy settings'**
+  String get managePrivacySettings;
+
+  /// No description provided for @general.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get general;
+
+  /// No description provided for @helpCenter.
+  ///
+  /// In en, this message translates to:
+  /// **'Help center'**
+  String get helpCenter;
+
+  /// No description provided for @faqAndSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'FAQ and support'**
+  String get faqAndSupport;
+
+  /// No description provided for @version.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String version(Object version);
+
+  /// No description provided for @signOutHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out from your current account'**
+  String get signOutHint;
+
+  /// No description provided for @premium.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium'**
+  String get premium;
+
+  /// No description provided for @student.
+  ///
+  /// In en, this message translates to:
+  /// **'Student'**
+  String get student;
+
+  /// No description provided for @changePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Change photo'**
+  String get changePhoto;
+
+  /// No description provided for @bioHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about yourself...'**
+  String get bioHint;
+
+  /// No description provided for @verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get verified;
+
+  /// No description provided for @portfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio'**
+  String get portfolio;
+
+  /// No description provided for @myPortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'My Portfolio'**
+  String get myPortfolio;
+
+  /// No description provided for @editPortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editPortfolio;
+
+  /// No description provided for @previewPortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get previewPortfolio;
+
+  /// No description provided for @introduction.
+  ///
+  /// In en, this message translates to:
+  /// **'Introduction'**
+  String get introduction;
+
+  /// No description provided for @featuredProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Featured Projects'**
+  String get featuredProjects;
+
+  /// No description provided for @experience.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience'**
+  String get experience;
+
+  /// No description provided for @education.
+  ///
+  /// In en, this message translates to:
+  /// **'Education'**
+  String get education;
+
+  /// No description provided for @yearsExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Years experience'**
+  String get yearsExperience;
+
+  /// No description provided for @projectsCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects completed'**
+  String get projectsCompleted;
+
+  /// No description provided for @followers.
+  ///
+  /// In en, this message translates to:
+  /// **'Followers'**
+  String get followers;
+
+  /// No description provided for @addProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Add project'**
+  String get addProject;
+
+  /// No description provided for @addExperience.
+  ///
+  /// In en, this message translates to:
+  /// **'Add experience'**
+  String get addExperience;
+
+  /// No description provided for @addEducation.
+  ///
+  /// In en, this message translates to:
+  /// **'Add education'**
+  String get addEducation;
+
+  /// No description provided for @addSkill.
+  ///
+  /// In en, this message translates to:
+  /// **'Add skill'**
+  String get addSkill;
+
+  /// No description provided for @present.
+  ///
+  /// In en, this message translates to:
+  /// **'Present'**
+  String get present;
+
+  /// No description provided for @customizePortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize portfolio'**
+  String get customizePortfolio;
+
+  /// No description provided for @manageLayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage layout'**
+  String get manageLayout;
+
+  /// No description provided for @toggleVisibility.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle section visibility'**
+  String get toggleVisibility;
+
+  /// No description provided for @publicPortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'Public'**
+  String get publicPortfolio;
+
+  /// No description provided for @privatePortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'Only me'**
+  String get privatePortfolio;
+
+  /// No description provided for @linkOnlyPortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'People with link'**
+  String get linkOnlyPortfolio;
+
+  /// No description provided for @saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get saved;
+
+  /// No description provided for @saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get saving;
+
+  /// No description provided for @viewPortfolio.
+  ///
+  /// In en, this message translates to:
+  /// **'View Portfolio'**
+  String get viewPortfolio;
+
+  /// No description provided for @projectName.
+  ///
+  /// In en, this message translates to:
+  /// **'Project name'**
+  String get projectName;
+
+  /// No description provided for @projectNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g: EduFlow'**
+  String get projectNameHint;
+
+  /// No description provided for @shortDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Short description'**
+  String get shortDescription;
+
+  /// No description provided for @shortDescriptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g: Learning management system'**
+  String get shortDescriptionHint;
+
+  /// No description provided for @details.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get details;
+
+  /// No description provided for @categoryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get categoryLabel;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// No description provided for @skillName.
+  ///
+  /// In en, this message translates to:
+  /// **'Skill name'**
+  String get skillName;
+
+  /// No description provided for @skillNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g: UI Design, Figma, React...'**
+  String get skillNameHint;
+
+  /// No description provided for @proficiencyLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Proficiency level'**
+  String get proficiencyLevel;
+
+  /// No description provided for @position.
+  ///
+  /// In en, this message translates to:
+  /// **'Position'**
+  String get position;
+
+  /// No description provided for @positionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g: UI/UX Designer'**
+  String get positionHint;
+
+  /// No description provided for @company.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get company;
+
+  /// No description provided for @companyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g: Google, Vela Studio...'**
+  String get companyHint;
+
+  /// No description provided for @jobDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Job description'**
+  String get jobDescription;
+
+  /// No description provided for @editIntroduction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit introduction'**
+  String get editIntroduction;
+
+  /// No description provided for @fullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name'**
+  String get fullName;
+
+  /// No description provided for @jobTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Job title'**
+  String get jobTitle;
+
+  /// No description provided for @jobTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g: UI/UX Designer'**
+  String get jobTitleHint;
+
+  /// No description provided for @locationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get locationLabel;
+
+  /// No description provided for @locationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g: Hanoi, Vietnam'**
+  String get locationHint;
+
+  /// No description provided for @websiteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Website'**
+  String get websiteLabel;
+
+  /// No description provided for @websiteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'E.g: yourname.design'**
+  String get websiteHint;
+
+  /// No description provided for @aboutYourself.
+  ///
+  /// In en, this message translates to:
+  /// **'About yourself'**
+  String get aboutYourself;
+
+  /// No description provided for @aboutYourselfHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a few lines about you...'**
+  String get aboutYourselfHint;
+
+  /// No description provided for @dragToReorder.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder sections'**
+  String get dragToReorder;
+
+  /// No description provided for @privacySettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get privacySettings;
+
+  /// No description provided for @everyoneCanView.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone can view'**
+  String get everyoneCanView;
+
+  /// No description provided for @onlyYouCanView.
+  ///
+  /// In en, this message translates to:
+  /// **'Only you can view'**
+  String get onlyYouCanView;
+
+  /// No description provided for @onlyWithLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Only people with link can view'**
+  String get onlyWithLink;
+
+  /// No description provided for @linkCopiedToShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied for sharing'**
+  String get linkCopiedToShare;
+
+  /// No description provided for @linkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied'**
+  String get linkCopied;
+
+  /// No description provided for @creatingPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating PDF...'**
+  String get creatingPdf;
+
+  /// No description provided for @viewAsOthers.
+  ///
+  /// In en, this message translates to:
+  /// **'View portfolio as others see it'**
+  String get viewAsOthers;
+
+  /// No description provided for @shareOnSocial.
+  ///
+  /// In en, this message translates to:
+  /// **'Share portfolio on social media'**
+  String get shareOnSocial;
+
+  /// No description provided for @copyPortfolioLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy portfolio link'**
+  String get copyPortfolioLink;
+
+  /// No description provided for @downloadPortfolioPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Download portfolio as PDF'**
+  String get downloadPortfolioPdf;
+
+  /// No description provided for @addItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Add item'**
+  String get addItem;
 }
 
 class _AppLocalizationsDelegate

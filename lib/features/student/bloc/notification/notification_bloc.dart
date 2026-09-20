@@ -1,14 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/student/bloc/notification/notification_event.dart';
 import 'package:study/features/student/bloc/notification/notification_state.dart';
-import 'package:study/features/student/data/models/models.dart';
+import 'package:study/features/student/repository/student_repository.dart';
 
 class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
-  NotificationBloc() : super(const NotificationInitial()) {
+  NotificationBloc(this._repository) : super(const NotificationInitial()) {
     on<NotificationStarted>(_onStarted);
     on<NotificationMarkedRead>(_onMarkedRead);
     on<NotificationMarkedAllRead>(_onMarkedAllRead);
   }
+
+  final StudentRepository _repository;
 
   Future<void> _onStarted(
     NotificationStarted event,
@@ -16,48 +18,20 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
   ) async {
     emit(const NotificationInProgress());
 
-    await Future<void>.delayed(const Duration(milliseconds: 300));
+    final result = await _repository.getNotifications();
 
-    // Mock data
-    final now = DateTime.now();
-    final notifications = [
-      NotificationModel(
-        id: '1',
-        title: 'Bai hoc moi',
-        body: 'Khoa hoc Flutter da cap nhat bai hoc moi',
-        type: NotificationType.course,
-        createdAt: now,
-      ),
-      NotificationModel(
-        id: '2',
-        title: 'Livestream sap dien ra',
-        body: 'Buoi hoc truc tuyen bat dau luc 14:00',
-        type: NotificationType.livestream,
-        createdAt: now.subtract(const Duration(hours: 2)),
-      ),
-      NotificationModel(
-        id: '3',
-        title: 'Deadline sap toi',
-        body: 'Bai tap "React Hooks" het han trong 2 ngay',
-        type: NotificationType.assignment,
-        isRead: true,
-        createdAt: now.subtract(const Duration(days: 1)),
-      ),
-      NotificationModel(
-        id: '4',
-        title: 'Huy hieu moi',
-        body: 'Ban da dat duoc huy hieu "7 ngay streak"',
-        type: NotificationType.achievement,
-        createdAt: now.subtract(const Duration(days: 3)),
-      ),
-    ];
-
-    final unreadCount = notifications.where((n) => !n.isRead).length;
-
-    emit(NotificationSuccess(
-      notifications: notifications,
-      unreadCount: unreadCount,
-    ));
+    result.when(
+      success: (notifications) {
+        final unreadCount = notifications.where((n) => !n.isRead).length;
+        emit(NotificationSuccess(
+          notifications: notifications,
+          unreadCount: unreadCount,
+        ));
+      },
+      failure: (failure) {
+        emit(NotificationFailure(failure.message ?? 'Đã có lỗi xảy ra'));
+      },
+    );
   }
 
   Future<void> _onMarkedRead(
@@ -67,27 +41,19 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     final current = state;
     if (current is! NotificationSuccess) return;
 
+    // Optimistic update
     final updated = current.notifications.map((n) {
       if (n.id == event.id) {
-        return NotificationModel(
-          id: n.id,
-          title: n.title,
-          body: n.body,
-          type: n.type,
-          isRead: true,
-          createdAt: n.createdAt,
-          actionUrl: n.actionUrl,
-        );
+        return n.copyWith(isRead: true);
       }
       return n;
     }).toList();
 
     final unreadCount = updated.where((n) => !n.isRead).length;
+    emit(NotificationSuccess(notifications: updated, unreadCount: unreadCount));
 
-    emit(NotificationSuccess(
-      notifications: updated,
-      unreadCount: unreadCount,
-    ));
+    // Call API
+    await _repository.markNotificationRead(event.id);
   }
 
   Future<void> _onMarkedAllRead(
@@ -97,21 +63,11 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     final current = state;
     if (current is! NotificationSuccess) return;
 
-    final updated = current.notifications.map((n) {
-      return NotificationModel(
-        id: n.id,
-        title: n.title,
-        body: n.body,
-        type: n.type,
-        isRead: true,
-        createdAt: n.createdAt,
-        actionUrl: n.actionUrl,
-      );
-    }).toList();
+    // Optimistic update
+    final updated = current.notifications.map((n) => n.copyWith(isRead: true)).toList();
+    emit(NotificationSuccess(notifications: updated, unreadCount: 0));
 
-    emit(NotificationSuccess(
-      notifications: updated,
-      unreadCount: 0,
-    ));
+    // Call API
+    await _repository.markAllNotificationsRead();
   }
 }

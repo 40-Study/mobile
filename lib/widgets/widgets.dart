@@ -1,12 +1,13 @@
 export 'app_drawer.dart';
+export 'cached_avatar.dart';
 export 'app_header_bar.dart';
 export 'bottom_sheet_dialog.dart';
 export 'bottom_sheet_dialog_icon.dart';
 export 'empty_state.dart';
 export 'enrollment_card.dart';
 export 'loading_indicator.dart';
-export 'schedule_card.dart';
 export 'preference_switch.dart';
+export 'schedule_card.dart';
 export 'section_header.dart';
 export 'separator.dart';
 export 'setting_item.dart';

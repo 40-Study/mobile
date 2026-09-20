@@ -1,6 +1,10 @@
 export 'assignment_model.dart';
 export 'badge_model.dart';
 export 'bookmark_model.dart';
+export 'contribution_model.dart';
 export 'notification_model.dart';
+export 'quiz_model.dart';
+export 'quiz_question_model.dart';
+export 'quiz_submit_result.dart';
 export 'schedule_item_model.dart';
 export 'student_stats_model.dart';

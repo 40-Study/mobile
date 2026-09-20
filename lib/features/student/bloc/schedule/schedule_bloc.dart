@@ -22,17 +22,21 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+    final currentMonth = DateTime(now.year, now.month);
 
-    // Load today's schedule
-    final result = await _repository.getTodaySchedule();
+    // Load today's schedule and event dates
+    final scheduleResult = await _repository.getTodaySchedule();
+    final eventDatesResult = await _repository.getEventDates(currentMonth);
 
-    result.when(
+    scheduleResult.when(
       success: (items) {
-        final currentMonth = DateTime(now.year, now.month);
-        final eventDates = _generateMockEventDates(currentMonth);
+        final eventDates = eventDatesResult.when(
+          success: (dates) => dates,
+          failure: (_) => <DateTime>{},
+        );
 
         emit(ScheduleSuccess(
-          currentMonth: DateTime(now.year, now.month),
+          currentMonth: currentMonth,
           selectedDate: today,
           eventDates: eventDates,
           selectedDateItems: items,
@@ -97,8 +101,12 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
     final newMonth = DateTime(event.month.year, event.month.month);
 
-    // Mock event dates cho tháng mới
-    final eventDates = _generateMockEventDates(newMonth);
+    // Fetch event dates from API
+    final result = await _repository.getEventDates(newMonth);
+    final eventDates = result.when(
+      success: (dates) => dates,
+      failure: (_) => <DateTime>{},
+    );
 
     emit(currentState.copyWith(
       currentMonth: newMonth,
@@ -139,20 +147,4 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     emit(currentState.copyWith(dailyNotes: updatedNotes));
   }
 
-  /// Mock event dates - thay bằng API call sau
-  Set<DateTime> _generateMockEventDates(DateTime month) {
-    final dates = <DateTime>{};
-    // Tạo vài ngày có lịch trong tháng
-    for (var i = 0; i < 28; i += 3) {
-      if (i + 1 <= 28) {
-        dates.add(DateTime(month.year, month.month, i + 1));
-      }
-    }
-    // Thêm ngày hôm nay nếu trong tháng này
-    final now = DateTime.now();
-    if (now.year == month.year && now.month == month.month) {
-      dates.add(DateTime(now.year, now.month, now.day));
-    }
-    return dates;
-  }
 }

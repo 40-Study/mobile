@@ -172,7 +172,7 @@ class _AuthTextFieldState extends State<AuthTextField>
                     : null,
                 filled: true,
                 fillColor: cs.surfaceContainerLow,
-                contentPadding: EdgeInsets.symmetric(
+                contentPadding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.lg,
                   vertical: AppSpacing.lg - 2,
                 ),

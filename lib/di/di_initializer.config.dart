@@ -13,6 +13,8 @@ import 'package:dio/dio.dart' as _i361;
 import 'package:flutter/material.dart' as _i409;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
+import 'package:study/data/bookmark_storage.dart' as _i830;
+import 'package:study/data/last_accessed_course_storage.dart' as _i340;
 import 'package:study/data/onboarding_storage.dart' as _i38;
 import 'package:study/data/theme_storage.dart' as _i1013;
 import 'package:study/di/di_app_module.dart' as _i183;
@@ -29,6 +31,12 @@ import 'package:study/features/course/repository/course_repository.dart'
     as _i1065;
 import 'package:study/features/course/repository/course_repository_impl.dart'
     as _i38;
+import 'package:study/features/parent/data/parent_api_client.dart' as _i698;
+import 'package:study/features/parent/repository/parent_repository.dart'
+    as _i632;
+import 'package:study/features/student/data/student_api_client.dart' as _i583;
+import 'package:study/features/student/repository/student_repository.dart'
+    as _i962;
 import 'package:study/repository/onboarding_repository.dart' as _i812;
 import 'package:study/repository/theme_repository.dart' as _i354;
 import 'package:talker/talker.dart' as _i993;
@@ -53,10 +61,16 @@ extension GetItInjectableX on _i174.GetIt {
       () => dIDataModule.onboardingStorage,
     );
     gh.lazySingleton<_i450.AuthStorage>(() => dIDataModule.authStorage);
+    gh.lazySingleton<_i340.LastAccessedCourseStorage>(
+      () => dIDataModule.lastAccessedCourseStorage,
+    );
     gh.lazySingleton<_i785.SessionExpiredNotifier>(
       () => dIDataModule.sessionExpiredNotifier,
     );
     gh.lazySingleton<_i361.Dio>(() => networkModule.provideDio());
+    gh.lazySingleton<_i830.BookmarkStorage>(
+      () => repositoryModule.provideBookmarkStorage(),
+    );
     gh.factory<_i354.ThemeRepository>(
       () => repositoryModule.provideThemeRepository(gh<_i1013.ThemeStorage>()),
     );
@@ -66,6 +80,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i511.CourseApiClient>(
       () => networkModule.provideCourseApiClient(gh<_i361.Dio>()),
     );
+    gh.factory<_i583.StudentApiClient>(
+      () => repositoryModule.provideStudentApiClient(gh<_i361.Dio>()),
+    );
+    gh.factory<_i698.ParentApiClient>(
+      () => repositoryModule.provideParentApiClient(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i1065.CourseRepository>(
       () => _i38.CourseRepositoryImpl(gh<_i511.CourseApiClient>()),
     );
@@ -73,7 +93,20 @@ extension GetItInjectableX on _i174.GetIt {
       () => repositoryModule.provideAuthRepository(
         gh<_i384.AuthApiClient>(),
         gh<_i450.AuthStorage>(),
+        gh<_i361.Dio>(),
       ),
+    );
+    gh.lazySingleton<_i962.StudentRepository>(
+      () => repositoryModule.provideStudentRepository(
+        gh<_i583.StudentApiClient>(),
+        gh<_i511.CourseApiClient>(),
+        gh<_i584.AuthRepository>(),
+        gh<_i340.LastAccessedCourseStorage>(),
+      ),
+    );
+    gh.lazySingleton<_i632.ParentRepository>(
+      () =>
+          repositoryModule.provideParentRepository(gh<_i698.ParentApiClient>()),
     );
     gh.factory<_i812.OnboardingRepository>(
       () => repositoryModule.provideOnboardingRepository(

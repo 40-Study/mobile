@@ -14,7 +14,9 @@ import 'package:study/features/student/presentation/profile/profile_screen.dart'
 import 'package:study/features/student/presentation/schedule/schedule_screen.dart';
 import 'package:study/features/student/presentation/search/search_screen.dart';
 import 'package:study/features/student/presentation/settings/settings_screen.dart';
-import 'package:study/features/student/repository/student_repository_impl.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/features/auth/repository/auth_repository.dart';
+import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/widgets/app_drawer.dart';
 
 enum StudentTab { home, learning, schedule, achievement, profile }
@@ -32,12 +34,21 @@ class _StudentShellState extends State<StudentShell> {
   late StudentTab _currentTab;
   late Set<int> _visitedTabs;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  PageController? _pageController;
+
+  PageController get _controller => _pageController ??= PageController(initialPage: _currentTab.index);
 
   @override
   void initState() {
     super.initState();
     _currentTab = widget.initialTab;
     _visitedTabs = {_currentTab.index};
+  }
+
+  @override
+  void dispose() {
+    _pageController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -99,18 +110,25 @@ class _StudentShellState extends State<StudentShell> {
       ),
       body: MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => HomeBloc(StudentRepositoryImpl())),
-          BlocProvider(create: (_) => LearningBloc(StudentRepositoryImpl())),
-          BlocProvider(create: (_) => ScheduleBloc(StudentRepositoryImpl())),
-          BlocProvider(create: (_) => AchievementBloc(StudentRepositoryImpl())),
+          BlocProvider(create: (_) => HomeBloc(diContainer<StudentRepository>())),
+          BlocProvider(create: (_) => LearningBloc(diContainer<StudentRepository>())),
+          BlocProvider(create: (_) => ScheduleBloc(diContainer<StudentRepository>())),
+          BlocProvider(create: (_) => AchievementBloc(
+            diContainer<StudentRepository>(),
+            diContainer<AuthRepository>(),
+          )),
         ],
-        child: IndexedStack(
-          index: _currentTab.index,
+        child: PageView(
+          controller: _controller,
+          onPageChanged: (index) {
+            setState(() {
+              _currentTab = StudentTab.values[index];
+              _visitedTabs.add(index);
+            });
+          },
           children: List.generate(
             StudentTab.values.length,
-            (index) => _visitedTabs.contains(index)
-                ? _buildTab(index, userName)
-                : const SizedBox.shrink(),
+            (index) => _buildTab(index, userName),
           ),
         ),
       ),
@@ -162,10 +180,11 @@ class _StudentShellState extends State<StudentShell> {
   void _selectTab(int index) {
     final nextTab = StudentTab.values[index];
     if (nextTab == _currentTab) return;
-    setState(() {
-      _currentTab = nextTab;
-      _visitedTabs.add(index);
-    });
+    _controller.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+    );
   }
 
   Widget _buildTab(int index, String userName) {

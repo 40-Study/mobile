@@ -73,6 +73,10 @@ class $AssetsImagesGen {
   /// File path: assets/images/phone.svg
   SvgGenImage get phone => const SvgGenImage('assets/images/phone.svg');
 
+  /// File path: assets/images/python-course-cover.png
+  AssetGenImage get pythonCourseCover =>
+      const AssetGenImage('assets/images/python-course-cover.png');
+
   /// File path: assets/images/trip_outline.svg
   SvgGenImage get tripOutline =>
       const SvgGenImage('assets/images/trip_outline.svg');
@@ -97,6 +101,7 @@ class $AssetsImagesGen {
     iconStar,
     iconStarActive,
     phone,
+    pythonCourseCover,
     tripOutline,
     twemojiSunBehindCloud,
     visa,

@@ -135,12 +135,12 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
     if (_availableRoles.isEmpty) {
       return Center(
         child: Padding(
-          padding: EdgeInsets.all(AppSpacing.xxl),
+          padding: const EdgeInsets.all(AppSpacing.xxl),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: EdgeInsets.all(AppSpacing.xl),
+                padding: const EdgeInsets.all(AppSpacing.xl),
                 decoration: BoxDecoration(
                   color: cs.primaryContainer,
                   shape: BoxShape.circle,

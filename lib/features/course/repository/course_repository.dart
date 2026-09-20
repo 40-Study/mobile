@@ -100,7 +100,7 @@ abstract class CourseRepository {
 
   Future<CertificateModel> verifyCertificate(String certificateNumber);
 
-  Future<CertificateModel> issueCertificate(String courseId);
+  Future<CertificateModel> issueCertificate(String courseId, String enrollmentId);
 
   Future<List<CertificateModel>> getMyCertificates({
     int page = 1,

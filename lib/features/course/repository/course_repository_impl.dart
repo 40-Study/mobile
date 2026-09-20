@@ -289,8 +289,11 @@ class CourseRepositoryImpl implements CourseRepository {
   }
 
   @override
-  Future<CertificateModel> issueCertificate(String courseId) async {
-    final response = await _apiClient.issueCertificate({'course_id': courseId});
+  Future<CertificateModel> issueCertificate(String courseId, String enrollmentId) async {
+    final response = await _apiClient.issueCertificate({
+      'course_id': courseId,
+      'enrollment_id': enrollmentId,
+    });
     return CertificateModel.fromJson(
       response.data['data'] as Map<String, dynamic>,
     );

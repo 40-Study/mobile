@@ -14,10 +14,8 @@ class DailyGoalCard extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final goalColor = cs.secondary;
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
-    final nextLesson = (enrollment.completedLessons + 1).clamp(
-      1,
-      enrollment.totalLessons,
-    );
+    final maxLesson = enrollment.totalLessons > 0 ? enrollment.totalLessons : 1;
+    final nextLesson = (enrollment.completedLessons + 1).clamp(1, maxLesson);
     final goalDescription =
         'Tiếp tục bài $nextLesson trong khóa học đang theo dõi.';
 

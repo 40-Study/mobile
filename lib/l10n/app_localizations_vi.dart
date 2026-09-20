@@ -315,7 +315,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get rocketsTitle => 'Rockets';
 
   @override
-  String get overview => 'Overview';
+  String get overview => 'Tổng quan';
 
   @override
   String get specifications => 'Specifications';
@@ -932,4 +932,451 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get chooseProfileSubtitle =>
       'Bạn có nhiều profile. Chọn một để tiếp tục.';
+
+  @override
+  String get achievementTitle => 'Thành tích';
+
+  @override
+  String get allBadges => 'Tất cả huy hiệu';
+
+  @override
+  String badgesEarned(Object earned, Object total) {
+    return '$earned / $total huy hiệu đã đạt được';
+  }
+
+  @override
+  String get overallProgress => 'Tiến độ chung';
+
+  @override
+  String get earned => 'Đã đạt được';
+
+  @override
+  String get inProgress => 'Đang tiến hành';
+
+  @override
+  String get notEarned => 'Chưa đạt';
+
+  @override
+  String get filter => 'Bộ lọc';
+
+  @override
+  String get all => 'Tất cả';
+
+  @override
+  String get learning => 'Học tập';
+
+  @override
+  String get habit => 'Thói quen';
+
+  @override
+  String get achievement => 'Thành tích';
+
+  @override
+  String get status => 'Trạng thái';
+
+  @override
+  String get category => 'Danh mục';
+
+  @override
+  String get apply => 'Áp dụng';
+
+  @override
+  String get close => 'Đóng';
+
+  @override
+  String get newBadge => 'MỚI';
+
+  @override
+  String get certificate => 'Chứng chỉ';
+
+  @override
+  String get yourCertificates => 'Chứng chỉ của bạn';
+
+  @override
+  String certificatesEarned(Object count) {
+    return '$count chứng chỉ đã đạt được';
+  }
+
+  @override
+  String get completed => 'Đã hoàn thành';
+
+  @override
+  String get studying => 'Đang học';
+
+  @override
+  String get design => 'Thiết kế';
+
+  @override
+  String get programming => 'Lập trình';
+
+  @override
+  String get business => 'Kinh doanh';
+
+  @override
+  String get language => 'Ngôn ngữ';
+
+  @override
+  String get lessons => 'bài học';
+
+  @override
+  String get certificateDetail => 'Chi tiết chứng chỉ';
+
+  @override
+  String get certificateConfirm =>
+      'Chứng chỉ xác nhận bạn đã hoàn thành khóa học và nắm vững các kiến thức nền tảng.';
+
+  @override
+  String get download => 'Tải xuống';
+
+  @override
+  String get share => 'Chia sẻ';
+
+  @override
+  String get addToLinkedIn => 'Thêm vào\nLinkedIn';
+
+  @override
+  String get printCertificate => 'In chứng chỉ';
+
+  @override
+  String get courseInfo => 'Thông tin khóa học';
+
+  @override
+  String get course => 'Khóa học';
+
+  @override
+  String get completionDate => 'Ngày hoàn thành';
+
+  @override
+  String get duration => 'Thời lượng';
+
+  @override
+  String get instructor => 'Giảng viên';
+
+  @override
+  String get level => 'Trình độ';
+
+  @override
+  String get basic => 'Cơ bản';
+
+  @override
+  String get skillsEarned => 'Kỹ năng đạt được';
+
+  @override
+  String get downloadPdf => 'Tải xuống PDF';
+
+  @override
+  String get copyLink => 'Sao chép liên kết';
+
+  @override
+  String get showQrCode => 'Hiển thị mã QR';
+
+  @override
+  String get reportIssue => 'Báo cáo vấn đề';
+
+  @override
+  String get viewCertificate => 'Xem chứng chỉ';
+
+  @override
+  String get continueLearning => 'Tiếp tục học';
+
+  @override
+  String get recentBadges => 'Huy hiệu gần đây';
+
+  @override
+  String get learningActivity => 'Hoạt động học tập';
+
+  @override
+  String daysLearned(Object count) {
+    return '$count ngày học';
+  }
+
+  @override
+  String get less => 'Ít';
+
+  @override
+  String get more => 'Nhiều';
+
+  @override
+  String get learningTrend => 'Xu hướng học tập';
+
+  @override
+  String get last7Days => '7 ngày qua';
+
+  @override
+  String get minutes => 'phút';
+
+  @override
+  String get studyHours => 'Giờ học';
+
+  @override
+  String get completedLessons => 'Bài học hoàn thành';
+
+  @override
+  String get badges => 'Huy hiệu';
+
+  @override
+  String get goodMorning => 'Chào buổi sáng';
+
+  @override
+  String get goodAfternoon => 'Chào buổi chiều';
+
+  @override
+  String get goodEvening => 'Chào buổi tối';
+
+  @override
+  String get yourAccount => 'Tài khoản của bạn';
+
+  @override
+  String get switchProfile => 'Chuyển hồ sơ';
+
+  @override
+  String get addProfile => 'Thêm hồ sơ';
+
+  @override
+  String get updatePersonalDetails => 'Cập nhật thông tin cá nhân';
+
+  @override
+  String get passwordSecurityHint => 'Mật khẩu, 2FA, thiết bị đăng nhập';
+
+  @override
+  String get subscription => 'Gói đăng ký';
+
+  @override
+  String get managePlanBilling => 'Quản lý gói và thanh toán';
+
+  @override
+  String get customizeNotifications => 'Tùy chỉnh thông báo';
+
+  @override
+  String get privacy => 'Quyền riêng tư';
+
+  @override
+  String get managePrivacySettings => 'Quản lý cài đặt quyền riêng tư';
+
+  @override
+  String get general => 'Chung';
+
+  @override
+  String get helpCenter => 'Trung tâm hỗ trợ';
+
+  @override
+  String get faqAndSupport => 'Câu hỏi thường gặp và hỗ trợ';
+
+  @override
+  String version(Object version) {
+    return 'Phiên bản $version';
+  }
+
+  @override
+  String get signOutHint => 'Đăng xuất khỏi tài khoản hiện tại';
+
+  @override
+  String get premium => 'Cao cấp';
+
+  @override
+  String get student => 'Học sinh';
+
+  @override
+  String get changePhoto => 'Đổi ảnh';
+
+  @override
+  String get bioHint => 'Giới thiệu về bản thân...';
+
+  @override
+  String get verified => 'Đã xác minh';
+
+  @override
+  String get portfolio => 'Portfolio';
+
+  @override
+  String get myPortfolio => 'Portfolio của tôi';
+
+  @override
+  String get editPortfolio => 'Chỉnh sửa';
+
+  @override
+  String get previewPortfolio => 'Xem trước';
+
+  @override
+  String get introduction => 'Giới thiệu';
+
+  @override
+  String get featuredProjects => 'Dự án nổi bật';
+
+  @override
+  String get experience => 'Kinh nghiệm';
+
+  @override
+  String get education => 'Học vấn';
+
+  @override
+  String get yearsExperience => 'Năm kinh nghiệm';
+
+  @override
+  String get projectsCompleted => 'Dự án hoàn thành';
+
+  @override
+  String get followers => 'Người theo dõi';
+
+  @override
+  String get addProject => 'Thêm dự án';
+
+  @override
+  String get addExperience => 'Thêm kinh nghiệm';
+
+  @override
+  String get addEducation => 'Thêm học vấn';
+
+  @override
+  String get addSkill => 'Thêm kỹ năng';
+
+  @override
+  String get present => 'Hiện tại';
+
+  @override
+  String get customizePortfolio => 'Tùy chỉnh portfolio';
+
+  @override
+  String get manageLayout => 'Quản lý bố cục';
+
+  @override
+  String get toggleVisibility => 'Bật/tắt hiển thị';
+
+  @override
+  String get publicPortfolio => 'Công khai';
+
+  @override
+  String get privatePortfolio => 'Chỉ mình tôi';
+
+  @override
+  String get linkOnlyPortfolio => 'Người có liên kết';
+
+  @override
+  String get saved => 'Đã lưu';
+
+  @override
+  String get saving => 'Đang lưu...';
+
+  @override
+  String get viewPortfolio => 'Xem Portfolio';
+
+  @override
+  String get projectName => 'Tên dự án';
+
+  @override
+  String get projectNameHint => 'VD: EduFlow';
+
+  @override
+  String get shortDescription => 'Mô tả ngắn';
+
+  @override
+  String get shortDescriptionHint => 'VD: Hệ thống quản lý học tập';
+
+  @override
+  String get details => 'Chi tiết';
+
+  @override
+  String get categoryLabel => 'Danh mục';
+
+  @override
+  String get add => 'Thêm';
+
+  @override
+  String get save => 'Lưu';
+
+  @override
+  String get done => 'Xong';
+
+  @override
+  String get skillName => 'Tên kỹ năng';
+
+  @override
+  String get skillNameHint => 'VD: UI Design, Figma, React...';
+
+  @override
+  String get proficiencyLevel => 'Mức độ thành thạo';
+
+  @override
+  String get position => 'Vị trí';
+
+  @override
+  String get positionHint => 'VD: UI/UX Designer';
+
+  @override
+  String get company => 'Công ty';
+
+  @override
+  String get companyHint => 'VD: Google, Vela Studio...';
+
+  @override
+  String get jobDescription => 'Mô tả công việc';
+
+  @override
+  String get editIntroduction => 'Chỉnh sửa giới thiệu';
+
+  @override
+  String get fullName => 'Họ tên';
+
+  @override
+  String get jobTitle => 'Chức danh';
+
+  @override
+  String get jobTitleHint => 'VD: UI/UX Designer';
+
+  @override
+  String get locationLabel => 'Vị trí';
+
+  @override
+  String get locationHint => 'VD: Hà Nội, Việt Nam';
+
+  @override
+  String get websiteLabel => 'Website';
+
+  @override
+  String get websiteHint => 'VD: yourname.design';
+
+  @override
+  String get aboutYourself => 'Giới thiệu bản thân';
+
+  @override
+  String get aboutYourselfHint => 'Viết vài dòng về bạn...';
+
+  @override
+  String get dragToReorder => 'Kéo để sắp xếp thứ tự hiển thị';
+
+  @override
+  String get privacySettings => 'Quyền riêng tư';
+
+  @override
+  String get everyoneCanView => 'Mọi người có thể xem';
+
+  @override
+  String get onlyYouCanView => 'Chỉ mình bạn xem được';
+
+  @override
+  String get onlyWithLink => 'Chỉ người có liên kết mới xem được';
+
+  @override
+  String get linkCopiedToShare => 'Đã sao chép liên kết để chia sẻ';
+
+  @override
+  String get linkCopied => 'Đã sao chép liên kết';
+
+  @override
+  String get creatingPdf => 'Đang tạo PDF...';
+
+  @override
+  String get viewAsOthers => 'Xem portfolio như người khác nhìn thấy';
+
+  @override
+  String get shareOnSocial => 'Chia sẻ portfolio qua mạng xã hội';
+
+  @override
+  String get copyPortfolioLink => 'Sao chép liên kết portfolio';
+
+  @override
+  String get downloadPortfolioPdf => 'Tải portfolio dạng PDF';
+
+  @override
+  String get addItem => 'Thêm mục';
 }

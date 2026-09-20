@@ -25,7 +25,7 @@ dependencies:
   intl_utils: ^2.8.10
   flutter_svg: ^2.0.17
   gap: ^3.0.1
-  # cached_network_image: ^3.2.3
+  cached_network_image: ^3.4.1
   path_provider: ^2.1.5
   file: ^7.0.0
   get_it: 9.2.1
@@ -50,6 +50,9 @@ dependencies:
     sdk: flutter
   uuid: ^4.5.3
   geolocator: ^13.0.1
+  video_player: ^2.11.1
+  chewie: ^1.13.1
+  image_picker: ^1.2.3
 
 dev_dependencies:
   flutter_test:

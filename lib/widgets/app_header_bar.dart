@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:study/widgets/cached_avatar.dart';
 
 class AppHeaderBar extends StatelessWidget implements PreferredSizeWidget {
   const AppHeaderBar({
@@ -39,10 +41,15 @@ class AppHeaderBar extends StatelessWidget implements PreferredSizeWidget {
     final subtitleColor = cs.onSurface.withValues(alpha: 0.6);
     final leadingBg = leadingBackgroundColor ?? cs.surfaceContainerHighest;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return AppBar(
       backgroundColor: backgroundColor ?? Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
+      systemOverlayStyle: isDark
+          ? SystemUiOverlayStyle.light
+          : SystemUiOverlayStyle.dark,
       leadingWidth: showBackButton || showLeadingAvatar ? 56 : null,
       leading: showBackButton
           ? IconButton(
@@ -52,15 +59,11 @@ class AppHeaderBar extends StatelessWidget implements PreferredSizeWidget {
           : showLeadingAvatar
           ? Padding(
               padding: const EdgeInsets.only(left: 16),
-              child: CircleAvatar(
+              child: CachedAvatar(
+                url: leadingAvatarUrl,
                 radius: 20,
                 backgroundColor: leadingBg,
-                backgroundImage: leadingAvatarUrl != null
-                    ? NetworkImage(leadingAvatarUrl!)
-                    : null,
-                child: leadingAvatarUrl == null
-                    ? Icon(Icons.person, color: titleColor, size: 20)
-                    : null,
+                placeholder: Icon(Icons.person, color: titleColor, size: 20),
               ),
             )
           : null,

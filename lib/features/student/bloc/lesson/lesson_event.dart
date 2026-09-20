@@ -31,12 +31,3 @@ final class LessonContentTabChanged extends LessonEvent {
 final class LessonCompleted extends LessonEvent {
   const LessonCompleted();
 }
-
-final class LessonVideoProgressUpdated extends LessonEvent {
-  const LessonVideoProgressUpdated(this.watchedSeconds);
-
-  final int watchedSeconds;
-
-  @override
-  List<Object?> get props => [watchedSeconds];
-}

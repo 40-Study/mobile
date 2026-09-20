@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/features/course/data/models/course_model.dart';
 import 'package:study/features/student/bloc/learning/learning_event.dart';
 import 'package:study/features/student/bloc/learning/learning_state.dart';
 import 'package:study/features/student/repository/student_repository.dart';
@@ -36,13 +37,20 @@ class LearningBloc extends Bloc<LearningEvent, LearningState> {
     Emitter<LearningState> emit, {
     LearningSuccess? preserveFilter,
   }) async {
-    final result = await _repository.getActiveEnrollments();
+    final enrollmentsResult = await _repository.getActiveEnrollments();
+    final coursesResult = await _repository.getAllCourses();
 
-    result.when(
+    enrollmentsResult.when(
       success: (enrollments) {
+        final List<CourseModel> courses = coursesResult.when(
+          success: (c) => c ?? <CourseModel>[],
+          failure: (_) => <CourseModel>[],
+        ) ?? <CourseModel>[];
+
         emit(LearningSuccess(
           enrollments: enrollments,
-          filter: preserveFilter?.filter ?? EnrollmentFilter.inProgress,
+          recommendedCourses: courses,
+          filter: preserveFilter?.filter ?? EnrollmentFilter.all,
           searchQuery: preserveFilter?.searchQuery ?? '',
         ));
       },

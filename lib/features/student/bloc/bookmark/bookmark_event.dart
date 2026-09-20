@@ -29,3 +29,12 @@ final class BookmarkRemoved extends BookmarkEvent {
   @override
   List<Object?> get props => [id];
 }
+
+final class BookmarkAdded extends BookmarkEvent {
+  const BookmarkAdded(this.bookmark);
+
+  final BookmarkModel bookmark;
+
+  @override
+  List<Object?> get props => [bookmark];
+}

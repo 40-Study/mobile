@@ -10,7 +10,7 @@ abstract class BadgeModel with _$BadgeModel {
     required String name,
     String? description,
     @JsonKey(name: 'icon_url') String? iconUrl,
-    @JsonKey(name: 'is_earned') @Default(false) bool isEarned,
+    @JsonKey(name: 'unlocked') @Default(false) bool isEarned,
     @JsonKey(name: 'earned_at') DateTime? earnedAt,
     String? category,
   }) = _BadgeModel;

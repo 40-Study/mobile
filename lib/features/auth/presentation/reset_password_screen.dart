@@ -121,7 +121,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             top: false,
             child: Center(
               child: SingleChildScrollView(
-                padding: EdgeInsets.only(bottom: AppSpacing.lg),
+                padding: const EdgeInsets.only(bottom: AppSpacing.lg),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -150,7 +150,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                SizedBox(height: AppSpacing.xs + 2),
+                                const SizedBox(height: AppSpacing.xs + 2),
                                 Text(
                                   l10n.newPasswordHint,
                                   style: tt.bodyLarge?.copyWith(
