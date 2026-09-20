@@ -37,7 +37,8 @@ abstract class RepositoryModule {
   AuthRepository provideAuthRepository(
     AuthApiClient apiClient,
     AuthStorage authStorage,
-  ) => AuthRepositoryImpl(apiClient: apiClient, authStorage: authStorage);
+    Dio dio,
+  ) => AuthRepositoryImpl(apiClient: apiClient, authStorage: authStorage, dio: dio);
 
   @factoryMethod
   StudentApiClient provideStudentApiClient(Dio dio) => StudentApiClient(dio);

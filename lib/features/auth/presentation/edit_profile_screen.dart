@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:study/features/auth/bloc/account/account_cubit.dart';
 import 'package:study/features/auth/bloc/account/account_state.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
@@ -20,6 +23,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController _phoneController;
   late final TextEditingController _bioController;
   late final TextEditingController _dobController;
+  String? _pickedImagePath;
 
   @override
   void initState() {
@@ -39,9 +43,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (authState is AuthAuthenticated) {
       final user = authState.user;
       _nameController.text = user.fullName ?? user.username ?? '';
-      _phoneController.text = user.phone ?? '';
-      _dobController.text = user.dateOfBirth ?? '';
+      _phoneController.text = _formatPhoneForDisplay(user.phone);
+      if (user.dateOfBirth != null && user.dateOfBirth!.isNotEmpty) {
+        try {
+          _selectedDate = DateTime.parse(user.dateOfBirth!);
+          final d = _selectedDate!;
+          _dobController.text =
+              '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+        } catch (_) {
+          _dobController.text = user.dateOfBirth ?? '';
+        }
+      }
     }
+  }
+
+  String _formatPhoneForDisplay(String? phone) {
+    if (phone == null || phone.isEmpty) return '';
+    if (phone.startsWith('+84')) {
+      return '0${phone.substring(3)}';
+    }
+    return phone;
   }
 
   @override
@@ -168,7 +189,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   // Avatar Section
                   SliverToBoxAdapter(
                     child: _AvatarSection(
-                      onChangePicture: () {},
+                      onChangePicture: _pickAndUploadImage,
+                      pickedImagePath: _pickedImagePath,
                     ),
                   ),
 
@@ -195,7 +217,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   icon: Icons.person_outline_rounded,
                                   validator: (value) {
                                     if (value == null || value.trim().isEmpty) {
-                                      return l10n.errorRequired;
+                                      return 'Vui lòng nhập họ tên';
+                                    }
+                                    if (value.trim().length < 2) {
+                                      return 'Họ tên phải có ít nhất 2 ký tự';
                                     }
                                     return null;
                                   },
@@ -207,6 +232,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   hint: '0912 345 678',
                                   icon: Icons.phone_outlined,
                                   keyboardType: TextInputType.phone,
+                                  validator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return null; // Phone không bắt buộc
+                                    }
+                                    final digits = value.replaceAll(RegExp(r'\D'), '');
+                                    if (digits.length < 10 || digits.length > 11) {
+                                      return 'Số điện thoại phải có 10-11 số';
+                                    }
+                                    if (!digits.startsWith('0')) {
+                                      return 'Số điện thoại phải bắt đầu bằng 0';
+                                    }
+                                    return null;
+                                  },
                                 ),
                                 AppSpacing.vGap16,
                                 _PremiumTextField(
@@ -269,31 +307,81 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  DateTime? _selectedDate;
+
   Future<void> _selectDate() async {
     final date = await showDatePicker(
       context: context,
-      initialDate: DateTime(2000),
+      initialDate: _selectedDate ?? DateTime(2000),
       firstDate: DateTime(1950),
       lastDate: DateTime.now(),
     );
 
     if (date != null) {
+      _selectedDate = date;
       _dobController.text =
           '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
     }
+  }
+
+  String? _formatDateForApi() {
+    if (_selectedDate == null) return null;
+    final d = _selectedDate!;
+    return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  }
+
+  String? _formatPhoneForApi() {
+    final phone = _phoneController.text.trim();
+    if (phone.isEmpty) return null;
+    final digits = phone.replaceAll(RegExp(r'\D'), '');
+    if (digits.startsWith('0')) {
+      return '+84${digits.substring(1)}';
+    }
+    if (digits.startsWith('84')) {
+      return '+$digits';
+    }
+    return '+84$digits';
+  }
+
+  Future<void> _pickAndUploadImage() async {
+    final picker = ImagePicker();
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Chụp ảnh'),
+              onTap: () => Navigator.pop(ctx, ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Chọn từ thư viện'),
+              onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source == null) return;
+
+    final picked = await picker.pickImage(source: source, maxWidth: 512, maxHeight: 512);
+    if (picked == null) return;
+
+    setState(() => _pickedImagePath = picked.path);
+    if (!mounted) return;
+    await context.read<AccountCubit>().updateAvatar(picked.path);
   }
 
   void _saveChanges() {
     if (!_formKey.currentState!.validate()) return;
 
     context.read<AccountCubit>().updateAccount(
-          username: _nameController.text.trim(),
-          phone: _phoneController.text.trim().isNotEmpty
-              ? _phoneController.text.trim()
-              : null,
-          dateOfBirth: _dobController.text.trim().isNotEmpty
-              ? _dobController.text.trim()
-              : null,
+          fullName: _nameController.text.trim(),
+          phone: _formatPhoneForApi(),
+          dateOfBirth: _formatDateForApi(),
         );
   }
 }
@@ -302,9 +390,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 // AVATAR SECTION
 // ============================================================
 class _AvatarSection extends StatelessWidget {
-  const _AvatarSection({required this.onChangePicture});
+  const _AvatarSection({required this.onChangePicture, this.pickedImagePath});
 
   final VoidCallback onChangePicture;
+  final String? pickedImagePath;
 
   @override
   Widget build(BuildContext context) {
@@ -312,94 +401,124 @@ class _AvatarSection extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
+      builder: (context, authState) {
         String? avatarUrl;
         var initials = '?';
 
-        if (state is AuthAuthenticated) {
-          avatarUrl = state.user.avatarUrl;
-          final name = state.user.fullName ?? state.user.username ?? 'User';
+        if (authState is AuthAuthenticated) {
+          avatarUrl = authState.user.avatarUrl;
+          final name = authState.user.fullName ?? authState.user.username ?? 'User';
           initials = _getInitials(name);
         }
 
-        return Column(
-          children: [
-            // Avatar với edit button
-            Stack(
+        return BlocBuilder<AccountCubit, AccountState>(
+          builder: (context, accountState) {
+            final isUploading = accountState is AccountUpdating;
+
+            return Column(
               children: [
-                Container(
-                  width: 110,
-                  height: 110,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: cs.primary.withValues(alpha: 0.15),
-                      width: 3,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: cs.primary.withValues(alpha: 0.08),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: CachedAvatar(
-                    url: avatarUrl,
-                    radius: 52,
-                    backgroundColor: cs.primaryContainer,
-                    placeholder: Text(
-                      initials,
-                      style: tt.headlineLarge?.copyWith(
-                        color: cs.onPrimaryContainer,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-                // Camera button
-                Positioned(
-                  bottom: 4,
-                  right: 4,
-                  child: GestureDetector(
-                    onTap: onChangePicture,
-                    child: Container(
-                      width: 36,
-                      height: 36,
+                Stack(
+                  children: [
+                    Container(
+                      width: 110,
+                      height: 110,
                       decoration: BoxDecoration(
-                        color: cs.primary,
                         shape: BoxShape.circle,
-                        border: Border.all(color: cs.surface, width: 3),
+                        border: Border.all(
+                          color: cs.primary.withValues(alpha: 0.15),
+                          width: 3,
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            color: cs.primary.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                            color: cs.primary.withValues(alpha: 0.08),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.camera_alt_rounded,
-                        size: 18,
-                        color: Colors.white,
+                      child: ClipOval(
+                        child: pickedImagePath != null
+                            ? Image.file(
+                                File(pickedImagePath!),
+                                width: 104,
+                                height: 104,
+                                fit: BoxFit.cover,
+                              )
+                            : CachedAvatar(
+                                url: avatarUrl,
+                                radius: 52,
+                                backgroundColor: cs.primaryContainer,
+                                placeholder: Text(
+                                  initials,
+                                  style: tt.headlineLarge?.copyWith(
+                                    color: cs.onPrimaryContainer,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
                       ),
+                    ),
+                    // Loading overlay
+                    if (isUploading)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.black45,
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    // Camera button
+                    Positioned(
+                      bottom: 4,
+                      right: 4,
+                      child: GestureDetector(
+                        onTap: isUploading ? null : onChangePicture,
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: cs.primary,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: cs.surface, width: 3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: cs.primary.withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt_rounded,
+                            size: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                AppSpacing.vGap12,
+                TextButton(
+                  onPressed: isUploading ? null : onChangePicture,
+                  child: Text(
+                    AppLocalizations.of(context)!.changePhoto,
+                    style: tt.labelLarge?.copyWith(
+                      color: isUploading ? cs.onSurfaceVariant : cs.primary,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ],
-            ),
-            AppSpacing.vGap12,
-            TextButton(
-              onPressed: onChangePicture,
-              child: Text(
-                AppLocalizations.of(context)!.changePhoto,
-                style: tt.labelLarge?.copyWith(
-                  color: cs.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+            );
+          },
         );
       },
     );

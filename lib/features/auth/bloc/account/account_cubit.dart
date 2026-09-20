@@ -20,10 +20,9 @@ class AccountCubit extends Cubit<AccountState> {
   }
 
   Future<void> updateAccount({
-    String? username,
+    String? fullName,
     String? phone,
     String? dateOfBirth,
-    String? fullName,
   }) async {
     final currentUser = switch (state) {
       AccountLoaded(:final user) => user,
@@ -37,10 +36,31 @@ class AccountCubit extends Cubit<AccountState> {
     emit(AccountUpdating(user: currentUser));
     try {
       final updatedUser = await _authRepository.updateMe(
-        username: username,
+        fullName: fullName,
         phone: phone,
         dateOfBirth: dateOfBirth,
       );
+      emit(AccountUpdateSuccess(user: updatedUser));
+    } catch (e) {
+      emit(AccountFailure(message: _parseError(e), user: currentUser));
+    }
+  }
+
+  Future<void> updateAvatar(String filePath) async {
+    final currentUser = switch (state) {
+      AccountLoaded(:final user) => user,
+      AccountUpdateSuccess(:final user) => user,
+      AccountFailure(:final user) => user,
+      _ => null,
+    };
+
+    if (currentUser == null) return;
+
+    emit(AccountUpdating(user: currentUser));
+    try {
+      final avatarUrl = await _authRepository.uploadFile(filePath);
+      if (avatarUrl.isEmpty) throw Exception('Upload failed');
+      final updatedUser = await _authRepository.updateMe(avatarUrl: avatarUrl);
       emit(AccountUpdateSuccess(user: updatedUser));
     } catch (e) {
       emit(AccountFailure(message: _parseError(e), user: currentUser));

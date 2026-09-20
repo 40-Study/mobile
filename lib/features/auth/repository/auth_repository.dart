@@ -149,6 +149,9 @@ abstract class AuthRepository {
     int pageSize = 10,
   });
 
+  /// Upload file và trả về URL
+  Future<String> uploadFile(String filePath);
+
   // ============================================================================
   // LOCAL STORAGE
   // ============================================================================

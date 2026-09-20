@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:study/core/logger/app_logger.dart';
 import 'package:study/features/auth/data/auth_api_client.dart';
 import 'package:study/features/auth/data/auth_storage.dart';
@@ -9,11 +10,14 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
     required AuthApiClient apiClient,
     required AuthStorage authStorage,
+    required Dio dio,
   }) : _api = apiClient,
-       _storage = authStorage;
+       _storage = authStorage,
+       _dio = dio;
 
   final AuthApiClient _api;
   final AuthStorage _storage;
+  final Dio _dio;
 
   // API có thể trả về { data: {...} } hoặc trực tiếp {...}
 
@@ -539,4 +543,21 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> clearSession() => _storage.clearAll();
+
+  @override
+  Future<String> uploadFile(String filePath) async {
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(filePath),
+    });
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/api/upload',
+      data: formData,
+    );
+    final data = _extractData(response.data);
+    // API trả về { url: "..." } hoặc { data: { url: "..." } }
+    if (data is Map<String, dynamic>) {
+      return data['url'] as String? ?? '';
+    }
+    return '';
+  }
 }

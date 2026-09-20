@@ -89,19 +89,11 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i1065.CourseRepository>(
       () => _i38.CourseRepositoryImpl(gh<_i511.CourseApiClient>()),
     );
-    gh.lazySingleton<_i632.ParentRepository>(
-      () =>
-          repositoryModule.provideParentRepository(gh<_i698.ParentApiClient>()),
-    );
     gh.factory<_i584.AuthRepository>(
       () => repositoryModule.provideAuthRepository(
         gh<_i384.AuthApiClient>(),
         gh<_i450.AuthStorage>(),
-      ),
-    );
-    gh.factory<_i812.OnboardingRepository>(
-      () => repositoryModule.provideOnboardingRepository(
-        gh<_i38.OnboardingStorage>(),
+        gh<_i361.Dio>(),
       ),
     );
     gh.lazySingleton<_i962.StudentRepository>(
@@ -110,6 +102,15 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i511.CourseApiClient>(),
         gh<_i584.AuthRepository>(),
         gh<_i340.LastAccessedCourseStorage>(),
+      ),
+    );
+    gh.lazySingleton<_i632.ParentRepository>(
+      () =>
+          repositoryModule.provideParentRepository(gh<_i698.ParentApiClient>()),
+    );
+    gh.factory<_i812.OnboardingRepository>(
+      () => repositoryModule.provideOnboardingRepository(
+        gh<_i38.OnboardingStorage>(),
       ),
     );
     return this;

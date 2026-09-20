@@ -9,6 +9,7 @@ import 'package:study/features/auth/presentation/edit_profile_screen.dart';
 import 'package:study/features/auth/presentation/security_screen.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/student/presentation/portfolio/portfolio_screen.dart';
+import 'package:study/features/student/presentation/settings/help_center_screen.dart';
 import 'package:study/features/student/presentation/settings/settings_screen.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
@@ -160,20 +161,6 @@ class _ProfileContent extends StatelessWidget {
                       title: l10n.passwordAndSecurity,
                       subtitle: l10n.passwordSecurityHint,
                       onTap: () => _navigateToSecurity(context),
-                    ),
-                    _SettingItem(
-                      icon: Icons.notifications_outlined,
-                      iconColor: cs.blue400,
-                      title: l10n.notifications,
-                      subtitle: l10n.customizeNotifications,
-                      onTap: () {},
-                    ),
-                    _SettingItem(
-                      icon: Icons.lock_outline_rounded,
-                      iconColor: cs.slate500,
-                      title: l10n.privacy,
-                      subtitle: l10n.managePrivacySettings,
-                      onTap: () {},
                       showDivider: false,
                     ),
                   ],
@@ -184,7 +171,7 @@ class _ProfileContent extends StatelessWidget {
                 // General Section
                 _GeneralSection(
                   onLanguageTap: () => _navigateToSettings(context),
-                  onHelpTap: () {},
+                  onHelpTap: () => _navigateToHelpCenter(context),
                   onAboutTap: () {},
                 ),
 
@@ -231,6 +218,13 @@ class _ProfileContent extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const SettingsScreen()),
+    );
+  }
+
+  void _navigateToHelpCenter(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const HelpCenterScreen()),
     );
   }
 
