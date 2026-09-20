@@ -191,7 +191,6 @@ class _ProfileContent extends StatelessWidget {
                 // General Section
                 _GeneralSection(
                   onLanguageTap: () => _navigateToSettings(context),
-                  onDarkModeTap: () => _navigateToSettings(context),
                   onHelpTap: () {},
                   onAboutTap: () {},
                 ),
@@ -777,13 +776,11 @@ class _SettingsTile extends StatelessWidget {
 class _GeneralSection extends StatelessWidget {
   const _GeneralSection({
     required this.onLanguageTap,
-    required this.onDarkModeTap,
     required this.onHelpTap,
     required this.onAboutTap,
   });
 
   final VoidCallback onLanguageTap;
-  final VoidCallback onDarkModeTap;
   final VoidCallback onHelpTap;
   final VoidCallback onAboutTap;
 
@@ -817,13 +814,6 @@ class _GeneralSection extends StatelessWidget {
                   title: l10n.settingsTitle,
                   value: l10n.appearanceTitle,
                   onTap: onLanguageTap,
-                ),
-                _GeneralTile(
-                  icon: Icons.dark_mode_outlined,
-                  iconColor: cs.slate600,
-                  title: l10n.darkThemeSettingsItemTitle,
-                  value: l10n.darkThemeFollowSystemSettingsItemTitle,
-                  onTap: onDarkModeTap,
                 ),
                 _GeneralTile(
                   icon: Icons.help_outline_rounded,
