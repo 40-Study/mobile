@@ -1,12 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/data/bookmark_storage.dart';
 import 'package:study/features/course/data/models/course_model.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_state.dart';
 import 'package:study/features/student/bloc/lesson/lesson_bloc.dart';
 import 'package:study/features/student/bloc/lesson/lesson_event.dart';
+import 'package:study/features/student/data/models/bookmark_model.dart';
 import 'package:study/features/student/presentation/achievement/certificate_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/instructor_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
@@ -28,6 +30,7 @@ class CourseDetailScreen extends StatefulWidget {
 class _CourseDetailScreenState extends State<CourseDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isBookmarked = false;
 
   @override
   void initState() {
@@ -39,6 +42,14 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkBookmarkStatus(String courseId) async {
+    final bookmarks = await diContainer<BookmarkStorage>().getAll();
+    final exists = bookmarks.any((b) => b.itemId == courseId);
+    if (mounted && exists != _isBookmarked) {
+      setState(() => _isBookmarked = exists);
+    }
   }
 
   void _navigateToLesson(
@@ -226,7 +237,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
         // App bar
         SafeArea(
           bottom: false,
-          child: _buildAppBar(context),
+          child: _buildAppBar(context, state),
         ),
 
         Expanded(
@@ -257,7 +268,12 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
+  Widget _buildAppBar(BuildContext context, CourseDetailSuccess state) {
+    // Check bookmark status khi build
+    if (state.course != null) {
+      _checkBookmarkStatus(state.course!.id);
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
@@ -270,12 +286,57 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
             onTap: () => Navigator.of(context).pop(),
           ),
           const Spacer(),
-          _SoftIconButton(icon: Icons.bookmark_outline_rounded, onTap: () {}),
+          _SoftIconButton(
+            icon: _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+            iconColor: _isBookmarked ? AchievementColors.orange : null,
+            onTap: () => _toggleBookmark(context, state),
+          ),
           AppSpacing.hGap8,
           _SoftIconButton(icon: Icons.ios_share_rounded, onTap: () {}),
         ],
       ),
     );
+  }
+
+  Future<void> _toggleBookmark(BuildContext context, CourseDetailSuccess state) async {
+    final course = state.course;
+    if (course == null) return;
+
+    final storage = diContainer<BookmarkStorage>();
+    final bookmarkId = 'course_${course.id}';
+
+    if (_isBookmarked) {
+      await storage.remove(bookmarkId);
+      setState(() => _isBookmarked = false);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã bỏ lưu khóa học'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else {
+      final bookmark = BookmarkModel(
+        id: bookmarkId,
+        itemId: course.id,
+        type: BookmarkType.course,
+        title: course.title,
+        thumbnail: course.thumbnailUrl,
+        subtitle: course.instructorName,
+        savedAt: DateTime.now(),
+      );
+      await storage.save(bookmark);
+      setState(() => _isBookmarked = true);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã lưu khóa học'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Widget _buildHeroSection(BuildContext context, CourseDetailSuccess state) {
@@ -1040,9 +1101,10 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
 // =============================================================================
 
 class _SoftIconButton extends StatelessWidget {
-  const _SoftIconButton({required this.icon, required this.onTap});
+  const _SoftIconButton({required this.icon, required this.onTap, this.iconColor});
   final IconData icon;
   final VoidCallback onTap;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -1055,7 +1117,7 @@ class _SoftIconButton extends StatelessWidget {
       ),
       child: IconButton(
         onPressed: onTap,
-        icon: Icon(icon, color: cs.onSurfaceVariant, size: 22),
+        icon: Icon(icon, color: iconColor ?? cs.onSurfaceVariant, size: 22),
         constraints: const BoxConstraints(minWidth: 42, minHeight: 42),
       ),
     );

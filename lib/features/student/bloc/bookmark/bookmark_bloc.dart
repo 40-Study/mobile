@@ -8,6 +8,7 @@ class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
     on<BookmarkStarted>(_onStarted);
     on<BookmarkFilterChanged>(_onFilterChanged);
     on<BookmarkRemoved>(_onRemoved);
+    on<BookmarkAdded>(_onAdded);
   }
 
   final BookmarkStorage _storage;
@@ -52,5 +53,12 @@ class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
 
     // Persist
     await _storage.remove(event.id);
+  }
+
+  Future<void> _onAdded(
+    BookmarkAdded event,
+    Emitter<BookmarkState> emit,
+  ) async {
+    await _storage.save(event.bookmark);
   }
 }
