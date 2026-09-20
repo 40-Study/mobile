@@ -8,9 +8,10 @@ abstract class AssignmentModel with _$AssignmentModel {
   const factory AssignmentModel({
     required String id,
     required String title,
-    required String type,
+    @Default('quiz') String type,
     @JsonKey(name: 'course_name') String? courseName,
     @JsonKey(name: 'course_id') String? courseId,
+    @JsonKey(name: 'enrollment_id') String? enrollmentId,
     @JsonKey(name: 'lesson_id') String? lessonId,
     @JsonKey(name: 'due_date') DateTime? dueDate,
     @JsonKey(name: 'question_count') @Default(0) int questionCount,

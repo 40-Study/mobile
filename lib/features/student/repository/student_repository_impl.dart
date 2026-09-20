@@ -150,17 +150,25 @@ class StudentRepositoryImpl implements StudentRepository {
       // Use enrollments to get pending assignments
       final response = await _courseApi.getMyEnrollments(status: 'active');
       final data = _extractList(response.data['data']);
+      debugPrint('📋 Enrollments count: ${data.length}');
 
       // Collect assignments from enrollments
       final assignments = <AssignmentModel>[];
       for (final enrollment in data) {
+        final enrollmentId = enrollment['id'] as String?;
         final assignmentList = enrollment['pending_assignments'] as List? ?? [];
-        assignments.addAll(
-          assignmentList.map((e) => AssignmentModel.fromJson(e as Map<String, dynamic>)),
-        );
+        debugPrint('📋 Enrollment $enrollmentId: ${assignmentList.length} assignments');
+        debugPrint('📋 Raw: $assignmentList');
+        for (final e in assignmentList) {
+          final json = Map<String, dynamic>.from(e as Map);
+          json['enrollment_id'] = enrollmentId;
+          assignments.add(AssignmentModel.fromJson(json));
+        }
       }
+      debugPrint('📋 Total assignments: ${assignments.length}');
       return Result.success(assignments);
     } catch (e) {
+      debugPrint('📋 Error: $e');
       return Result.failure(ServerFailure(message: e.toString()));
     }
   }
