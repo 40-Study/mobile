@@ -162,13 +162,6 @@ class _ProfileContent extends StatelessWidget {
                       onTap: () => _navigateToSecurity(context),
                     ),
                     _SettingItem(
-                      icon: Icons.workspace_premium_outlined,
-                      iconColor: AchievementColors.orange,
-                      title: l10n.subscription,
-                      subtitle: l10n.managePlanBilling,
-                      onTap: () {},
-                    ),
-                    _SettingItem(
                       icon: Icons.notifications_outlined,
                       iconColor: cs.blue400,
                       title: l10n.notifications,
