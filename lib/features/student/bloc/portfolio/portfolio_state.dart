@@ -98,3 +98,70 @@ class PortfolioSection extends Equatable {
   @override
   List<Object?> get props => [id, title, visible];
 }
+
+class PortfolioStats extends Equatable {
+  const PortfolioStats({
+    required this.yearsExperience,
+    required this.projectsCompleted,
+    required this.certificates,
+    required this.followers,
+  });
+
+  final String yearsExperience;
+  final int projectsCompleted;
+  final int certificates;
+  final int followers;
+
+  @override
+  List<Object?> get props => [yearsExperience, projectsCompleted, certificates, followers];
+}
+
+class Project extends Equatable {
+  const Project({
+    required this.title,
+    required this.subtitle,
+    required this.description,
+    required this.category,
+    required this.tool,
+    required this.year,
+  });
+
+  final String title;
+  final String subtitle;
+  final String description;
+  final String category;
+  final String tool;
+  final String year;
+
+  @override
+  List<Object?> get props => [title, subtitle, description, category, tool, year];
+}
+
+class Skill extends Equatable {
+  const Skill({required this.name, required this.level});
+
+  final String name;
+  final int level;
+
+  @override
+  List<Object?> get props => [name, level];
+}
+
+class Experience extends Equatable {
+  const Experience({
+    required this.position,
+    required this.company,
+    required this.startDate,
+    this.endDate,
+    required this.description,
+  });
+
+  final String position;
+  final String company;
+  final String startDate;
+  final String? endDate;
+  final String description;
+
+  @override
+  List<Object?> get props => [position, company, startDate, endDate, description];
+}
