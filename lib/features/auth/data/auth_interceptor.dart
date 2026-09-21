@@ -65,13 +65,16 @@ class AuthInterceptor extends QueuedInterceptor {
 
     final isRefreshCall = path.contains('/api/auth/refresh-token');
     if (isRefreshCall) {
+      AppLogger.auth('401 on refresh-token call, clearing session');
       await _authStorage.clearAll();
       _sessionNotifier.notify();
       return handler.next(err);
     }
 
+    AppLogger.auth('401 on $path, attempting token refresh...');
     final refreshed = await _tryRefreshToken();
     if (!refreshed) {
+      AppLogger.auth('Token refresh failed, clearing session');
       await _authStorage.clearAll();
       _sessionNotifier.notify();
       return handler.next(err);

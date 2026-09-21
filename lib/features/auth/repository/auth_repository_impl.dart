@@ -105,7 +105,9 @@ class AuthRepositoryImpl implements AuthRepository {
     );
 
     final data = _extractData(response.data) as Map<String, dynamic>;
+    AppLogger.auth('Login raw data: $data');
     final loginResponse = LoginResponse.fromJson(data);
+    AppLogger.auth('Login completed=${loginResponse.completed}, hasToken=${loginResponse.accessToken != null}');
 
     // Nếu login hoàn tất (1 role), lưu session
     if (loginResponse.completed && loginResponse.accessToken != null) {
