@@ -11,11 +11,6 @@ import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/auth/repository/auth_repository_impl.dart';
 import 'package:study/features/course/data/course_api_client.dart';
-import 'package:study/features/parent/data/parent_api_client.dart';
-import 'package:study/features/parent/repository/parent_repository.dart';
-// ignore: unused_import
-import 'package:study/features/parent/repository/parent_repository_impl.dart';
-import 'package:study/features/parent/repository/parent_repository_mock.dart';
 import 'package:study/features/student/data/student_api_client.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/features/student/repository/student_repository_impl.dart';
@@ -60,11 +55,4 @@ abstract class RepositoryModule {
   BookmarkStorage provideBookmarkStorage() =>
       SharedPreferencesBookmarkStorage(diContainer<SharedPreferences>());
 
-  @factoryMethod
-  ParentApiClient provideParentApiClient(Dio dio) => ParentApiClient(dio);
-
-  @lazySingleton
-  ParentRepository provideParentRepository(ParentApiClient apiClient) =>
-      // TODO: Đổi sang ParentRepositoryImpl khi backend có GET /api/parent/children
-      ParentRepositoryMock(apiClient);
 }

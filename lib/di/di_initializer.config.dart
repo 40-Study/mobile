@@ -31,9 +31,6 @@ import 'package:study/features/course/repository/course_repository.dart'
     as _i1065;
 import 'package:study/features/course/repository/course_repository_impl.dart'
     as _i38;
-import 'package:study/features/parent/data/parent_api_client.dart' as _i698;
-import 'package:study/features/parent/repository/parent_repository.dart'
-    as _i632;
 import 'package:study/features/student/data/student_api_client.dart' as _i583;
 import 'package:study/features/student/repository/student_repository.dart'
     as _i962;
@@ -83,9 +80,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i583.StudentApiClient>(
       () => repositoryModule.provideStudentApiClient(gh<_i361.Dio>()),
     );
-    gh.factory<_i698.ParentApiClient>(
-      () => repositoryModule.provideParentApiClient(gh<_i361.Dio>()),
-    );
     gh.lazySingleton<_i1065.CourseRepository>(
       () => _i38.CourseRepositoryImpl(gh<_i511.CourseApiClient>()),
     );
@@ -103,10 +97,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i584.AuthRepository>(),
         gh<_i340.LastAccessedCourseStorage>(),
       ),
-    );
-    gh.lazySingleton<_i632.ParentRepository>(
-      () =>
-          repositoryModule.provideParentRepository(gh<_i698.ParentApiClient>()),
     );
     gh.factory<_i812.OnboardingRepository>(
       () => repositoryModule.provideOnboardingRepository(
