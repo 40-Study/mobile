@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/data/daily_goals_storage.dart';
-import 'package:study/data/motivational_quotes.dart';
+import 'package:study/di/di_container.dart';
 import 'package:study/features/student/bloc/achievement/achievement_bloc.dart';
 import 'package:study/features/student/bloc/achievement/achievement_event.dart';
 import 'package:study/features/student/bloc/achievement/achievement_state.dart';
@@ -12,18 +12,11 @@ import 'package:study/features/student/bloc/home/home_event.dart';
 import 'package:study/features/student/bloc/home/home_state.dart';
 import 'package:study/features/student/bloc/lesson/lesson_bloc.dart';
 import 'package:study/features/student/bloc/lesson/lesson_event.dart';
-import 'package:study/features/student/bloc/schedule/schedule_bloc.dart';
-import 'package:study/features/student/bloc/schedule/schedule_event.dart';
 import 'package:study/features/student/data/models/schedule_item_model.dart';
-import 'package:study/features/student/presentation/home/widgets/assignment_list.dart';
-import 'package:study/features/student/presentation/home/widgets/continue_learning_card.dart';
-import 'package:study/features/student/presentation/home/widgets/daily_goal_card.dart';
-import 'package:study/features/student/presentation/home/widgets/schedule_timeline.dart';
-import 'package:study/features/student/presentation/home/widgets/weekly_achievement_card.dart';
+import 'package:study/features/student/presentation/home/widgets/widgets.dart';
 import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
-import 'package:study/di/di_container.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/section_header.dart';
@@ -220,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _TodaySummary(
+                TodaySummary(
                   scheduleCount: state.scheduleItems.length,
                   assignmentCount: state.assignments.length,
                 ),
@@ -232,7 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         _navigateToCourse(context, state.continueLearning!.id),
                   )
                 else
-                  _ExploreCoursesCard(
+                  ExploreCoursesCard(
                     onTap: () => widget.onNavigateToTab?.call(1),
                   ),
               ],
@@ -357,7 +350,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onActionTap: () => widget.onNavigateToTab?.call(2),
         ),
         AppSpacing.vGap12,
-        _DailyGoalsCard(onTap: () => widget.onNavigateToTab?.call(2)),
+        HomeDailyGoalsCard(onTap: () => widget.onNavigateToTab?.call(2)),
         AppSpacing.vGap24,
       ],
     );
@@ -408,10 +401,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 earnedBadgeCount: achievementState.earnedBadges.length,
                 onTap: () => widget.onNavigateToTab?.call(3),
               ),
-              AchievementFailure() => _AchievementPlaceholder(
+              AchievementFailure() => AchievementPlaceholder(
                 onTap: () => widget.onNavigateToTab?.call(3),
               ),
-              _ => const _AchievementLoadingCard(),
+              _ => const AchievementLoadingCard(),
             };
           },
         ),
@@ -608,392 +601,5 @@ class _HomeScreenState extends State<HomeScreen> {
     final normalized = name?.trim();
     if (normalized == null || normalized.isEmpty) return 'B';
     return normalized.substring(0, 1).toUpperCase();
-  }
-}
-
-class _TodaySummary extends StatelessWidget {
-  const _TodaySummary({
-    required this.scheduleCount,
-    required this.assignmentCount,
-  });
-
-  final int scheduleCount;
-  final int assignmentCount;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Row(
-      children: [
-        _SummaryItem(
-          icon: Icons.calendar_month_outlined,
-          label: '$scheduleCount buổi học',
-          color: cs.primary,
-        ),
-        Container(
-          width: 1,
-          height: 18,
-          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          color: cs.outline,
-        ),
-        _SummaryItem(
-          icon: Icons.task_alt_outlined,
-          label: '$assignmentCount bài cần làm',
-          color: cs.tertiary,
-        ),
-      ],
-    );
-  }
-}
-
-class _SummaryItem extends StatelessWidget {
-  const _SummaryItem({
-    required this.icon,
-    required this.label,
-    required this.color,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final tt = Theme.of(context).textTheme;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(AppRadius.xs),
-          ),
-          child: Icon(icon, size: 15, color: color),
-        ),
-        AppSpacing.hGap8,
-        Text(
-          label,
-          style: tt.labelSmall?.copyWith(fontWeight: FontWeight.w600),
-        ),
-      ],
-    );
-  }
-}
-
-class _AchievementLoadingCard extends StatelessWidget {
-  const _AchievementLoadingCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Container(
-      height: 156,
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: cs.outline),
-        boxShadow: AppShadows.layeredCard,
-      ),
-      alignment: Alignment.center,
-      child: const CircularProgressIndicator(strokeWidth: 2.5),
-    );
-  }
-}
-
-class _AchievementPlaceholder extends StatelessWidget {
-  const _AchievementPlaceholder({this.onTap});
-
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        boxShadow: AppShadows.layeredCard,
-      ),
-      child: Material(
-        color: cs.surfaceContainerLowest,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.card),
-          side: BorderSide(color: cs.outline),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppRadius.card),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Row(
-              children: [
-                Icon(Icons.emoji_events_outlined, color: cs.tertiary),
-                AppSpacing.hGap12,
-                Expanded(
-                  child: Text(
-                    'Mở trang Thành tích để xem các cột mốc của bạn.',
-                    style: tt.bodyMedium,
-                  ),
-                ),
-                Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DailyGoalsCard extends StatelessWidget {
-  const _DailyGoalsCard({this.onTap});
-
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-    final goalColor = cs.secondary;
-
-    final storage = DailyGoalsStorage.instance;
-    final goals = storage.getGoals(DateTime.now());
-    final (completed, total) = storage.getTodayProgress();
-    final progress = total > 0 ? completed / total : 0.0;
-    final nextGoal = goals.where((g) => !g.isCompleted).firstOrNull;
-
-    // Empty state - banner with illustration
-    if (goals.isEmpty) {
-      return GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFFF1F8E9), Color(0xFFE8F5E9)],
-            ),
-            borderRadius: BorderRadius.circular(AppRadius.card),
-            border: Border.all(color: const Color(0xFFC8E6C9).withValues(alpha: 0.5)),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: goalColor.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(Icons.flag_rounded, size: 18, color: goalColor),
-                        ),
-                        AppSpacing.hGap12,
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Hãy đặt mục tiêu',
-                              style: tt.titleSmall?.copyWith(
-                                color: const Color(0xFF43A047),
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              'để bắt đầu ngày mới!',
-                              style: tt.bodySmall?.copyWith(color: const Color(0xFF66BB6A)),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    AppSpacing.vGap12,
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF66BB6A),
-                        borderRadius: BorderRadius.circular(AppRadius.full),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.add_rounded, size: 16, color: Colors.white),
-                          AppSpacing.hGap4,
-                          Text(
-                            'Thêm mục tiêu',
-                            style: tt.labelSmall?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFC8E6C9).withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: Icon(Icons.eco_rounded, size: 36, color: goalColor.withValues(alpha: 0.5)),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // Has goals - normal card
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        boxShadow: AppShadows.layeredCard,
-      ),
-      child: Material(
-        color: cs.surfaceContainerLowest,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.card),
-          side: BorderSide(color: cs.outline),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Row(
-              children: [
-                SizedBox.square(
-                  dimension: 66,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      SizedBox.expand(
-                        child: CircularProgressIndicator(
-                          value: progress,
-                          color: goalColor,
-                          strokeWidth: 7,
-                          strokeCap: StrokeCap.round,
-                          backgroundColor: goalColor.withValues(alpha: 0.1),
-                        ),
-                      ),
-                      Text(
-                        '$completed/$total',
-                        style: tt.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                    ],
-                  ),
-                ),
-                AppSpacing.hGap16,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        completed == total
-                            ? 'Hoàn thành tất cả!'
-                            : 'Còn ${total - completed} mục tiêu',
-                        style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      AppSpacing.vGap4,
-                      Text(
-                        nextGoal?.title ?? 'Tuyệt vời! Bạn đã hoàn thành.',
-                        style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                AppSpacing.hGap8,
-                Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ExploreCoursesCard extends StatelessWidget {
-  const _ExploreCoursesCard({this.onTap});
-
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        boxShadow: AppShadows.layeredCard,
-      ),
-      child: Material(
-        color: cs.primaryContainer,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.card),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppRadius.card),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: cs.primary,
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                  ),
-                  child: Icon(Icons.school_rounded, color: cs.onPrimary),
-                ),
-                AppSpacing.hGap16,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Bắt đầu học ngay!',
-                        style: tt.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: cs.onPrimaryContainer,
-                        ),
-                      ),
-                      AppSpacing.vGap4,
-                      Text(
-                        'Khám phá các khóa học phù hợp với bạn',
-                        style: tt.bodySmall?.copyWith(
-                          color: cs.onPrimaryContainer.withValues(alpha: 0.8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.arrow_forward_rounded, color: cs.onPrimaryContainer),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }
