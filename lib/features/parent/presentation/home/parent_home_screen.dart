@@ -108,8 +108,10 @@ class _HomeSuccess extends StatelessWidget {
             onSelected: onChildSelected,
           ),
           AppSpacing.vGap16,
-          if (alerts.isNotEmpty)
-            ActionRequiredSection(alerts: alerts),
+          ActionRequiredSection(
+            alerts: alerts,
+            childrenNames: _childrenNamesText(),
+          ),
           if (schedules.isNotEmpty) ...[
             AppSpacing.vGap16,
             UpcomingScheduleSection(schedules: schedules),
@@ -128,6 +130,19 @@ class _HomeSuccess extends StatelessWidget {
       context,
       MaterialPageRoute<void>(builder: (_) => const NotificationScreen()),
     );
+  }
+
+  // Tên con để render câu giải thích empty state, VD "Minh & Lan" / "các con".
+  String _childrenNamesText() {
+    final children = data.children;
+    if (children.isEmpty) return 'các con';
+    if (selectedChildId != null) {
+      for (final c in children) {
+        if (c.id == selectedChildId) return c.name;
+      }
+      return children.first.name;
+    }
+    return children.map((c) => c.name).join(' & ');
   }
 }
 
