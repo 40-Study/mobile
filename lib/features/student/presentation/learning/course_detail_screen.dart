@@ -12,6 +12,7 @@ import 'package:study/features/student/data/models/bookmark_model.dart';
 import 'package:study/features/student/presentation/achievement/certificate_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/instructor_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
+import 'package:study/features/student/presentation/learning/widgets/course_detail/course_detail_widgets.dart';
 import 'package:study/features/student/presentation/learning/widgets/section/section_widgets.dart';
 import 'package:study/features/student/presentation/learning/widgets/thumbnail_placeholder.dart';
 import 'package:study/di/di_container.dart';
@@ -234,12 +235,10 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
 
     return Column(
       children: [
-        // App bar
         SafeArea(
           bottom: false,
           child: _buildAppBar(context, state),
         ),
-
         Expanded(
           child: NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) => [
@@ -247,7 +246,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
               SliverToBoxAdapter(child: _buildProgressCard(context, state)),
               SliverPersistentHeader(
                 pinned: true,
-                delegate: _TabBarDelegate(tabController: _tabController, cs: cs),
+                delegate: CourseDetailTabBarDelegate(tabController: _tabController, cs: cs),
               ),
             ],
             body: TabBarView(
@@ -261,15 +260,12 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
             ),
           ),
         ),
-
-        // Bottom bar
         _buildBottomBar(context, state),
       ],
     );
   }
 
   Widget _buildAppBar(BuildContext context, CourseDetailSuccess state) {
-    // Check bookmark status khi build
     if (state.course != null) {
       _checkBookmarkStatus(state.course!.id);
     }
@@ -281,18 +277,18 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
       ),
       child: Row(
         children: [
-          _SoftIconButton(
+          SoftIconButton(
             icon: Icons.arrow_back_rounded,
             onTap: () => Navigator.of(context).pop(),
           ),
           const Spacer(),
-          _SoftIconButton(
+          SoftIconButton(
             icon: _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
             iconColor: _isBookmarked ? AchievementColors.orange : null,
             onTap: () => _toggleBookmark(context, state),
           ),
           AppSpacing.hGap8,
-          _SoftIconButton(icon: Icons.ios_share_rounded, onTap: () {}),
+          SoftIconButton(icon: Icons.ios_share_rounded, onTap: () {}),
         ],
       ),
     );
@@ -376,7 +372,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                       : ThumbnailPlaceholder(cs: cs),
                 ),
               ),
-              // Play button overlay
               Container(
                 width: 40,
                 height: 40,
@@ -395,7 +390,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Status badge
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -423,8 +417,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                   ),
                 ),
                 AppSpacing.vGap8,
-
-                // Title
                 Text(
                   course?.title ?? 'Khóa học',
                   style: tt.titleLarge?.copyWith(
@@ -435,8 +427,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                   overflow: TextOverflow.ellipsis,
                 ),
                 AppSpacing.vGap8,
-
-                // Instructor
                 Row(
                   children: [
                     CachedAvatar(
@@ -462,8 +452,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                   ],
                 ),
                 AppSpacing.vGap8,
-
-                // Rating + students
                 Row(
                   children: [
                     const Icon(Icons.star_rounded, color: Colors.amber, size: 16),
@@ -501,9 +489,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
     final tt = Theme.of(context).textTheme;
     final enrollment = state.enrollment;
     final course = state.course;
-    // Check enrolled: có enrollment ID thực (không rỗng) = đã enroll
-    final isEnrolled = enrollment.id.isNotEmpty &&
-        enrollment.status != 'preview';
+    final isEnrolled = enrollment.id.isNotEmpty && enrollment.status != 'preview';
 
     debugPrint('Enrollment id: ${enrollment.id}, status: ${enrollment.status}, isEnrolled: $isEnrolled');
 
@@ -562,7 +548,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
       );
     }
 
-    // Enrolled: show progress or certificate button
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
     final nextLesson = _getNextLesson(state);
     final isCompleted = enrollment.progressPercentage >= 100;
@@ -592,7 +577,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
       );
     }
 
-    // In progress: show card with progress
+    // In progress
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
       child: Container(
@@ -610,9 +595,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                 children: [
                   Row(
                     children: [
-                      Flexible(
-                        child: Text('Tiến độ', style: tt.labelMedium),
-                      ),
+                      Flexible(child: Text('Tiến độ', style: tt.labelMedium)),
                       const SizedBox(width: 4),
                       Text(
                         '${enrollment.progressPercentage.toStringAsFixed(0)}%',
@@ -682,7 +665,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       children: [
-        // Course description
         Text(
           'Giới thiệu khóa học',
           style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
@@ -700,25 +682,25 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _StatCard(
+              StatCard(
                 icon: Icons.play_circle_outline,
                 value: '${course?.totalLessons ?? 0}',
                 label: 'Bài học',
               ),
               AppSpacing.hGap8,
-              _StatCard(
+              StatCard(
                 icon: Icons.access_time_rounded,
                 value: _formatDuration(course?.totalDurationMins ?? 0),
                 label: 'Thời lượng',
               ),
               AppSpacing.hGap8,
-              _StatCard(
+              StatCard(
                 icon: Icons.signal_cellular_alt_rounded,
                 value: course?.level ?? 'Cơ bản',
                 label: 'Cấp độ',
               ),
               AppSpacing.hGap8,
-              const _StatCard(
+              const StatCard(
                 icon: Icons.workspace_premium_outlined,
                 value: 'Có',
                 label: 'Chứng chỉ',
@@ -738,7 +720,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: course.objectives!.map((obj) => _ObjectiveItem(text: obj)).toList(),
+            children: course.objectives!.map((obj) => ObjectiveItem(text: obj)).toList(),
           ),
           AppSpacing.vGap24,
         ],
@@ -780,7 +762,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
             final lesson = entry.value;
             final isLocked = index > 0 &&
                 allLessons[index - 1].progress?.status != 'completed';
-            return _LessonPreviewItem(
+            return LessonPreviewItem(
               index: index,
               lesson: lesson,
               isLocked: isLocked,
@@ -813,7 +795,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
             const Spacer(),
             TextButton(
               onPressed: () {
-                // Expand all sections
                 for (final section in state.sections) {
                   if (!state.expandedSections.contains(section.id)) {
                     context.read<CourseDetailBloc>().add(
@@ -930,11 +911,11 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
 
         const Row(
           children: [
-            _InstructorStat(icon: Icons.menu_book_outlined, value: '12', label: 'Khóa học'),
+            InstructorStat(icon: Icons.menu_book_outlined, value: '12', label: 'Khóa học'),
             AppSpacing.hGap16,
-            _InstructorStat(icon: Icons.star_rounded, value: '4.8', label: 'Đánh giá'),
+            InstructorStat(icon: Icons.star_rounded, value: '4.8', label: 'Đánh giá'),
             AppSpacing.hGap16,
-            _InstructorStat(icon: Icons.people_outline, value: '15k', label: 'Học viên'),
+            InstructorStat(icon: Icons.people_outline, value: '15k', label: 'Học viên'),
           ],
         ),
 
@@ -1014,7 +995,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
 
   Widget _buildBottomBar(BuildContext context, CourseDetailSuccess state) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
 
     return Container(
       padding: EdgeInsets.fromLTRB(
@@ -1029,7 +1009,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
       ),
       child: Row(
         children: [
-          // Favorite button
           Container(
             decoration: BoxDecoration(
               color: cs.surfaceContainerLowest,
@@ -1042,8 +1021,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
             ),
           ),
           AppSpacing.hGap12,
-
-          // Download materials button
           Expanded(
             child: FilledButton.icon(
               onPressed: () {},
@@ -1074,13 +1051,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
     return null;
   }
 
-  int _getLessonIndex(CourseDetailSuccess state, LessonModel lesson) {
-    final allLessons = state.sections
-        .expand((s) => s.lessons ?? <LessonModel>[])
-        .toList();
-    return allLessons.indexWhere((l) => l.id == lesson.id);
-  }
-
   String _formatCount(int count) {
     if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}k';
     return count.toString();
@@ -1094,277 +1064,4 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
     }
     return '${mins}m';
   }
-}
-
-// =============================================================================
-// Components
-// =============================================================================
-
-class _SoftIconButton extends StatelessWidget {
-  const _SoftIconButton({required this.icon, required this.onTap, this.iconColor});
-  final IconData icon;
-  final VoidCallback onTap;
-  final Color? iconColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
-      ),
-      child: IconButton(
-        onPressed: onTap,
-        icon: Icon(icon, color: iconColor ?? cs.onSurfaceVariant, size: 22),
-        constraints: const BoxConstraints(minWidth: 42, minHeight: 42),
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  const _StatCard({required this.icon, required this.value, required this.label});
-  final IconData icon;
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-          border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: cs.primary, size: 20),
-            AppSpacing.vGap4,
-            Text(
-              value,
-              style: tt.labelMedium?.copyWith(fontWeight: FontWeight.w700),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              label,
-              style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ObjectiveItem extends StatelessWidget {
-  const _ObjectiveItem({required this.text});
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return SizedBox(
-      width: (MediaQuery.of(context).size.width - AppSpacing.screenPadding * 2 - 8) / 2,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.check_circle_rounded, color: cs.primary, size: 18),
-          AppSpacing.hGap8,
-          Expanded(
-            child: Text(
-              text,
-              style: tt.bodySmall,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LessonPreviewItem extends StatelessWidget {
-  const _LessonPreviewItem({
-    required this.index,
-    required this.lesson,
-    required this.onTap,
-    this.isLocked = false,
-  });
-
-  final int index;
-  final LessonModel lesson;
-  final VoidCallback onTap;
-  final bool isLocked;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-    final isCompleted = lesson.progress?.status == 'completed';
-    final isInProgress = lesson.progress?.status == 'in_progress';
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: InkWell(
-        onTap: isLocked ? null : onTap,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: isInProgress
-                ? cs.primary.withValues(alpha: 0.05)
-                : cs.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(AppRadius.sm),
-            border: Border.all(
-              color: isInProgress
-                  ? cs.primary.withValues(alpha: 0.3)
-                  : cs.outlineVariant.withValues(alpha: 0.5),
-            ),
-          ),
-          child: Row(
-            children: [
-              // Status icon
-              LessonStatusIcon(isCompleted: isCompleted, isInProgress: isInProgress, isLocked: isLocked),
-              AppSpacing.hGap12,
-
-              // Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${index + 1}. ${lesson.title}',
-                      style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      '${lesson.durationMinutes}:00',
-                      style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Status label
-              if (isCompleted)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Hoàn thành',
-                      style: tt.labelSmall?.copyWith(color: cs.primary),
-                    ),
-                    Icon(Icons.chevron_right_rounded, size: 16, color: cs.primary),
-                  ],
-                )
-              else if (isInProgress)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Đang học',
-                      style: tt.labelSmall?.copyWith(color: cs.primary),
-                    ),
-                    Icon(Icons.chevron_right_rounded, size: 16, color: cs.primary),
-                  ],
-                )
-              else
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Chưa mở khóa',
-                      style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
-                    ),
-                    Icon(Icons.chevron_right_rounded, size: 16, color: cs.onSurfaceVariant),
-                  ],
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _InstructorStat extends StatelessWidget {
-  const _InstructorStat({required this.icon, required this.value, required this.label});
-  final IconData icon;
-  final String value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-          border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: cs.primary, size: 20),
-            AppSpacing.vGap4,
-            Text(value, style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
-            Text(label, style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TabBarDelegate extends SliverPersistentHeaderDelegate {
-  _TabBarDelegate({required this.tabController, required this.cs});
-  final TabController tabController;
-  final ColorScheme cs;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: cs.surface,
-      child: TabBar(
-        controller: tabController,
-        isScrollable: true,
-        tabAlignment: TabAlignment.start,
-        labelColor: cs.primary,
-        unselectedLabelColor: cs.onSurfaceVariant,
-        indicatorColor: cs.primary,
-        indicatorWeight: 2,
-        labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
-        unselectedLabelStyle: Theme.of(context).textTheme.labelLarge,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-        tabs: const [
-          Tab(text: 'Tổng quan'),
-          Tab(text: 'Nội dung khóa học'),
-          Tab(text: 'Giảng viên'),
-          Tab(text: 'Đánh giá'),
-        ],
-      ),
-    );
-  }
-
-  @override
-  double get maxExtent => 48;
-  @override
-  double get minExtent => 48;
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
 }

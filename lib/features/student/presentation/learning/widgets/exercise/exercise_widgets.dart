@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/student/data/quiz_result_storage.dart';
 import 'package:study/features/student/presentation/learning/quiz_screen.dart';
+import 'package:study/features/student/presentation/learning/quiz_result_screen.dart';
 import 'package:study/theme/theme.dart';
 
 // =============================================================================
