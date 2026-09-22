@@ -5,16 +5,21 @@ import 'package:study/features/parent/data/parent_home_api_client.dart';
 import 'package:study/features/parent/repository/parent_home_repository.dart';
 
 class ParentHomeRepositoryImpl implements ParentHomeRepository {
-  ParentHomeRepositoryImpl({required ParentHomeApiClient apiClient})
-      : _api = apiClient;
+  ParentHomeRepositoryImpl({
+    required ParentHomeApiClient apiClient,
+    this.enablePreviewFallback = false,
+  }) : _api = apiClient;
 
   final ParentHomeApiClient _api;
 
+  /// Bật fallback data mẫu để demo UI đầy đủ khi backend chưa có data.
+  final bool enablePreviewFallback;
+
   @override
   Future<ParentHomeData> getHomeDashboard({String? childId}) async {
-    // 1. Danh sách con
+    // 1. Danh sách con (ưu tiên data thật)
     var children = await _fetchChildren();
-    if (children.isEmpty) {
+    if (enablePreviewFallback && children.isEmpty) {
       children = _fallbackChildren();
     }
 
@@ -25,7 +30,7 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     final results = await Future.wait([
       _fetchSchedules(target?.id),
       _fetchAlerts(target?.id),
-      _fetchAnalytics(target, children),
+      _fetchAnalytics(target),
     ]);
 
     final schedules = results[0] as List<ParentScheduleItem>;
@@ -35,9 +40,15 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     return ParentHomeData(
       children: children,
       selectedChildId: childId,
-      alerts: alerts.isEmpty ? _fallbackAlerts() : alerts,
-      schedules: schedules.isEmpty ? _fallbackSchedules() : schedules,
-      analytics: analytics ?? _fallbackAnalytics(target),
+      alerts: enablePreviewFallback && alerts.isEmpty
+          ? _fallbackAlerts()
+          : alerts,
+      schedules: enablePreviewFallback && schedules.isEmpty
+          ? _fallbackSchedules()
+          : schedules,
+      analytics: enablePreviewFallback && analytics == null
+          ? _fallbackAnalytics(target)
+          : analytics,
     );
   }
 
@@ -103,10 +114,7 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     }
   }
 
-  Future<ParentAnalyticsData?> _fetchAnalytics(
-    FamilyScopeChild? target,
-    List<FamilyScopeChild> children,
-  ) async {
+  Future<ParentAnalyticsData?> _fetchAnalytics(FamilyScopeChild? target) async {
     if (target == null) return null;
     try {
       final response = await _api.getGrades(target.id);
