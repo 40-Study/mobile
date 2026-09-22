@@ -20,7 +20,7 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'uk';
 
-  static String m9(blockNumber) => "Блок ${blockNumber}";
+  static String m11(blockNumber) => "Блок ${blockNumber}";
 
   static String m0(days) => "Через ${days} днів";
 
@@ -36,11 +36,11 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m6(mission) => "Місія: ${mission}";
 
-  static String m10(count) => "${count} місій";
+  static String m19(count) => "${count} місій";
 
-  static String m11(query) => "Ядра за запитом \"${query}\" не знайдено";
+  static String m20(query) => "Ядра за запитом \"${query}\" не знайдено";
 
-  static String m12(count) => "${count} повторів";
+  static String m23(count) => "${count} повторів";
 
   static String m7(rocketName, rocketType) =>
       "Ракета: ${rocketName} (${rocketType})";
@@ -67,7 +67,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "appearanceTitle": MessageLookupByLibrary.simpleMessage("Зовнішній вигляд"),
     "article": MessageLookupByLibrary.simpleMessage("Стаття"),
-    "blockLabel": m9,
+    "blockLabel": m11,
     "borderRadiusButtonTitle": MessageLookupByLibrary.simpleMessage(
       "Радіус кордону",
     ),
@@ -193,11 +193,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "missionSuccessful": MessageLookupByLibrary.simpleMessage("Місія успішна"),
     "missionTimeline": MessageLookupByLibrary.simpleMessage("Хронологія місії"),
     "missionTitle": m6,
-    "missions": m10,
+    "missions": m19,
     "na": MessageLookupByLibrary.simpleMessage("Н/Д"),
     "nationality": MessageLookupByLibrary.simpleMessage("Національність"),
     "newsScreen": MessageLookupByLibrary.simpleMessage("Новини"),
-    "noCoresFound": m11,
+    "noCoresFound": m20,
     "noDetails": MessageLookupByLibrary.simpleMessage("Деталі відсутні"),
     "notAvailable": MessageLookupByLibrary.simpleMessage("Н/Д"),
     "numberLabel": MessageLookupByLibrary.simpleMessage("Кількість"),
@@ -231,7 +231,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "retry": MessageLookupByLibrary.simpleMessage("Повторити"),
     "reused": MessageLookupByLibrary.simpleMessage("Повторне використання"),
-    "reuses": m12,
+    "reuses": m23,
     "roadsterDescription": MessageLookupByLibrary.simpleMessage(
       "Tesla Roadster Ілона Маска",
     ),
