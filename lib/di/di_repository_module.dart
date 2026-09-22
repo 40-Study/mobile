@@ -11,6 +11,9 @@ import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/auth/repository/auth_repository_impl.dart';
 import 'package:study/features/course/data/course_api_client.dart';
+import 'package:study/features/parent/data/parent_home_api_client.dart';
+import 'package:study/features/parent/repository/parent_home_repository.dart';
+import 'package:study/features/parent/repository/parent_home_repository_impl.dart';
 import 'package:study/features/student/data/student_api_client.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/features/student/repository/student_repository_impl.dart';
@@ -54,5 +57,14 @@ abstract class RepositoryModule {
   @lazySingleton
   BookmarkStorage provideBookmarkStorage() =>
       SharedPreferencesBookmarkStorage(diContainer<SharedPreferences>());
+
+  @factoryMethod
+  ParentHomeApiClient provideParentHomeApiClient(Dio dio) =>
+      ParentHomeApiClient(dio);
+
+  @lazySingleton
+  ParentHomeRepository provideParentHomeRepository(
+    ParentHomeApiClient apiClient,
+  ) => ParentHomeRepositoryImpl(apiClient: apiClient);
 
 }
