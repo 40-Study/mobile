@@ -48,7 +48,8 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   Future<List<FamilyScopeChild>> _fetchChildren() async {
     try {
       final response = await _api.getChildren();
-      final list = _extractList(response.data, keys: ['children', 'items']);
+      final data = _extractData(response.data);
+      final list = _extractList(data, keys: ['children', 'items']);
       return list
           .asMap()
           .entries
