@@ -3,22 +3,26 @@ import 'package:study/features/parent/data/models/models.dart';
 import 'package:study/theme/theme.dart';
 
 /// Card Phân tích học tập: điểm TB, biểu đồ cột, AI insight.
+/// Khi chưa có dữ liệu hiển thị Empty State.
 class LearningAnalyticsCard extends StatelessWidget {
   const LearningAnalyticsCard({
     super.key,
     required this.analytics,
     this.onViewDetail,
     this.onViewAllReports,
+    this.onViewLearning,
   });
 
-  final ParentAnalyticsData analytics;
+  final ParentAnalyticsData? analytics;
   final VoidCallback? onViewDetail;
   final VoidCallback? onViewAllReports;
+  final VoidCallback? onViewLearning;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final data = analytics;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -37,51 +41,162 @@ class LearningAnalyticsCard extends StatelessWidget {
                 ),
               ),
               AppSpacing.hGap8,
-              Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                  color: AchievementColors.green,
-                  shape: BoxShape.circle,
+              if (data != null) ...[
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: AchievementColors.green,
+                    shape: BoxShape.circle,
+                  ),
                 ),
-              ),
-              AppSpacing.hGap4,
-              Text(
-                'Tiến bộ tốt',
-                style: tt.labelSmall?.copyWith(color: AchievementColors.green),
-              ),
+                AppSpacing.hGap4,
+                Text(
+                  'Tiến bộ tốt',
+                  style: tt.labelSmall?.copyWith(
+                    color: AchievementColors.green,
+                  ),
+                ),
+              ] else
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: cs.slate100,
+                    borderRadius: AppRadius.borderFull,
+                  ),
+                  child: Text(
+                    'Chưa có báo cáo',
+                    style: tt.labelSmall?.copyWith(color: cs.slate500),
+                  ),
+                ),
             ],
           ),
           AppSpacing.vGap12,
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(
-              color: cs.surface,
-              borderRadius: AppRadius.borderLg,
-              border: Border.all(
-                color: cs.outlineVariant.withValues(alpha: 0.4),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: cs.shadow.withValues(alpha: 0.04),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+          if (data == null)
+            _EmptyAnalyticsCard(onViewLearning: onViewLearning)
+          else
+            _AnalyticsContent(
+              analytics: data,
+              onViewDetail: onViewDetail,
+              onViewAllReports: onViewAllReports,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeaderRow(context),
-                AppSpacing.vGap16,
-                _buildScoreRow(context),
-                AppSpacing.vGap16,
-                _buildInsightBox(context),
-                AppSpacing.vGap16,
-                _buildActionsRow(context),
-              ],
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyAnalyticsCard extends StatelessWidget {
+  const _EmptyAnalyticsCard({this.onViewLearning});
+
+  final VoidCallback? onViewLearning;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.analytics_outlined, size: 40, color: cs.slate300),
+          AppSpacing.vGap12,
+          Text(
+            'Chưa có dữ liệu phân tích tuần này',
+            style: tt.titleSmall?.copyWith(
+              color: cs.slate900,
+              fontWeight: FontWeight.w700,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          AppSpacing.vGap8,
+          Text(
+            'Dữ liệu học tập, điểm số trung bình và nhận xét chi tiết sẽ tự '
+            'động hiển thị sau khi con nộp bài tập và hoàn thành các bài kiểm '
+            'tra đầu tiên.',
+            style: tt.bodySmall?.copyWith(color: cs.slate500, height: 1.5),
+            textAlign: TextAlign.center,
+          ),
+          AppSpacing.vGap12,
+          InkWell(
+            onTap: onViewLearning,
+            borderRadius: AppRadius.borderSm,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Xem bảng điểm các kỳ trước',
+                    style: tt.labelMedium?.copyWith(
+                      color: cs.blue600,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 16,
+                    color: cs.blue600,
+                  ),
+                ],
+              ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AnalyticsContent extends StatelessWidget {
+  const _AnalyticsContent({
+    required this.analytics,
+    this.onViewDetail,
+    this.onViewAllReports,
+  });
+
+  final ParentAnalyticsData analytics;
+  final VoidCallback? onViewDetail;
+  final VoidCallback? onViewAllReports;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: cs.surface,
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.4)),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeaderRow(context),
+          AppSpacing.vGap16,
+          _buildScoreRow(context),
+          AppSpacing.vGap16,
+          _buildInsightBox(context),
+          AppSpacing.vGap16,
+          _buildActionsRow(context),
         ],
       ),
     );

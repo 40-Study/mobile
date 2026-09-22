@@ -3,22 +3,29 @@ import 'package:study/features/parent/data/models/models.dart';
 import 'package:study/theme/theme.dart';
 
 /// Thanh chọn phạm vi giám sát: "Tất cả các con" + từng con.
+/// Khi chưa liên kết con hiển thị nút liên kết.
 class FamilyScopeSelector extends StatelessWidget {
   const FamilyScopeSelector({
     super.key,
     required this.children,
     required this.selectedChildId,
     required this.onSelected,
+    this.onLinkChild,
   });
 
   final List<FamilyScopeChild> children;
   final String? selectedChildId;
   final ValueChanged<String?> onSelected;
+  final VoidCallback? onLinkChild;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+
+    if (children.isEmpty) {
+      return _buildEmptyState(context);
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,6 +75,50 @@ class FamilyScopeSelector extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: AppRadius.borderLg,
+          border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.4)),
+        ),
+        child: Column(
+          children: [
+            Icon(Icons.family_restroom_outlined, size: 32, color: cs.slate400),
+            AppSpacing.vGap8,
+            Text(
+              'Chưa có tài khoản con nào được liên kết',
+              style: tt.titleSmall?.copyWith(
+                color: cs.slate900,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            AppSpacing.vGap4,
+            Text(
+              'Chưa có tài khoản con nào được liên kết với số điện thoại/email '
+              'này.',
+              style: tt.bodySmall?.copyWith(color: cs.slate500),
+              textAlign: TextAlign.center,
+            ),
+            AppSpacing.vGap12,
+            OutlinedButton.icon(
+              onPressed: onLinkChild,
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: const Text('Liên kết tài khoản con'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

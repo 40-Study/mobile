@@ -16,7 +16,11 @@ class _ParentShellState extends State<ParentShell> {
   int _currentIndex = 0;
 
   late final List<Widget> _screens = [
-    ParentHomeScreen(onNavigateToProfile: () => _onNavTap(4)),
+    ParentHomeScreen(
+      onNavigateToProfile: () => _onNavTap(4),
+      onNavigateToSchedule: () => _onNavTap(1),
+      onNavigateToLearning: () => _onNavTap(2),
+    ),
     const ParentScheduleScreen(),
     const ParentLearningScreen(),
     const ParentPaymentScreen(),

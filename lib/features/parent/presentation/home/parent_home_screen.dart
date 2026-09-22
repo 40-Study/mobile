@@ -5,6 +5,7 @@ import 'package:study/features/parent/bloc/home/parent_home_bloc.dart';
 import 'package:study/features/parent/bloc/home/parent_home_event.dart';
 import 'package:study/features/parent/bloc/home/parent_home_state.dart';
 import 'package:study/features/parent/data/models/models.dart';
+import 'package:study/features/parent/presentation/children/manage_children_screen.dart';
 import 'package:study/features/parent/presentation/home/widgets/widgets.dart';
 import 'package:study/features/parent/repository/parent_home_repository.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
@@ -12,24 +13,41 @@ import 'package:study/theme/theme.dart';
 
 /// Trang chủ Phụ huynh - dashboard giám sát học tập của con.
 class ParentHomeScreen extends StatelessWidget {
-  const ParentHomeScreen({super.key, this.onNavigateToProfile});
+  const ParentHomeScreen({
+    super.key,
+    this.onNavigateToProfile,
+    this.onNavigateToSchedule,
+    this.onNavigateToLearning,
+  });
 
   final VoidCallback? onNavigateToProfile;
+  final VoidCallback? onNavigateToSchedule;
+  final VoidCallback? onNavigateToLearning;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => ParentHomeBloc(diContainer<ParentHomeRepository>())
         ..add(const ParentHomeStarted()),
-      child: _HomeContent(onNavigateToProfile: onNavigateToProfile),
+      child: _HomeContent(
+        onNavigateToProfile: onNavigateToProfile,
+        onNavigateToSchedule: onNavigateToSchedule,
+        onNavigateToLearning: onNavigateToLearning,
+      ),
     );
   }
 }
 
 class _HomeContent extends StatelessWidget {
-  const _HomeContent({this.onNavigateToProfile});
+  const _HomeContent({
+    this.onNavigateToProfile,
+    this.onNavigateToSchedule,
+    this.onNavigateToLearning,
+  });
 
   final VoidCallback? onNavigateToProfile;
+  final VoidCallback? onNavigateToSchedule;
+  final VoidCallback? onNavigateToLearning;
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +70,8 @@ class _HomeContent extends StatelessWidget {
                   data: data,
                   selectedChildId: selectedChildId,
                   onNavigateToProfile: onNavigateToProfile,
+                  onNavigateToSchedule: onNavigateToSchedule,
+                  onNavigateToLearning: onNavigateToLearning,
                   onChildSelected: (id) => context
                       .read<ParentHomeBloc>()
                       .add(ParentHomeChildSelected(id)),
@@ -78,6 +98,8 @@ class _HomeSuccess extends StatelessWidget {
     required this.onChildSelected,
     required this.onRefresh,
     this.onNavigateToProfile,
+    this.onNavigateToSchedule,
+    this.onNavigateToLearning,
   });
 
   final ParentHomeData data;
@@ -85,6 +107,8 @@ class _HomeSuccess extends StatelessWidget {
   final ValueChanged<String?> onChildSelected;
   final Future<void> Function() onRefresh;
   final VoidCallback? onNavigateToProfile;
+  final VoidCallback? onNavigateToSchedule;
+  final VoidCallback? onNavigateToLearning;
 
   @override
   Widget build(BuildContext context) {
@@ -106,20 +130,23 @@ class _HomeSuccess extends StatelessWidget {
             children: data.children,
             selectedChildId: selectedChildId,
             onSelected: onChildSelected,
+            onLinkChild: () => _openManageChildren(context),
           ),
           AppSpacing.vGap16,
           ActionRequiredSection(
             alerts: alerts,
             childrenNames: _childrenNamesText(),
           ),
-          if (schedules.isNotEmpty) ...[
-            AppSpacing.vGap16,
-            UpcomingScheduleSection(schedules: schedules),
-          ],
-          if (analytics != null) ...[
-            AppSpacing.vGap16,
-            LearningAnalyticsCard(analytics: analytics),
-          ],
+          AppSpacing.vGap16,
+          UpcomingScheduleSection(
+            schedules: schedules,
+            onViewFullSchedule: onNavigateToSchedule,
+          ),
+          AppSpacing.vGap16,
+          LearningAnalyticsCard(
+            analytics: analytics,
+            onViewLearning: onNavigateToLearning,
+          ),
         ],
       ),
     );
@@ -129,6 +156,13 @@ class _HomeSuccess extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute<void>(builder: (_) => const NotificationScreen()),
+    );
+  }
+
+  void _openManageChildren(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(builder: (_) => const ManageChildrenScreen()),
     );
   }
 

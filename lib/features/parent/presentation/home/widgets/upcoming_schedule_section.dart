@@ -3,10 +3,16 @@ import 'package:study/features/parent/data/models/models.dart';
 import 'package:study/theme/theme.dart';
 
 /// Mục "Hôm nay / Tiếp theo": lịch học sắp tới.
+/// Khi rỗng hiển thị Empty State "Hôm nay không có ca học nào".
 class UpcomingScheduleSection extends StatelessWidget {
-  const UpcomingScheduleSection({super.key, required this.schedules});
+  const UpcomingScheduleSection({
+    super.key,
+    required this.schedules,
+    this.onViewFullSchedule,
+  });
 
   final List<ParentScheduleItem> schedules;
+  final VoidCallback? onViewFullSchedule;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +56,86 @@ class UpcomingScheduleSection extends StatelessWidget {
             ],
           ),
           AppSpacing.vGap12,
-          ...schedules.map((item) => _ScheduleItem(item: item)),
+          if (schedules.isEmpty)
+            _EmptyScheduleCard(onViewFullSchedule: onViewFullSchedule)
+          else
+            ...schedules.map((item) => _ScheduleItem(item: item)),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyScheduleCard extends StatelessWidget {
+  const _EmptyScheduleCard({this.onViewFullSchedule});
+
+  final VoidCallback? onViewFullSchedule;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+      child: Column(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: const BoxDecoration(
+              color: Color(0xFFEFF6FF),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.event_available_outlined,
+              color: cs.blue600,
+              size: 24,
+            ),
+          ),
+          AppSpacing.vGap12,
+          Text(
+            'Hôm nay không có ca học nào',
+            style: tt.titleSmall?.copyWith(
+              color: cs.slate900,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          AppSpacing.vGap4,
+          Text(
+            'Con không có lịch học trực tuyến hoặc tại cơ sở '
+            'hôm nay. Thời gian dành cho nghỉ ngơi hoặc tự ôn tập.',
+            style: tt.bodySmall?.copyWith(
+              color: cs.slate500,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          AppSpacing.vGap8,
+          InkWell(
+            onTap: onViewFullSchedule,
+            borderRadius: AppRadius.borderSm,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Xem thời khóa biểu đầy đủ',
+                    style: tt.labelMedium?.copyWith(
+                      color: cs.blue600,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 16,
+                    color: cs.blue600,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
