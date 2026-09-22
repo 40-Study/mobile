@@ -15,12 +15,12 @@ class _ParentShellState extends State<ParentShell> {
   late final PageController _pageController;
   int _currentIndex = 0;
 
-  final _screens = const [
-    ParentHomeScreen(),
-    ParentScheduleScreen(),
-    ParentLearningScreen(),
-    ParentPaymentScreen(),
-    ParentProfileScreen(),
+  late final List<Widget> _screens = [
+    ParentHomeScreen(onNavigateToProfile: () => _onNavTap(4)),
+    const ParentScheduleScreen(),
+    const ParentLearningScreen(),
+    const ParentPaymentScreen(),
+    const ParentProfileScreen(),
   ];
 
   @override
@@ -67,7 +67,7 @@ class _ParentShellState extends State<ParentShell> {
           NavigationDestination(
             icon: Icon(Icons.calendar_today_outlined),
             selectedIcon: Icon(Icons.calendar_today_rounded),
-            label: 'Lịch học',
+            label: 'Lịch',
           ),
           NavigationDestination(
             icon: Icon(Icons.school_outlined),
@@ -75,9 +75,9 @@ class _ParentShellState extends State<ParentShell> {
             label: 'Học tập',
           ),
           NavigationDestination(
-            icon: Icon(Icons.payments_outlined),
-            selectedIcon: Icon(Icons.payments_rounded),
-            label: 'Thanh toán',
+            icon: Icon(Icons.credit_card_outlined),
+            selectedIcon: Icon(Icons.credit_card_rounded),
+            label: 'Học phí',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),
