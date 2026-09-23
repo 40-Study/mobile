@@ -177,28 +177,17 @@ class _HomeSuccess extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          // Khu vực điều hướng trên nền trắng tinh khiết
+          // Header trên nền trắng tinh khiết
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.only(bottom: AppSpacing.md),
-            child: Column(
-              children: [
-                ParentHomeHeader(
-                  onNotificationTap: () => _openNotifications(context),
-                  onAvatarTap: onNavigateToProfile,
-                ),
-                AppSpacing.vGap8,
-                FamilyScopeSelector(
-                  children: data.children,
-                  selectedChildId: selectedChildId,
-                  onSelected: onChildSelected,
-                  onLinkChild: () => _openManageChildren(context),
-                ),
-              ],
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+            child: ParentHomeHeader(
+              onNotificationTap: () => _openNotifications(context),
+              onAvatarTap: onNavigateToProfile,
             ),
           ),
           // Khối Body phân tầng màu nền như Student UI,
-          // làm nổi bật các Card trắng
+          // làm nổi bật thanh chọn con và các Card trắng
           Container(
             decoration: BoxDecoration(
               color: surfaceBg,
@@ -224,6 +213,13 @@ class _HomeSuccess extends StatelessWidget {
             ),
             child: Column(
               children: [
+                FamilyScopeSelector(
+                  children: data.children,
+                  selectedChildId: selectedChildId,
+                  onSelected: onChildSelected,
+                  onLinkChild: () => _openManageChildren(context),
+                ),
+                const SizedBox(height: 20),
                 ActionRequiredSection(
                   alerts: alerts,
                   childrenNames: _childrenNamesText(),

@@ -120,11 +120,18 @@ class _AllChildrenChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         decoration: BoxDecoration(
-          color: selected ? cs.blue600 : cs.slate100,
+          color: selected ? cs.blue600 : Colors.white,
           borderRadius: AppRadius.borderFull,
           border: selected
               ? null
-              : Border.all(color: cs.outlineVariant.withValues(alpha: 0.3)),
+              : Border.all(color: cs.outlineVariant.withValues(alpha: 0.6)),
+          boxShadow: [
+            BoxShadow(
+              color: cs.shadow.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         alignment: Alignment.center,
         child: Row(
@@ -150,7 +157,7 @@ class _AllChildrenChip extends StatelessWidget {
               decoration: BoxDecoration(
                 color: selected
                     ? Colors.white.withValues(alpha: 0.25)
-                    : cs.slate200,
+                    : cs.slate100,
                 borderRadius: AppRadius.borderFull,
               ),
               child: Text(
@@ -191,11 +198,18 @@ class _ChildChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFFEFF6FF) : cs.slate100,
+          color: selected ? const Color(0xFFEFF6FF) : Colors.white,
           borderRadius: AppRadius.borderFull,
           border: selected
               ? Border.all(color: cs.blue600, width: 1.5)
-              : Border.all(color: cs.outlineVariant.withValues(alpha: 0.2)),
+              : Border.all(color: cs.outlineVariant.withValues(alpha: 0.6)),
+          boxShadow: [
+            BoxShadow(
+              color: cs.shadow.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         alignment: Alignment.center,
         child: Row(
