@@ -8,10 +8,13 @@ import 'package:study/widgets/cached_avatar.dart';
 class ParentHomeHeader extends StatelessWidget {
   const ParentHomeHeader({
     super.key,
+    this.titleOverride,
     this.onNotificationTap,
     this.onAvatarTap,
   });
 
+  /// Tiêu đề ghi đè (ví dụ "Trang chủ Phụ huynh" khi chưa có con).
+  final String? titleOverride;
   final VoidCallback? onNotificationTap;
   final VoidCallback? onAvatarTap;
 
@@ -39,7 +42,7 @@ class ParentHomeHeader extends StatelessWidget {
                 width: 44,
                 height: 44,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFEBF3FF),
+                  color: Color(0xFFEFF6FF),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -58,15 +61,16 @@ class ParentHomeHeader extends StatelessWidget {
                       style: tt.labelSmall?.copyWith(
                         color: cs.slate500,
                         fontWeight: FontWeight.w700,
-                        letterSpacing: 1.2,
+                        letterSpacing: 1.1,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Chào buổi sáng, Gia đình!',
+                      titleOverride ?? 'Chào buổi sáng, Gia đình!',
                       style: tt.titleMedium?.copyWith(
                         color: cs.slate900,
                         fontWeight: FontWeight.w700,
+                        fontSize: 18,
                       ),
                     ),
                   ],

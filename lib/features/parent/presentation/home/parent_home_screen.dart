@@ -112,6 +112,28 @@ class _HomeSuccess extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasChildren = data.children.isNotEmpty;
+
+    if (!hasChildren) {
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
+          children: [
+            ParentHomeHeader(
+              titleOverride: 'Trang chủ Phụ huynh',
+              onNotificationTap: () => _openNotifications(context),
+              onAvatarTap: onNavigateToProfile,
+            ),
+            AppSpacing.vGap12,
+            ParentNoChildView(
+              onLinkChild: () => _openManageChildren(context),
+            ),
+          ],
+        ),
+      );
+    }
+
     final alerts = data.alerts;
     final schedules = data.schedules;
     final analytics = data.analytics;
@@ -125,7 +147,7 @@ class _HomeSuccess extends StatelessWidget {
             onNotificationTap: () => _openNotifications(context),
             onAvatarTap: onNavigateToProfile,
           ),
-          AppSpacing.vGap16,
+          AppSpacing.vGap8,
           FamilyScopeSelector(
             children: data.children,
             selectedChildId: selectedChildId,
