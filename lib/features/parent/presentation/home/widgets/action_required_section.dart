@@ -49,18 +49,18 @@ class _ActionRequiredSectionState extends State<ActionRequiredSection> {
             ),
             padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
-              color: cs.surface,
+              color: Colors.white,
               borderRadius: AppRadius.borderLg,
               border: Border.all(
                 color: isEmpty
                     ? const Color(0xFFA7F3D0)
-                    : cs.outlineVariant.withValues(alpha: 0.35),
+                    : cs.outlineVariant.withValues(alpha: 0.5),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: cs.shadow.withValues(alpha: 0.04),
+                  color: cs.shadow.withValues(alpha: 0.05),
                   blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),

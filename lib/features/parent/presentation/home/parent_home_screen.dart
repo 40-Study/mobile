@@ -54,8 +54,18 @@ class _HomeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ParentHomeBloc, ParentHomeState>(
       builder: (context, state) {
+        final cs = Theme.of(context).colorScheme;
+        final surfaceBg = Color.alphaBlend(
+          cs.primary.withValues(
+            alpha: Theme.of(context).brightness == Brightness.light
+                ? 0.045
+                : 0.065,
+          ),
+          cs.surfaceContainer,
+        );
+
         return Scaffold(
-          backgroundColor: const Color(0xFFF8FAFC),
+          backgroundColor: surfaceBg,
           body: SafeArea(
             child: switch (state) {
               ParentHomeInitial() ||
@@ -70,6 +80,7 @@ class _HomeContent extends StatelessWidget {
                 _HomeSuccess(
                   data: data,
                   selectedChildId: selectedChildId,
+                  surfaceBg: surfaceBg,
                   onNavigateToProfile: onNavigateToProfile,
                   onNavigateToSchedule: onNavigateToSchedule,
                   onNavigateToLearning: onNavigateToLearning,
@@ -96,6 +107,7 @@ class _HomeSuccess extends StatelessWidget {
   const _HomeSuccess({
     required this.data,
     required this.selectedChildId,
+    required this.surfaceBg,
     required this.onChildSelected,
     required this.onRefresh,
     this.onNavigateToProfile,
@@ -105,6 +117,7 @@ class _HomeSuccess extends StatelessWidget {
 
   final ParentHomeData data;
   final String? selectedChildId;
+  final Color surfaceBg;
   final ValueChanged<String?> onChildSelected;
   final Future<void> Function() onRefresh;
   final VoidCallback? onNavigateToProfile;
@@ -113,21 +126,43 @@ class _HomeSuccess extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final hasChildren = data.children.isNotEmpty;
 
     if (!hasChildren) {
       return RefreshIndicator(
         onRefresh: onRefresh,
         child: ListView(
-          padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
+          padding: EdgeInsets.zero,
           children: [
-            ParentHomeHeader(
-              titleOverride: 'Trang chủ Phụ huynh',
-              onNotificationTap: () => _openNotifications(context),
-              onAvatarTap: onNavigateToProfile,
+            Container(
+              color: Colors.white,
+              child: ParentHomeHeader(
+                titleOverride: 'Trang chủ Phụ huynh',
+                onNotificationTap: () => _openNotifications(context),
+                onAvatarTap: onNavigateToProfile,
+              ),
             ),
-            AppSpacing.vGap16,
-            ParentNoChildView(onLinkChild: () => _openManageChildren(context)),
+            Container(
+              decoration: BoxDecoration(
+                color: surfaceBg,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+                border: Border(
+                  top: BorderSide(color: cs.primary.withValues(alpha: 0.08)),
+                ),
+              ),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                24,
+                AppSpacing.lg,
+                AppSpacing.xxl,
+              ),
+              child: ParentNoChildView(
+                onLinkChild: () => _openManageChildren(context),
+              ),
+            ),
           ],
         ),
       );
@@ -140,33 +175,71 @@ class _HomeSuccess extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: ListView(
-        padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
+        padding: EdgeInsets.zero,
         children: [
-          ParentHomeHeader(
-            onNotificationTap: () => _openNotifications(context),
-            onAvatarTap: onNavigateToProfile,
+          // Khu vực điều hướng trên nền trắng tinh khiết
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            child: Column(
+              children: [
+                ParentHomeHeader(
+                  onNotificationTap: () => _openNotifications(context),
+                  onAvatarTap: onNavigateToProfile,
+                ),
+                AppSpacing.vGap8,
+                FamilyScopeSelector(
+                  children: data.children,
+                  selectedChildId: selectedChildId,
+                  onSelected: onChildSelected,
+                  onLinkChild: () => _openManageChildren(context),
+                ),
+              ],
+            ),
           ),
-          AppSpacing.vGap12,
-          FamilyScopeSelector(
-            children: data.children,
-            selectedChildId: selectedChildId,
-            onSelected: onChildSelected,
-            onLinkChild: () => _openManageChildren(context),
-          ),
-          const SizedBox(height: 20),
-          ActionRequiredSection(
-            alerts: alerts,
-            childrenNames: _childrenNamesText(),
-          ),
-          const SizedBox(height: 20),
-          UpcomingScheduleSection(
-            schedules: schedules,
-            onViewFullSchedule: onNavigateToSchedule,
-          ),
-          const SizedBox(height: 20),
-          LearningAnalyticsCard(
-            analytics: analytics,
-            onViewLearning: onNavigateToLearning,
+          // Khối Body phân tầng màu nền như Student UI,
+          // làm nổi bật các Card trắng
+          Container(
+            decoration: BoxDecoration(
+              color: surfaceBg,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+              border: Border(
+                top: BorderSide(
+                  color: cs.primary.withValues(alpha: 0.08),
+                ),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: cs.shadow.withValues(alpha: 0.04),
+                  blurRadius: 24,
+                  offset: const Offset(0, -6),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.only(
+              top: 20,
+              bottom: AppSpacing.xxl,
+            ),
+            child: Column(
+              children: [
+                ActionRequiredSection(
+                  alerts: alerts,
+                  childrenNames: _childrenNamesText(),
+                ),
+                const SizedBox(height: 20),
+                UpcomingScheduleSection(
+                  schedules: schedules,
+                  onViewFullSchedule: onNavigateToSchedule,
+                ),
+                const SizedBox(height: 20),
+                LearningAnalyticsCard(
+                  analytics: analytics,
+                  onViewLearning: onNavigateToLearning,
+                ),
+              ],
+            ),
           ),
         ],
       ),

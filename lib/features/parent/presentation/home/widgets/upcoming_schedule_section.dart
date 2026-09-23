@@ -63,14 +63,14 @@ class _UpcomingScheduleSectionState extends State<UpcomingScheduleSection> {
                   ),
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
-                    color: cs.surface,
+                    color: Colors.white,
                     borderRadius: AppRadius.borderLg,
                     border: Border.all(
-                      color: cs.outlineVariant.withValues(alpha: 0.35),
+                      color: cs.outlineVariant.withValues(alpha: 0.5),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: cs.shadow.withValues(alpha: 0.04),
+                        color: cs.shadow.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 3),
                       ),
@@ -261,14 +261,14 @@ class _ScheduleItemCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: Colors.white,
         borderRadius: AppRadius.borderLg,
         border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.35),
+          color: cs.outlineVariant.withValues(alpha: 0.5),
         ),
         boxShadow: [
           BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.04),
+            color: cs.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),

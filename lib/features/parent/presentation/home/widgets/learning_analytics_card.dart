@@ -162,14 +162,14 @@ class _EmptyAnalyticsCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.xl),
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: Colors.white,
         borderRadius: AppRadius.borderLg,
         border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.35),
+          color: cs.outlineVariant.withValues(alpha: 0.5),
         ),
         boxShadow: [
           BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.04),
+            color: cs.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -244,14 +244,14 @@ class _AnalyticsContent extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: Colors.white,
         borderRadius: AppRadius.borderLg,
         border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.35),
+          color: cs.outlineVariant.withValues(alpha: 0.5),
         ),
         boxShadow: [
           BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.04),
+            color: cs.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -363,10 +363,10 @@ class _AnalyticsContent extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: const Color(0xFFF1F5F9),
         borderRadius: AppRadius.borderMd,
         border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.25),
+          color: cs.outlineVariant.withValues(alpha: 0.35),
         ),
       ),
       child: Text.rich(
