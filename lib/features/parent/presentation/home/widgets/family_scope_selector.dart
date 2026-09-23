@@ -20,65 +20,36 @@ class FamilyScopeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
     if (children.isEmpty) {
       return _buildEmptyState(context);
     }
 
     final showAllChildren = children.length > 1;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: Row(
-            children: [
-              Text(
-                '• FAMILY SCOPE • CHẾ ĐỘ GIÁM SÁT',
-                style: tt.labelSmall?.copyWith(
-                  color: cs.blue600,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.8,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                'Cập nhật 2 phút trước',
-                style: tt.labelSmall?.copyWith(color: cs.slate400),
-              ),
-            ],
-          ),
-        ),
-        AppSpacing.vGap12,
-        SizedBox(
-          height: 44,
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            scrollDirection: Axis.horizontal,
-            itemCount: showAllChildren ? children.length + 1 : children.length,
-            separatorBuilder: (_, _) => AppSpacing.hGap8,
-            itemBuilder: (context, index) {
-              if (showAllChildren && index == 0) {
-                return _AllChildrenChip(
-                  count: children.length,
-                  selected: selectedChildId == null,
-                  onTap: () => onSelected(null),
-                );
-              }
-              final child =
-                  showAllChildren ? children[index - 1] : children[index];
-              return _ChildChip(
-                child: child,
-                selected: showAllChildren ? selectedChildId == child.id : true,
-                onTap: () => onSelected(child.id),
-              );
-            },
-          ),
-        ),
-      ],
+    return SizedBox(
+      height: 44,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        scrollDirection: Axis.horizontal,
+        itemCount: showAllChildren ? children.length + 1 : children.length,
+        separatorBuilder: (_, _) => AppSpacing.hGap8,
+        itemBuilder: (context, index) {
+          if (showAllChildren && index == 0) {
+            return _AllChildrenChip(
+              count: children.length,
+              selected: selectedChildId == null,
+              onTap: () => onSelected(null),
+            );
+          }
+          final child =
+              showAllChildren ? children[index - 1] : children[index];
+          return _ChildChip(
+            child: child,
+            selected: showAllChildren ? selectedChildId == child.id : true,
+            onTap: () => onSelected(child.id),
+          );
+        },
+      ),
     );
   }
 

@@ -118,10 +118,16 @@ class _UpcomingScheduleSectionState extends State<UpcomingScheduleSection> {
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Row(
             children: [
-              Icon(
-                Icons.calendar_today_rounded,
-                color: cs.blue600,
-                size: 19,
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: Center(
+                  child: Icon(
+                    Icons.calendar_today_rounded,
+                    color: cs.blue600,
+                    size: 19,
+                  ),
+                ),
               ),
               AppSpacing.hGap8,
               Text(

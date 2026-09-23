@@ -73,7 +73,17 @@ class _LearningAnalyticsCardState extends State<LearningAnalyticsCard> {
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Row(
             children: [
-              Icon(Icons.insights_rounded, color: cs.blue600, size: 19),
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: Center(
+                  child: Icon(
+                    Icons.insights_rounded,
+                    color: cs.blue600,
+                    size: 19,
+                  ),
+                ),
+              ),
               AppSpacing.hGap8,
               Text(
                 'PHÂN TÍCH HỌC TẬP',

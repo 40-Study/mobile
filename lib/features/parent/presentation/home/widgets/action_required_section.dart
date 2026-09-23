@@ -40,51 +40,54 @@ class _ActionRequiredSectionState extends State<ActionRequiredSection> {
           crossFadeState: _isExpanded
               ? CrossFadeState.showFirst
               : CrossFadeState.showSecond,
-          firstChild: Container(
-            margin: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.sm,
-              AppSpacing.lg,
-              0,
-            ),
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: AppRadius.borderLg,
-              border: Border.all(
-                color: isEmpty
-                    ? const Color(0xFFA7F3D0)
-                    : cs.outlineVariant.withValues(alpha: 0.5),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: cs.shadow.withValues(alpha: 0.05),
-                  blurRadius: 12,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: isEmpty
-                ? _EmptyAlertCard(childrenNames: widget.childrenNames)
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (var i = 0; i < widget.alerts.length; i++) ...[
-                        if (i > 0)
-                          Divider(
-                            color: cs.outlineVariant.withValues(alpha: 0.25),
-                            height: 20,
-                          ),
-                        _AlertItem(
+          firstChild: isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.sm,
+                    AppSpacing.lg,
+                    0,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: AppRadius.borderLg,
+                      border: Border.all(
+                        color: const Color(0xFFA7F3D0),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: cs.shadow.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: _EmptyAlertCard(
+                      childrenNames: widget.childrenNames,
+                    ),
+                  ),
+                )
+              : Column(
+                  children: [
+                    for (var i = 0; i < widget.alerts.length; i++)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.lg,
+                          AppSpacing.sm,
+                          AppSpacing.lg,
+                          0,
+                        ),
+                        child: _AlertItemCard(
                           alert: widget.alerts[i],
                           onTap: widget.onAlertTap != null
                               ? () => widget.onAlertTap!(widget.alerts[i])
                               : null,
                         ),
-                      ],
-                    ],
-                  ),
-          ),
+                      ),
+                  ],
+                ),
           secondChild: const SizedBox.shrink(),
         ),
       ],
@@ -105,11 +108,17 @@ class _ActionRequiredSectionState extends State<ActionRequiredSection> {
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Row(
             children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration:
-                    BoxDecoration(color: dotColor, shape: BoxShape.circle),
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: Center(
+                  child: Container(
+                    width: 8.5,
+                    height: 8.5,
+                    decoration:
+                        BoxDecoration(color: dotColor, shape: BoxShape.circle),
+                  ),
+                ),
               ),
               AppSpacing.hGap8,
               Text(
@@ -225,8 +234,8 @@ class _EmptyAlertCard extends StatelessWidget {
   }
 }
 
-class _AlertItem extends StatelessWidget {
-  const _AlertItem({required this.alert, this.onTap});
+class _AlertItemCard extends StatelessWidget {
+  const _AlertItemCard({required this.alert, this.onTap});
 
   final ParentAlertItem alert;
   final VoidCallback? onTap;
@@ -242,103 +251,126 @@ class _AlertItem extends StatelessWidget {
         : const Color(0xFFFEF3C7);
     final tagBg = isOverdue ? const Color(0xFFFEE2E2) : const Color(0xFFFEF3C7);
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: AppRadius.borderMd,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: iconBg,
-                borderRadius: AppRadius.borderMd,
-              ),
-              child: Icon(
-                isOverdue
-                    ? Icons.assignment_late_outlined
-                    : Icons.update_rounded,
-                color: accent,
-                size: 22,
-              ),
-            ),
-            AppSpacing.hGap12,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${alert.childName} • ${alert.subjectName}',
-                    style: tt.titleSmall?.copyWith(
-                      color: cs.slate900,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14.5,
-                    ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.5),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: AppRadius.borderLg,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    borderRadius: AppRadius.borderMd,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    alert.detail,
-                    style: tt.bodySmall?.copyWith(
-                      color: cs.slate600,
-                      fontSize: 12.5,
-                    ),
+                  child: Icon(
+                    isOverdue
+                        ? Icons.assignment_late_outlined
+                        : Icons.update_rounded,
+                    color: accent,
+                    size: 22,
                   ),
-                  const SizedBox(height: 4),
-                  Row(
+                ),
+                AppSpacing.hGap12,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        isOverdue
-                            ? Icons.schedule_rounded
-                            : Icons.info_outline_rounded,
-                        size: 13,
-                        color: accent,
-                      ),
-                      AppSpacing.hGap4,
-                      Expanded(
-                        child: Text(
-                          alert.metaText,
-                          style: tt.labelSmall?.copyWith(
-                            color: accent,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 11.5,
-                          ),
+                      Text(
+                        '${alert.childName} • ${alert.subjectName}',
+                        style: tt.titleSmall?.copyWith(
+                          color: cs.slate900,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14.5,
                         ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        alert.detail,
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.slate600,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            isOverdue
+                                ? Icons.schedule_rounded
+                                : Icons.info_outline_rounded,
+                            size: 13,
+                            color: accent,
+                          ),
+                          AppSpacing.hGap4,
+                          Expanded(
+                            child: Text(
+                              alert.metaText,
+                              style: tt.labelSmall?.copyWith(
+                                color: accent,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 11.5,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            AppSpacing.hGap8,
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: tagBg,
-                    borderRadius: AppRadius.borderFull,
-                  ),
-                  child: Text(
-                    alert.tagLabel,
-                    style: tt.labelSmall?.copyWith(
-                      color: accent,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
-                    ),
-                  ),
                 ),
-                AppSpacing.hGap4,
-                Icon(Icons.chevron_right_rounded, color: cs.slate400, size: 20),
+                AppSpacing.hGap8,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: tagBg,
+                        borderRadius: AppRadius.borderFull,
+                      ),
+                      child: Text(
+                        alert.tagLabel,
+                        style: tt.labelSmall?.copyWith(
+                          color: accent,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                    AppSpacing.hGap4,
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      color: cs.slate400,
+                      size: 20,
+                    ),
+                  ],
+                ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );
