@@ -55,7 +55,7 @@ class _HomeContent extends StatelessWidget {
     return BlocBuilder<ParentHomeBloc, ParentHomeState>(
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: Theme.of(context).colorScheme.surface,
+          backgroundColor: const Color(0xFFF8FAFC),
           body: SafeArea(
             child: switch (state) {
               ParentHomeInitial() ||
@@ -126,7 +126,7 @@ class _HomeSuccess extends StatelessWidget {
               onNotificationTap: () => _openNotifications(context),
               onAvatarTap: onNavigateToProfile,
             ),
-            AppSpacing.vGap12,
+            AppSpacing.vGap16,
             ParentNoChildView(onLinkChild: () => _openManageChildren(context)),
           ],
         ),
@@ -146,24 +146,24 @@ class _HomeSuccess extends StatelessWidget {
             onNotificationTap: () => _openNotifications(context),
             onAvatarTap: onNavigateToProfile,
           ),
-          AppSpacing.vGap8,
+          AppSpacing.vGap12,
           FamilyScopeSelector(
             children: data.children,
             selectedChildId: selectedChildId,
             onSelected: onChildSelected,
             onLinkChild: () => _openManageChildren(context),
           ),
-          AppSpacing.vGap16,
+          const SizedBox(height: 20),
           ActionRequiredSection(
             alerts: alerts,
             childrenNames: _childrenNamesText(),
           ),
-          AppSpacing.vGap16,
+          const SizedBox(height: 20),
           UpcomingScheduleSection(
             schedules: schedules,
             onViewFullSchedule: onNavigateToSchedule,
           ),
-          AppSpacing.vGap16,
+          const SizedBox(height: 20),
           LearningAnalyticsCard(
             analytics: analytics,
             onViewLearning: onNavigateToLearning,
