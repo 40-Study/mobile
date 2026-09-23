@@ -18,6 +18,23 @@ class ParentHomeHeader extends StatelessWidget {
   final VoidCallback? onNotificationTap;
   final VoidCallback? onAvatarTap;
 
+  static String getDynamicGreeting(String? fullName) {
+    final hour = DateTime.now().hour;
+    final String timeGreeting;
+    if (hour < 11) {
+      timeGreeting = 'Chào buổi sáng';
+    } else if (hour < 18) {
+      timeGreeting = 'Chào buổi chiều';
+    } else {
+      timeGreeting = 'Chào buổi tối';
+    }
+
+    if (fullName == null || fullName.trim().isEmpty) {
+      return '$timeGreeting, Gia đình!';
+    }
+    return '$timeGreeting, ${fullName.trim()}!';
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -28,8 +45,11 @@ class ParentHomeHeader extends StatelessWidget {
         final isAuth = state is AuthAuthenticated;
         final user = isAuth ? state.user : null;
         final displayName = user?.fullName ?? user?.username ?? 'PH';
+        final greetingText = titleOverride ??
+            getDynamicGreeting(user?.fullName ?? user?.username);
 
-        return Padding(
+        return Container(
+          color: cs.surface,
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.lg,
             AppSpacing.sm,
@@ -66,7 +86,7 @@ class ParentHomeHeader extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      titleOverride ?? 'Chào buổi sáng, Gia đình!',
+                      greetingText,
                       style: tt.titleMedium?.copyWith(
                         color: cs.slate900,
                         fontWeight: FontWeight.w700,
