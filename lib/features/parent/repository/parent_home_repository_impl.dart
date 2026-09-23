@@ -17,9 +17,39 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
 
   @override
   Future<ParentHomeData> getHomeDashboard({String? childId}) async {
+    // 1. Luôn tải danh sách con thật từ backend
+    final realChildren = await _fetchChildren();
+
     if (enablePreviewFallback) {
-      final children = _fallbackChildren();
+      final children = _mergeWithMockChildren(realChildren);
       final target = _resolveChild(children, childId);
+
+      // Nếu phụ huynh chọn con thật Mai Hoàng Tùng, ưu tiên dữ liệu thật từ backend
+      final isRealChildSelected =
+          childId != null &&
+          (childId == studentTungId ||
+              realChildren.any(
+                (c) =>
+                    c.id == childId &&
+                    c.id != studentMinhId &&
+                    c.id != studentLanId,
+              ));
+
+      if (isRealChildSelected) {
+        final realResults = await Future.wait([
+          _fetchSchedules(childId),
+          _fetchAlerts(childId),
+          _fetchAnalytics(target),
+        ]);
+        return ParentHomeData(
+          children: children,
+          selectedChildId: childId,
+          alerts: realResults[1] as List<ParentAlertItem>,
+          schedules: realResults[0] as List<ParentScheduleItem>,
+          analytics: realResults[2] as ParentAnalyticsData?,
+        );
+      }
+
       final alerts = _filterFallbackAlerts(childId);
       final schedules = _filterFallbackSchedules(childId);
       final analytics = _fallbackAnalytics(target);
@@ -33,11 +63,8 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
       );
     }
 
-    // 1. Danh sách con (ưu tiên data thật)
-    final children = await _fetchChildren();
-
     // "Tất cả các con" => lấy data của con đầu tiên
-    final target = _resolveChild(children, childId);
+    final target = _resolveChild(realChildren, childId);
 
     // 2. Song song lấy schedule / assignments / grades
     final results = await Future.wait([
@@ -51,7 +78,7 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     final analytics = results[2] as ParentAnalyticsData?;
 
     return ParentHomeData(
-      children: children,
+      children: realChildren,
       selectedChildId: childId,
       alerts: alerts,
       schedules: schedules,
@@ -71,10 +98,12 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
       return list
           .asMap()
           .entries
-          .map((e) => FamilyScopeChild.fromUserModel(
-                UserModel.fromJson(e.value as Map<String, dynamic>),
-                index: e.key,
-              ))
+          .map(
+            (e) => FamilyScopeChild.fromUserModel(
+              UserModel.fromJson(e.value as Map<String, dynamic>),
+              index: e.key,
+            ),
+          )
           .toList();
     } catch (e, stackTrace) {
       AppLogger.w('ParentHome: fetch children failed', e);
@@ -265,29 +294,51 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   ) {
     if (children.isEmpty) return null;
     if (childId == null) return children.first;
-    return children.where((c) => c.id == childId).firstOrNull ??
-        children.first;
+    return children.where((c) => c.id == childId).firstOrNull ?? children.first;
   }
 
   // ============================================================================
   // FALLBACK DATA (PREVIEW MOCKUP)
   // ============================================================================
 
+  static const String studentTungId = '31843f49-fd61-47aa-af78-d1badbdcce52';
   static const String studentMinhId = 'a055e1b3-bbfe-46b1-8e01-df7aac8c2732';
   static const String studentLanId = 'a0f88b81-94ca-4328-b46a-b61a1a53a9ad';
 
-  List<FamilyScopeChild> _fallbackChildren() => [
+  List<FamilyScopeChild> _mergeWithMockChildren(List<FamilyScopeChild> real) {
+    final list = <FamilyScopeChild>[];
+
+    // 1. Luôn giữ nguyên tài khoản con thật ở đầu danh sách
+    if (real.isNotEmpty) {
+      list.addAll(real);
+    } else {
+      list.add(
+        FamilyScopeChild.sample(
+          id: studentTungId,
+          name: 'Mai Hoàng Tùng',
+          className: '12A',
+        ),
+      );
+    }
+
+    // 2. Bổ sung Minh & Lan vào danh sách để trải nghiệm đầy đủ Family Scope
+    if (!list.any((c) => c.id == studentMinhId)) {
+      list.add(
         FamilyScopeChild.sample(
           id: studentMinhId,
           name: 'Minh',
           className: '10A1',
         ),
-        FamilyScopeChild.sample(
-          id: studentLanId,
-          name: 'Lan',
-          className: '7B',
-        ),
-      ];
+      );
+    }
+    if (!list.any((c) => c.id == studentLanId)) {
+      list.add(
+        FamilyScopeChild.sample(id: studentLanId, name: 'Lan', className: '7B'),
+      );
+    }
+
+    return list;
+  }
 
   List<ParentAlertItem> _filterFallbackAlerts(String? childId) {
     const allAlerts = [
