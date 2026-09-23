@@ -1,322 +1,362 @@
-# KẾ HOẠCH NÂNG CẤP TOÀN DIỆN GIAO DIỆN TRANG CHỦ PHỤ HUYNH (PARENT HOME SCREEN)
+# KẾ HOẠCH NÂNG CẤP TOÀN DIỆN GIAO DIỆN TRANG CHỦ PHỤ HUYNH (PARENT HOME SCREEN) - V2.0
 
 > **Dự án:** 40Study Mobile App  
 > **Module:** Parent Experience (`mobile/lib/features/parent/`)  
-> **Nhánh:** `UI/Parent`  
-> **Tài liệu đối chiếu:**  
-> - `C:\Users\tungm\Downloads\deliverable.md` (Deliverable đặc tả kỹ thuật role Parent)  
-> - 3 ảnh thiết kế thực tế:  
->   + `uploaded_media_0`: Home Dashboard đầy đủ dữ liệu (Family Scope, Cần xử lý, Lịch học, Phân tích học tập)  
->   + `uploaded_media_1` & `uploaded_media_2`: Home Dashboard trạng thái Chưa liên kết con (No-child Onboarding / Empty State)  
-> - Quy chuẩn Design System của role Student (`mobile/lib/theme/*`, `features/student/*`)  
-> **Ngày lập kế hoạch:** 23/09/2026  
-> **Trạng thái:** DRAFT PLAN - CHUẨN BỊ TRIỂN KHAI (Chưa thực hiện code)
+> **Nhánh thực hiện:** `UI/Parent`  
+> **Tài liệu tham chiếu:**  
+> - `C:\Users\tungm\Downloads\deliverable.md` (Đặc tả chi tiết vai trò Phụ huynh)  
+> - 3 ảnh thiết kế mới nhất:  
+>   + `uploaded_media_0` & `uploaded_media_1`: Home Dashboard trạng thái Có cảnh báo cần xử lý  
+>   + `uploaded_media_2`: Home Dashboard chuẩn mực (Tách Section Header ra ngoài Card, Card ca học độc lập, Badge số lượng con, All-Clear Card)  
+> - Chuẩn Design System Role Student (`mobile/lib/theme/*`, `features/student/*`)  
+> **Ngày cập nhật:** 23/09/2026  
+> **Phiên bản:** 2.0 (Tối ưu trải nghiệm phụ huynh, tách khối section, hỗ trợ collapse, màu sắc phân tầng, typography lớn thoáng)
 
 ---
 
 ## MỤC LỤC
-1. [TỔNG QUAN & MỤC TIÊU](#1-tổng-quan--mục-tiêu)
-2. [ĐỐI CHIẾU QUY CHUẨN THIẾT KẾ ROLE STUDENT (DESIGN SYSTEM COMPARISON)](#2-đối-chiếu-quy-chuẩn-thiết-kế-role-student)
-3. [GAP ANALYSIS: HIỆN TRẠNG CODE VS. MOCKUPS VS. DELIVERABLE](#3-gap-analysis-hiện-trạng-code-vs-mockups-vs-deliverable)
-4. [KIẾN TRÚC GIAO DIỆN & STATE MACHINE CHI TIẾT](#4-kiến-trúc-giao-diện--state-machine-chi-tiết)
-5. [QUY CHUẨN DESIGN TOKENS CHO PARENT HOME](#5-quy-chuẩn-design-tokens-cho-parent-home)
-6. [KẾ HOẠCH TRIỂN KHAI THEO GIAI ĐOẠN (IMPLEMENTATION ROADMAP)](#6-kế-hoạch-triển-khai-theo-giai-đoạn)
-7. [CHECKLIST NGHIỆM THU (VERIFICATION & DEFINITION OF DONE)](#7-checklist-nghiệm-thu)
+1. [TỔNG HỢP YÊU CẦU NÂNG CẤP MỚI TỪ NGƯỜI DÙNG](#1-tổng-hợp-yêu-cầu-nâng-cấp-mới-từ-người-dùng)
+2. [GAP ANALYSIS CHI TIẾT & ĐỐI CHIẾU ẢNH THIẾT KẾ MOCKUP 2](#2-gap-analysis-chi-tiết--đối-chiếu-ảnh-thiết-kế-mockup-2)
+3. [NGUYÊN TẮC THIẾT KẾ CHO NGƯỜI LỚN TUỔI (PARENT-FRIENDLY UX)](#3-nguyên-tắc-thiết-kế-cho-người-lớn-tuổi-parent-friendly-ux)
+4. [KIẾN TRÚC GIAO DIỆN & THÀNH PHẦN CHI TIẾT](#4-kiến-trúc-giao-diện--thành-phần-chi-tiết)
+   - [4.1. Header: Dynamic Greeting & Real Profile Data](#41-header-dynamic-greeting--real-profile-data)
+   - [4.2. Body: Phân tầng màu nền (Contrast Surface Layering)](#42-body-phân-tầng-màu-nền-contrast-surface-layering)
+   - [4.3. Thanh chọn con: Điều kiện hiển thị & Badge số lượng](#43-thanh-chọn-con-điều-kiện-hiển-thị--badge-số-lượng)
+   - [4.4. Cấu trúc Section Header Tách rời & Cơ chế Collapse](#44-cấu-trúc-section-header-tách-rời--cơ-chế-collapse)
+   - [4.5. Section "Cần xử lý" (Action Required)](#45-section-cần-xử-lý-action-required)
+   - [4.6. Section "Hôm nay / Tiếp theo" (Upcoming Schedule)](#46-section-hôm-nay--tiếp-theo-upcoming-schedule)
+   - [4.7. Section "Phân tích học tập" (Learning Analytics)](#47-section-phân-tích-học-tập-learning-analytics)
+5. [QUY CHUẨN DESIGN TOKENS (V2.0)](#5-quy-chuẩn-design-tokens-v20)
+6. [KẾ HOẠCH TRIỂN KHAI THEO TỪNG BƯỚC (STEP-BY-STEP IMPLEMENTATION)](#6-kế-hoạch-triển-khai-theo-từng-bước)
+7. [CHECKLIST NGHIỆM THU (VERIFICATION CHECKLIST)](#7-checklist-nghiệm-thu)
 
 ---
 
-## 1. TỔNG QUAN & MỤC TIÊU
+## 1. TỔNG HỢP YÊU CẦU NÂNG CẤP MỚI TỪ NGƯỜI DÙNG
 
-### 1.1. Bối cảnh
-Màn hình **Trang chủ Phụ huynh (Parent Home Screen)** đóng vai trò là "Tổng hành dinh" (Family Cockpit) cho phụ huynh theo dõi toàn bộ hành trình học tập của con cái tại trung tâm 40Study. 
+Dựa trên phản hồi trực tiếp và 3 ảnh thiết kế mới nhất của người dùng, các định hướng cải tiến trọng tâm bao gồm:
 
-Theo đặc tả `deliverable.md`:
-- Phụ huynh có thể có 0 con (vừa tạo tài khoản, chưa nhập mã học sinh), 1 con hoặc nhiều con học tại trung tâm.
-- Ở Trang chủ, phụ huynh xem được bức tranh tổng hợp toàn gia đình (**Family Scope**), nhận diện tức thì các vấn đề khẩn cấp (**Action Required**), nắm bắt lịch trình kế tiếp (**Upcoming Schedule**) và quan sát nhịp tiến bộ học tập (**Learning Analytics**).
-
-### 1.2. Mục tiêu nâng cấp
-1. **Khớp 100% Pixel-Perfect với Mockups:** Tái hiện chính xác bố cục, màu sắc, khoảng cách, phân cấp thị giác từ 3 ảnh thiết kế đã cung cấp (`uploaded_media_0` cho Active State và `uploaded_media_1` & `_2` cho No-child State).
-2. **Đạt đẳng cấp chất lượng như Role Student UI:** Áp dụng toàn bộ hệ thống Design Tokens (`TogetherColorsX`, `AppRadius`, `AppShadows`, `AppSpacing`, `AppTypography`), kỹ thuật layer surfaces và micro-interactions mượt mà của Student vào Parent.
-3. **Thỏa mãn 100% Deliverable Role Parent:**
-   - Xử lý triệt để 2 trạng thái màn hình lớn: **No-Child Onboarding View** (khi `children.isEmpty`) và **Active Family Dashboard View** (khi `children.isNotEmpty`).
-   - Xử lý các trạng thái rỗng thành phần (All-Clear 0 việc tồn đọng, Không có lịch học hôm nay, Chưa có dữ liệu phân tích).
-   - Tối ưu hóa Family Scope Filter tương tác mượt mà giữa "Tất cả các con" và từng con cụ thể.
+1. **Tổng thể thẩm mỹ & Khả năng tiếp cận (Accessibility):** Điều chỉnh khoảng cách thoáng đãng hơn, tăng kích cỡ font chữ rõ ràng, độ tương phản cao, vùng chạm tối thiểu 48px, tối ưu hoàn hảo cho mắt người lớn tuổi.
+2. **Header thông minh (Dynamic Greeting):** Không dùng chuỗi cứng `"Chào buổi sáng, Gia đình!"`. Phải lấy data chuẩn theo thời gian thực (Sáng/Chiều/Tối) kết hợp tên thật của phụ huynh từ `AuthBloc` tương tự cách làm của Student UI.
+3. **Thanh chọn hồ sơ con (Family Scope Selector):**
+   - **Nếu chỉ có 1 con:** Ẩn hoàn toàn nút "Tất cả các con" (vì thừa thãi), chỉ hiển thị duy nhất chip của con đó.
+   - **Nếu có từ 2 con trở lên:** Hiển thị nút "Tất cả các con" với **màu xanh thương hiệu hệ thống (`TogetherColorsX.blue600`)** khi được chọn, đồng thời **hiển thị số lượng con ngay trong nút** (ví dụ: `Tất cả các con  2`).
+4. **Phân tầng màu nền (Surface Contrast):** Phần Header mang nền trắng sáng (`#FFFFFF`), trong khi toàn bộ Body bên dưới mang nền xám dịu nhẹ (`#F8FAFC` / `surfaceContainerLowest`) để làm nổi bật các Card trắng tinh khiết bên trong.
+5. **Tách tiêu đề Section ra khỏi Card:** Tiêu đề của từng section (`CẦN XỬ LÝ`, `HÔM NAY / TIẾP THEO`, `PHÂN TÍCH HỌC TẬP`) nằm **hoàn toàn bên ngoài card**, không gộp chung vào một card lớn nguyên khối.
+6. **Thẻ ca học độc lập (Independent Schedule Cards):** Mỗi ca học trong mục "Hôm nay / Tiếp theo" là một Card trắng độc lập, có khối thời gian bo góc riêng (`14:00 60p` màu xanh pastel cho Online; `16:30 90p` màu xám cho Offline), badge tên con (`[Minh]`, `[Lan]`) và thông tin địa điểm rõ ràng.
+7. **Cơ chế Thu gọn / Mở rộng (Collapsible Sections):** Tích hợp nút chevron hoặc chạm vào tiêu đề section để mở rộng / thu gọn nội dung, giúp phụ huynh chủ động kiểm soát lượng thông tin trên màn hình.
 
 ---
 
-## 2. ĐỐI CHIẾU QUY CHUẨN THIẾT KẾ ROLE STUDENT
+## 2. GAP ANALYSIS CHI TIẾT & ĐỐI CHIẾU ẢNH THIẾT KẾ MOCKUP 2
 
-Hệ thống giao diện Student trong codebase đã đạt mức hoàn thiện rất cao nhờ áp dụng nghiêm ngặt các nguyên lý sau. Parent UI cần áp dụng đồng bộ:
-
-| Tiêu chí | Quy chuẩn Role Student | Đánh giá áp dụng cho Parent Home |
-| :--- | :--- | :--- |
-| **Color Tokens** | Sử dụng triệt để `TogetherColorsX` (`blue600`, `blue700`, `slate900`, `slate800`, `slate500`, `slate100`, `achievementGreen`, `achievementRed`, `achievementAmber`, v.v.). Tuyệt đối không hardcode mã Hex lặp lại. | Thay thế toàn bộ mã `Color(0xFF...)` hardcode trong `parent/presentation/home/widgets` bằng token từ `cs.*` và `TogetherColorsX`. |
-| **Layered Surfaces** | Nền màn hình `surfaceContainerLowest` hoặc `slate50` (`#F8FAFC`), các Card nội dung màu trắng `surface` (`#FFFFFF`), viền border mảnh `outlineVariant.withValues(alpha: 0.4)` kết hợp `AppShadows.card` tạo độ nổi tinh tế (Z-index ảo). | Loại bỏ viền thô và shadow đơn điệu hiện tại; áp dụng border mảnh + shadow phân tầng mềm mại cho toàn bộ card: Action Required, Schedule, Analytics. |
-| **Corner Radius** | Sử dụng hằng số từ `AppRadius`: `borderSm` (8px), `borderMd` (12px), `borderLg` (16px), `borderFull` (999px). Không dùng `BorderRadius.circular(random)` tùy tiện. | Chuẩn hóa: Thẻ lớn = `AppRadius.borderLg` (16px), Icon box = `AppRadius.borderMd` (12px), Badges & Chips = `AppRadius.borderFull`. |
-| **Typography Hierarchy** | Tuân thủ nghiêm ngặt `AppTypography`: <br>- Eyebrow / Overline: `labelSmall` bold, tracking `1.0 - 1.2`, uppercase.<br>- Card Header: `titleSmall` / `labelLarge` bold 700.<br>- Primary Stats: `displaySmall` / `headlineMedium` bold 800.<br>- Body / Meta: `bodySmall` regular, line-height 1.4 - 1.5. | Áp dụng đúng cỡ chữ và letter-spacing cho các nhãn `PHỤ HUYNH 40STUDY`, `FAMILY SCOPE • CHẾ ĐỘ GIÁM SÁT`, `CẦN XỬ LÝ`, `HÔM NAY / TIẾP THEO`, `PHÂN TÍCH HỌC TẬP`. |
-| **Visual Indicators** | Dùng chấm trạng thái (Status Dot 8px) kết hợp Pill Badge để tăng cường khả năng quét thông tin (scannability). Màu sắc ngữ nghĩa: Đỏ = Overdue/Urgent, Vàng cam = Warning/Change, Xanh lá = Success/Good, Xanh dương = Informational. | Áp dụng chuẩn cho Action Required (chấm đỏ/xanh lá), Schedule tags (xanh dương/xám), và Analytics progress (+15% xanh lá). |
-| **Empty States** | Không bao giờ để màn hình trống rỗng hoặc card xám xịt. Empty state phải có: Icon minh họa đặc thù -> Tiêu đề rõ ràng -> Mô tả nguyên nhân thân thiện -> CTA hành động giải quyết. | Xây dựng màn hình No-child Onboarding chuẩn mực theo ảnh 2 & 3 và các empty card con (All-Clear, No Schedule, No Report). |
-
----
-
-## 3. GAP ANALYSIS: HIỆN TRẠNG CODE VS. MOCKUPS VS. DELIVERABLE
-
-Qua rà soát từng dòng code trong `mobile/lib/features/parent/presentation/home/`, nhóm phát triển ghi nhận các khoảng cách (gaps) cần khắc phục:
-
-### 3.1. Thiếu sót nghiêm trọng nhất: Trạng thái Chưa liên kết con (No-child State)
-- **Hiện trạng code:** Khi `data.children.isEmpty`, trong `parent_home_screen.dart` vẫn render lần lượt `FamilyScopeSelector`, `ActionRequiredSection`, `UpcomingScheduleSection`, `LearningAnalyticsCard`. Điều này làm người dùng mới thấy hàng loạt card "0 việc tồn đọng", "Không có ca học nào", "Chưa có dữ liệu" một cách vô nghĩa và rối mắt.
-- **Yêu cầu theo ảnh `uploaded_media_1` & `_2`:** Toàn bộ trang Home phải chuyển đổi thành màn hình **No-Child Onboarding Screen**:
-  1. Header: Icon gia đình + `PHỤ HUYNH 40STUDY` + Tiêu đề `Trang chủ Phụ huynh` + Avatar `PH`.
-  2. Hero Card lớn:
-     - Vòng tròn xanh dương pastel lớn (`#EFF6FF`) với icon gia đình xanh đậm (`#2563EB`) và badge tròn nhỏ mang icon dấu cộng `+`.
-     - Tiêu đề: **"Chưa có hồ sơ con được liên kết"**.
-     - Mô tả: "Liên kết tài khoản của con bằng mã học viên do trung tâm cung cấp để bắt đầu theo dõi tiến độ, lịch học và kết quả."
-     - Nút CTA chính: **"+ Liên kết hồ sơ con ngay"** (FilledButton xanh dương lớn).
-     - Link phụ trợ: Icon `?` + **"Chưa có mã học viên? Liên hệ Giáo vụ hỗ trợ"**.
-  3. Khối giải thích giá trị tính năng (**Feature Highlights Section**):
-     - Section Eyebrow: `SAU KHI LIÊN KẾT BẠN SẼ THEO DÕI ĐƯỢC` kèm divider mảnh.
-     - 3 Feature Item Rows tinh xảo với icon bo tròn màu sắc:
-       + *Lịch học & Điểm danh thời gian thực* (Icon lịch xanh/tím).
-       + *Bài tập về nhà, Hạn nộp & Chấm điểm* (Icon bài tập cam/vàng).
-       + *Live Tracking & Báo cáo phân tích học tập* (Icon biểu đồ xanh lá).
-
-### 3.2. Rà soát Header (`parent_home_header.dart`)
-- **Khoảng cách:**
-  - Chưa hỗ trợ dynamic title theo state: Khi chưa có con hiển thị `"Trang chủ Phụ huynh"`, khi đã có con hiển thị `"Chào buổi sáng, Gia đình!"` (hoặc chào theo buổi).
-  - Khoảng cách padding top/bottom đang cố định, cần bọc `SafeArea` hoặc tính toán padding cân đối với status bar.
-  - Avatar phụ huynh: Cần hiển thị chuẩn initials chữ "PH" hoặc ảnh đại diện từ session.
-
-### 3.3. Rà soát Family Scope Selector (`family_scope_selector.dart`)
-- **Khoảng cách:**
-  - Tiêu đề phụ: Đang để chữ `• FAMILY SCOPE • CHẾ ĐỘ GIÁM SÁT` cứng, cần đồng bộ letterSpacing `1.2`, font size `11sp`.
-  - Chip "Tất cả các con": Khi unselected thì style thế nào? Hiện tại chip này luôn nhận màu đen `slate900`. Cần có logic đổi sang style unselected khi phụ huynh chọn 1 con cụ thể.
-  - Chip con: Khi được chọn (selected), cần có viền xanh `blue600`, nền xanh nhạt hoặc trắng nổi bật, avatar chữ cái sắc nét.
-
-### 3.4. Rà soát Section "Cần xử lý" (`action_required_section.dart`)
-- **Khoảng cách:**
-  - Card chưa có hiệu ứng bo góc và viền chuẩn M3 / Student Design System.
-  - Mỗi item trong danh sách:
-    + Cần có chevron phải (`Icons.chevron_right_rounded`) màu xám để báo hiệu có thể bấm xem chi tiết bài tập / thông báo đổi lịch.
-    + Icon container vuông bo góc 12px (`AppRadius.borderMd`), nền pastel dịu mắt (`0xFFFEE2E2` cho bài tập quá hạn, `0xFFFEF3C7` cho đổi lịch).
-    + Dòng phụ: Icon đồng hồ nhỏ màu đỏ + `Hạn chót: 23:59 hôm qua` hoặc icon thông tin nhỏ màu cam + `Giáo viên vừa xác nhận`.
-  - Trạng thái Empty (All-Clear): Giữ nguyên giao diện viền xanh lá nhạt + khiên xanh tích hợp sẵn từ plan trước nhưng tinh chỉnh typography chuẩn theo `AppTypography`.
-
-### 3.5. Rà soát Section "Hôm nay / Tiếp theo" (`upcoming_schedule_section.dart`)
-- **Khoảng cách:**
-  - Đường kẻ phân cách giữa cột Giờ và cột Nội dung: Đang dùng `Container(width: 1, height: 56)` cứng. Nếu text nội dung dài làm thẻ cao lên thì vạch kẻ sẽ bị hụt. Cần dùng `IntrinsicHeight` kết hợp `VerticalDivider`.
-  - Badge trạng thái bên phải (`Sắp bắt đầu`, `Trực tiếp`): Thiếu icon chevron điều hướng bên cạnh.
-  - Toàn bộ item cần bọc trong InkWell để phụ huynh bấm vào mở chi tiết buổi học (phòng học, link Meet).
-  - Phân loại rõ ràng 2 dạng ca học theo mockup:
-    + **ONLINE**: Giờ và tag màu xanh dương (`14:00`, `ONLINE`, `Trực tuyến trên Google Meet`, badge `Sắp bắt đầu`).
-    + **TẠI CƠ SỞ**: Giờ và tag màu xám đậm (`16:30`, `TẠI CƠ SỞ`, `Cơ sở Phan Xích Long`, `Phòng 302`, badge `Trực tiếp`).
-
-### 3.6. Rà soát Section "Phân tích học tập" (`learning_analytics_card.dart`)
-- **Khoảng cách:**
-  - Biểu đồ mini chart: Code hiện tại đang render 5 thanh container thủ công. Cần tinh chỉnh tỷ lệ cột, bo góc 3px, màu sắc gradient mượt mà hoặc tùy biến bằng `CustomPainter` / widget chuẩn để thể hiện xu hướng tăng dần trực quan.
-  - Badge tiến bộ: `+15%` với mũi tên hướng lên màu xanh lá (`AchievementColors.green` hoặc `TogetherColorsX.achievementGreen`).
-  - Hộp Callout AI Insight: Nền xanh nhạt `#F0F7FF`, viền trái dày 3.5px màu `blue700`, chữ có highlight từ khóa quan trọng `"Cải thiện rõ ở dạng Đọc hiểu"`.
-  - Footer Links: 2 link `"Xem phân tích của [Tên con] ->"` và `"Tất cả báo cáo >"` cần padding chạm cảm ứng chuẩn (ít nhất 44px height tap-target).
-
----
-
-## 4. KIẾN TRÚC GIAO DIỆN & STATE MACHINE CHI TIẾT
-
-### 4.1. Sơ đồ cây Widget (Widget Hierarchy)
-
-```
-ParentHomeScreen
-└── BlocBuilder<ParentHomeBloc, ParentHomeState>
-    ├── ParentHomeLoading -> _HomeLoading (Shimmer Skeleton)
-    ├── ParentHomeFailure -> _HomeError (Error Screen + Retry Button)
-    └── ParentHomeSuccess(data, selectedChildId)
-        └── Scaffold (backgroundColor: slate50 / surfaceContainerLowest)
-            └── SafeArea
-                └── RefreshIndicator
-                    └── ListView (bọc toàn trang cuộn mượt)
-                        ├── ParentHomeHeader (Greeting + Notification Badge + Profile Avatar)
-                        │
-                        └── IF data.children.isEmpty (NO-CHILD ONBOARDING STATE):
-                        │   └── ParentNoChildView
-                        │       ├── _HeroLinkChildCard (Icon minh họa + Tiêu đề + CTA + Hotline hỗ trợ)
-                        │       └── _FeatureHighlightsSection (3 giá trị cốt lõi: Lịch học, Bài tập, Live tracking)
-                        │
-                        └── IF data.children.isNotEmpty (ACTIVE FAMILY DASHBOARD STATE):
-                            ├── FamilyScopeSelector (Tất cả các con + Chip từng con)
-                            ├── AppSpacing.vGap16
-                            ├── ActionRequiredSection (Cảnh báo bài tập quá hạn / Đổi lịch học HOẶC 0 việc tồn đọng)
-                            ├── AppSpacing.vGap16
-                            ├── UpcomingScheduleSection (Lịch học Online / Offline hôm nay HOẶC Không có ca học)
-                            ├── AppSpacing.vGap16
-                            └── LearningAnalyticsCard (Điểm số TB + Mini chart + AI Insight HOẶC Chưa có dữ liệu)
-```
-
-### 4.2. Sơ đồ trạng thái hiển thị (Display State Matrix)
-
-| Thành phần Widget | Trạng thái Chưa liên kết con (`children.isEmpty`) | Trạng thái Có con & Có dữ liệu đầy đủ | Trạng thái Có con & Dữ liệu rỗng cục bộ |
+| Thành phần UI | Code hiện tại | Ảnh thiết kế thực tế (`uploaded_media_2`) | Giải pháp kỹ thuật cần điều chỉnh |
 | :--- | :--- | :--- | :--- |
-| **ParentHomeHeader** | Title: `"Trang chủ Phụ huynh"` | Title: `"Chào buổi sáng, Gia đình!"` | Title: `"Chào buổi sáng, Gia đình!"` |
-| **FamilyScopeSelector** | Ẩn hoàn toàn (hoặc tích hợp trong No-child Hero) | Hiển thị: Tất cả các con + Chip từng con | Hiển thị: Chip con hiện có |
-| **ActionRequiredSection** | Ẩn (được thay thế bởi No-child Hero) | Hiển thị: Danh sách item bài tập quá hạn / đổi giờ | Hiển thị: Card xanh All-Clear `"0 việc tồn đọng - Tất cả ổn định"` |
-| **UpcomingScheduleSection**| Ẩn (được thay thế bởi No-child Hero) | Hiển thị: Danh sách ca học Online / Offline hôm nay | Hiển thị: Card `"Hôm nay không có ca học nào"` + Link TKB |
-| **LearningAnalyticsCard** | Ẩn (được thay thế bởi No-child Hero) | Hiển thị: Điểm TB `8.4`, biểu đồ cột mini, AI insight | Hiển thị: Card `"Chưa có dữ liệu phân tích tuần này"` + Link Bảng điểm |
-| **No-Child Onboarding View** | **HIỂN THỊ CHÍNH TÂM** (Hero Card + 3 Feature Highlights) | Ẩn hoàn toàn | Ẩn hoàn toàn |
+| **Màu nền toàn trang (Background)** | Cả Header và Body đều dùng chung 1 màu nền `Theme.of(context).colorScheme.surface` phẳng lì. | Header nền trắng tinh (`#FFFFFF`), Body bên dưới nền xám dịu (`#F8FAFC` / `slate50`), các Card nội dung màu trắng nổi bật với viền mảnh và shadow mềm. | Thiết lập `Scaffold.backgroundColor = cs.slate50`; bọc Header trong Container màu trắng hoặc `AppBar` surface riêng; Body cuộn trên nền `slate50`. |
+| **Header Greeting** | Hardcode text `'Chào buổi sáng, Gia đình!'`. | Lấy dữ liệu thật: Lời chào tự động theo giờ hệ thống + Tên thật của phụ huynh. | Sử dụng hàm `_greeting()`: <br>- Trước 11h: *"Chào buổi sáng"*<br>- 11h - 18h: *"Chào buổi chiều"*<br>- Sau 18h: *"Chào buổi tối"*<br>Kết hợp `user.fullName` từ `AuthBloc`. |
+| **Nút "Tất cả các con"** | Luôn hiển thị dù có 1 con hay nhiều con; Nút mang màu đen `slate900` đơn điệu; Không hiển thị số lượng con. | - Khi chỉ có 1 con: Ẩn nút "Tất cả các con".<br>- Khi ≥ 2 con: Nút màu xanh thương hiệu (`blue600`), có pill badge nhỏ hiển thị số lượng con (ví dụ: `Tất cả các con  2`). | Kiểm tra `children.length > 1` mới render nút Tất cả các con; Thiết kế chip xanh `blue600` với badge tròn hiển thị `children.length`. |
+| **Tiêu đề Section CẦN XỬ LÝ** | Đang bị nhét bên trong Card trắng lớn cùng với nội dung item. | Nằm **BÊN NGOÀI CARD**: Gồm chấm trạng thái tròn, Text `CẦN XỬ LÝ` và Pill badge (`2 nhắc nhở` / `0 việc tồn đọng`) cùng hàng với icon thu gọn. | Bóc tách hàng tiêu đề ra khỏi Card; Card chỉ bọc phần nội dung cảnh báo; Thêm State `isExpanded` để collapse. |
+| **Tiêu đề Section LỊCH HỌC** | Đang bị nhét bên trong Card trắng lớn. | Nằm **BÊN NGOÀI CARD**: Icon lịch xanh + Text `HÔM NAY / TIẾP THEO` + Thứ, Ngày tháng + Nút collapse. | Đưa Header ra ngoài; Bên dưới render danh sách các Card độc lập. |
+| **Thẻ Ca học Lịch trình** | Dùng vạch kẻ `VerticalDivider` trong cùng 1 card lớn; không hiển thị thời lượng (60p, 90p) hay tag con riêng biệt. | **Mỗi ca học là 1 CARD TRẮNG ĐỘC LẬP**:<br>- Khối giờ có nền riêng (xanh pastel cho Online; xám cho Offline) hiển thị giờ + thời lượng (`60p`, `90p`).<br>- Có badge con riêng (`Minh`, `Lan`).<br>- Badge trạng thái bên phải (`Sắp bắt đầu`, `Trực tiếp`). | Tách mỗi `ParentScheduleItem` thành 1 Container card riêng biệt có bo góc `AppRadius.borderLg`, viền mỏng và shadow nhẹ. |
+| **Tiêu đề Section PHÂN TÍCH** | Đang bị gộp tiêu đề vào chung 1 khối. | Tiêu đề nằm **BÊN NGOÀI CARD**: Icon xu hướng + `PHÂN TÍCH HỌC TẬP` + Badge `Tiến bộ tốt` + Nút collapse. | Tách hàng tiêu đề ra ngoài card; Card chỉ chứa thông tin học tập, điểm TB 8.4, box nhận xét AI và navigation links. |
+| **Typography & Spacing** | Font chữ còn nhỏ (11-13sp), khoảng cách chật chội, khó đọc với mắt người lớn tuổi. | Font chữ lớn, nét chữ đậm rõ, line-height 1.5, khoảng cách giữa các phần rộng rãi (16-20px). | Nâng cỡ chữ cơ sở lên tối thiểu 13-16sp, tiêu đề 16-18sp, thời gian 19-20sp bold; Tăng khoảng cách `vGap20`. |
 
 ---
 
-## 5. QUY CHUẨN DESIGN TOKENS CHO PARENT HOME
+## 3. NGUYÊN TẮC THIẾT KẾ CHO NGƯỜI LỚN TUỔI (PARENT-FRIENDLY UX)
 
-Để đảm bảo đồng bộ 100% với giao diện Student, Parent Home tuân thủ bảng ánh xạ token:
+Để phụ huynh (độ tuổi 35 - 55+) sử dụng ứng dụng một cách dễ chịu, thoải mái và không mỏi mắt, giao diện phải tuân thủ 4 nguyên lý:
 
-### 5.1. Màu sắc (Color Tokens via `TogetherColorsX`)
+1. **High Visual Scannability (Dễ quét thông tin):**
+   - Tiêu đề từng khu vực phải nổi bật bên ngoài, có icon nhận diện và màu sắc ngữ nghĩa rõ ràng (Đỏ = Cần xử lý gấp, Xanh dương = Lịch trình sắp tới, Xanh lá = Tiến bộ học tập).
+   - Người lớn tuổi chỉ cần nhìn lướt qua trong 3 giây là biết con có bài tập trễ không, mấy giờ học và tuần này học tốt không.
+2. **Generous Spacing & Visual Breathing (Khoảng thở thị giác):**
+   - Khoảng cách giữa các Section là `AppSpacing.vGap20` (20px).
+   - Khoảng cách giữa các Card ca học là `AppSpacing.vGap12` (12px).
+   - Padding bên trong Card là `AppSpacing.lg` (16px), tạo cảm giác nhẹ nhàng, không bị ngộp thông tin.
+3. **Enhanced Typography (Chữ to, Nét đậm, Rõ ràng):**
+   - Cấm dùng text dưới 12sp.
+   - Text phụ (mô tả, địa điểm): Tối thiểu 13sp, màu `cs.slate600` (đủ tương phản, không dùng màu xám quá nhạt).
+   - Text chính (tên bài, tên môn, tên con): 15-16sp, font weight 700.
+   - Giờ học & Điểm số: 18-20sp font weight 800.
+4. **Touch Target Accessibility (Dễ bấm, Không chạm nhầm):**
+   - Chiều cao các nút CTA, Chip và Item bấm được phải đạt chuẩn **tối thiểu 44 - 48px**.
+   - Thêm hiệu ứng gợn sóng (`InkWell`) và bo góc mềm mại.
+
+---
+
+## 4. KIẾN TRÚC GIAO DIỆN & THÀNH PHẦN CHI TIẾT
+
+### 4.1. Header: Dynamic Greeting & Real Profile Data
+- **Vị trí:** Đặt ở đỉnh màn hình, nằm trên nền trắng sáng (`#FFFFFF`) hoặc `surface`.
+- **Thành phần:**
+  - Bên trái:
+    + Icon gia đình xanh pastel (`#EFF6FF`, icon `Icons.family_restroom_rounded` màu `blue600`, size 44x44px).
+    + Dòng 1 (Eyebrow): `PHỤ HUYNH 40STUDY` (caps, `slate500`, tracking 1.1, bold 700, 11sp).
+    + Dòng 2 (Tiêu đề chính): Lời chào động:
+      ```dart
+      String getDynamicGreeting(String? fullName) {
+        final hour = DateTime.now().hour;
+        String timeGreeting;
+        if (hour < 11) {
+          timeGreeting = 'Chào buổi sáng';
+        } else if (hour < 18) {
+          timeGreeting = 'Chào buổi chiều';
+        } else {
+          timeGreeting = 'Chào buổi tối';
+        }
+        
+        if (fullName == null || fullName.trim().isEmpty) {
+          return '$timeGreeting, Gia đình!';
+        }
+        // Lấy tên gọi thân mật (ví dụ "Hoàng Tùng" -> "Hoàng Tùng" hoặc tên cuối)
+        final name = fullName.trim();
+        return '$timeGreeting, $name!';
+      }
+      ```
+  - Bên phải:
+    + Chuông thông báo có chấm đỏ (`Badge` 7px màu đỏ, icon `Icons.notifications_outlined`).
+    + Avatar phụ huynh: Chữ cái viết tắt từ tên phụ huynh (ví dụ `HT` hoặc `PH`), nền xanh nhạt hoặc `slate900`, radius 20px.
+
+---
+
+### 4.2. Body: Phân tầng màu nền (Contrast Surface Layering)
+- **Cấu trúc Scaffold:**
+  ```dart
+  Scaffold(
+    backgroundColor: const Color(0xFFF8FAFC), // cs.slate50
+    body: SafeArea(
+      child: Column(
+        children: [
+          // Header nằm trên nền trắng tinh khiết
+          Container(
+            color: cs.surface, // #FFFFFF
+            child: ParentHomeHeader(...),
+          ),
+          // Toàn bộ Body cuộn trên nền xám dịu slate50
+          Expanded(
+            child: ListView(...),
+          ),
+        ],
+      ),
+    ),
+  );
+  ```
+- **Tác dụng:** Giúp người xem phân biệt rạch ròi giữa khu vực Điều hướng (Header) và khu vực Dữ liệu (Dashboard Cards). Các Card trắng nổi lên trên nền xám nhẹ tạo độ sâu phân tầng tuyệt đẹp.
+
+---
+
+### 4.3. Thanh chọn con: Điều kiện hiển thị & Badge số lượng
+- **Dòng tiêu đề phụ:** `• FAMILY SCOPE • CHẾ ĐỘ GIÁM SÁT` (`blue600`, 11sp, bold 700, tracking 1.0) và `Cập nhật 2 phút trước` (`slate400`, 11sp).
+- **Quy tắc hiển thị Chip:**
+  ```dart
+  final isMultiChildren = children.length > 1;
+  ```
+  - **Trường hợp 1 con (`children.length == 1`):**
+    + **ẨN NÚT "TẤT CẢ CÁC CON"**.
+    + Chỉ hiển thị duy nhất 1 Chip của con đó (tự động kích hoạt trạng thái selected).
+  - **Trường hợp nhiều con (`children.length > 1`):**
+    + **Nút "Tất cả các con":**
+      - Khi Selected: Nền màu **xanh hệ thống (`cs.blue600` / `#2563EB`)**, icon nhóm màu trắng, text trắng bold 700.
+      - Bên cạnh chữ có **Pill Badge tròn nhỏ** (nền trắng hoặc xanh đậm hơn) hiển thị số lượng: `${children.length}` (ví dụ: `2`).
+      - Khi Unselected: Nền xám nhạt `slate100`, viền mỏng `slate200`, text `slate700`, badge số xám.
+    + **Các Chip từng con bên cạnh:**
+      - Avatar chữ cái tròn (`M` xanh, `L` hồng/cam).
+      - Text: `${child.name} (${child.className})` (ví dụ `Minh (10A1)`, `Lan (7B)`).
+      - Khi Selected: Nền trắng/xanh nhạt, viền xanh `blue600` dày 1.5px, chữ `blue700` bold.
+      - Khi Unselected: Nền `slate100`, viền transparent, chữ `slate700`.
+
+---
+
+### 4.4. Cấu trúc Section Header Tách rời & Cơ chế Collapse
+
+Mỗi Section sẽ tuân thủ mô hình widget chuẩn:
+```
+SectionContainer
+├── SectionHeaderBar (NẰM HOÀN TOÀN BÊN NGOÀI CARD)
+│   ├── Icon + Tiêu đề section (caps, bold 700, 14.5sp)
+│   ├── Badge trạng thái bên phải
+│   └── Icon Collapse (mũi tên lên/xuống)
+│
+└── AnimatedCrossFade / AnimatedSize (CƠ CHẾ THU GỌN / MỞ RỘNG)
+    └── SectionBodyContent (CARD NỘI DUNG HOẶC DANH SÁCH CARD)
+```
+
+---
+
+### 4.5. Section "Cần xử lý" (Action Required)
+- **Header ngoài card:**
+  + Chấm tròn trạng thái: Đỏ (nếu có việc) hoặc Xanh lá (nếu All-Clear).
+  + Text: `CẦN XỬ LÝ` (bold 700, 14.5sp, `slate900`).
+  + Badge bên phải: `2 nhắc nhở` (nền đỏ nhạt, chữ đỏ) hoặc `0 việc tồn đọng` (nền xanh lá nhạt, chữ xanh lá).
+  + Nút mũi tên thu gọn/mở rộng.
+- **Card nội dung bên dưới:**
+  - **Khi All-Clear (0 việc tồn đọng):**
+    + 1 Card trắng viền xanh mint nhạt (`#A7F3D0`), bo góc 16px.
+    + Icon khiên tích xanh bo góc 12px, nền `#ECFDF5`.
+    + Tiêu đề: **"Không có việc cần xử lý hôm nay"** (bold, 15sp, `slate900`).
+    + Mô tả: *"Không có bài tập quá hạn hay ca học bị thay đổi giờ của [Tên con]"* (`slate500`, 13sp).
+    + Text: **"Tất cả ổn định"** (`#059669`, bold 600, 13sp).
+  - **Khi có việc tồn đọng (Active Alerts):**
+    + 1 Card trắng bo góc 16px, viền `outlineVariant.withValues(alpha: 0.4)`.
+    + Danh sách các Item cảnh báo:
+      - Item 1: Icon bài tập đỏ, `Minh • Hình học 10`, `1 bài tập trắc nghiệm đã quá hạn nộp`, `Hạn chót: 23:59 hôm qua`, Badge đỏ `Quá hạn` + Chevron phải.
+      - Item 2: Icon đồng hồ cam, `Lan • Anh văn giao tiếp`, `Lớp đổi giờ bắt đầu sang 17:00 (lùi 30 phút)`, `Giáo viên vừa xác nhận`, Badge cam `Thay đổi` + Chevron phải.
+
+---
+
+### 4.6. Section "Hôm nay / Tiếp theo" (Upcoming Schedule)
+- **Header ngoài card:**
+  + Icon lịch xanh `Icons.calendar_today_rounded` (size 19px, màu `blue600`).
+  + Text: `HÔM NAY / TIẾP THEO` (bold 700, 14.5sp, `slate900`).
+  + Phía bên phải: `Thứ Sáu, 24 Th10` (`slate500`, 13sp) + Nút mũi tên collapse.
+- **Nội dung bên dưới (CÁC THẺ CARD ĐỘC LẬP THEO ẢNH 2):**
+  - **Card Ca học 1 (Online):**
+    + Thẻ trắng độc lập, bo góc 16px, viền mỏng, padding 14px.
+    + Khối giờ bên trái (SizedBox 64x54px): Nền xanh pastel `#EFF6FF`, bo góc 10px:
+      - Dòng 1: `14:00` (bold 800, `blue600`, 16.5sp).
+      - Dòng 2: `60p` (`blue600`, bold 600, 12sp).
+    + Ở giữa:
+      - Hàng 1: Badge con `[Minh]` (nền `#DBEAFE`, chữ `blue700`, bold 700, 11sp) + Tên môn `Đại số 10` (bold 700, `slate900`, 15sp).
+      - Hàng 2: Icon camera video + `Trực tuyến Google Meet · Thầy Hoàng Long` (`slate600`, 13sp).
+    + Phía bên phải: Badge `Sắp bắt đầu` (nền `#EFF6FF`, chữ `blue600`, bo góc full pill).
+  - **Card Ca học 2 (Tại cơ sở):**
+    + Thẻ trắng độc lập, bo góc 16px, viền mỏng, padding 14px.
+    + Khối giờ bên trái (SizedBox 64x54px): Nền xám `#F1F5F9`, bo góc 10px:
+      - Dòng 1: `16:30` (bold 800, `slate900`, 16.5sp).
+      - Dòng 2: `90p` (`slate500`, bold 600, 12sp).
+    + Ở giữa:
+      - Hàng 1: Badge con `[Lan]` (nền `#FEF3C7`, chữ `#D97706`, bold 700, 11sp) + Tên môn `Tiếng Anh` (bold 700, `slate900`, 15sp).
+      - Hàng 2: Icon tòa nhà + `Cơ sở Phan Xích Long · Phòng 302` (`slate600`, 13sp).
+    + Phía bên phải: Badge `Trực tiếp` (nền `#F1F5F9`, chữ `slate700`, bo góc full pill).
+
+---
+
+### 4.7. Section "Phân tích học tập" (Learning Analytics)
+- **Header ngoài card:**
+  + Icon xu hướng `Icons.insights_rounded` (màu `blue600`).
+  + Text: `PHÂN TÍCH HỌC TẬP` (bold 700, 14.5sp, `slate900`).
+  + Phía bên phải: Chấm xanh lá + Text `Tiến bộ tốt` (nền xanh lá nhạt, chữ xanh) + Nút collapse.
+- **Card nội dung bên dưới (Theo ảnh 2):**
+  + Card trắng bo góc 16px, viền mỏng, padding 16px.
+  + **Hàng 1 (Thông tin học sinh & Điểm số):**
+    - Trái: Avatar tròn chữ `M` xanh dương (radius 18px), Tên `Minh · Lớp 10A1` (bold 700, 15sp), dưới là `Báo cáo tuần 42` (`slate500`, 13sp).
+    - Phải: Text `Điểm TB: 8.4` (bold 800, 16sp, `slate900`), dưới là `(+15%)` màu xanh lá bold 700.
+  + **Hàng 2 (AI Insight Box):**
+    - Container nền xám nhạt `#F8FAFC`, bo góc 12px, padding 14px, viền mỏng `slate200`:
+      "Minh duy trì mức độ hiểu bài tốt trong tuần qua, tiến độ đọc hiểu cải thiện **22%** ở môn Toán và Ngữ văn."
+      (Từ khóa **22%** in đậm nổi bật).
+  + **Hàng 3 (Action Navigation Links):**
+    - Trái: `Xem phân tích của Minh ->` (`blue600`, bold 600, 13.5sp).
+    - Phải: `Tất cả báo cáo >` (`slate500`, 13sp).
+
+---
+
+## 5. QUY CHUẨN DESIGN TOKENS (V2.0)
 
 ```dart
-// Nền & Phân tầng Surface
-final surfaceBackground = cs.surfaceContainerLowest; // hoặc cs.slate50 (#F8FAFC)
-final cardBackground    = cs.surface;                 // #FFFFFF
-final cardBorder        = cs.outlineVariant.withValues(alpha: 0.4);
+// Backgrounds & Surface Hierarchy
+final bgScreen       = const Color(0xFFF8FAFC); // cs.slate50 (Toàn bộ body cuộn)
+final bgHeader       = cs.surface;              // #FFFFFF (Header trắng sáng)
+final bgCard         = cs.surface;              // #FFFFFF (Các thẻ Card)
+final cardBorder     = cs.outlineVariant.withValues(alpha: 0.35);
 
-// Thương hiệu & Điểm nhấn chính
-final primaryBlue       = cs.blue600;                // #2563EB
-final primaryDarkBlue   = cs.blue700;                // #1D4ED8
-final bluePastelBg      = Color(0xFFEFF6FF);         // Xanh dương rất nhạt cho icon box/callout
+// Primary Brand Blues
+final brandBlue      = cs.blue600;              // #2563EB (Nút chọn tất cả con, link chính)
+final brandBluePastel= const Color(0xFFEFF6FF); // Nền khối giờ Online, avatar header
+final brandDarkBlue  = cs.blue700;              // #1D4ED8 (Text active)
 
-// Ngữ nghĩa cảnh báo (Alerts & Badges)
-final overdueRed        = AchievementColors.red;      // #EF4444
-final overdueRedBg      = Color(0xFFFEE2E2);         // Nền tag quá hạn
-final warningAmber      = Color(0xFFF59E0B);         // Vàng cam cho đổi lịch
-final warningAmberBg    = Color(0xFFFEF3C7);         // Nền tag thay đổi
-final successGreen      = AchievementColors.green;    // #10B981
-final successGreenBg    = Color(0xFFECFDF5);         // Nền All-Clear & +15% badge
-final successGreenBorder= Color(0xFFA7F3D0);
+// Status & Semantic Colors
+final redAlert       = AchievementColors.red;   // #EF4444
+final redAlertBg     = const Color(0xFFFEE2E2);
+final amberChange    = const Color(0xFFD97706);
+final amberChangeBg  = const Color(0xFFFEF3C7);
+final greenSuccess   = AchievementColors.green; // #10B981
+final greenSuccessBg = const Color(0xFFECFDF5);
+final greenMintBorder= const Color(0xFFA7F3D0);
 
-// Text & Monochromes
-final textPrimary       = cs.slate900;                // #0F172A
-final textSecondary     = cs.slate600;                // #475569
-final textMuted         = cs.slate400;                // #94A3B8
-final textCapsEyebrow   = cs.slate500;                // #64748B
+// Elderly-Friendly Typography Scale
+final styleEyebrow   = tt.labelSmall?.copyWith(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.0);
+final styleSectionHdr= tt.titleSmall?.copyWith(fontSize: 14.5, fontWeight: FontWeight.w700, color: cs.slate900);
+final styleCardTitle = tt.titleMedium?.copyWith(fontSize: 15.5, fontWeight: FontWeight.w700, color: cs.slate900);
+final styleBodyDesc  = tt.bodySmall?.copyWith(fontSize: 13.5, height: 1.45, color: cs.slate600);
+final styleMetaTime  = tt.titleLarge?.copyWith(fontSize: 18, fontWeight: FontWeight.w800);
 ```
 
-### 5.2. Typography (Ánh xạ `AppTypography`)
+---
 
-- **Header Super-Title:** `tt.labelSmall?.copyWith(color: cs.slate500, fontWeight: FontWeight.w700, letterSpacing: 1.2)`
-- **Header Main Title:** `tt.titleMedium?.copyWith(color: cs.slate900, fontWeight: FontWeight.w700, fontSize: 18)`
-- **Section Eyebrow:** `tt.labelSmall?.copyWith(color: cs.blue600, fontWeight: FontWeight.w700, letterSpacing: 1.0)`
-- **Card Title / Child Name:** `tt.titleSmall?.copyWith(color: cs.slate900, fontWeight: FontWeight.w700, fontSize: 15)`
-- **Schedule Time Big:** `tt.titleLarge?.copyWith(fontWeight: FontWeight.w800, fontSize: 20)`
-- **Big Score Stat:** `tt.displaySmall?.copyWith(color: cs.slate900, fontWeight: FontWeight.w800, fontSize: 38, height: 1.0)`
-- **Body & Captions:** `tt.bodySmall?.copyWith(color: cs.slate500, height: 1.45)`
-- **Badges:** `tt.labelSmall?.copyWith(fontWeight: FontWeight.w700, fontSize: 11)`
+## 6. KẾ HOẠCH TRIỂN KHAI THEO TỪNG BƯỚC (STEP-BY-STEP IMPLEMENTATION)
 
-### 5.3. Spacing & Radius
+> ⚠️ **Quy tắc:** Chỉ code khi có lệnh yêu cầu. Sau mỗi bước chuyển đổi hoàn thành, thực hiện commit ngắn gọn và chạy `dart analyze`.
 
-- **Padding ngang toàn trang:** `AppSpacing.lg` (16px)
-- **Khoảng cách dọc giữa các Card:** `AppSpacing.vGap16` (16px)
-- **Padding trong Card:** `EdgeInsets.all(AppSpacing.lg)` (16px)
-- **Bo góc Card:** `AppRadius.borderLg` (16px)
-- **Bo góc Icon Square:** `AppRadius.borderMd` (12px)
-- **Bo góc Chips & Badges:** `AppRadius.borderFull` (999px)
-- **Độ nổi Card (BoxShadow):**
-  ```dart
-  boxShadow: [
-    BoxShadow(
-      color: cs.shadow.withValues(alpha: 0.04),
-      blurRadius: 12,
-      offset: const Offset(0, 4),
-    ),
-  ]
-  ```
+### Bước 1: Nâng cấp Header với Dynamic Greeting & Auth Data
+- **File:** `mobile/lib/features/parent/presentation/home/widgets/parent_home_header.dart`
+- **Nội dung:**
+  + Tạo hàm `_getDynamicGreeting(DateTime.now().hour, user?.fullName)`.
+  + Phân biệt buổi: Sáng (< 11h), Chiều (< 18h), Tối (>= 18h).
+  + Lấy tên thật của phụ huynh từ `AuthBloc`, nếu chưa có fallback `"Gia đình!"`.
+  + Đảm bảo nền Header màu trắng tinh (`#FFFFFF`), tách biệt với nền body xám.
+- **Commit:** `feat(parent): add dynamic greeting and auth profile to header`
+
+### Bước 2: Nâng cấp Thanh chọn con (Family Scope Selector)
+- **File:** `mobile/lib/features/parent/presentation/home/widgets/family_scope_selector.dart`
+- **Nội dung:**
+  + Kiểm tra điều kiện: Nếu `children.length <= 1`, **ẩn nút "Tất cả các con"**, chỉ hiện duy nhất chip con đó.
+  + Nếu `children.length > 1`: Hiển thị nút "Tất cả các con" với màu xanh hệ thống (`blue600`) khi selected, kèm Pill badge tròn nhỏ hiển thị số lượng con `${children.length}`.
+  + Nâng cỡ chữ tên con lên 14sp, avatar 14px, chiều cao chip 44px dễ bấm cho người lớn tuổi.
+- **Commit:** `feat(parent): support single-child hide and brand blue all-children button with count badge`
+
+### Bước 3: Tách Tiêu đề Section & Thêm Cơ chế Collapse cho "Cần xử lý"
+- **File:** `mobile/lib/features/parent/presentation/home/widgets/action_required_section.dart`
+- **Nội dung:**
+  + Tách hàng tiêu đề `• CẦN XỬ LÝ` + Badge (`2 nhắc nhở` / `0 việc tồn đọng`) ra ngoài Card.
+  + Thêm icon chevron xoay (animated rotation) và state `_isExpanded` để thu gọn / mở rộng.
+  + Card bên dưới bọc trong `AnimatedCrossFade`.
+  + Khi All-Clear: Card trắng viền xanh mint mint border `#A7F3D0`, không có tiêu đề trùng lặp bên trong.
+- **Commit:** `refactor(parent): extract action required header outside card and add collapse toggle`
+
+### Bước 4: Tách Tiêu đề Section & Tách Thẻ Ca học Độc lập cho "Lịch học hôm nay"
+- **File:** `mobile/lib/features/parent/presentation/home/widgets/upcoming_schedule_section.dart`
+- **Nội dung:**
+  + Tách hàng tiêu đề `📅 HÔM NAY / TIẾP THEO` + `Thứ Sáu, 24 Th10` ra ngoài Card kèm nút thu gọn / mở rộng.
+  + Tách mỗi ca học thành **MỘT CARD TRẮNG ĐỘC LẬP** (theo đúng ảnh mockup 2):
+    - Box thời gian có màu nền riêng (`14:00 60p` màu xanh pastel; `16:30 90p` màu xám).
+    - Có badge con riêng biệt `[Minh]`, `[Lan]`.
+    - Badge trạng thái `Sắp bắt đầu` / `Trực tiếp` bên phải.
+  + Tăng kích cỡ chữ giờ học lên 17sp bold 800, tên môn 15sp.
+- **Commit:** `refactor(parent): convert schedule items into independent cards with time boxes`
+
+### Bước 5: Tách Tiêu đề Section & Tinh chỉnh Card "Phân tích học tập"
+- **File:** `mobile/lib/features/parent/presentation/home/widgets/learning_analytics_card.dart`
+- **Nội dung:**
+  + Tách hàng tiêu đề `📈 PHÂN TÍCH HỌC TẬP` + Badge `Tiến bộ tốt` ra ngoài Card kèm nút thu gọn / mở rộng.
+  + Cấu trúc Card nội dung bên trong theo ảnh 2:
+    - Hàng 1: Avatar con + `Minh · Lớp 10A1` + `Báo cáo tuần 42` bên trái; `Điểm TB: 8.4` + `(+15%)` bên phải.
+    - Hàng 2: Box nhận xét AI màu nền xám `#F8FAFC`, bo góc 12px, highlight từ khóa **22%**.
+    - Hàng 3: Link `Xem phân tích của Minh ->` và `Tất cả báo cáo >` với tap-target thoáng 44px.
+- **Commit:** `refactor(parent): polish learning analytics card layout and external section header`
+
+### Bước 6: Hoàn thiện Phân tầng Nền Body & Kiểm thử Toàn diện
+- **File:** `mobile/lib/features/parent/presentation/home/parent_home_screen.dart`
+- **Nội dung:**
+  + Đặt `Scaffold.backgroundColor = const Color(0xFFF8FAFC)`.
+  + Header bọc trong container trắng `cs.surface`.
+  + Khoảng cách dọc giữa các Section nâng lên `const SizedBox(height: 20)`.
+  + Chạy `dart format` và `dart analyze` đảm bảo 0 error, 0 warning.
+- **Commit:** `fix(parent): contrast surface layering between header and body`
 
 ---
 
-## 6. KẾ HOẠCH TRIỂN KHAI THEO GIAI ĐOẠN (IMPLEMENTATION ROADMAP)
+## 7. CHECKLIST NGHIỆM THU (VERIFICATION CHECKLIST)
 
-> ⚠️ **LƯU Ý:** Giai đoạn này chỉ lập kế hoạch, KHÔNG viết code mã nguồn thực tế. Việc coding sẽ thực hiện ở bước tiếp theo sau khi kế hoạch được phê duyệt.
-
-### Giai đoạn 1: Xây dựng Component No-Child Onboarding Screen
-- **Mục tiêu:** Tạo mới widget hiển thị trạng thái khi phụ huynh chưa liên kết con theo đúng 100% ảnh `uploaded_media_1` & `_2`.
-- **File tạo mới:**
-  - `mobile/lib/features/parent/presentation/home/widgets/parent_no_child_view.dart`
-- **Nội dung widget:**
-  1. `_HeroLinkChildCard`:
-     - Avatar minh họa gia đình + huy hiệu `+`.
-     - Tiêu đề "Chưa có hồ sơ con được liên kết".
-     - Đoạn văn bản hướng dẫn sử dụng mã học viên.
-     - Nút bấm `FilledButton` "+ Liên kết hồ sơ con ngay" (kết nối điều hướng sang `AddChildScreen` hoặc `ManageChildrenScreen`).
-     - Hàng trợ giúp "Chưa có mã học viên? Liên hệ Giáo vụ hỗ trợ" (có thể bấm để mở modal hỗ trợ hoặc gọi hotline).
-  2. `_FeatureHighlightsSection`:
-     - Tiêu đề "SAU KHI LIÊN KẾT BẠN SẼ THEO DÕI ĐƯỢC".
-     - Danh sách 3 item giải thích 3 giá trị: Lịch học realtime, Bài tập & Điểm số, Báo cáo & Live tracking.
-- **Export widget:** Cập nhật `widgets.dart`.
-
-### Giai đoạn 2: Cập nhật Điều kiện Điều hướng tại `parent_home_screen.dart`
-- **Mục tiêu:** Điều phối hiển thị mượt mà giữa `ParentNoChildView` và Active Dashboard.
-- **File cập nhật:**
-  - `mobile/lib/features/parent/presentation/home/parent_home_screen.dart`
-- **Nội dung sửa đổi:**
-  - Kiểm tra điều kiện:
-    ```dart
-    final hasChildren = data.children.isNotEmpty;
-    if (!hasChildren) {
-      return RefreshIndicator(
-        onRefresh: onRefresh,
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
-          children: [
-            ParentHomeHeader(
-              titleOverride: 'Trang chủ Phụ huynh',
-              onNotificationTap: () => _openNotifications(context),
-              onAvatarTap: onNavigateToProfile,
-            ),
-            ParentNoChildView(
-              onLinkChild: () => _openManageChildren(context),
-            ),
-          ],
-        ),
-      );
-    }
-    ```
-  - Khi đã có con: Render đầy đủ `ParentHomeHeader` -> `FamilyScopeSelector` -> `ActionRequiredSection` -> `UpcomingScheduleSection` -> `LearningAnalyticsCard`.
-
-### Giai đoạn 3: Nâng cấp Toàn diện các Widget Thành phần trên Active Dashboard
-1. **`parent_home_header.dart`:**
-   - Thêm tham số `titleOverride` để linh hoạt thay đổi giữa "Trang chủ Phụ huynh" và "Chào buổi sáng, Gia đình!".
-   - Chuẩn hóa typography, icon gia đình bo tròn và badge thông báo đỏ.
-2. **`family_scope_selector.dart`:**
-   - Hoàn thiện style tương tác giữa chip "Tất cả các con" (nền đen khi chọn, nền xám khi bỏ chọn) và từng chip con (nền xanh viền nổi khi chọn).
-   - Đảm bảo hiển thị đúng avatar chữ cái, tên con và lớp học.
-3. **`action_required_section.dart`:**
-   - Thêm icon chevron bên phải mỗi alert item.
-   - Thêm dòng phụ hiển thị hạn chót / thời gian xác nhận có icon nhỏ đi kèm.
-   - Hoàn thiện micro-animation và padding pixel-perfect theo `uploaded_media_0`.
-4. **`upcoming_schedule_section.dart`:**
-   - Dùng `IntrinsicHeight` và `VerticalDivider` thay cho `Container(width: 1, height: 56)`.
-   - Bổ sung style phân biệt rõ ràng giữa ca học ONLINE (xanh) và TẠI CƠ SỞ (xám đậm).
-   - Thêm chevron điều hướng và bọc toàn bộ item trong `InkWell` với `AppRadius.borderMd`.
-5. **`learning_analytics_card.dart`:**
-   - Vẽ lại biểu đồ cột mini 5 thanh mượt mà, bo góc trên 3px, chiều cao cân đối với điểm số 38sp.
-   - Căn chỉnh box Callout AI Insight với viền trái 3.5px và highlight từ khóa.
-   - Tối ưu hóa 2 nút liên kết: "Xem phân tích của [Tên con] ->" và "Tất cả báo cáo >".
-
-### Giai đoạn 4: Kiểm thử Tích hợp & Tối ưu Responsive
-- Kiểm tra trên các kích thước màn hình phổ biến (màn hình nhỏ 360dp, màn hình tiêu chuẩn 390dp-412dp, màn hình lớn).
-- Đảm bảo Dark Mode / Light Mode tương thích (ưu tiên hiển thị sáng rực rỡ theo đúng mockup).
-- Kiểm tra khả năng xử lý dữ liệu thực từ Backend vs Fallback demo data:
-  - Khi backend trả về `children: []` -> Hiện đúng No-child Onboarding Screen.
-  - Khi backend trả về có con nhưng chưa có lịch -> Hiện đúng Empty Schedule Card.
-  - Khi backend trả về có đầy đủ con và lịch -> Hiện đúng Active Dashboard sống động.
-
----
-
-## 7. CHECKLIST NGHIỆM THU (VERIFICATION & DEFINITION OF DONE)
-
-Khi bước vào giai đoạn code, sản phẩm chỉ được nghiệm thu khi đạt đủ các tiêu chí:
-
-- [ ] **No-Child State:** Khi `children.isEmpty`, hiển thị giao diện Onboarding chuẩn xác theo ảnh `uploaded_media_1` & `_2`, có nút bấm dẫn sang màn hình liên kết con.
-- [ ] **Header:** Hiển thị icon gia đình, lời chào theo ngữ cảnh, chuông thông báo có badge đỏ, avatar phụ huynh chuẩn xác.
-- [ ] **Family Scope Selector:** Chuyển đổi qua lại giữa "Tất cả các con" và từng con mượt mà, phản ánh đúng filter trên các section con.
-- [ ] **Action Required:** Có badge đỏ `X nhắc nhở` khi có việc tồn đọng; chuyển sang card xanh lá `0 việc tồn đọng - Tất cả ổn định` khi không có cảnh báo.
-- [ ] **Upcoming Schedule:** Hiển thị phân biệt rõ ca học ONLINE vs TẠI CƠ SỞ, có đầy đủ thời gian, link Meet/phòng học, badge trạng thái và chevron điều hướng.
-- [ ] **Learning Analytics:** Điểm số to rõ ràng 38sp, mini chart 5 cột cân xứng, AI insight callout box nổi bật, các link điều hướng hoạt động tốt.
-- [ ] **Design Tokens:** 100% màu sắc, bo góc, bóng đổ và typography kế thừa từ Design System của Student (`TogetherColorsX`, `AppRadius`, `AppSpacing`, `AppTypography`).
-- [ ] **Flutter Analyze:** Không phát sinh bất kỳ warning hay lint error nào (`flutter analyze` sạch 100%).
-- [ ] **Clean Architecture:** Tách biệt rõ ràng Data -> Bloc -> Presentation Widgets, code dễ đọc, dễ bảo trì.
+- [ ] **Header:** Lời chào thay đổi đúng buổi (Sáng/Chiều/Tối) + hiển thị tên thật phụ huynh từ Auth state; nền header trắng tinh khiết.
+- [ ] **Background Contrast:** Body bên dưới cuộn trên nền xám dịu `#F8FAFC`, các Card trắng nổi bật rõ nét.
+- [ ] **Thanh chọn con:** 
+  + Khi tài khoản chỉ có 1 con: Ẩn nút "Tất cả các con".
+  + Khi tài khoản có ≥ 2 con: Nút "Tất cả các con" mang màu xanh hệ thống (`blue600`), hiển thị số lượng con (ví dụ `2`).
+- [ ] **Section Headers:** 100% tiêu đề section (`CẦN XỬ LÝ`, `HÔM NAY / TIẾP THEO`, `PHÂN TÍCH HỌC TẬP`) nằm **hoàn toàn bên ngoài card**.
+- [ ] **Cơ chế Collapse:** Cả 3 section đều có thể thu gọn / mở rộng mượt mà khi bấm icon chevron.
+- [ ] **Thẻ Ca học:** Mỗi buổi học là một Card trắng độc lập, có khối thời gian bo góc riêng (`14:00 60p` xanh; `16:30 90p` xám), badge con `[Minh]`, `[Lan]` rõ ràng.
+- [ ] **Thẻ Phân tích:** Bố cục đúng ảnh 2 với Điểm TB 8.4 (+15%) góc phải, box nhận xét xám nhạt, link điều hướng thoáng đãng.
+- [ ] **Người lớn tuổi:** Cỡ chữ từ 13 - 18sp, vùng chạm ≥ 44px, không chói mắt, dễ đọc dễ dùng.
+- [ ] **Chất lượng Code:** `dart analyze` sạch 100%, không ảnh hưởng đến bất kỳ role nào khác.
