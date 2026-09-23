@@ -331,9 +331,7 @@ class _AnalyticsContent extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFF0F7FF),
         borderRadius: AppRadius.borderMd,
-        border: Border(
-          left: BorderSide(color: cs.blue700, width: 3.5),
-        ),
+        border: Border(left: BorderSide(color: cs.blue700, width: 3.5)),
       ),
       child: Text.rich(
         _buildInsightSpan(context),
@@ -362,10 +360,7 @@ class _AnalyticsContent extends StatelessWidget {
         TextSpan(text: text.substring(0, start)),
         TextSpan(
           text: highlight,
-          style: TextStyle(
-            color: cs.blue700,
-            fontWeight: FontWeight.w700,
-          ),
+          style: TextStyle(color: cs.blue700, fontWeight: FontWeight.w700),
         ),
         TextSpan(text: text.substring(end)),
       ],

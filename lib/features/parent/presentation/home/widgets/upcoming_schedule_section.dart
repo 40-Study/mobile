@@ -9,10 +9,12 @@ class UpcomingScheduleSection extends StatelessWidget {
     super.key,
     required this.schedules,
     this.onViewFullSchedule,
+    this.onScheduleTap,
   });
 
   final List<ParentScheduleItem> schedules;
   final VoidCallback? onViewFullSchedule;
+  final ValueChanged<ParentScheduleItem>? onScheduleTap;
 
   @override
   Widget build(BuildContext context) {
@@ -59,7 +61,14 @@ class UpcomingScheduleSection extends StatelessWidget {
           if (schedules.isEmpty)
             _EmptyScheduleCard(onViewFullSchedule: onViewFullSchedule)
           else
-            ...schedules.map((item) => _ScheduleItem(item: item)),
+            ...schedules.map(
+              (item) => _ScheduleItem(
+                item: item,
+                onTap: onScheduleTap != null
+                    ? () => onScheduleTap!(item)
+                    : null,
+              ),
+            ),
         ],
       ),
     );
@@ -105,10 +114,7 @@ class _EmptyScheduleCard extends StatelessWidget {
           Text(
             'Con không có lịch học trực tuyến hoặc tại cơ sở '
             'hôm nay. Thời gian dành cho nghỉ ngơi hoặc tự ôn tập.',
-            style: tt.bodySmall?.copyWith(
-              color: cs.slate500,
-              height: 1.5,
-            ),
+            style: tt.bodySmall?.copyWith(color: cs.slate500, height: 1.5),
             textAlign: TextAlign.center,
           ),
           AppSpacing.vGap8,
@@ -191,11 +197,7 @@ class _ScheduleItem extends StatelessWidget {
                 ),
               ),
               AppSpacing.hGap8,
-              VerticalDivider(
-                width: 16,
-                thickness: 1,
-                color: cs.slate200,
-              ),
+              VerticalDivider(width: 16, thickness: 1, color: cs.slate200),
               AppSpacing.hGap8,
               Expanded(
                 child: Column(
@@ -215,7 +217,9 @@ class _ScheduleItem extends StatelessWidget {
                       item.locationOrLink,
                       style: tt.bodySmall?.copyWith(
                         color: isOnline ? cs.blue600 : cs.slate700,
-                        fontWeight: isOnline ? FontWeight.w500 : FontWeight.normal,
+                        fontWeight: isOnline
+                            ? FontWeight.w500
+                            : FontWeight.normal,
                         fontSize: 12.5,
                       ),
                     ),

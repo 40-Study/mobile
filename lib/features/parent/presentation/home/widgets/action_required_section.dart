@@ -9,12 +9,14 @@ class ActionRequiredSection extends StatelessWidget {
     super.key,
     required this.alerts,
     required this.childrenNames,
+    this.onAlertTap,
   });
 
   final List<ParentAlertItem> alerts;
 
   /// Tên con để render câu giải thích, VD "Minh & Lan" / "Minh" / "các con".
   final String childrenNames;
+  final ValueChanged<ParentAlertItem>? onAlertTap;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +50,12 @@ class ActionRequiredSection extends StatelessWidget {
           if (isEmpty)
             _EmptyAlertCard(childrenNames: childrenNames)
           else
-            ...alerts.map((alert) => _AlertItem(alert: alert)),
+            ...alerts.map(
+              (alert) => _AlertItem(
+                alert: alert,
+                onTap: onAlertTap != null ? () => onAlertTap!(alert) : null,
+              ),
+            ),
         ],
       ),
     );
@@ -78,20 +85,14 @@ class ActionRequiredSection extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: isEmpty
-                ? const Color(0xFFECFDF5)
-                : const Color(0xFFFEE2E2),
+            color: isEmpty ? const Color(0xFFECFDF5) : const Color(0xFFFEE2E2),
             borderRadius: AppRadius.borderFull,
-            border: isEmpty
-                ? Border.all(color: const Color(0xFFA7F3D0))
-                : null,
+            border: isEmpty ? Border.all(color: const Color(0xFFA7F3D0)) : null,
           ),
           child: Text(
             isEmpty ? '0 việc tồn đọng' : '${alerts.length} nhắc nhở',
             style: tt.labelSmall?.copyWith(
-              color: isEmpty
-                  ? const Color(0xFF059669)
-                  : AchievementColors.red,
+              color: isEmpty ? const Color(0xFF059669) : AchievementColors.red,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -173,10 +174,10 @@ class _AlertItem extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final isOverdue = alert.type == ParentAlertType.overdue;
     final accent = isOverdue ? AchievementColors.red : const Color(0xFFD97706);
-    final iconBg =
-        isOverdue ? const Color(0xFFFEE2E2) : const Color(0xFFFEF3C7);
-    final tagBg =
-        isOverdue ? const Color(0xFFFEE2E2) : const Color(0xFFFEF3C7);
+    final iconBg = isOverdue
+        ? const Color(0xFFFEE2E2)
+        : const Color(0xFFFEF3C7);
+    final tagBg = isOverdue ? const Color(0xFFFEE2E2) : const Color(0xFFFEF3C7);
 
     return InkWell(
       onTap: onTap,
@@ -271,11 +272,7 @@ class _AlertItem extends StatelessWidget {
                   ),
                 ),
                 AppSpacing.hGap4,
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: cs.slate400,
-                  size: 20,
-                ),
+                Icon(Icons.chevron_right_rounded, color: cs.slate400, size: 20),
               ],
             ),
           ],

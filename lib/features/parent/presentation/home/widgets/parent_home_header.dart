@@ -81,10 +81,7 @@ class ParentHomeHeader extends StatelessWidget {
                 smallSize: 8,
                 child: IconButton(
                   onPressed: onNotificationTap,
-                  icon: Icon(
-                    Icons.notifications_outlined,
-                    color: cs.slate700,
-                  ),
+                  icon: Icon(Icons.notifications_outlined, color: cs.slate700),
                 ),
               ),
               AppSpacing.hGap8,

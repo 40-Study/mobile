@@ -25,7 +25,8 @@ class ParentNoChildView extends StatelessWidget {
         children: [
           _HeroLinkChildCard(
             onLinkChild: onLinkChild,
-            onContactSupport: onContactSupport ?? () => _showSupportDialog(context),
+            onContactSupport:
+                onContactSupport ?? () => _showSupportDialog(context),
           ),
           AppSpacing.vGap24,
           const _FeatureHighlightsSection(),
@@ -41,9 +42,7 @@ class ParentNoChildView extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: cs.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.r20)),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.borderTopXl),
       builder: (ctx) {
         return SafeArea(
           child: Padding(
@@ -61,7 +60,11 @@ class ParentNoChildView extends StatelessWidget {
                         color: Color(0xFFEFF6FF),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.support_agent_rounded, color: cs.blue600, size: 22),
+                      child: Icon(
+                        Icons.support_agent_rounded,
+                        color: cs.blue600,
+                        size: 22,
+                      ),
                     ),
                     AppSpacing.hGap12,
                     Expanded(
@@ -83,7 +86,10 @@ class ParentNoChildView extends StatelessWidget {
                 Text(
                   'Mã học viên (Student Code) được cấp khi học sinh đăng ký khóa học tại trung tâm 40Study. '
                   'Nếu chưa có mã hoặc làm mất mã, vui lòng liên hệ trực tiếp văn phòng Giáo vụ:',
-                  style: tt.bodyMedium?.copyWith(color: cs.slate600, height: 1.5),
+                  style: tt.bodyMedium?.copyWith(
+                    color: cs.slate600,
+                    height: 1.5,
+                  ),
                 ),
                 AppSpacing.vGap16,
                 Container(
@@ -95,7 +101,11 @@ class ParentNoChildView extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.phone_in_talk_rounded, color: cs.blue600, size: 20),
+                      Icon(
+                        Icons.phone_in_talk_rounded,
+                        color: cs.blue600,
+                        size: 20,
+                      ),
                       AppSpacing.hGap12,
                       Expanded(
                         child: Column(
@@ -103,7 +113,9 @@ class ParentNoChildView extends StatelessWidget {
                           children: [
                             Text(
                               'Hotline Giáo vụ 40Study',
-                              style: tt.labelSmall?.copyWith(color: cs.slate500),
+                              style: tt.labelSmall?.copyWith(
+                                color: cs.slate500,
+                              ),
                             ),
                             Text(
                               '1900 6868 (8:00 - 21:00 hàng ngày)',
@@ -125,7 +137,7 @@ class ParentNoChildView extends StatelessWidget {
                     onPressed: () => Navigator.pop(ctx),
                     style: FilledButton.styleFrom(
                       backgroundColor: cs.blue600,
-                      shape: const RoundedRectangleBorder(
+                      shape: RoundedRectangleBorder(
                         borderRadius: AppRadius.borderLg,
                       ),
                     ),
@@ -224,7 +236,7 @@ class _HeroLinkChildCard extends StatelessWidget {
               ),
             ),
           ),
-          AppSpacing.vGap20,
+          const SizedBox(height: 20),
           // Tiêu đề chính
           Text(
             'Chưa có hồ sơ con được liên kết',
@@ -249,7 +261,7 @@ class _HeroLinkChildCard extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
           ),
-          AppSpacing.vGap20,
+          const SizedBox(height: 20),
           // Nút CTA chính "+ Liên kết hồ sơ con ngay"
           SizedBox(
             width: double.infinity,
@@ -259,7 +271,7 @@ class _HeroLinkChildCard extends StatelessWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: cs.blue600,
                 foregroundColor: Colors.white,
-                shape: const RoundedRectangleBorder(
+                shape: RoundedRectangleBorder(
                   borderRadius: AppRadius.borderFull,
                 ),
                 elevation: 0,
@@ -293,7 +305,7 @@ class _HeroLinkChildCard extends StatelessWidget {
                     size: 15,
                     color: cs.slate400,
                   ),
-                  AppSpacing.hGap6,
+                  const SizedBox(width: 6),
                   Text(
                     'Chưa có mã học viên? Liên hệ Giáo vụ hỗ trợ',
                     style: tt.bodySmall?.copyWith(

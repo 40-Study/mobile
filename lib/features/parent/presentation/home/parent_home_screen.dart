@@ -27,8 +27,9 @@ class ParentHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ParentHomeBloc(diContainer<ParentHomeRepository>())
-        ..add(const ParentHomeStarted()),
+      create: (_) =>
+          ParentHomeBloc(diContainer<ParentHomeRepository>())
+            ..add(const ParentHomeStarted()),
       child: _HomeContent(
         onNavigateToProfile: onNavigateToProfile,
         onNavigateToSchedule: onNavigateToSchedule,
@@ -57,14 +58,14 @@ class _HomeContent extends StatelessWidget {
           backgroundColor: Theme.of(context).colorScheme.surface,
           body: SafeArea(
             child: switch (state) {
-              ParentHomeInitial() || ParentHomeLoading() =>
-                const _HomeLoading(),
+              ParentHomeInitial() ||
+              ParentHomeLoading() => const _HomeLoading(),
               ParentHomeFailure(:final message) => _HomeError(
-                  message: message,
-                  onRetry: () => context
-                      .read<ParentHomeBloc>()
-                      .add(const ParentHomeRefreshed()),
+                message: message,
+                onRetry: () => context.read<ParentHomeBloc>().add(
+                  const ParentHomeRefreshed(),
                 ),
+              ),
               ParentHomeSuccess(:final data, :final selectedChildId) =>
                 _HomeSuccess(
                   data: data,
@@ -72,9 +73,9 @@ class _HomeContent extends StatelessWidget {
                   onNavigateToProfile: onNavigateToProfile,
                   onNavigateToSchedule: onNavigateToSchedule,
                   onNavigateToLearning: onNavigateToLearning,
-                  onChildSelected: (id) => context
-                      .read<ParentHomeBloc>()
-                      .add(ParentHomeChildSelected(id)),
+                  onChildSelected: (id) => context.read<ParentHomeBloc>().add(
+                    ParentHomeChildSelected(id),
+                  ),
                   onRefresh: () async {
                     final bloc = context.read<ParentHomeBloc>()
                       ..add(const ParentHomeRefreshed());
@@ -126,9 +127,7 @@ class _HomeSuccess extends StatelessWidget {
               onAvatarTap: onNavigateToProfile,
             ),
             AppSpacing.vGap12,
-            ParentNoChildView(
-              onLinkChild: () => _openManageChildren(context),
-            ),
+            ParentNoChildView(onLinkChild: () => _openManageChildren(context)),
           ],
         ),
       );
