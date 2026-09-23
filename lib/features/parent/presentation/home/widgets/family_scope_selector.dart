@@ -27,6 +27,8 @@ class FamilyScopeSelector extends StatelessWidget {
       return _buildEmptyState(context);
     }
 
+    final showAllChildren = children.length > 1;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -56,19 +58,21 @@ class FamilyScopeSelector extends StatelessWidget {
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             scrollDirection: Axis.horizontal,
-            itemCount: children.length + 1,
+            itemCount: showAllChildren ? children.length + 1 : children.length,
             separatorBuilder: (_, _) => AppSpacing.hGap8,
             itemBuilder: (context, index) {
-              if (index == 0) {
+              if (showAllChildren && index == 0) {
                 return _AllChildrenChip(
+                  count: children.length,
                   selected: selectedChildId == null,
                   onTap: () => onSelected(null),
                 );
               }
-              final child = children[index - 1];
+              final child =
+                  showAllChildren ? children[index - 1] : children[index];
               return _ChildChip(
                 child: child,
-                selected: selectedChildId == child.id,
+                selected: showAllChildren ? selectedChildId == child.id : true,
                 onTap: () => onSelected(child.id),
               );
             },
@@ -124,9 +128,14 @@ class FamilyScopeSelector extends StatelessWidget {
 }
 
 class _AllChildrenChip extends StatelessWidget {
-  const _AllChildrenChip({required this.selected, required this.onTap});
+  const _AllChildrenChip({
+    required this.selected,
+    required this.count,
+    required this.onTap,
+  });
 
   final bool selected;
+  final int count;
   final VoidCallback onTap;
 
   @override
@@ -138,9 +147,9 @@ class _AllChildrenChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         decoration: BoxDecoration(
-          color: selected ? cs.slate900 : cs.slate100,
+          color: selected ? cs.blue600 : cs.slate100,
           borderRadius: AppRadius.borderFull,
           border: selected
               ? null
@@ -148,11 +157,12 @@ class _AllChildrenChip extends StatelessWidget {
         ),
         alignment: Alignment.center,
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.groups_rounded,
               color: selected ? Colors.white : cs.slate600,
-              size: 18,
+              size: 20,
             ),
             AppSpacing.hGap8,
             Text(
@@ -160,6 +170,25 @@ class _AllChildrenChip extends StatelessWidget {
               style: tt.labelLarge?.copyWith(
                 color: selected ? Colors.white : cs.slate700,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: selected
+                    ? Colors.white.withValues(alpha: 0.25)
+                    : cs.slate200,
+                borderRadius: AppRadius.borderFull,
+              ),
+              child: Text(
+                '$count',
+                style: tt.labelSmall?.copyWith(
+                  color: selected ? Colors.white : cs.slate700,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 11.5,
+                ),
               ),
             ),
           ],
@@ -189,7 +218,7 @@ class _ChildChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
           color: selected ? const Color(0xFFEFF6FF) : cs.slate100,
           borderRadius: AppRadius.borderFull,
@@ -199,6 +228,7 @@ class _ChildChip extends StatelessWidget {
         ),
         alignment: Alignment.center,
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             CircleAvatar(
               radius: 13,
@@ -208,7 +238,7 @@ class _ChildChip extends StatelessWidget {
                 style: tt.labelSmall?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
-                  fontSize: 11,
+                  fontSize: 11.5,
                 ),
               ),
             ),
@@ -220,6 +250,7 @@ class _ChildChip extends StatelessWidget {
               style: tt.labelLarge?.copyWith(
                 color: selected ? cs.blue700 : cs.slate800,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                fontSize: 14,
               ),
             ),
           ],
