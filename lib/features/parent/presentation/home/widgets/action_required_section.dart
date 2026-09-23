@@ -4,7 +4,8 @@ import 'package:study/theme/theme.dart';
 
 /// Mục "Cần xử lý": bài tập quá hạn + thay đổi lịch học.
 /// Khi rỗng hiển thị trạng thái "0 việc tồn đọng" (All-Clear).
-class ActionRequiredSection extends StatelessWidget {
+/// Tiêu đề nằm ngoài card, hỗ trợ thu gọn/mở rộng (mặc định: mở toàn bộ).
+class ActionRequiredSection extends StatefulWidget {
   const ActionRequiredSection({
     super.key,
     required this.alerts,
@@ -19,45 +20,74 @@ class ActionRequiredSection extends StatelessWidget {
   final ValueChanged<ParentAlertItem>? onAlertTap;
 
   @override
+  State<ActionRequiredSection> createState() => _ActionRequiredSectionState();
+}
+
+class _ActionRequiredSectionState extends State<ActionRequiredSection> {
+  bool _isExpanded = true;
+
+  @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isEmpty = alerts.isEmpty;
+    final isEmpty = widget.alerts.isEmpty;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: AppRadius.borderLg,
-        border: Border.all(
-          color: isEmpty
-              ? const Color(0xFFA7F3D0)
-              : cs.outlineVariant.withValues(alpha: 0.4),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(context, isEmpty),
-          AppSpacing.vGap12,
-          if (isEmpty)
-            _EmptyAlertCard(childrenNames: childrenNames)
-          else
-            ...alerts.map(
-              (alert) => _AlertItem(
-                alert: alert,
-                onTap: onAlertTap != null ? () => onAlertTap!(alert) : null,
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeader(context, isEmpty),
+        AnimatedCrossFade(
+          duration: const Duration(milliseconds: 250),
+          crossFadeState: _isExpanded
+              ? CrossFadeState.showFirst
+              : CrossFadeState.showSecond,
+          firstChild: Container(
+            margin: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.sm,
+              AppSpacing.lg,
+              0,
             ),
-        ],
-      ),
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: cs.surface,
+              borderRadius: AppRadius.borderLg,
+              border: Border.all(
+                color: isEmpty
+                    ? const Color(0xFFA7F3D0)
+                    : cs.outlineVariant.withValues(alpha: 0.35),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: cs.shadow.withValues(alpha: 0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: isEmpty
+                ? _EmptyAlertCard(childrenNames: widget.childrenNames)
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (var i = 0; i < widget.alerts.length; i++) ...[
+                        if (i > 0)
+                          Divider(
+                            color: cs.outlineVariant.withValues(alpha: 0.25),
+                            height: 20,
+                          ),
+                        _AlertItem(
+                          alert: widget.alerts[i],
+                          onTap: widget.onAlertTap != null
+                              ? () => widget.onAlertTap!(widget.alerts[i])
+                              : null,
+                        ),
+                      ],
+                    ],
+                  ),
+          ),
+          secondChild: const SizedBox.shrink(),
+        ),
+      ],
     );
   }
 
@@ -66,38 +96,71 @@ class ActionRequiredSection extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final dotColor = isEmpty ? AchievementColors.green : AchievementColors.red;
 
-    return Row(
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
-        ),
-        AppSpacing.hGap8,
-        Text(
-          'CẦN XỬ LÝ',
-          style: tt.labelLarge?.copyWith(
-            color: cs.slate900,
-            fontWeight: FontWeight.w700,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      child: InkWell(
+        onTap: () => setState(() => _isExpanded = !_isExpanded),
+        borderRadius: AppRadius.borderMd,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration:
+                    BoxDecoration(color: dotColor, shape: BoxShape.circle),
+              ),
+              AppSpacing.hGap8,
+              Text(
+                'CẦN XỬ LÝ',
+                style: tt.labelLarge?.copyWith(
+                  color: cs.slate900,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14.5,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isEmpty
+                      ? const Color(0xFFECFDF5)
+                      : const Color(0xFFFEE2E2),
+                  borderRadius: AppRadius.borderFull,
+                  border: isEmpty
+                      ? Border.all(color: const Color(0xFFA7F3D0))
+                      : null,
+                ),
+                child: Text(
+                  isEmpty
+                      ? '0 việc tồn đọng'
+                      : '${widget.alerts.length} nhắc nhở',
+                  style: tt.labelSmall?.copyWith(
+                    color: isEmpty
+                        ? const Color(0xFF059669)
+                        : AchievementColors.red,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              AppSpacing.hGap8,
+              AnimatedRotation(
+                turns: _isExpanded ? 0 : 0.5,
+                duration: const Duration(milliseconds: 250),
+                child: Icon(
+                  Icons.keyboard_arrow_up_rounded,
+                  color: cs.slate500,
+                  size: 22,
+                ),
+              ),
+            ],
           ),
         ),
-        const Spacer(),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: isEmpty ? const Color(0xFFECFDF5) : const Color(0xFFFEE2E2),
-            borderRadius: AppRadius.borderFull,
-            border: isEmpty ? Border.all(color: const Color(0xFFA7F3D0)) : null,
-          ),
-          child: Text(
-            isEmpty ? '0 việc tồn đọng' : '${alerts.length} nhắc nhở',
-            style: tt.labelSmall?.copyWith(
-              color: isEmpty ? const Color(0xFF059669) : AchievementColors.red,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
