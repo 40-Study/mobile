@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:rive/rive.dart';
 
 class AuthBear extends StatefulWidget {
@@ -46,8 +45,7 @@ class AuthBearState extends State<AuthBear> {
   }
 
   Future<void> _loadRive() async {
-    final data = await rootBundle.load('assets/rive/teddy_login.riv');
-    final file = RiveFile.import(data);
+    final file = await RiveFile.asset('assets/rive/teddy_login.riv');
     final artboard = file.mainArtboard;
 
     // The first Shape is typically the artboard background rectangle.

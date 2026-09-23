@@ -159,14 +159,15 @@ class _AddChildScreenState extends State<AddChildScreen> {
 
     setState(() => _isLoading = true);
 
-    // TODO: Call API to link child
-    await Future.delayed(const Duration(seconds: 2));
+    // TODO(MOCK-01): Replace Future.delayed with real link-child API call
+    // API endpoint: POST /api/parent/link-child
+    await Future<void>.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
 
     setState(() => _isLoading = false);
 
-    // TODO: Handle response
+    // TODO(MOCK-01): Handle API response - success/error states
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Tính năng đang phát triển')),
     );
@@ -176,7 +177,7 @@ class _AddChildScreenState extends State<AddChildScreen> {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -217,7 +218,7 @@ class _AddChildScreenState extends State<AddChildScreen> {
               child: FilledButton.icon(
                 onPressed: () {
                   Navigator.pop(context);
-                  // TODO: Navigate to help/support
+                  // TODO(MOCK-01): Navigate to help/support - needs HelpScreen
                 },
                 icon: const Icon(Icons.chat_outlined),
                 label: const Text('Liên hệ hỗ trợ'),

@@ -73,7 +73,7 @@ void showLogoutConfirmation(BuildContext context) {
   final tt = Theme.of(context).textTheme;
   final l10n = AppLocalizations.of(context)!;
 
-  showModalBottomSheet(
+  showModalBottomSheet<void>(
     context: context,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),

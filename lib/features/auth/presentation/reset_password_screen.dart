@@ -97,7 +97,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 anim.submit();
               case ForgotPasswordSuccess():
                 anim.succeed();
-                Future.delayed(const Duration(milliseconds: 400), () {
+                Future<void>.delayed(const Duration(milliseconds: 400), () {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

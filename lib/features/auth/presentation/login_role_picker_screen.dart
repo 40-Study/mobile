@@ -76,7 +76,7 @@ class _LoginRolePickerScreenState extends State<LoginRolePickerScreen>
         listener: (context, state) {
           if (state is LoginSuccess) {
             context.read<AuthBloc>().add(AuthLoggedIn(state.response));
-            Future.delayed(const Duration(milliseconds: 100), () {
+            Future<void>.delayed(const Duration(milliseconds: 100), () {
               if (!mounted) return;
               navigator.pushAndRemoveAll(Routes.app);
             });

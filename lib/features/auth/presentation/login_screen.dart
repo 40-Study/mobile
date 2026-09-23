@@ -92,11 +92,11 @@ class _LoginScreenState extends State<LoginScreen> {
               case LoginSuccess(:final response):
                 anim.succeed();
                 _bearKey.currentState?.triggerSuccess();
-                Future.delayed(AppDurations.authSuccess, () {
+                Future<void>.delayed(AppDurations.authSuccess, () {
                   if (!mounted) return;
                   context.read<AuthBloc>().add(AuthLoggedIn(response));
                   // Small delay to let AuthBloc process the event
-                  Future.delayed(AppDurations.authSuccessNavigate, () {
+                  Future<void>.delayed(AppDurations.authSuccessNavigate, () {
                     if (!mounted) return;
                     navigator.pushAndRemoveAll(Routes.app);
                   });
@@ -104,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
               case LoginNeedsRoleSelection(:final sessionToken, :final roles):
                 anim.succeed();
                 _bearKey.currentState?.triggerSuccess();
-                Future.delayed(AppDurations.authRolePickerDelay, () {
+                Future<void>.delayed(AppDurations.authRolePickerDelay, () {
                   if (!mounted) return;
                   navigator.navigateTo(Routes.loginRolePicker, {
                     'sessionToken': sessionToken,

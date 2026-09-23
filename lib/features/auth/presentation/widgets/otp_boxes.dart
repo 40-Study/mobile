@@ -100,7 +100,7 @@ class OtpBoxesState extends State<OtpBoxes> with TickerProviderStateMixin {
 
   void _triggerCompletionRipple() {
     for (var i = 0; i < widget.length; i++) {
-      Future.delayed(
+      Future<void>.delayed(
         Duration(milliseconds: AuthAnimConst.staggerDelay.inMilliseconds * i),
         () {
           if (mounted) _glowControllers[i].forward(from: 0);

@@ -66,7 +66,7 @@ class _ManageChildrenContent extends StatelessWidget {
   void _navigateToAddChild(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const AddChildScreen()),
+      MaterialPageRoute<Widget>(builder: (_) => const AddChildScreen()),
     ).then((_) {
       context.read<ManageChildrenCubit>().refresh();
     });
@@ -75,7 +75,7 @@ class _ManageChildrenContent extends StatelessWidget {
   void _navigateToChildDetail(BuildContext context, UserModel child) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => ChildDetailScreen(child: child)),
+      MaterialPageRoute<Widget>(builder: (_) => ChildDetailScreen(child: child)),
     );
   }
 }
