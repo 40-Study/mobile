@@ -65,6 +65,9 @@ abstract class RepositoryModule {
   @lazySingleton
   ParentHomeRepository provideParentHomeRepository(
     ParentHomeApiClient apiClient,
-  ) => ParentHomeRepositoryImpl(apiClient: apiClient);
-
+  ) =>
+      ParentHomeRepositoryImpl(
+        apiClient: apiClient,
+        enablePreviewFallback: true,
+      );
 }

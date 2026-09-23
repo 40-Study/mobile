@@ -17,11 +17,24 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
 
   @override
   Future<ParentHomeData> getHomeDashboard({String? childId}) async {
-    // 1. Danh sách con (ưu tiên data thật)
-    var children = await _fetchChildren();
-    if (enablePreviewFallback && children.isEmpty) {
-      children = _fallbackChildren();
+    if (enablePreviewFallback) {
+      final children = _fallbackChildren();
+      final target = _resolveChild(children, childId);
+      final alerts = _filterFallbackAlerts(childId);
+      final schedules = _filterFallbackSchedules(childId);
+      final analytics = _fallbackAnalytics(target);
+
+      return ParentHomeData(
+        children: children,
+        selectedChildId: childId,
+        alerts: alerts,
+        schedules: schedules,
+        analytics: analytics,
+      );
     }
+
+    // 1. Danh sách con (ưu tiên data thật)
+    final children = await _fetchChildren();
 
     // "Tất cả các con" => lấy data của con đầu tiên
     final target = _resolveChild(children, childId);
@@ -40,15 +53,9 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     return ParentHomeData(
       children: children,
       selectedChildId: childId,
-      alerts: enablePreviewFallback && alerts.isEmpty
-          ? _fallbackAlerts()
-          : alerts,
-      schedules: enablePreviewFallback && schedules.isEmpty
-          ? _fallbackSchedules()
-          : schedules,
-      analytics: enablePreviewFallback && analytics == null
-          ? _fallbackAnalytics(target)
-          : analytics,
+      alerts: alerts,
+      schedules: schedules,
+      analytics: analytics,
     );
   }
 
@@ -263,73 +270,102 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   }
 
   // ============================================================================
-  // FALLBACK DATA
+  // FALLBACK DATA (PREVIEW MOCKUP)
   // ============================================================================
+
+  static const String studentMinhId = 'a055e1b3-bbfe-46b1-8e01-df7aac8c2732';
+  static const String studentLanId = 'a0f88b81-94ca-4328-b46a-b61a1a53a9ad';
 
   List<FamilyScopeChild> _fallbackChildren() => [
         FamilyScopeChild.sample(
-          id: 'child-minh',
-          name: 'Minh Anh',
-          className: 'Lớp 10A1',
+          id: studentMinhId,
+          name: 'Minh',
+          className: '10A1',
         ),
         FamilyScopeChild.sample(
-          id: 'child-lan',
-          name: 'Lan Phương',
-          className: 'Lớp 8A2',
+          id: studentLanId,
+          name: 'Lan',
+          className: '7B',
         ),
       ];
 
-  List<ParentAlertItem> _fallbackAlerts() => const [
-        ParentAlertItem(
-          type: ParentAlertType.overdue,
-          childName: 'Minh',
-          subjectName: 'Hình học 10',
-          detail: '1 bài tập trắc nghiệm đã quá hạn nộp',
-          metaText: 'Hạn chót: 23:59 hôm qua',
-          tagLabel: 'Quá hạn',
-        ),
-        ParentAlertItem(
-          type: ParentAlertType.scheduleChange,
-          childName: 'Lan',
-          subjectName: 'Anh văn giao tiếp',
-          detail: 'Lớp đổi giờ bắt đầu sang 17:00 (lùi 30 phút)',
-          metaText: 'Giáo viên vừa xác nhận',
-          tagLabel: 'Thay đổi',
-        ),
-      ];
+  List<ParentAlertItem> _filterFallbackAlerts(String? childId) {
+    const allAlerts = [
+      ParentAlertItem(
+        type: ParentAlertType.overdue,
+        childName: 'Minh',
+        subjectName: 'Hình học 10',
+        detail: '1 bài tập trắc nghiệm đã quá hạn nộp',
+        metaText: 'Hạn chót: 23:59 hôm qua',
+        tagLabel: 'Quá hạn',
+      ),
+      ParentAlertItem(
+        type: ParentAlertType.scheduleChange,
+        childName: 'Lan',
+        subjectName: 'Anh văn giao tiếp',
+        detail: 'Lớp đổi giờ bắt đầu sang 17:00 (lùi 30 phút)',
+        metaText: 'Giáo viên vừa xác nhận',
+        tagLabel: 'Thay đổi',
+      ),
+    ];
+    if (childId == studentMinhId) {
+      return allAlerts.where((a) => a.childName == 'Minh').toList();
+    }
+    if (childId == studentLanId) {
+      return allAlerts.where((a) => a.childName == 'Lan').toList();
+    }
+    return allAlerts;
+  }
 
-  List<ParentScheduleItem> _fallbackSchedules() => const [
-        ParentScheduleItem(
-          startTime: '14:00',
-          childName: 'Minh',
-          subjectName: 'Đại số 10',
-          locationOrLink: 'Trực tuyến trên Google Meet',
-          teacherOrRoom: 'Thầy Hoàng Long',
-          mode: ParentScheduleMode.online,
-          statusLabel: 'Sắp bắt đầu',
-        ),
-        ParentScheduleItem(
-          startTime: '16:30',
-          childName: 'Lan',
-          subjectName: 'Tiếng Anh',
-          locationOrLink: 'Cơ sở Phan Xích Long',
-          teacherOrRoom: 'Phòng học 302',
-          mode: ParentScheduleMode.offline,
-          statusLabel: 'Trực tiếp',
-        ),
-      ];
+  List<ParentScheduleItem> _filterFallbackSchedules(String? childId) {
+    const allSchedules = [
+      ParentScheduleItem(
+        startTime: '14:00',
+        childName: 'Minh',
+        subjectName: 'Đại số 10',
+        locationOrLink: 'Trực tuyến trên Google Meet',
+        teacherOrRoom: 'Thầy Hoàng Long',
+        mode: ParentScheduleMode.online,
+        statusLabel: 'Sắp bắt đầu',
+      ),
+      ParentScheduleItem(
+        startTime: '16:30',
+        childName: 'Lan',
+        subjectName: 'Tiếng Anh',
+        locationOrLink: 'Cơ sở Phan Xích Long',
+        teacherOrRoom: 'Phòng học 302',
+        mode: ParentScheduleMode.offline,
+        statusLabel: 'Trực tiếp',
+      ),
+    ];
+    if (childId == studentMinhId) {
+      return allSchedules.where((s) => s.childName == 'Minh').toList();
+    }
+    if (childId == studentLanId) {
+      return allSchedules.where((s) => s.childName == 'Lan').toList();
+    }
+    return allSchedules;
+  }
 
   ParentAnalyticsData _fallbackAnalytics(FamilyScopeChild? target) {
-    final name = target?.name ?? 'Minh';
-    final className = target?.className ?? 'Lớp 10A1';
+    final isLan = target?.id == studentLanId;
+    final name = isLan ? 'Lan' : 'Minh';
+    final className = isLan ? 'Lớp 7B' : 'Lớp 10A1';
+    final subject = isLan ? 'Tiếng Anh' : 'Toán';
+    final reportLabel = 'Báo cáo tuần 42 • Môn $subject';
+    final averageScore = isLan ? 8.8 : 8.4;
+    final weeklyTrend = isLan
+        ? const [0.5, 0.6, 0.7, 0.85, 0.95]
+        : const [0.35, 0.5, 0.65, 0.8, 0.95];
+
     return ParentAnalyticsData(
       childName: name,
       className: className,
-      reportLabel: 'Báo cáo tuần 4 • Môn Ngữ Văn',
-      subjectName: 'Ngữ Văn',
+      reportLabel: reportLabel,
+      subjectName: subject,
       progressPercent: 15,
-      averageScore: 8.4,
-      weeklyTrend: const [0.4, 0.55, 0.7, 0.9],
+      averageScore: averageScore,
+      weeklyTrend: weeklyTrend,
       insightText: _fallbackInsightText,
       insightHighlight: 'Đọc hiểu',
     );
