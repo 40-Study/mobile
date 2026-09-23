@@ -97,7 +97,7 @@ class BadgeItem extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(

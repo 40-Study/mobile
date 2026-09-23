@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
 
 /// Quiz header với timer và exit dialog
@@ -117,23 +118,24 @@ class _QuizHeaderState extends State<QuizHeader> {
 
   void _showExitDialog(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange),
+            const Icon(Icons.warning_amber_rounded, color: Colors.orange),
             AppSpacing.hGap8,
-            Text('Thoát bài kiểm tra?'),
+            Text(l10n.quizExitTitle),
           ],
         ),
-        content: const Text('Tiến độ làm bài của bạn sẽ không được lưu.'),
+        content: Text(l10n.quizExitContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Tiếp tục làm'),
+            child: Text(l10n.quizContinue),
           ),
           FilledButton(
             onPressed: () {
@@ -141,7 +143,7 @@ class _QuizHeaderState extends State<QuizHeader> {
               Navigator.of(context).pop();
             },
             style: FilledButton.styleFrom(backgroundColor: cs.error),
-            child: const Text('Thoát'),
+            child: Text(l10n.quizExit),
           ),
         ],
       ),

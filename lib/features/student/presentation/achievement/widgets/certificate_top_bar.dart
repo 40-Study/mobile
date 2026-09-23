@@ -30,7 +30,7 @@ class CertificateTopBar extends StatelessWidget {
   void _showMoreOptions(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),

@@ -6,6 +6,8 @@ import 'package:study/features/student/bloc/portfolio/portfolio_state.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
 
+import 'dialogs/dialogs.dart';
+import 'mock_portfolio_data.dart';
 import 'widgets/widgets.dart';
 
 class PortfolioScreen extends StatefulWidget {
@@ -18,80 +20,14 @@ class PortfolioScreen extends StatefulWidget {
 class _PortfolioScreenState extends State<PortfolioScreen> {
   late final PortfolioCubit _cubit;
 
-  // Mock data - sẽ từ API sau
-  PortfolioProfile _profile = const PortfolioProfile(
-    name: 'Linh Nguyen',
-    title: 'UI/UX Designer',
-    location: 'Hà Nội, Việt Nam',
-    website: 'linhnguyen.design',
-    bio:
-        'Mình là UI/UX Designer với niềm đam mê tạo ra những trải nghiệm số đẹp mắt, hữu ích và dễ sử dụng.',
-    socialLinks: [
-      SocialLink(type: 'dribbble', url: ''),
-      SocialLink(type: 'behance', url: ''),
-      SocialLink(type: 'linkedin', url: ''),
-      SocialLink(type: 'github', url: ''),
-    ],
-  );
-
-  final _stats = const PortfolioStats(
-    yearsExperience: '3+',
-    projectsCompleted: 18,
-    certificates: 12,
-    followers: 120,
-  );
+  PortfolioProfile _profile = kMockProfile;
+  final _stats = kMockStats;
+  final List<Project> _projects = List.of(kMockProjects);
+  final List<Skill> _skills = List.of(kMockSkills);
+  final List<Experience> _experiences = List.of(kMockExperiences);
 
   late List<PortfolioSection> _sections;
   bool _sectionsInitialized = false;
-
-  final List<Project> _projects = [
-    const Project(
-      title: 'EduFlow',
-      subtitle: 'Hệ thống quản lý học tập',
-      description: 'Thiết kế hệ thống dashboard và trải nghiệm học tập toàn diện.',
-      category: 'UI/UX DESIGN',
-      tool: 'Figma',
-      year: '2024',
-    ),
-    const Project(
-      title: 'Mindora',
-      subtitle: 'Ứng dụng thiền và thư giãn',
-      description: 'Thiết kế ứng dụng giúp người dùng thiền định và theo dõi thói quen.',
-      category: 'MOBILE APP',
-      tool: 'Figma',
-      year: '2023',
-    ),
-    const Project(
-      title: 'GreenSpace',
-      subtitle: 'Website thương hiệu',
-      description: 'Thiết kế website giới thiệu sản phẩm và thương hiệu thân thiện.',
-      category: 'WEBSITE',
-      tool: 'Figma',
-      year: '2023',
-    ),
-  ];
-
-  final List<Skill> _skills = [
-    const Skill(name: 'UI Design', level: 5),
-    const Skill(name: 'UX Research', level: 3),
-    const Skill(name: 'Prototyping', level: 4),
-    const Skill(name: 'Interaction Design', level: 4),
-    const Skill(name: 'Figma', level: 5),
-    const Skill(name: 'Design System', level: 4),
-    const Skill(name: 'Wireframing', level: 4),
-    const Skill(name: 'Usability Testing', level: 3),
-  ];
-
-  final List<Experience> _experiences = [
-    const Experience(
-      position: 'Senior UI/UX Designer',
-      company: 'Vela Creative Studio',
-      startDate: '03/2022',
-      endDate: null,
-      description:
-          'Thiết kế sản phẩm số cho khách hàng trong lĩnh vực edtech, fintech và healthtech. Dẫn dắt team 4 designer trong các dự án lớn.',
-    ),
-  ];
 
   @override
   void initState() {
@@ -231,18 +167,14 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           stats: _stats,
           isEditMode: isEditMode,
           visible: section.visible,
-          onToggleVisibility: () {
-            setState(() => _sections[index] = _sections[index].copyWith(visible: !_sections[index].visible));
-          },
+          onToggleVisibility: () => _toggleSectionVisibility(index),
         );
       case 'projects':
         return ProjectsSection(
           projects: _projects,
           isEditMode: isEditMode,
           visible: section.visible,
-          onToggleVisibility: () {
-            setState(() => _sections[index] = _sections[index].copyWith(visible: !_sections[index].visible));
-          },
+          onToggleVisibility: () => _toggleSectionVisibility(index),
           onAddProject: () => _showAddProjectDialog(context),
           onRemoveProject: _removeProject,
         );
@@ -251,9 +183,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           skills: _skills,
           isEditMode: isEditMode,
           visible: section.visible,
-          onToggleVisibility: () {
-            setState(() => _sections[index] = _sections[index].copyWith(visible: !_sections[index].visible));
-          },
+          onToggleVisibility: () => _toggleSectionVisibility(index),
           onAddSkill: () => _showAddSkillDialog(context),
           onRemoveSkill: _removeSkill,
         );
@@ -262,9 +192,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           experiences: _experiences,
           isEditMode: isEditMode,
           visible: section.visible,
-          onToggleVisibility: () {
-            setState(() => _sections[index] = _sections[index].copyWith(visible: !_sections[index].visible));
-          },
+          onToggleVisibility: () => _toggleSectionVisibility(index),
           onAddExperience: () => _showAddExperienceDialog(context),
         );
       default:
@@ -273,7 +201,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   // ============================================================
-  // DIALOGS & SHEETS
+  // DIALOGS
   // ============================================================
 
   void _showAddSectionSheet(BuildContext context) {
@@ -281,7 +209,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -303,10 +231,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               ),
             ),
             AppSpacing.vGap16,
-            Text(
-              l10n.addItem,
-              style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
+            Text(l10n.addItem, style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
             AppSpacing.vGap16,
             AddSectionTile(
               icon: Icons.folder_outlined,
@@ -348,451 +273,46 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   void _showAddProjectDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final titleController = TextEditingController();
-    final subtitleController = TextEditingController();
-    final descController = TextEditingController();
-    var category = 'UI/UX DESIGN';
-
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: AppRadius.borderXl),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      l10n.addProject,
-                      style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(Icons.close),
-                    ),
-                  ],
-                ),
-                AppSpacing.vGap16,
-                TextField(
-                  controller: titleController,
-                  decoration: InputDecoration(
-                    labelText: l10n.projectName,
-                    hintText: l10n.projectNameHint,
-                    border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
-                  ),
-                ),
-                AppSpacing.vGap12,
-                TextField(
-                  controller: subtitleController,
-                  decoration: InputDecoration(
-                    labelText: l10n.shortDescription,
-                    hintText: l10n.shortDescriptionHint,
-                    border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
-                  ),
-                ),
-                AppSpacing.vGap12,
-                TextField(
-                  controller: descController,
-                  maxLines: 2,
-                  decoration: InputDecoration(
-                    labelText: l10n.details,
-                    border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
-                  ),
-                ),
-                AppSpacing.vGap12,
-                DropdownButtonFormField<String>(
-                  value: category,
-                  decoration: InputDecoration(
-                    labelText: l10n.categoryLabel,
-                    border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
-                  ),
-                  items: ['UI/UX DESIGN', 'MOBILE APP', 'WEBSITE', 'BRANDING']
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (v) => setDialogState(() => category = v ?? category),
-                ),
-                AppSpacing.vGap16,
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: Text(l10n.cancel),
-                      ),
-                    ),
-                    AppSpacing.hGap12,
-                    Expanded(
-                      child: FilledButton(
-                        onPressed: () {
-                          if (titleController.text.isNotEmpty) {
-                            setState(() {
-                              _projects.add(Project(
-                                title: titleController.text,
-                                subtitle: subtitleController.text,
-                                description: descController.text,
-                                category: category,
-                                tool: 'Figma',
-                                year: DateTime.now().year.toString(),
-                              ));
-                            });
-                            Navigator.pop(ctx);
-                          }
-                        },
-                        child: Text(l10n.add),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
+      builder: (_) => AddProjectDialog(
+        onAdd: (project) => setState(() => _projects.add(project)),
       ),
     );
   }
 
   void _showAddSkillDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final nameController = TextEditingController();
-    var level = 3;
-
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) {
-          final cs = Theme.of(ctx).colorScheme;
-          final tt = Theme.of(ctx).textTheme;
-          return Dialog(
-            shape: RoundedRectangleBorder(borderRadius: AppRadius.borderXl),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        l10n.addSkill,
-                        style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        icon: const Icon(Icons.close),
-                      ),
-                    ],
-                  ),
-                  AppSpacing.vGap16,
-                  TextField(
-                    controller: nameController,
-                    decoration: InputDecoration(
-                      labelText: l10n.skillName,
-                      hintText: l10n.skillNameHint,
-                      border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
-                    ),
-                  ),
-                  AppSpacing.vGap16,
-                  Text(l10n.proficiencyLevel, style: tt.labelLarge),
-                  AppSpacing.vGap8,
-                  Row(
-                    children: List.generate(5, (index) {
-                      final isSelected = index < level;
-                      return GestureDetector(
-                        onTap: () => setDialogState(() => level = index + 1),
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          margin: const EdgeInsets.only(right: 8),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isSelected ? cs.primary : cs.surfaceContainerHighest,
-                            border: Border.all(
-                              color: isSelected ? cs.primary : cs.outlineVariant,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${index + 1}',
-                              style: tt.labelMedium?.copyWith(
-                                color: isSelected ? Colors.white : cs.onSurfaceVariant,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                  AppSpacing.vGap16,
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: Text(l10n.cancel),
-                        ),
-                      ),
-                      AppSpacing.hGap12,
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: () {
-                            if (nameController.text.isNotEmpty) {
-                              setState(() {
-                                _skills.add(Skill(name: nameController.text, level: level));
-                              });
-                              Navigator.pop(ctx);
-                            }
-                          },
-                          child: Text(l10n.add),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+      builder: (_) => AddSkillDialog(
+        onAdd: (skill) => setState(() => _skills.add(skill)),
       ),
     );
   }
 
   void _showAddExperienceDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final positionController = TextEditingController();
-    final companyController = TextEditingController();
-    final descController = TextEditingController();
-
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.borderXl),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    l10n.addExperience,
-                    style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              AppSpacing.vGap16,
-              TextField(
-                controller: positionController,
-                decoration: InputDecoration(
-                  labelText: l10n.position,
-                  hintText: l10n.positionHint,
-                  border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
-                ),
-              ),
-              AppSpacing.vGap12,
-              TextField(
-                controller: companyController,
-                decoration: InputDecoration(
-                  labelText: l10n.company,
-                  hintText: l10n.companyHint,
-                  border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
-                ),
-              ),
-              AppSpacing.vGap12,
-              TextField(
-                controller: descController,
-                maxLines: 2,
-                decoration: InputDecoration(
-                  labelText: l10n.jobDescription,
-                  border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
-                ),
-              ),
-              AppSpacing.vGap16,
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: Text(l10n.cancel),
-                    ),
-                  ),
-                  AppSpacing.hGap12,
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () {
-                        if (positionController.text.isNotEmpty) {
-                          setState(() {
-                            _experiences.add(Experience(
-                              position: positionController.text,
-                              company: companyController.text,
-                              startDate: '${DateTime.now().month}/${DateTime.now().year}',
-                              description: descController.text,
-                            ));
-                          });
-                          Navigator.pop(ctx);
-                        }
-                      },
-                      child: Text(l10n.add),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+      builder: (_) => AddExperienceDialog(
+        onAdd: (exp) => setState(() => _experiences.add(exp)),
       ),
     );
   }
 
   void _showEditProfileDialog(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final nameController = TextEditingController(text: _profile.name);
-    final titleController = TextEditingController(text: _profile.title);
-    final locationController = TextEditingController(text: _profile.location);
-    final websiteController = TextEditingController(text: _profile.website);
-    final bioController = TextEditingController(text: _profile.bio);
-
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.borderXl),
-        insetPadding: const EdgeInsets.all(AppSpacing.lg),
-        child: Container(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(ctx).size.width * 0.9,
-            maxHeight: MediaQuery.of(ctx).size.height * 0.8,
-          ),
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    l10n.editIntroduction,
-                    style: Theme.of(ctx).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              AppSpacing.vGap16,
-              Flexible(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: nameController,
-                        decoration: InputDecoration(
-                          labelText: l10n.fullName,
-                          border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
-                        ),
-                      ),
-                      AppSpacing.vGap12,
-                      TextField(
-                        controller: titleController,
-                        decoration: InputDecoration(
-                          labelText: l10n.jobTitle,
-                          hintText: l10n.jobTitleHint,
-                          border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
-                        ),
-                      ),
-                      AppSpacing.vGap12,
-                      TextField(
-                        controller: locationController,
-                        decoration: InputDecoration(
-                          labelText: l10n.locationLabel,
-                          hintText: l10n.locationHint,
-                          border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
-                        ),
-                      ),
-                      AppSpacing.vGap12,
-                      TextField(
-                        controller: websiteController,
-                        decoration: InputDecoration(
-                          labelText: l10n.websiteLabel,
-                          hintText: l10n.websiteHint,
-                          border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
-                        ),
-                      ),
-                      AppSpacing.vGap12,
-                      TextField(
-                        controller: bioController,
-                        maxLines: 4,
-                        decoration: InputDecoration(
-                          labelText: l10n.aboutYourself,
-                          hintText: l10n.aboutYourselfHint,
-                          border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              AppSpacing.vGap16,
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      child: Text(l10n.cancel),
-                    ),
-                  ),
-                  AppSpacing.hGap12,
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () {
-                        setState(() {
-                          _profile = PortfolioProfile(
-                            name: nameController.text,
-                            title: titleController.text,
-                            location: locationController.text,
-                            website: websiteController.text,
-                            bio: bioController.text,
-                            socialLinks: _profile.socialLinks,
-                          );
-                        });
-                        Navigator.pop(ctx);
-                      },
-                      child: Text(l10n.save),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+      builder: (_) => EditProfileDialog(
+        profile: _profile,
+        onSave: (profile) => setState(() => _profile = profile),
       ),
     );
   }
 
   void _showLayoutEditor(BuildContext context) {
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (ctx) => LayoutEditorDialog(
+      builder: (_) => LayoutEditorDialog(
         sections: _sections,
         onReorder: (oldIndex, newIndex) {
           setState(() {
@@ -801,21 +321,16 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             _sections.insert(newIndex, item);
           });
         },
-        onToggleVisibility: (index) {
-          setState(() {
-            _sections[index] = _sections[index].copyWith(visible: !_sections[index].visible);
-          });
-        },
+        onToggleVisibility: _toggleSectionVisibility,
       ),
     );
   }
 
   void _showMoreMenu(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -897,7 +412,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -919,10 +434,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               ),
             ),
             AppSpacing.vGap16,
-            Text(
-              l10n.privacySettings,
-              style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
+            Text(l10n.privacySettings, style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
             AppSpacing.vGap16,
             VisibilityOption(
               icon: Icons.public,
@@ -962,16 +474,16 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   // ============================================================
-  // HELPER METHODS
+  // HELPERS
   // ============================================================
 
-  void _removeProject(int index) {
-    setState(() => _projects.removeAt(index));
+  void _toggleSectionVisibility(int index) {
+    setState(() => _sections[index] = _sections[index].copyWith(visible: !_sections[index].visible));
   }
 
-  void _removeSkill(int index) {
-    setState(() => _skills.removeAt(index));
-  }
+  void _removeProject(int index) => setState(() => _projects.removeAt(index));
+
+  void _removeSkill(int index) => setState(() => _skills.removeAt(index));
 
   String _getVisibilityText(AppLocalizations l10n) {
     switch (_cubit.state.visibility) {
@@ -989,7 +501,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   void _openPreview(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<Widget>(
         builder: (_) => PortfolioPreviewScreen(
           profile: _profile,
           stats: _stats,
@@ -1004,8 +516,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
   void _sharePortfolio(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final url = 'https://${_profile.website}';
-    Clipboard.setData(ClipboardData(text: url));
+    Clipboard.setData(ClipboardData(text: 'https://${_profile.website}'));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(l10n.linkCopiedToShare),
@@ -1018,8 +529,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
   void _copyLink(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final url = 'https://${_profile.website}';
-    Clipboard.setData(ClipboardData(text: url));
+    Clipboard.setData(ClipboardData(text: 'https://${_profile.website}'));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(l10n.linkCopied),
@@ -1040,6 +550,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         shape: RoundedRectangleBorder(borderRadius: AppRadius.borderMd),
       ),
     );
-    // TODO: Implement PDF generation
+    // TODO(MOCK-01): Implement PDF generation - needs pdf package
   }
 }

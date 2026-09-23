@@ -7,11 +7,10 @@ import 'package:study/features/student/bloc/learning/learning_bloc.dart';
 import 'package:study/features/student/bloc/learning/learning_event.dart';
 import 'package:study/features/student/bloc/learning/learning_state.dart';
 import 'package:study/features/student/presentation/learning/all_courses_screen.dart';
-import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
+import 'package:study/features/student/presentation/learning/course_detail/course_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/explore_courses_screen.dart';
 import 'package:study/features/student/presentation/learning/widgets/widgets.dart';
 import 'package:study/di/di_container.dart';
-import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/empty_state.dart';
 import 'package:study/widgets/section_header.dart';
@@ -35,7 +34,7 @@ class _LearningScreenState extends State<LearningScreen> {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => CourseDetailBloc(diContainer<StudentRepository>())
+          create: (_) => diContainer<CourseDetailBloc>()
             ..add(CourseDetailStarted(enrollmentId)),
           child: const CourseDetailScreen(),
         ),
@@ -45,9 +44,6 @@ class _LearningScreenState extends State<LearningScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
     return Scaffold(
       body: SafeArea(
         child: BlocBuilder<LearningBloc, LearningState>(
@@ -163,9 +159,6 @@ class _LearningScreenState extends State<LearningScreen> {
   }
 
   Widget _buildContent(BuildContext context, LearningSuccess state) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
     if (state.enrollments.isEmpty) {
       return _buildEmptyState(context);
     }
@@ -219,7 +212,7 @@ class _LearningScreenState extends State<LearningScreen> {
                 actionLabel: 'Xem tất cả',
                 onActionTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const AllCoursesScreen()),
+                  MaterialPageRoute<Widget>(builder: (_) => const AllCoursesScreen()),
                 ),
               ),
             ),
@@ -336,7 +329,7 @@ class _LearningScreenState extends State<LearningScreen> {
                   actionLabel: 'Xem tất cả',
                   onActionTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const ExploreCoursesScreen()),
+                    MaterialPageRoute<Widget>(builder: (_) => const ExploreCoursesScreen()),
                   ),
                 ),
               ),
@@ -383,7 +376,7 @@ class _LearningScreenState extends State<LearningScreen> {
           actionLabel: 'Khám phá khóa học',
           onAction: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const AllCoursesScreen()),
+            MaterialPageRoute<Widget>(builder: (_) => const AllCoursesScreen()),
           ),
         ),
       ),

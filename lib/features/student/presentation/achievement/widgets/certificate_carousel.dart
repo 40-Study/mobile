@@ -46,7 +46,7 @@ class _CertificateCarouselState extends State<CertificateCarousel> {
             GestureDetector(
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<Widget>(
                     builder: (_) =>
                         AllCertificatesScreen(certificates: widget.certificates)),
               ),
@@ -120,7 +120,7 @@ class CertificateCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(
+        MaterialPageRoute<Widget>(
           builder: (_) => CertificateDetailScreen(certificate: certificate),
         ),
       ),

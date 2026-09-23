@@ -202,7 +202,7 @@ class _ProfileContent extends StatelessWidget {
   void _navigateToEditProfile(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<Widget>(
         builder: (_) => BlocProvider(
           create: (_) => AccountCubit(
             authRepository: context.read<AuthRepository>(),
@@ -216,28 +216,28 @@ class _ProfileContent extends StatelessWidget {
   void _navigateToSecurity(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const SecurityScreen()),
+      MaterialPageRoute<Widget>(builder: (_) => const SecurityScreen()),
     );
   }
 
   void _navigateToSettings(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+      MaterialPageRoute<Widget>(builder: (_) => const SettingsScreen()),
     );
   }
 
   void _navigateToHelpCenter(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const HelpCenterScreen()),
+      MaterialPageRoute<Widget>(builder: (_) => const HelpCenterScreen()),
     );
   }
 
   void _navigateToPortfolio(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const PortfolioScreen()),
+      MaterialPageRoute<Widget>(builder: (_) => const PortfolioScreen()),
     );
   }
 }
