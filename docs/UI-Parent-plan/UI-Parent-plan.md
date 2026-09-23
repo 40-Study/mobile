@@ -45,7 +45,7 @@ Dựa trên phản hồi trực tiếp và 3 ảnh thiết kế mới nhất c�
 4. **Phân tầng màu nền (Surface Contrast):** Phần Header mang nền trắng sáng (`#FFFFFF`), trong khi toàn bộ Body bên dưới mang nền xám dịu nhẹ (`#F8FAFC` / `surfaceContainerLowest`) để làm nổi bật các Card trắng tinh khiết bên trong.
 5. **Tách tiêu đề Section ra khỏi Card:** Tiêu đề của từng section (`CẦN XỬ LÝ`, `HÔM NAY / TIẾP THEO`, `PHÂN TÍCH HỌC TẬP`) nằm **hoàn toàn bên ngoài card**, không gộp chung vào một card lớn nguyên khối.
 6. **Thẻ ca học độc lập (Independent Schedule Cards):** Mỗi ca học trong mục "Hôm nay / Tiếp theo" là một Card trắng độc lập, có khối thời gian bo góc riêng (`14:00 60p` màu xanh pastel cho Online; `16:30 90p` màu xám cho Offline), badge tên con (`[Minh]`, `[Lan]`) và thông tin địa điểm rõ ràng.
-7. **Cơ chế Thu gọn / Mở rộng (Collapsible Sections):** Tích hợp nút chevron hoặc chạm vào tiêu đề section để mở rộng / thu gọn nội dung, giúp phụ huynh chủ động kiểm soát lượng thông tin trên màn hình.
+7. **Cơ chế Thu gọn / Mở rộng toàn diện (Collapsible Sections for All):** Tích hợp cơ chế thu gọn / mở rộng cho **tất cả các section** (`CẦN XỬ LÝ`, `HÔM NAY / TIẾP THEO`, `PHÂN TÍCH HỌC TẬP`). **QUY TẮC MẶC ĐỊNH: Luôn ở trạng thái MỞ TOÀN BỘ (`_isExpanded = true`)** khi phụ huynh truy cập ứng dụng để nắm bắt ngay mọi thông tin trọng yếu mà không bị gián đoạn; phụ huynh có thể chủ động chạm vào header để thu gọn bất kỳ section nào theo ý muốn.
 
 ---
 
@@ -81,7 +81,7 @@ Dựa trên phản hồi trực tiếp và 3 ảnh thiết kế mới nhất c�
 | **Ngày tháng Lịch học** | `DateTime.now()` | Format động bằng tiếng Việt: `Thứ [2-CN], [Ngày] Th[Tháng]` (ví dụ: `Thứ Tư, 23 Th9`), **tuyệt đối không fix cứng ngày** | Luôn chuẩn xác theo ngày thực tế |
 | **Thẻ Ca học hôm nay** | `GET /api/parent/children/:id/schedule` | Parse từ `upcoming_sessions`: Giờ bắt đầu (`startTime`), Thời lượng (`${durationMinutes}p`), Tên môn, Link Google Meet/Zoom hoặc Phòng học offline | Khi rỗng: Thẻ `"Hôm nay không có ca học nào"` |
 | **Section Phân tích** | `GET /api/parent/children/:id/grades` | - Điểm TB tuần: `averageScore.toStringAsFixed(1)`<br>- Tiến độ: `+${progressPercent}%`<br>- Cột biểu đồ: Lặp qua mảng điểm thật `weeklyTrend` để vẽ chiều cao động | Khi null: Thẻ `"Chưa có dữ liệu phân tích tuần này"` |
-| **Hiệu ứng Collapse** | Local Widget State (`bool _isExpanded`) | Quản lý độc lập bằng `StatefulWidget` + `AnimatedCrossFade`, hoạt động mượt mà cho 0 item, 1 item hay hàng chục item thật | Giữ trạng thái khi cuộn màn hình |
+| **Hiệu ứng Collapse (Tất cả Section)** | Local Widget State (`bool _isExpanded = true;`) | Quản lý độc lập bằng `StatefulWidget` + `AnimatedCrossFade`, **MẶC ĐỊNH LUÔN MỞ TOÀN BỘ** khi khởi tạo. Hoạt động mượt mà với dữ liệu thật | Cho phép bấm Header để toggle đóng/mở độc lập từng section |
 
 ### 3.2. Đảm bảo tính thích ứng (Graceful Degradation)
 - **Khi Backend trả về dữ liệu thật:** UI tự động tiêu thụ 100% dữ liệu từ models mà không cần sửa bất kỳ dòng code giao diện nào.
@@ -194,19 +194,27 @@ Dựa trên phản hồi trực tiếp và 3 ảnh thiết kế mới nhất c�
 
 ---
 
-### 5.4. Cấu trúc Section Header Tách rời & Cơ chế Collapse
+### 5.4. Cấu trúc Section Header Tách rời & Cơ chế Collapse Toàn diện
 
-Mỗi Section sẽ tuân thủ mô hình widget chuẩn:
+Mỗi Section (`ActionRequiredSection`, `UpcomingScheduleSection`, `LearningAnalyticsCard`) sẽ tuân thủ mô hình widget chuẩn:
 ```
-SectionContainer
-├── SectionHeaderBar (NẰM HOÀN TOÀN BÊN NGOÀI CARD)
-│   ├── Icon + Tiêu đề section (caps, bold 700, 14.5sp)
-│   ├── Badge trạng thái bên phải
-│   └── Icon Collapse (mũi tên lên/xuống)
+SectionContainer (StatefulWidget)
+├── SectionHeaderBar (NẰM HOÀN TOÀN BÊN NGOÀI CARD - Bấm vào để Toggle)
+│   ├── Trái: Chấm trạng thái / Icon + Tiêu đề section (caps, bold 700, 14.5sp)
+│   ├── Giữa: Badge trạng thái (Số việc, Ngày tháng, Đánh giá tiến bộ)
+│   └── Phải: Icon Chevron xoay mượt mà (AnimatedRotation)
 │
-└── AnimatedCrossFade / AnimatedSize (CƠ CHẾ THU GỌN / MỞ RỘNG)
-    └── SectionBodyContent (CARD NỘI DUNG HOẶC DANH SÁCH CARD)
+└── AnimatedCrossFade (CƠ CHẾ THU GỌN / MỞ RỘNG MƯỢT MÀ)
+    ├── State MỞ (_isExpanded == true): HIỂN THỊ MẶC ĐỊNH TOÀN BỘ CARD NỘI DUNG
+    └── State ĐÓNG (_isExpanded == false): Thu gọn hoàn toàn (SizedBox.shrink), chỉ giữ thanh Header bar tóm tắt
 ```
+
+**Quy tắc vận hành Collapse:**
+1. **Trạng thái khởi tạo mặc định:** `bool _isExpanded = true;` cho **TẤT CẢ** các section. Phụ huynh khi vào ứng dụng sẽ nhìn thấy đầy đủ 100% nội dung ngay lập tức mà không cần bấm thêm thao tác nào.
+2. **Tương tác chạm:** Phụ huynh có thể bấm vào bất kỳ vị trí nào trên thanh tiêu đề `SectionHeaderBar` hoặc bấm nút mũi tên chevron để thu gọn / mở rộng.
+3. **Hiệu ứng chuyển cảnh:**
+   - Dùng `AnimatedCrossFade(duration: const Duration(milliseconds: 250), crossFadeState: _isExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond)`.
+   - Nút mũi tên dùng `AnimatedRotation(turns: _isExpanded ? 0 : 0.5, duration: const Duration(milliseconds: 250))` trỏ lên/xuống nhịp nhàng.
 
 ---
 
@@ -215,7 +223,7 @@ SectionContainer
   + Chấm tròn trạng thái: Đỏ (nếu có việc) hoặc Xanh lá (nếu All-Clear).
   + Text: `CẦN XỬ LÝ` (bold 700, 14.5sp, `slate900`).
   + Badge bên phải: `2 nhắc nhở` (nền đỏ nhạt, chữ đỏ) hoặc `0 việc tồn đọng` (nền xanh lá nhạt, chữ xanh lá).
-  + Nút mũi tên thu gọn/mở rộng.
+  + Nút mũi tên thu gọn/mở rộng (Mặc định: MỞ TOÀN BỘ với `_isExpanded = true`, bấm vào header hoặc chevron để toggle).
 - **Card nội dung bên dưới:**
   - **Khi All-Clear (0 việc tồn đọng):**
     + 1 Card trắng viền xanh mint nhạt (`#A7F3D0`), bo góc 16px.
@@ -235,7 +243,7 @@ SectionContainer
 - **Header ngoài card:**
   + Icon lịch xanh `Icons.calendar_today_rounded` (size 19px, màu `blue600`).
   + Text: `HÔM NAY / TIẾP THEO` (bold 700, 14.5sp, `slate900`).
-  + Phía bên phải: `Thứ Sáu, 24 Th10` (`slate500`, 13sp) + Nút mũi tên collapse.
+  + Phía bên phải: `Thứ Sáu, 24 Th10` (`slate500`, 13sp) + Nút mũi tên collapse (Mặc định: MỞ TOÀN BỘ với `_isExpanded = true`).
 - **Nội dung bên dưới (CÁC THẺ CARD ĐỘC LẬP THEO ẢNH 2):**
   - **Card Ca học 1 (Online):**
     + Thẻ trắng độc lập, bo góc 16px, viền mỏng, padding 14px.
@@ -262,7 +270,7 @@ SectionContainer
 - **Header ngoài card:**
   + Icon xu hướng `Icons.insights_rounded` (màu `blue600`).
   + Text: `PHÂN TÍCH HỌC TẬP` (bold 700, 14.5sp, `slate900`).
-  + Phía bên phải: Chấm xanh lá + Text `Tiến bộ tốt` (nền xanh lá nhạt, chữ xanh) + Nút collapse.
+  + Phía bên phải: Chấm xanh lá + Text `Tiến bộ tốt` (nền xanh lá nhạt, chữ xanh) + Nút collapse (Mặc định: MỞ TOÀN BỘ với `_isExpanded = true`).
 - **Card nội dung bên dưới (Theo ảnh 2):**
   + Card trắng bo góc 16px, viền mỏng, padding 16px.
   + **Hàng 1 (Thông tin học sinh & Điểm số):**
@@ -336,7 +344,7 @@ final styleMetaTime  = tt.titleLarge?.copyWith(fontSize: 18, fontWeight: FontWei
 - **File:** `mobile/lib/features/parent/presentation/home/widgets/action_required_section.dart`
 - **Nội dung:**
   + Tách hàng tiêu đề `• CẦN XỬ LÝ` + Badge (`2 nhắc nhở` / `0 việc tồn đọng`) ra ngoài Card.
-  + Thêm icon chevron xoay (animated rotation) và state `_isExpanded` để thu gọn / mở rộng.
+  + Thêm icon chevron xoay (animated rotation) và state `bool _isExpanded = true` (mặc định mở toàn bộ) để thu gọn / mở rộng.
   + Card bên dưới bọc trong `AnimatedCrossFade`.
   + Khi All-Clear: Card trắng viền xanh mint mint border `#A7F3D0`, không có tiêu đề trùng lặp bên trong.
 - **Commit:** `refactor(parent): extract action required header outside card and add collapse toggle`
@@ -344,7 +352,7 @@ final styleMetaTime  = tt.titleLarge?.copyWith(fontSize: 18, fontWeight: FontWei
 ### Bước 4: Tách Tiêu đề Section & Tách Thẻ Ca học Độc lập cho "Lịch học hôm nay"
 - **File:** `mobile/lib/features/parent/presentation/home/widgets/upcoming_schedule_section.dart`
 - **Nội dung:**
-  + Tách hàng tiêu đề `📅 HÔM NAY / TIẾP THEO` + `Thứ Sáu, 24 Th10` ra ngoài Card kèm nút thu gọn / mở rộng.
+  + Tách hàng tiêu đề `📅 HÔM NAY / TIẾP THEO` + `Thứ Sáu, 24 Th10` ra ngoài Card kèm nút thu gọn / mở rộng (state `bool _isExpanded = true`, mặc định mở toàn bộ).
   + Tách mỗi ca học thành **MỘT CARD TRẮNG ĐỘC LẬP** (theo đúng ảnh mockup 2):
     - Box thời gian có màu nền riêng (`14:00 60p` màu xanh pastel; `16:30 90p` màu xám).
     - Có badge con riêng biệt `[Minh]`, `[Lan]`.
@@ -355,7 +363,7 @@ final styleMetaTime  = tt.titleLarge?.copyWith(fontSize: 18, fontWeight: FontWei
 ### Bước 5: Tách Tiêu đề Section & Tinh chỉnh Card "Phân tích học tập"
 - **File:** `mobile/lib/features/parent/presentation/home/widgets/learning_analytics_card.dart`
 - **Nội dung:**
-  + Tách hàng tiêu đề `📈 PHÂN TÍCH HỌC TẬP` + Badge `Tiến bộ tốt` ra ngoài Card kèm nút thu gọn / mở rộng.
+  + Tách hàng tiêu đề `📈 PHÂN TÍCH HỌC TẬP` + Badge `Tiến bộ tốt` ra ngoài Card kèm nút thu gọn / mở rộng (state `bool _isExpanded = true`, mặc định mở toàn bộ).
   + Cấu trúc Card nội dung bên trong theo ảnh 2:
     - Hàng 1: Avatar con + `Minh · Lớp 10A1` + `Báo cáo tuần 42` bên trái; `Điểm TB: 8.4` + `(+15%)` bên phải.
     - Hàng 2: Box nhận xét AI màu nền xám `#F8FAFC`, bo góc 12px, highlight từ khóa **22%**.
@@ -381,7 +389,7 @@ final styleMetaTime  = tt.titleLarge?.copyWith(fontSize: 18, fontWeight: FontWei
   + Khi tài khoản chỉ có 1 con: Ẩn nút "Tất cả các con".
   + Khi tài khoản có ≥ 2 con: Nút "Tất cả các con" mang màu xanh hệ thống (`blue600`), hiển thị số lượng con (ví dụ `2`).
 - [ ] **Section Headers:** 100% tiêu đề section (`CẦN XỬ LÝ`, `HÔM NAY / TIẾP THEO`, `PHÂN TÍCH HỌC TẬP`) nằm **hoàn toàn bên ngoài card**.
-- [ ] **Cơ chế Collapse:** Cả 3 section đều có thể thu gọn / mở rộng mượt mà khi bấm icon chevron.
+- [ ] **Cơ chế Collapse toàn diện:** Tất cả các section (`CẦN XỬ LÝ`, `HÔM NAY / TIẾP THEO`, `PHÂN TÍCH HỌC TẬP`) đều tích hợp collapse, **mặc định hiển thị MỞ TOÀN BỘ (`_isExpanded = true`)** khi vào trang, bấm vào Header bar hoặc chevron để thu gọn/mở rộng mượt mà.
 - [ ] **Thẻ Ca học:** Mỗi buổi học là một Card trắng độc lập, có khối thời gian bo góc riêng (`14:00 60p` xanh; `16:30 90p` xám), badge con `[Minh]`, `[Lan]` rõ ràng.
 - [ ] **Thẻ Phân tích:** Bố cục đúng ảnh 2 với Điểm TB 8.4 (+15%) góc phải, box nhận xét xám nhạt, link điều hướng thoáng đãng.
 - [ ] **Người lớn tuổi:** Cỡ chữ từ 13 - 18sp, vùng chạm ≥ 44px, không chói mắt, dễ đọc dễ dùng.
