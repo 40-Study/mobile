@@ -301,19 +301,19 @@ class _AnalyticsContent extends StatelessWidget {
   }
 
   Widget _buildBarChart() {
-    const color = Color(0xFF3B82F6);
     return SizedBox(
-      height: 48,
+      height: 42,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: analytics.weeklyTrend.map((value) {
+          final barHeight = (8 + value * 32).clamp(8.0, 42.0);
           return Container(
-            width: 10,
-            height: 12 + value * 36,
-            margin: const EdgeInsets.symmetric(horizontal: 3),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(3),
+            width: 8,
+            height: barHeight,
+            margin: const EdgeInsets.symmetric(horizontal: 2.5),
+            decoration: const BoxDecoration(
+              color: Color(0xFF3B82F6),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(3)),
             ),
           );
         }).toList(),
@@ -337,7 +337,11 @@ class _AnalyticsContent extends StatelessWidget {
       ),
       child: Text.rich(
         _buildInsightSpan(context),
-        style: tt.bodySmall?.copyWith(color: cs.slate700, height: 1.5),
+        style: tt.bodySmall?.copyWith(
+          color: cs.slate700,
+          height: 1.5,
+          fontSize: 13,
+        ),
       ),
     );
   }

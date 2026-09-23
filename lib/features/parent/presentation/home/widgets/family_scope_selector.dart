@@ -136,22 +136,30 @@ class _AllChildrenChip extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         decoration: BoxDecoration(
-          color: cs.slate900,
+          color: selected ? cs.slate900 : cs.slate100,
           borderRadius: AppRadius.borderFull,
+          border: selected
+              ? null
+              : Border.all(color: cs.outlineVariant.withValues(alpha: 0.3)),
         ),
         alignment: Alignment.center,
         child: Row(
           children: [
-            const Icon(Icons.groups_rounded, color: Colors.white, size: 18),
+            Icon(
+              Icons.groups_rounded,
+              color: selected ? Colors.white : cs.slate600,
+              size: 18,
+            ),
             AppSpacing.hGap8,
             Text(
               'Tất cả các con',
               style: tt.labelLarge?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
+                color: selected ? Colors.white : cs.slate700,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
               ),
             ),
           ],
@@ -179,26 +187,28 @@ class _ChildChip extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         decoration: BoxDecoration(
-          color: cs.slate100,
+          color: selected ? const Color(0xFFEFF6FF) : cs.slate100,
           borderRadius: AppRadius.borderFull,
           border: selected
               ? Border.all(color: cs.blue600, width: 1.5)
-              : Border.all(color: Colors.transparent),
+              : Border.all(color: cs.outlineVariant.withValues(alpha: 0.2)),
         ),
         alignment: Alignment.center,
         child: Row(
           children: [
             CircleAvatar(
-              radius: 14,
+              radius: 13,
               backgroundColor: child.badgeColor,
               child: Text(
                 child.initialLetter,
-                style: tt.labelMedium?.copyWith(
+                style: tt.labelSmall?.copyWith(
                   color: Colors.white,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 11,
                 ),
               ),
             ),
@@ -208,8 +218,8 @@ class _ChildChip extends StatelessWidget {
                   ? '${child.name} (${child.className})'
                   : child.name,
               style: tt.labelLarge?.copyWith(
-                color: cs.slate800,
-                fontWeight: FontWeight.w600,
+                color: selected ? cs.blue700 : cs.slate800,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
               ),
             ),
           ],

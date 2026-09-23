@@ -143,9 +143,10 @@ class _EmptyScheduleCard extends StatelessWidget {
 }
 
 class _ScheduleItem extends StatelessWidget {
-  const _ScheduleItem({required this.item});
+  const _ScheduleItem({required this.item, this.onTap});
 
   final ParentScheduleItem item;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -153,78 +154,116 @@ class _ScheduleItem extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final isOnline = item.mode == ParentScheduleMode.online;
 
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 56,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.startTime,
-                  style: tt.titleLarge?.copyWith(
-                    color: isOnline ? cs.blue600 : cs.slate900,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 20,
-                  ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadius.borderMd,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                width: 60,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      item.startTime,
+                      style: tt.titleLarge?.copyWith(
+                        color: isOnline ? cs.blue600 : cs.slate900,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 19,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      isOnline ? 'ONLINE' : 'TẠI CƠ SỞ',
+                      style: tt.labelSmall?.copyWith(
+                        color: isOnline ? cs.blue600 : cs.slate500,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  isOnline ? 'ONLINE' : 'TẠI CƠ SỞ',
-                  style: tt.labelSmall?.copyWith(
-                    color: isOnline ? cs.blue600 : cs.slate400,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          AppSpacing.hGap12,
-          Container(width: 1, height: 56, color: cs.slate200),
-          AppSpacing.hGap12,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${item.childName} — ${item.subjectName}',
-                  style: tt.titleSmall?.copyWith(
-                    color: cs.slate900,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  item.locationOrLink,
-                  style: tt.bodySmall?.copyWith(color: cs.blue600),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  item.teacherOrRoom,
-                  style: tt.bodySmall?.copyWith(color: cs.slate500),
-                ),
-              ],
-            ),
-          ),
-          AppSpacing.hGap8,
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: isOnline ? const Color(0xFFDBEAFE) : cs.slate100,
-              borderRadius: AppRadius.borderFull,
-            ),
-            child: Text(
-              item.statusLabel,
-              style: tt.labelSmall?.copyWith(
-                color: isOnline ? cs.blue600 : cs.slate600,
-                fontWeight: FontWeight.w600,
               ),
-            ),
+              AppSpacing.hGap8,
+              VerticalDivider(
+                width: 16,
+                thickness: 1,
+                color: cs.slate200,
+              ),
+              AppSpacing.hGap8,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '${item.childName} — ${item.subjectName}',
+                      style: tt.titleSmall?.copyWith(
+                        color: cs.slate900,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      item.locationOrLink,
+                      style: tt.bodySmall?.copyWith(
+                        color: isOnline ? cs.blue600 : cs.slate700,
+                        fontWeight: isOnline ? FontWeight.w500 : FontWeight.normal,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      item.teacherOrRoom,
+                      style: tt.bodySmall?.copyWith(
+                        color: cs.slate500,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              AppSpacing.hGap8,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isOnline ? const Color(0xFFDBEAFE) : cs.slate100,
+                      borderRadius: AppRadius.borderFull,
+                    ),
+                    child: Text(
+                      item.statusLabel,
+                      style: tt.labelSmall?.copyWith(
+                        color: isOnline ? cs.blue600 : cs.slate700,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+                  AppSpacing.hGap4,
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: cs.slate400,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

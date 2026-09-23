@@ -162,105 +162,124 @@ class _EmptyAlertCard extends StatelessWidget {
 }
 
 class _AlertItem extends StatelessWidget {
-  const _AlertItem({required this.alert});
+  const _AlertItem({required this.alert, this.onTap});
 
   final ParentAlertItem alert;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final isOverdue = alert.type == ParentAlertType.overdue;
-    final accent = isOverdue ? AchievementColors.red : const Color(0xFFF59E0B);
+    final accent = isOverdue ? AchievementColors.red : const Color(0xFFD97706);
     final iconBg =
         isOverdue ? const Color(0xFFFEE2E2) : const Color(0xFFFEF3C7);
     final tagBg =
         isOverdue ? const Color(0xFFFEE2E2) : const Color(0xFFFEF3C7);
 
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.md),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: AppRadius.borderMd,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: AppRadius.borderMd,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: iconBg,
+                borderRadius: AppRadius.borderMd,
+              ),
+              child: Icon(
+                isOverdue
+                    ? Icons.assignment_late_outlined
+                    : Icons.update_rounded,
+                color: accent,
+                size: 22,
+              ),
             ),
-            child: Icon(
-              isOverdue
-                  ? Icons.assignment_late_outlined
-                  : Icons.update_rounded,
-              color: accent,
-              size: 22,
+            AppSpacing.hGap12,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${alert.childName} • ${alert.subjectName}',
+                    style: tt.titleSmall?.copyWith(
+                      color: cs.slate900,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    alert.detail,
+                    style: tt.bodySmall?.copyWith(
+                      color: cs.slate600,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        isOverdue
+                            ? Icons.schedule_rounded
+                            : Icons.info_outline_rounded,
+                        size: 13,
+                        color: accent,
+                      ),
+                      AppSpacing.hGap4,
+                      Expanded(
+                        child: Text(
+                          alert.metaText,
+                          style: tt.labelSmall?.copyWith(
+                            color: accent,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          AppSpacing.hGap12,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            AppSpacing.hGap8,
+            Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  '${alert.childName} • ${alert.subjectName}',
-                  style: tt.titleSmall?.copyWith(
-                    color: cs.slate900,
-                    fontWeight: FontWeight.w600,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: tagBg,
+                    borderRadius: AppRadius.borderFull,
+                  ),
+                  child: Text(
+                    alert.tagLabel,
+                    style: tt.labelSmall?.copyWith(
+                      color: accent,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  alert.detail,
-                  style: tt.bodySmall?.copyWith(color: cs.slate500),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      isOverdue
-                          ? Icons.schedule_rounded
-                          : Icons.info_outline_rounded,
-                      size: 14,
-                      color: accent,
-                    ),
-                    AppSpacing.hGap4,
-                    Expanded(
-                      child: Text(
-                        alert.metaText,
-                        style: tt.labelSmall?.copyWith(color: accent),
-                      ),
-                    ),
-                  ],
+                AppSpacing.hGap4,
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: cs.slate400,
+                  size: 20,
                 ),
               ],
             ),
-          ),
-          AppSpacing.hGap8,
-          Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: tagBg,
-                  borderRadius: AppRadius.borderFull,
-                ),
-                child: Text(
-                  alert.tagLabel,
-                  style: tt.labelSmall?.copyWith(
-                    color: accent,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              AppSpacing.vGap8,
-              Icon(Icons.chevron_right_rounded, color: cs.slate400, size: 20),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
