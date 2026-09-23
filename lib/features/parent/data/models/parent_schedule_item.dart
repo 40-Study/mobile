@@ -11,6 +11,7 @@ class ParentScheduleItem {
     required this.teacherOrRoom,
     required this.mode,
     required this.statusLabel,
+    this.durationMinutes,
   });
 
   /// Giờ bắt đầu dạng "14:00".
@@ -28,4 +29,7 @@ class ParentScheduleItem {
 
   /// "Sắp bắt đầu" / "Trực tiếp".
   final String statusLabel;
+
+  /// Thời lượng tính theo phút (VD 60, 90).
+  final int? durationMinutes;
 }

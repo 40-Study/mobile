@@ -378,6 +378,7 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
         teacherOrRoom: 'Thầy Hoàng Long',
         mode: ParentScheduleMode.online,
         statusLabel: 'Sắp bắt đầu',
+        durationMinutes: 60,
       ),
       ParentScheduleItem(
         startTime: '16:30',
@@ -387,6 +388,7 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
         teacherOrRoom: 'Phòng học 302',
         mode: ParentScheduleMode.offline,
         statusLabel: 'Trực tiếp',
+        durationMinutes: 90,
       ),
     ];
     if (childId == studentMinhId) {
