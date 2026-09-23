@@ -17,18 +17,19 @@
 ## MỤC LỤC
 1. [TỔNG HỢP YÊU CẦU NÂNG CẤP MỚI TỪ NGƯỜI DÙNG](#1-tổng-hợp-yêu-cầu-nâng-cấp-mới-từ-người-dùng)
 2. [GAP ANALYSIS CHI TIẾT & ĐỐI CHIẾU ẢNH THIẾT KẾ MOCKUP 2](#2-gap-analysis-chi-tiết--đối-chiếu-ảnh-thiết-kế-mockup-2)
-3. [NGUYÊN TẮC THIẾT KẾ CHO NGƯỜI LỚN TUỔI (PARENT-FRIENDLY UX)](#3-nguyên-tắc-thiết-kế-cho-người-lớn-tuổi-parent-friendly-ux)
-4. [KIẾN TRÚC GIAO DIỆN & THÀNH PHẦN CHI TIẾT](#4-kiến-trúc-giao-diện--thành-phần-chi-tiết)
-   - [4.1. Header: Dynamic Greeting & Real Profile Data](#41-header-dynamic-greeting--real-profile-data)
-   - [4.2. Body: Phân tầng màu nền (Contrast Surface Layering)](#42-body-phân-tầng-màu-nền-contrast-surface-layering)
-   - [4.3. Thanh chọn con: Điều kiện hiển thị & Badge số lượng](#43-thanh-chọn-con-điều-kiện-hiển-thị--badge-số-lượng)
-   - [4.4. Cấu trúc Section Header Tách rời & Cơ chế Collapse](#44-cấu-trúc-section-header-tách-rời--cơ-chế-collapse)
-   - [4.5. Section "Cần xử lý" (Action Required)](#45-section-cần-xử-lý-action-required)
-   - [4.6. Section "Hôm nay / Tiếp theo" (Upcoming Schedule)](#46-section-hôm-nay--tiếp-theo-upcoming-schedule)
-   - [4.7. Section "Phân tích học tập" (Learning Analytics)](#47-section-phân-tích-học-tập-learning-analytics)
-5. [QUY CHUẨN DESIGN TOKENS (V2.0)](#5-quy-chuẩn-design-tokens-v20)
-6. [KẾ HOẠCH TRIỂN KHAI THEO TỪNG BƯỚC (STEP-BY-STEP IMPLEMENTATION)](#6-kế-hoạch-triển-khai-theo-từng-bước)
-7. [CHECKLIST NGHIỆM THU (VERIFICATION CHECKLIST)](#7-checklist-nghiệm-thu)
+3. [NGUYÊN TẮC VÀNG: CAM KẾT 100% DYNAMIC DATA BINDING (NÓI KHÔNG VỚI HARDCODE)](#3-nguyên-tắc-vàng-cam-kết-100-dynamic-data-binding-nói-không-với-hardcode)
+4. [NGUYÊN TẮC THIẾT KẾ CHO NGƯỜI LỚN TUỔI (PARENT-FRIENDLY UX)](#4-nguyên-tắc-thiết-kế-cho-người-lớn-tuổi-parent-friendly-ux)
+5. [KIẾN TRÚC GIAO DIỆN & THÀNH PHẦN CHI TIẾT](#5-kiến-trúc-giao-diện--thành-phần-chi-tiết)
+   - [5.1. Header: Dynamic Greeting & Real Profile Data](#51-header-dynamic-greeting--real-profile-data)
+   - [5.2. Body: Phân tầng màu nền (Contrast Surface Layering)](#52-body-phân-tầng-màu-nền-contrast-surface-layering)
+   - [5.3. Thanh chọn con: Điều kiện hiển thị & Badge số lượng](#53-thanh-chọn-con-điều-kiện-hiển-thị--badge-số-lượng)
+   - [5.4. Cấu trúc Section Header Tách rời & Cơ chế Collapse](#54-cấu-trúc-section-header-tách-rời--cơ-chế-collapse)
+   - [5.5. Section "Cần xử lý" (Action Required)](#55-section-cần-xử-lý-action-required)
+   - [5.6. Section "Hôm nay / Tiếp theo" (Upcoming Schedule)](#56-section-hôm-nay--tiếp-theo-upcoming-schedule)
+   - [5.7. Section "Phân tích học tập" (Learning Analytics)](#57-section-phân-tích-học-tập-learning-analytics)
+6. [QUY CHUẨN DESIGN TOKENS (V2.0)](#6-quy-chuẩn-design-tokens-v20)
+7. [KẾ HOẠCH TRIỂN KHAI THEO TỪNG BƯỚC (STEP-BY-STEP IMPLEMENTATION)](#7-kế-hoạch-triển-khai-theo-từng-bước)
+8. [CHECKLIST NGHIỆM THU (VERIFICATION CHECKLIST)](#8-checklist-nghiệm-thu)
 
 ---
 
@@ -63,7 +64,32 @@ Dựa trên phản hồi trực tiếp và 3 ảnh thiết kế mới nhất c�
 
 ---
 
-## 3. NGUYÊN TẮC THIẾT KẾ CHO NGƯỜI LỚN TUỔI (PARENT-FRIENDLY UX)
+## 3. NGUYÊN TẮC VÀNG: CAM KẾT 100% DYNAMIC DATA BINDING (NÓI KHÔNG VỚI HARDCODE)
+
+Để đảm bảo toàn bộ giao diện và hiệu ứng tương tác vận hành chính xác, mượt mà khi kết nối cơ sở dữ liệu thật từ Backend API (không bị phụ thuộc vào dữ liệu giả định):
+
+### 3.1. Bản đồ Ràng buộc Dữ liệu Động (Dynamic Data Binding Matrix)
+
+| Thành phần UI | Nguồn dữ liệu thật (Backend API & Runtime) | Biểu thức Logic Data Binding | Trạng thái Fallback / Rỗng |
+| :--- | :--- | :--- | :--- |
+| **Lời chào Header** | `DateTime.now().hour` | Giờ < 11: `"Chào buổi sáng"`<br>Giờ < 18: `"Chào buổi chiều"`<br>Giờ ≥ 18: `"Chào buổi tối"` | Luôn tính theo đồng hồ thiết bị thật |
+| **Tên phụ huynh** | `AuthBloc -> state.user.fullName` | `user?.fullName ?? user?.username ?? 'Gia đình!'` | Tự động cập nhật khi đổi tài khoản |
+| **Chuông thông báo** | Unread notifications count | Hiển thị badge đỏ khi `unreadCount > 0` | Ẩn badge đỏ khi `unreadCount == 0` |
+| **Thanh chọn con** | `GET /api/me/children` | - `children.length <= 1`: Ẩn nút "Tất cả các con"<br>- `children.length > 1`: Hiện nút xanh `Tất cả các con` kèm badge `${children.length}` | Khi `children.isEmpty`: Chuyển sang No-Child View |
+| **Lọc theo con** | Event `ParentHomeChildSelected(id)` | Khi chọn con: Gọi API theo `child.id` thật từ DB; UI lọc danh sách cảnh báo, lịch học, điểm số của con đó | Khi `childId == null`: Xem tổng hợp cả gia đình |
+| **Section Cần xử lý** | `GET /api/parent/children/:id/assignments` | Danh sách `ParentAlertItem` được parse từ các bài tập có `status == 'overdue'` và thông báo đổi lịch thật | Khi rỗng: Thẻ All-Clear `"0 việc tồn đọng - Tất cả ổn định"` ghép tên con thật |
+| **Ngày tháng Lịch học** | `DateTime.now()` | Format động bằng tiếng Việt: `Thứ [2-CN], [Ngày] Th[Tháng]` (ví dụ: `Thứ Tư, 23 Th9`), **tuyệt đối không fix cứng ngày** | Luôn chuẩn xác theo ngày thực tế |
+| **Thẻ Ca học hôm nay** | `GET /api/parent/children/:id/schedule` | Parse từ `upcoming_sessions`: Giờ bắt đầu (`startTime`), Thời lượng (`${durationMinutes}p`), Tên môn, Link Google Meet/Zoom hoặc Phòng học offline | Khi rỗng: Thẻ `"Hôm nay không có ca học nào"` |
+| **Section Phân tích** | `GET /api/parent/children/:id/grades` | - Điểm TB tuần: `averageScore.toStringAsFixed(1)`<br>- Tiến độ: `+${progressPercent}%`<br>- Cột biểu đồ: Lặp qua mảng điểm thật `weeklyTrend` để vẽ chiều cao động | Khi null: Thẻ `"Chưa có dữ liệu phân tích tuần này"` |
+| **Hiệu ứng Collapse** | Local Widget State (`bool _isExpanded`) | Quản lý độc lập bằng `StatefulWidget` + `AnimatedCrossFade`, hoạt động mượt mà cho 0 item, 1 item hay hàng chục item thật | Giữ trạng thái khi cuộn màn hình |
+
+### 3.2. Đảm bảo tính thích ứng (Graceful Degradation)
+- **Khi Backend trả về dữ liệu thật:** UI tự động tiêu thụ 100% dữ liệu từ models mà không cần sửa bất kỳ dòng code giao diện nào.
+- **Khi Backend tạm thời chưa có dữ liệu nộp bài:** Hệ thống hiển thị các Card Empty State tinh xảo (All-Clear, Không có lịch học, Chưa có báo cáo), tuyệt đối không bị vỡ layout hay lỗi null exception.
+
+---
+
+## 4. NGUYÊN TẮC THIẾT KẾ CHO NGƯỜI LỚN TUỔI (PARENT-FRIENDLY UX)
 
 Để phụ huynh (độ tuổi 35 - 55+) sử dụng ứng dụng một cách dễ chịu, thoải mái và không mỏi mắt, giao diện phải tuân thủ 4 nguyên lý:
 
@@ -85,9 +111,9 @@ Dựa trên phản hồi trực tiếp và 3 ảnh thiết kế mới nhất c�
 
 ---
 
-## 4. KIẾN TRÚC GIAO DIỆN & THÀNH PHẦN CHI TIẾT
+## 5. KIẾN TRÚC GIAO DIỆN & THÀNH PHẦN CHI TIẾT
 
-### 4.1. Header: Dynamic Greeting & Real Profile Data
+### 5.1. Header: Dynamic Greeting & Real Profile Data
 - **Vị trí:** Đặt ở đỉnh màn hình, nằm trên nền trắng sáng (`#FFFFFF`) hoặc `surface`.
 - **Thành phần:**
   - Bên trái:
@@ -120,7 +146,7 @@ Dựa trên phản hồi trực tiếp và 3 ảnh thiết kế mới nhất c�
 
 ---
 
-### 4.2. Body: Phân tầng màu nền (Contrast Surface Layering)
+### 5.2. Body: Phân tầng màu nền (Contrast Surface Layering)
 - **Cấu trúc Scaffold:**
   ```dart
   Scaffold(
@@ -146,7 +172,7 @@ Dựa trên phản hồi trực tiếp và 3 ảnh thiết kế mới nhất c�
 
 ---
 
-### 4.3. Thanh chọn con: Điều kiện hiển thị & Badge số lượng
+### 5.3. Thanh chọn con: Điều kiện hiển thị & Badge số lượng
 - **Dòng tiêu đề phụ:** `• FAMILY SCOPE • CHẾ ĐỘ GIÁM SÁT` (`blue600`, 11sp, bold 700, tracking 1.0) và `Cập nhật 2 phút trước` (`slate400`, 11sp).
 - **Quy tắc hiển thị Chip:**
   ```dart
@@ -168,7 +194,7 @@ Dựa trên phản hồi trực tiếp và 3 ảnh thiết kế mới nhất c�
 
 ---
 
-### 4.4. Cấu trúc Section Header Tách rời & Cơ chế Collapse
+### 5.4. Cấu trúc Section Header Tách rời & Cơ chế Collapse
 
 Mỗi Section sẽ tuân thủ mô hình widget chuẩn:
 ```
@@ -184,7 +210,7 @@ SectionContainer
 
 ---
 
-### 4.5. Section "Cần xử lý" (Action Required)
+### 5.5. Section "Cần xử lý" (Action Required)
 - **Header ngoài card:**
   + Chấm tròn trạng thái: Đỏ (nếu có việc) hoặc Xanh lá (nếu All-Clear).
   + Text: `CẦN XỬ LÝ` (bold 700, 14.5sp, `slate900`).
@@ -205,7 +231,7 @@ SectionContainer
 
 ---
 
-### 4.6. Section "Hôm nay / Tiếp theo" (Upcoming Schedule)
+### 5.6. Section "Hôm nay / Tiếp theo" (Upcoming Schedule)
 - **Header ngoài card:**
   + Icon lịch xanh `Icons.calendar_today_rounded` (size 19px, màu `blue600`).
   + Text: `HÔM NAY / TIẾP THEO` (bold 700, 14.5sp, `slate900`).
@@ -232,7 +258,7 @@ SectionContainer
 
 ---
 
-### 4.7. Section "Phân tích học tập" (Learning Analytics)
+### 5.7. Section "Phân tích học tập" (Learning Analytics)
 - **Header ngoài card:**
   + Icon xu hướng `Icons.insights_rounded` (màu `blue600`).
   + Text: `PHÂN TÍCH HỌC TẬP` (bold 700, 14.5sp, `slate900`).
@@ -252,7 +278,7 @@ SectionContainer
 
 ---
 
-## 5. QUY CHUẨN DESIGN TOKENS (V2.0)
+## 6. QUY CHUẨN DESIGN TOKENS (V2.0)
 
 ```dart
 // Backgrounds & Surface Hierarchy
@@ -285,7 +311,7 @@ final styleMetaTime  = tt.titleLarge?.copyWith(fontSize: 18, fontWeight: FontWei
 
 ---
 
-## 6. KẾ HOẠCH TRIỂN KHAI THEO TỪNG BƯỚC (STEP-BY-STEP IMPLEMENTATION)
+## 7. KẾ HOẠCH TRIỂN KHAI THEO TỪNG BƯỚC (STEP-BY-STEP IMPLEMENTATION)
 
 > ⚠️ **Quy tắc:** Chỉ code khi có lệnh yêu cầu. Sau mỗi bước chuyển đổi hoàn thành, thực hiện commit ngắn gọn và chạy `dart analyze`.
 
@@ -347,7 +373,7 @@ final styleMetaTime  = tt.titleLarge?.copyWith(fontSize: 18, fontWeight: FontWei
 
 ---
 
-## 7. CHECKLIST NGHIỆM THU (VERIFICATION CHECKLIST)
+## 8. CHECKLIST NGHIỆM THU (VERIFICATION CHECKLIST)
 
 - [ ] **Header:** Lời chào thay đổi đúng buổi (Sáng/Chiều/Tối) + hiển thị tên thật phụ huynh từ Auth state; nền header trắng tinh khiết.
 - [ ] **Background Contrast:** Body bên dưới cuộn trên nền xám dịu `#F8FAFC`, các Card trắng nổi bật rõ nét.
