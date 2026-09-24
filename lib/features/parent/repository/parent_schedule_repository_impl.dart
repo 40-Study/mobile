@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:study/core/logger/app_logger.dart';
+import 'package:study/features/auth/data/models/user_model.dart';
 import 'package:study/features/parent/data/models/family_scope_child.dart';
 import 'package:study/features/parent/data/models/parent_schedule_session.dart';
 import 'package:study/features/parent/data/parent_home_api_client.dart';
@@ -11,7 +13,6 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
     this.enablePreviewFallback = true,
   }) : _apiClient = apiClient;
 
-  // ignore: unused_field
   final ParentHomeApiClient? _apiClient;
   final bool enablePreviewFallback;
 
@@ -21,22 +22,14 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
 
   @override
   Future<List<FamilyScopeChild>> getChildren() async {
-    return [
-      const FamilyScopeChild(
-        id: studentMinhId,
-        name: 'Minh',
-        className: '10A1',
-        initialLetter: 'M',
-        badgeColor: Color(0xFFDBEAFE),
-      ),
-      const FamilyScopeChild(
-        id: studentLanId,
-        name: 'Lan',
-        className: '7B',
-        initialLetter: 'L',
-        badgeColor: Color(0xFFFCE7F3),
-      ),
-    ];
+    // 1. Tải danh sách con thật từ backend API
+    final realChildren = await _fetchRealChildren();
+
+    // 2. Nếu bật fallback, gộp với con mẫu Minh & Lan giống như trang Home
+    if (enablePreviewFallback) {
+      return _mergeWithMockChildren(realChildren);
+    }
+    return realChildren;
   }
 
   @override
@@ -44,7 +37,11 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
     String? childId,
     required DateTime date,
   }) async {
-    final allSessions = _buildMockSessionsForMonth(date);
+    final allSessions = await _getAllSessionsForTarget(
+      childId: childId,
+      anchorDate: date,
+    );
+
     var filtered = allSessions.where((s) => _isSameDay(s.startTime, date));
 
     if (childId != null && childId.isNotEmpty) {
@@ -61,7 +58,10 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
     String? childId,
     required DateTime month,
   }) async {
-    final allSessions = _buildMockSessionsForMonth(month);
+    final allSessions = await _getAllSessionsForTarget(
+      childId: childId,
+      anchorDate: month,
+    );
     final map = <DateTime, Set<String>>{};
 
     for (final session in allSessions) {
@@ -90,7 +90,10 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
       Duration(days: anchorDate.weekday - 1),
     );
     final sunday = monday.add(const Duration(days: 6));
-    final allSessions = _buildMockSessionsForMonth(anchorDate);
+    final allSessions = await _getAllSessionsForTarget(
+      childId: childId,
+      anchorDate: anchorDate,
+    );
 
     final weekSessions = allSessions.where((s) {
       if (childId != null && childId.isNotEmpty && s.childId != childId) {
@@ -131,11 +134,261 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
     return eventsMap.keys.toList();
   }
 
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
+  // =========================================================================
+  // API FETCH & SYNC HELPERS
+  // =========================================================================
+
+  Future<List<FamilyScopeChild>> _fetchRealChildren() async {
+    if (_apiClient == null) return [];
+    try {
+      final response = await _apiClient.getChildren();
+      final data = _extractData(response.data);
+      final list = _extractList(data, keys: ['children', 'items']);
+      return list
+          .asMap()
+          .entries
+          .map(
+            (e) => FamilyScopeChild.fromUserModel(
+              UserModel.fromJson(e.value as Map<String, dynamic>),
+              index: e.key,
+            ),
+          )
+          .toList();
+    } catch (e, stackTrace) {
+      AppLogger.w('ParentSchedule: fetch real children failed', e);
+      AppLogger.d('ParentSchedule children stackTrace', stackTrace);
+      return [];
+    }
   }
 
-  /// Sinh danh sách mock ca học phong phú theo tháng
+  Future<List<ParentScheduleSession>> _fetchRealSchedules(
+    String childId,
+    String childName,
+    Color childBadgeColor,
+  ) async {
+    if (_apiClient == null) return [];
+    try {
+      final response = await _apiClient.getSchedule(childId);
+      final data = _extractData(response.data);
+      final list = _extractList(
+        data,
+        keys: ['upcoming_sessions', 'schedules', 'items'],
+      );
+      return list
+          .map(
+            (e) => _mapRealSchedule(
+              e as Map<String, dynamic>,
+              childId: childId,
+              childName: childName,
+              childBadgeColor: childBadgeColor,
+            ),
+          )
+          .whereType<ParentScheduleSession>()
+          .toList();
+    } catch (e, stackTrace) {
+      AppLogger.w('ParentSchedule: fetch real schedule failed', e);
+      AppLogger.d('ParentSchedule schedule stackTrace', stackTrace);
+      return [];
+    }
+  }
+
+  ParentScheduleSession? _mapRealSchedule(
+    Map<String, dynamic> json, {
+    required String childId,
+    required String childName,
+    required Color childBadgeColor,
+  }) {
+    final rawStart = json['start_time'] ?? json['start_date'];
+    final rawEnd = json['end_time'] ?? json['end_date'];
+    final startDt = _parseDateTime(rawStart);
+    if (startDt == null) return null;
+
+    final endDt =
+        _parseDateTime(rawEnd) ?? startDt.add(const Duration(minutes: 90));
+    final className = json['class_name'] as String? ??
+        json['subject'] as String? ??
+        'Lớp học';
+    final topic = json['lesson_topic'] as String? ??
+        json['title'] as String? ??
+        'Chưa cập nhật nội dung bài học';
+    final instructor = json['instructor_name'] as String? ??
+        json['teacher'] as String? ??
+        'Giáo viên';
+    final room = json['room'] as String? ??
+        (json['meeting_url'] != null ? 'Google Meet' : 'Tại cơ sở');
+
+    return ParentScheduleSession(
+      id: json['id']?.toString() ?? 'real_${startDt.millisecondsSinceEpoch}',
+      childId: childId,
+      childName: childName,
+      childInitial: childName.isNotEmpty ? childName[0].toUpperCase() : 'C',
+      childBadgeColor: childBadgeColor,
+      subjectName: className,
+      lessonTopic: topic,
+      startTime: startDt,
+      endTime: endDt,
+      instructorName: instructor,
+      status: startDt.isBefore(DateTime.now())
+          ? ParentSessionStatus.completed
+          : ParentSessionStatus.upcoming,
+      roomOrPlatform: room,
+    );
+  }
+
+  Future<List<ParentScheduleSession>> _getAllSessionsForTarget({
+    String? childId,
+    required DateTime anchorDate,
+  }) async {
+    final list = <ParentScheduleSession>[];
+    final realChildren = await _fetchRealChildren();
+
+    // 1. Tải lịch của con thật từ backend
+    if (realChildren.isNotEmpty) {
+      for (final child in realChildren) {
+        if (childId == null || childId == child.id) {
+          final realSessions = await _fetchRealSchedules(
+            child.id,
+            child.name,
+            child.badgeColor,
+          );
+          if (realSessions.isNotEmpty) {
+            list.addAll(realSessions);
+          } else if (enablePreviewFallback) {
+            // Nếu backend chưa có lịch cho con thật, sinh mock mẫu cho con thật
+            list.addAll(_buildMockSessionsForTung(anchorDate, child));
+          }
+        }
+      }
+    } else if (enablePreviewFallback &&
+        (childId == null || childId == studentTungId)) {
+      // Mock con thật Mai Hoàng Tùng
+      final tungChild = FamilyScopeChild.sample(
+        id: studentTungId,
+        name: 'Mai Hoàng Tùng',
+        className: '12A',
+      );
+      list.addAll(_buildMockSessionsForTung(anchorDate, tungChild));
+    }
+
+    // 2. Gộp mock sessions của Minh & Lan khi enablePreviewFallback
+    if (enablePreviewFallback) {
+      if (childId == null ||
+          childId == studentMinhId ||
+          childId == studentLanId) {
+        list.addAll(_buildMockSessionsForMonth(anchorDate));
+      }
+    }
+
+    return list;
+  }
+
+  // =========================================================================
+  // MOCK DATA GENERATORS (DEMO FULL TÍNH NĂNG NHIỀU CON)
+  // =========================================================================
+
+  List<FamilyScopeChild> _mergeWithMockChildren(List<FamilyScopeChild> real) {
+    final list = <FamilyScopeChild>[];
+
+    // 1. Luôn giữ nguyên tài khoản con thật ở đầu danh sách
+    if (real.isNotEmpty) {
+      list.addAll(real);
+    } else {
+      list.add(
+        FamilyScopeChild.sample(
+          id: studentTungId,
+          name: 'Mai Hoàng Tùng',
+          className: '12A',
+        ),
+      );
+    }
+
+    // 2. Bổ sung Minh & Lan vào danh sách để trải nghiệm đầy đủ Family Scope
+    if (!list.any((c) => c.id == studentMinhId)) {
+      list.add(
+        const FamilyScopeChild(
+          id: studentMinhId,
+          name: 'Minh',
+          className: '10A1',
+          initialLetter: 'M',
+          badgeColor: Color(0xFFDBEAFE),
+        ),
+      );
+    }
+    if (!list.any((c) => c.id == studentLanId)) {
+      list.add(
+        const FamilyScopeChild(
+          id: studentLanId,
+          name: 'Lan',
+          className: '7B',
+          initialLetter: 'L',
+          badgeColor: Color(0xFFFCE7F3),
+        ),
+      );
+    }
+
+    return list;
+  }
+
+  List<ParentScheduleSession> _buildMockSessionsForTung(
+    DateTime anchorMonth,
+    FamilyScopeChild tung,
+  ) {
+    final now = DateTime.now();
+    final y = anchorMonth.year;
+    final m = anchorMonth.month;
+    final daysInMonth = DateTime(y, m + 1, 0).day;
+    final list = <ParentScheduleSession>[];
+
+    // Ca học hôm nay của Tùng
+    if (now.year == y && now.month == m) {
+      list.add(
+        ParentScheduleSession(
+          id: 'mock_${now.day}_tung_1',
+          childId: tung.id,
+          childName: tung.name,
+          childInitial: tung.initialLetter,
+          childBadgeColor: tung.badgeColor,
+          subjectName: 'Toán nâng cao 12',
+          lessonTopic: 'Chuyên đề Nguyên hàm & Tích phân từng phần',
+          startTime: DateTime(y, m, now.day, 7, 30),
+          endTime: DateTime(y, m, now.day, 9, 0),
+          instructorName: 'Thầy Hưng',
+          status: ParentSessionStatus.completed,
+          roomOrPlatform: 'Phòng 401, CS Quận 1',
+        ),
+      );
+    }
+
+    // Các ngày con Tùng học trong tháng: 4, 8, 12, 16, 20, 24, 28
+    final tungDays = {4, 8, 12, 16, 20, 24, 28};
+    for (final day in tungDays) {
+      final isToday = now.year == y && now.month == m && day == now.day;
+      if (day > daysInMonth || isToday) continue;
+      list.add(
+        ParentScheduleSession(
+          id: 'mock_${day}_tung',
+          childId: tung.id,
+          childName: tung.name,
+          childInitial: tung.initialLetter,
+          childBadgeColor: tung.badgeColor,
+          subjectName: day % 2 == 0 ? 'Toán 12' : 'Vật lý 12',
+          lessonTopic: day % 2 == 0
+              ? 'Khảo sát hàm số & Ứng dụng đạo hàm'
+              : 'Dao động điều hoà & Con lắc lò xo',
+          startTime: DateTime(y, m, day, 18, 0),
+          endTime: DateTime(y, m, day, 19, 30),
+          instructorName: 'Thầy Hưng',
+          status: day < now.day
+              ? ParentSessionStatus.completed
+              : ParentSessionStatus.upcoming,
+          roomOrPlatform: 'Google Meet',
+        ),
+      );
+    }
+
+    return list;
+  }
+
   List<ParentScheduleSession> _buildMockSessionsForMonth(DateTime anchorMonth) {
     final now = DateTime.now();
     final y = anchorMonth.year;
@@ -143,10 +396,9 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
     final daysInMonth = DateTime(y, m + 1, 0).day;
     final list = <ParentScheduleSession>[];
 
-    // 1. Luôn tạo ca học cho ngày HÔM NAY thực tế (nếu thuộc tháng đang xem)
+    // 1. Luôn tạo ca học cho ngày HÔM NAY thực tế
     if (now.year == y && now.month == m) {
       list.addAll([
-        // Ca 1 của Minh hôm nay: 09:00 - 10:00
         ParentScheduleSession(
           id: 'mock_${now.day}_minh_1',
           childId: studentMinhId,
@@ -161,7 +413,6 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
           status: ParentSessionStatus.inProgress,
           roomOrPlatform: 'Google Meet',
         ),
-        // Ca 2 của Minh hôm nay: 15:30 - 17:00
         ParentScheduleSession(
           id: 'mock_${now.day}_minh_2',
           childId: studentMinhId,
@@ -176,7 +427,6 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
           status: ParentSessionStatus.upcoming,
           roomOrPlatform: 'Phòng 204, CS Phan Xích Long',
         ),
-        // Ca của Lan hôm nay: 14:00 - 15:30
         ParentScheduleSession(
           id: 'mock_${now.day}_lan_1',
           childId: studentLanId,
@@ -195,17 +445,12 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
     }
 
     // 2. Mock các ngày khác trong tháng theo mẫu Ảnh 3
-    // Các ngày con Minh học:
-    // 1, 3, 5, 7, 9, 10, 12, 14, 16, 18, 19, 21, 23, 24, 28, 31
     final minhDays = {
       1, 3, 5, 7, 9, 10, 12, 14, 16, 18, 19, 21, 23, 24, 28, 31,
     };
     for (final day in minhDays) {
-      final isCurrentMonthToday =
-          now.year == y && now.month == m && day == now.day;
-      if (day > daysInMonth || isCurrentMonthToday) {
-        continue;
-      }
+      final isToday = now.year == y && now.month == m && day == now.day;
+      if (day > daysInMonth || isToday) continue;
       list.add(
         ParentScheduleSession(
           id: 'mock_${day}_minh',
@@ -228,17 +473,12 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
       );
     }
 
-    // Các ngày con Lan học:
-    // 2, 4, 6, 9, 10, 13, 14, 15, 18, 20, 23, 24, 26, 28, 30
     final lanDays = {
       2, 4, 6, 9, 10, 13, 14, 15, 18, 20, 23, 24, 26, 28, 30,
     };
     for (final day in lanDays) {
-      final isCurrentMonthToday =
-          now.year == y && now.month == m && day == now.day;
-      if (day > daysInMonth || isCurrentMonthToday) {
-        continue;
-      }
+      final isToday = now.year == y && now.month == m && day == now.day;
+      if (day > daysInMonth || isToday) continue;
       list.add(
         ParentScheduleSession(
           id: 'mock_${day}_lan',
@@ -262,5 +502,51 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
     }
 
     return list;
+  }
+
+  // =========================================================================
+  // UTILITIES
+  // =========================================================================
+
+  dynamic _extractData(dynamic responseData) {
+    if (responseData is Map<String, dynamic> &&
+        responseData.containsKey('data')) {
+      return responseData['data'];
+    }
+    return responseData;
+  }
+
+  List<dynamic> _extractList(dynamic data, {List<String> keys = const []}) {
+    if (data == null) return [];
+    if (data is List) return data;
+    if (data is Map<String, dynamic>) {
+      for (final key in keys) {
+        if (data[key] is List) return data[key] as List<dynamic>;
+      }
+      if (data['items'] is List) return data['items'] as List<dynamic>;
+      if (data['data'] is List) return data['data'] as List<dynamic>;
+    }
+    return [];
+  }
+
+  DateTime? _parseDateTime(Object? value) {
+    if (value == null) return null;
+    final text = value.toString();
+    try {
+      return DateTime.parse(text);
+    } catch (_) {
+      final match = RegExp(r'(\d{1,2}):(\d{2})').firstMatch(text);
+      if (match != null) {
+        final now = DateTime.now();
+        final h = int.parse(match.group(1)!);
+        final m = int.parse(match.group(2)!);
+        return DateTime(now.year, now.month, now.day, h, m);
+      }
+      return null;
+    }
+  }
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 }

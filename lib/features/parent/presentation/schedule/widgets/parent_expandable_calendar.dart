@@ -477,25 +477,28 @@ class ParentExpandableCalendar extends StatelessWidget {
           width: 0.8,
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildLegendItem(
-            color: const Color(0xFF2563EB),
-            text: 'Minh (Toán, Tin, Lý)',
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 14,
+        runSpacing: 6,
+        children: children.map((c) {
+          final color = _getColorForChild(c.id);
+          final subjectSummary = _getSubjectSummaryForChild(c.id);
+          return _buildLegendItem(
+            color: color,
+            text: '${c.name} ($subjectSummary)',
             cs: cs,
             tt: tt,
-          ),
-          const SizedBox(width: 16),
-          _buildLegendItem(
-            color: const Color(0xFFEC4899),
-            text: 'Lan (Anh, Văn)',
-            cs: cs,
-            tt: tt,
-          ),
-        ],
+          );
+        }).toList(),
       ),
     );
+  }
+
+  String _getSubjectSummaryForChild(String childId) {
+    if (childId.contains('minh')) return 'Toán, Tin, Lý';
+    if (childId.contains('lan')) return 'Anh, Văn';
+    return 'Toán, Lý';
   }
 
   Widget _buildLegendItem({
