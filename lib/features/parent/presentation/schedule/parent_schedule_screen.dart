@@ -7,14 +7,14 @@ import 'package:study/features/parent/bloc/schedule/parent_schedule_event.dart';
 import 'package:study/features/parent/bloc/schedule/parent_schedule_state.dart';
 import 'package:study/features/parent/data/models/parent_schedule_session.dart';
 import 'package:study/features/parent/presentation/children/manage_children_screen.dart';
-import 'package:study/features/parent/presentation/home/widgets/family_scope_selector.dart';
 import 'package:study/features/parent/presentation/home/widgets/parent_no_child_view.dart';
 import 'package:study/features/parent/presentation/schedule/widgets/date_group_header.dart';
 import 'package:study/features/parent/presentation/schedule/widgets/schedule_segmented_control.dart';
 import 'package:study/features/parent/presentation/schedule/widgets/week_calendar_card.dart';
-import 'package:study/features/parent/presentation/widgets/parent_schedule_card.dart';
+import 'package:study/features/parent/presentation/widgets/widgets.dart';
 import 'package:study/features/parent/repository/parent_schedule_repository.dart';
 import 'package:study/features/parent/repository/parent_schedule_repository_impl.dart';
+import 'package:study/features/student/presentation/notification/notification_screen.dart';
 import 'package:study/theme/theme.dart';
 
 /// Màn hình Tab Lịch học dành cho Phụ huynh.
@@ -41,13 +41,15 @@ class ParentScheduleScreen extends StatelessWidget {
             ? diContainer<ParentScheduleRepository>()
             : ParentScheduleRepositoryImpl(),
       )..add(const ParentScheduleStarted()),
-      child: const _ScheduleView(),
+      child: _ScheduleView(onNavigateToProfile: onNavigateToProfile),
     );
   }
 }
 
 class _ScheduleView extends StatelessWidget {
-  const _ScheduleView();
+  const _ScheduleView({this.onNavigateToProfile});
+
+  final VoidCallback? onNavigateToProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +79,10 @@ class _ScheduleView extends StatelessWidget {
               );
             }
 
-            return _ScheduleContent(surfaceBg: surfaceBg);
+            return _ScheduleContent(
+              surfaceBg: surfaceBg,
+              onNavigateToProfile: onNavigateToProfile,
+            );
           },
         ),
       ),
@@ -86,9 +91,13 @@ class _ScheduleView extends StatelessWidget {
 }
 
 class _ScheduleContent extends StatelessWidget {
-  const _ScheduleContent({required this.surfaceBg});
+  const _ScheduleContent({
+    required this.surfaceBg,
+    this.onNavigateToProfile,
+  });
 
   final Color surfaceBg;
+  final VoidCallback? onNavigateToProfile;
 
   void _openManageChildren(BuildContext context) {
     Navigator.of(context).push(
@@ -98,16 +107,19 @@ class _ScheduleContent extends StatelessWidget {
     );
   }
 
+  void _openNotifications(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const NotificationScreen(),
+      ),
+    );
+  }
+
   void _showSessionDetails(
     BuildContext context,
     ParentScheduleSession session,
   ) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _SessionDetailSheet(session: session),
-    );
+    showParentSessionDetailSheet(context, session: session);
   }
 
   @override
@@ -130,56 +142,13 @@ class _ScheduleContent extends StatelessWidget {
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              // 1. Header trên nền trắng tinh khiết
-              Container(
-                color: Colors.white,
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                  AppSpacing.lg,
-                  AppSpacing.md,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'LỊCH HỌC',
-                            style: tt.headlineSmall?.copyWith(
-                              color: cs.slate900,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 18,
-                              letterSpacing: 0.4,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'Theo dõi thời khóa biểu và ca học của con.',
-                            style: tt.bodySmall?.copyWith(
-                              color: cs.slate500,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
-                        borderRadius: AppRadius.borderMd,
-                      ),
-                      child: Icon(
-                        Icons.calendar_month_rounded,
-                        color: cs.blue600,
-                        size: 22,
-                      ),
-                    ),
-                  ],
-                ),
+              // 1. Header chuẩn đồng bộ với Trang chủ
+              ParentAppHeader(
+                icon: Icons.calendar_month_rounded,
+                categoryLabel: 'THỜI KHÓA BIỂU',
+                title: 'Lịch học của con',
+                onNotificationTap: () => _openNotifications(context),
+                onAvatarTap: onNavigateToProfile,
               ),
 
               // 2. Khối Body bo cong 24px trên nền surfaceBg
@@ -390,292 +359,6 @@ class _ScheduleContent extends StatelessWidget {
   }
 }
 
-/// Modal xem chi tiết buổi học (chỉ xem, tuyệt đối không có nút vào học).
-class _SessionDetailSheet extends StatelessWidget {
-  const _SessionDetailSheet({required this.session});
-
-  final ParentScheduleSession session;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Drag handle
-          Center(
-            child: Container(
-              width: 36,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: cs.slate300,
-                borderRadius: AppRadius.borderFull,
-              ),
-            ),
-          ),
-          // Tiêu đề & Nút đóng
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'CHI TIẾT BUỔI HỌC',
-                style: tt.labelLarge?.copyWith(
-                  color: cs.slate900,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                  fontSize: 14,
-                ),
-              ),
-              IconButton(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close_rounded, size: 20),
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-              ),
-            ],
-          ),
-          const Divider(height: 20),
-          // Header con + môn học
-          Row(
-            children: [
-              Container(
-                width: 28,
-                height: 28,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: session.childBadgeColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  session.childInitial,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13,
-                    color: cs.slate800,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '${session.childName} — ${session.subjectName}',
-                  style: tt.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: cs.slate900,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // Giờ học to rõ
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFBFDBFE), width: 0.8),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.access_time_filled_rounded,
-                  color: cs.blue600,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  session.timeRangeText,
-                  style: tt.titleMedium?.copyWith(
-                    color: cs.blue700,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  session.statusLabel,
-                  style: tt.labelMedium?.copyWith(
-                    color: cs.blue700,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Khối nội dung bài học
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'NỘI DUNG BÀI HỌC',
-                  style: tt.labelSmall?.copyWith(
-                    color: cs.slate500,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 11,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  session.lessonTopic.isNotEmpty
-                      ? session.lessonTopic
-                      : 'Chưa cập nhật nội dung bài học',
-                  style: tt.bodyMedium?.copyWith(
-                    color: cs.slate900,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // Giáo viên & Phòng học
-          Row(
-            children: [
-              Expanded(
-                child: _buildDetailTile(
-                  icon: Icons.person_outline_rounded,
-                  label: 'Giáo viên',
-                  value: session.instructorName,
-                  cs: cs,
-                  tt: tt,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildDetailTile(
-                  icon: Icons.meeting_room_outlined,
-                  label: 'Hình thức / Phòng',
-                  value: session.roomOrPlatform ?? 'Trực tuyến',
-                  cs: cs,
-                  tt: tt,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Thông báo lưu ý cho phụ huynh (giữ đúng vai trò quan sát)
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFFBEB),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFFFDE68A)),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.info_outline_rounded,
-                  color: Color(0xFFD97706),
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Phụ huynh lưu ý nhắc con chuẩn bị tài liệu trước giờ học.',
-                    style: tt.bodySmall?.copyWith(
-                      color: const Color(0xFF92400E),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Nút đóng
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: FilledButton.styleFrom(
-                backgroundColor: cs.slate900,
-                padding: const EdgeInsets.symmetric(vertical: 13),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text('Đóng'),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailTile({
-    required IconData icon,
-    required String label,
-    required String value,
-    required ColorScheme cs,
-    required TextTheme tt,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 14, color: cs.slate500),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: tt.labelSmall?.copyWith(
-                  color: cs.slate500,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: tt.bodySmall?.copyWith(
-              color: cs.slate800,
-              fontWeight: FontWeight.w700,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _ScheduleLoading extends StatelessWidget {
   const _ScheduleLoading();
