@@ -1,314 +1,349 @@
-# KẾ HOẠCH XÂY DỰNG GIAO DIỆN TAB LỊCH HỌC (PARENT SCHEDULE SCREEN) - V2.1
+# KẾ HOẠCH NÂNG CẤP GIAO DIỆN TAB LỊCH HỌC (PARENT SCHEDULE SCREEN) - V3.0
 
 > **Dự án:** 40Study Mobile App  
-> **Module:** Parent Experience (`mobile/lib/features/parent/presentation/schedule/` & `home/`)  
+> **Module:** Parent Experience (`mobile/lib/features/parent/`)  
 > **Nhánh thực hiện:** `UI/Parent`  
 > **Tài liệu tham chiếu:**  
-> - `C:\Users\tungm\Downloads\deliverable.md` (Đặc tả chi tiết vai trò Phụ huynh - Section A, B, C, D, E, G, H)  
-> - 2 ảnh thiết kế thực tế mới nhất: `uploaded_media_0_1790232695935.png` và `uploaded_media_1` (Giao diện chuẩn Tab Lịch học v2)  
-> - Chuẩn Trang chủ Phụ huynh mới cập nhật (`mobile/lib/features/parent/presentation/home/*`)  
-> - Chuẩn Design System Role Student (`mobile/lib/theme/*`, `features/student/presentation/schedule/*`)  
+> - `C:\Users\tungm\Downloads\deliverable.md` (Đặc tả vai trò Phụ huynh)  
+> - 3 ảnh thiết kế thực tế mới:  
+>   - `uploaded_media_0_1790240021078.png`: Phân tích loại bỏ option Hôm nay / Tuần này / Tháng này  
+>   - `uploaded_media_1_1790240021078.png`: Thiết kế Quyển lịch ở trạng thái Thu gọn (1 tuần)  
+>   - `uploaded_media_2_1790240021078.png`: Thiết kế Quyển lịch ở trạng thái Mở rộng (full tháng, multi-color dots theo từng con)  
+> - Trang chủ Phụ huynh (`ParentHomeScreen`) làm chuẩn thiết kế  
 > **Ngày cập nhật:** 24/09/2026  
-> **Phiên bản:** 2.1 (Chiến lược đồng bộ 1 cấu trúc Card ca học duy nhất cho cả Home và Schedule, Phụ huynh chỉ xem - không vào lớp)  
+> **Phiên bản:** 3.0 (Quyển lịch thu gọn/mở rộng, đồng bộ Header & Thanh chọn con, lọc ca học theo ngày được chọn, xem chi tiết ca học trên cả Home và Schedule)
 
 ---
 
 ## MỤC LỤC
-1. [TỔNG QUAN & PHÂN TÍCH 2 ẢNH THIẾT KẾ MỚI](#1-tổng-quan--phân-tích-2-ảnh-thiết-kế-mới)
-2. [ĐẶC TẢ QUAN TRỌNG: PHỤ HUYNH CHỈ XEM, KHÔNG VÀO LỚP HỌC](#2-đặc-tả-quan-trọng-phụ-huynh-chỉ-xem-không-vào-lớp-học)
-3. [CHIẾN LƯỢC ĐỒNG BỘ 1 CẤU TRÚC CARD CA HỌC DUY NHẤT (SINGLE UNIFIED CARD STRATEGY)](#3-chiến-lược-đồng-bộ-1-cấu-trúc-card-ca-học-duy-nhất)
-   - [3.1. Phân tích bối cảnh & Lý do loại bỏ 2 kiểu card riêng rẽ](#31-phân-tích-bối-cảnh--lý-do-loại-bỏ-2-kiểu-card-riêng-rẽ)
-   - [3.2. Lợi ích vượt trội cho Phụ huynh & Hệ thống](#32-lợi-ích-vượt-trội-cho-phụ-huynh--hệ-thống)
-   - [3.3. Tác động đến màn hình Trang chủ (Home) & Giải pháp tối ưu](#33-tác-động-đến-màn-hình-trang-chủ-home--giải-pháp-tối-ưu)
-   - [3.4. Thiết kế chi tiết Cấu trúc Card chuẩn duy nhất (Card Anatomy 4 tầng)](#34-thiết-kế-chi-tiết-cấu-trúc-card-chuẩn-duy-nhất)
-   - [3.5. Quy chuẩn 3 trạng thái Status Badge](#35-quy-chuẩn-3-trạng-thái-status-badge)
-4. [KIẾN TRÚC GIAO DIỆN & CẤU TRÚC THÀNH PHẦN TOÀN MÀN HÌNH LỊCH HỌC](#4-kiến-trúc-giao-diện--cấu-trúc-thành-phần-toàn-màn-hình-lịch-học)
-   - [4.1. Header: Nhận diện Tab Lịch học](#41-header-nhận-diện-tab-lịch-học)
-   - [4.2. Thanh chọn con (Family Scope Selector)](#42-thanh-chọn-con-family-scope-selector)
-   - [4.3. Bộ lọc thời gian (Segmented Control: Hôm nay / Tuần này / Tháng này)](#43-bộ-lọc-thời-gian-segmented-control)
-   - [4.4. Thẻ Lịch tuần thông minh (Week Calendar Card)](#44-thẻ-lịch-tuần-thông-minh-week-calendar-card)
-   - [4.5. Phân nhóm ca học theo ngày (Timeline Group Header)](#45-phân-nhóm-ca-học-theo-ngày)
-5. [TÁI SỬ DỤNG TỪ STUDENT ROLE & HOME PARENT](#5-tái-sử-dụng-từ-student-role--home-parent)
-6. [MA TRẬN TRẠNG THÁI HỆ THỐNG & CÁC TRƯỜNG HỢP NGOẠI LỆ (EDGE CASES)](#6-ma-trận-trạng-thái-hệ-thống--các-trường-hợp-ngoại-lệ)
-7. [THIẾT KẾ DATA MODELS, BLOC & REPOSITORY](#7-thiết-kế-data-models-bloc--repository)
-8. [KẾ HOẠCH TRIỂN KHAI THEO TỪNG BƯỚC (STEP-BY-STEP IMPLEMENTATION)](#8-kế-hoạch-triển-khai-theo-từng-bước)
-9. [CHECKLIST NGHIỆM THU (VERIFICATION CHECKLIST)](#9-checklist-nghiệm-thu)
+1. [TỔNG HỢP VÀ PHÂN TÍCH 5 Ý KIẾN CHỈ ĐẠO CỦA USER](#1-tổng-hợp-và-phân-tích-5-ý-kiến-chỉ-đạo-của-user)
+2. [PHÂN TÍCH 3 ẢNH THIẾT KẾ MỚI CHO QUYỂN LỊCH](#2-phân-tích-3-ảnh-thiết-kế-mới-cho-quyển-lịch)
+3. [KIẾN TRÚC GIAO DIỆN & CẤU TRÚC COMPONENT CHUẨN HOÁ](#3-kiến-trúc-giao-diện--cấu-trúc-component-chuẩn-hoá)
+   - [3.1. Đồng bộ Header với Trang chủ (ParentAppHeader)](#31-đồng-bộ-header-với-trang-chủ-parentappheader)
+   - [3.2. Chuẩn hoá Thanh chọn con dùng chung (Shared FamilyScopeSelector)](#32-chuẩn-hoá-thanh-chọn-con-dùng-chung-shared-familyscopeselector)
+   - [3.3. Quyển lịch thông minh Thu gọn / Mở rộng (ParentExpandableCalendar)](#33-quyển-lịch-thông-minh-thu-gọn--mở-rộng-parentexpandablecalendar)
+   - [3.4. Body hiển thị Card ca học theo ngày được chọn (Date-Filtered Session List)](#34-body-hiển-thị-card-ca-học-theo-ngày-được-chọn)
+   - [3.5. Đồng bộ chức năng Xem chi tiết ca học trên cả Home và Schedule](#35-đồng-bộ-chức-năng-xem-chi-tiết-ca-học-trên-cả-home-và-schedule)
+4. [THIẾT KẾ DATA MODEL, REPOSITORY & BLOC NÂNG CẤP](#4-thiết-kế-data-model-repository--bloc-nâng-cấp)
+5. [MA TRẬN TRẠNG THÁI & EDGE CASES](#5-ma-trận-trạng-thái--edge-cases)
+6. [KẾ HOẠCH TRIỂN KHAI CHI TIẾT THEO TỪNG BƯỚC (STEP-BY-STEP COMMIT PLAN)](#6-kế-hoạch-triển-khai-chi-tiết-theo-từng-bước)
+7. [CHECKLIST NGHIỆM THU CHẤT LƯỢNG (QUALITY GATES)](#7-checklist-nghiệm-thu-chất-lượng)
 
 ---
 
-## 1. TỔNG QUAN & PHÂN TÍCH 2 ẢNH THIẾT KẾ MỚI
+## 1. TỔNG HỢP VÀ PHÂN TÍCH 5 Ý KIẾN CHỈ ĐẠO CỦA USER
 
-Qua việc đối chiếu 2 ảnh chụp thiết kế thực tế mới nhất (`uploaded_media_0_1790232695935.png` và `uploaded_media_1`), giao diện Tab Lịch học được nâng cấp với các đặc trưng cốt lõi:
+### Ý kiến 1: Đồng bộ Header Tab Lịch học theo chuẩn Header Tab Home
+- **Vấn đề hiện tại:** Tab Lịch học đang tự cấu hình Header riêng (tiêu đề text đơn giản + icon vuông nhỏ), gây lệch tông về chiều cao, padding, font chữ và trải nghiệm chuyển tab.
+- **Yêu cầu giải pháp:**
+  - Lấy Header trang Home (`ParentHomeHeader`) làm chuẩn tuyệt đối:
+    - Container nền trắng `cs.surface`.
+    - Icon tròn `44x44` bên trái với icon đại diện màn hình (lịch học), nền xanh nhạt `#EFF6FF`, icon xanh `cs.blue600` (24px).
+    - Cột thông tin:
+      - Label trên: in hoa `THỜI KHÓA BIỂU` / `LỊCH HỌC CỦA CON`, font `11px`, `w700`, `letterSpacing: 1.1`, màu `cs.slate500`.
+      - Tiêu đề chính dưới: `Lịch học`, font `18px`, `w700`, màu `cs.slate900`.
+    - Cụm bên phải: Nút chuông thông báo (kèm badge đỏ khi có thông báo) + Avatar tròn của phụ huynh (radius 20) tap để mở Profile.
+  - Chuẩn hoá thành widget dùng chung hoặc kế thừa layout thống nhất.
 
-1. **Header tinh gọn, rõ ràng:**
-   - Góc trái: Biểu tượng lịch vuông bo góc xanh dương + Tiêu đề **`Lịch Học`** (font lớn, đậm).
-   - Góc phải: Icon chuông thông báo (kèm badge đỏ khi có thông báo chưa đọc) + Avatar cá nhân phụ huynh.
-2. **Thanh chọn con (Family Scope Selector):**
-   - Đã loại bỏ hoàn toàn các dòng text thừa.
-   - Nút xanh nổi bật: `Tất cả các con  2` (màu xanh thương hiệu `cs.blue600`, có badge đếm số lượng con `2`).
-   - Các chip con: `M  Minh (10A1)` (avatar chữ M nền xanh pastel), `L  Lan (7B)` (avatar chữ L nền hồng pastel).
-3. **Bộ lọc thời gian (Segmented Control 3 Tab):**
-   - Chuyển thành: `[Hôm nay]` | `[Tuần này]` | `[Tháng này]` (thay vì `Sắp tới` như bản thảo cũ).
-   - Trạng thái active (`Tuần này`) có nền trắng tinh khôi bo tròn nổi bật trên nền pill xám mờ.
-4. **Thẻ Lịch tuần thông minh (Week Calendar Card):**
-   - Đặt trong một Card trắng bo tròn mềm mại:
-     - Dòng trên: Icon lịch xanh + `Tuần 42 · 20 - 26 Tháng 10`, bên phải là pill badge `• 14 buổi học trong tuần`.
-     - Dải 7 ngày: `T2 20 ·`, `T3 21 ·`, `T4 22 ·`, `T5 23 ·`, `T6 24 •` (active capsule xanh dương), `T7 25 ·`, `CN 26 ·`.
-     - Ngày có ca học có chấm tròn sự kiện (event dot) phía dưới.
-5. **Timeline nhóm theo ngày (Date Grouping):**
-   - `• HÔM NAY — THỨ SÁU, 24 THÁNG 10` (bên phải: `3 ca học`).
-   - `• NGÀY MAI — THỨ BẢY, 25 THÁNG 10` (bên phải: `2 ca học`).
-6. **Hệ thống Card Ca học độc lập:**
-   - Đồng bộ cấu trúc card cho cả ca Online, Offline, Đang diễn ra, Sắp diễn ra và Đã kết thúc.
-   - **Tuyệt đối không có nút "Vào lớp học ngay"** (phù hợp với vai trò của Phụ huynh).
+### Ý kiến 2: Tách Thanh chọn con thành Shared Component trong role Parent
+- **Vấn đề hiện tại:** `FamilyScopeSelector` đang nằm riêng trong `presentation/home/widgets/` và các tham số padding, layout dễ bị phân mảnh khi tab Lịch học sử dụng.
+- **Yêu cầu giải pháp:**
+  - Di chuyển `FamilyScopeSelector` ra thư mục dùng chung: `lib/features/parent/presentation/widgets/family_scope_selector.dart`.
+  - Cả `ParentHomeScreen` và `ParentScheduleScreen` đều import và sử dụng chung 1 component duy nhất.
+  - Giữ nguyên trạng thái: Chiều cao `44px`, không có background trắng bao quanh, chip "Tất cả các con" xanh dương đậm có badge đếm số con, các chip con với avatar chữ cái đầu nền pastel.
+
+### Ý kiến 3: Thay thế bộ lọc thời gian bằng Quyển lịch Thu gọn / Mở rộng
+- **Vấn đề hiện tại:** Đang có bộ chọn 3 tab `Hôm nay / Tuần này / Tháng này` và dải lịch 1 tuần cố định không xem được tháng.
+- **Yêu cầu giải pháp:**
+  - **Loại bỏ hoàn toàn** option tab `Hôm nay / Tuần này / Tháng này` (`ScheduleSegmentedControl`).
+  - Xây dựng widget **Quyển lịch (Expandable Calendar)**:
+    - Mặc định ngày được chọn luôn là **ngày hôm nay theo thời gian thực** (`DateTime.now()`).
+    - **Trạng thái Thu gọn (Collapsed - Weekly View):** Hiển thị 1 tuần (chứa ngày đang chọn) gồm 7 ngày (T2 -> CN). Header hiển thị `Tuần [số tuần] · [ngày bắt đầu] - [ngày kết thúc] Tháng [tháng]` + badge `• X buổi học trong tuần`.
+    - **Trạng thái Mở rộng (Expanded - Monthly View):** Hiển thị full lưới ngày trong tháng (Grid 7 cột), có 2 nút `<` và `>` để chuyển tháng trước/sau.
+    - **Multi-color event dots:** Mỗi con có 1 màu chấm đại diện (vd: Minh màu xanh dương `•`, Lan màu hồng tím `•`). Ngày nào có lịch của con nào thì hiển thị chấm màu của con đó. Nếu cả 2 con cùng có lịch thì hiện 2 chấm cạnh nhau `• •`.
+    - Dưới cùng của lịch tháng có thanh **Chú thích (Legend):** `• Minh (Toán, Tin, Lý)   • Lan (Anh, Văn)`.
+    - Hỗ trợ thao tác chạm header hoặc icon để toggle Thu gọn / Mở rộng mượt mà.
+
+### Ý kiến 4: Body chỉ hiển thị ca học của ngày được chọn
+- **Vấn đề hiện tại:** Danh sách bên dưới gom tất cả các ca học trong tuần thành nhiều nhóm ngày, khiến phụ huynh khó tập trung vào ngày đang chọn.
+- **Yêu cầu giải pháp:**
+  - **Chỉ hiển thị các ca học của đúng ngày đang được chọn** trên lịch.
+  - **Khi chọn "Tất cả các con" (`selectedChildId == null`):**
+    - Chia làm các Section theo từng con trong ngày hôm đó:
+      - Section Con 1 (vd: Minh): Header con (Avatar tròn + Tên con Minh · Lớp 10A1 + Số ca học) ➔ Danh sách các thẻ `ParentScheduleCard` của Minh trong ngày.
+      - Section Con 2 (vd: Lan): Header con (Avatar tròn + Tên con Lan · Lớp 7B + Số ca học) ➔ Danh sách các thẻ `ParentScheduleCard` của Lan trong ngày.
+  - **Khi chọn 1 con cụ thể (`selectedChildId != null`):**
+    - Chỉ hiển thị danh sách các ca học của con đó trong ngày đã chọn.
+  - **Quy tắc sắp xếp:** Mặc định tăng dần theo thời gian bắt đầu ca học (`startTime`).
+  - Nếu ngày đó không có ca học: Hiển thị Thẻ Empty State "Không có ca học nào" với icon calendar và thông điệp nghỉ ngơi/tự học.
+
+### Ý kiến 5: Chức năng Xem chi tiết buổi học hoạt động trên cả Home và Schedule
+- **Vấn đề hiện tại:** Modal xem chi tiết ca học chỉ mới gắn trên tab Lịch học, ở màn hình Home nhấn vào card chưa hiển thị modal.
+- **Yêu cầu giải pháp:**
+  - Tách `_SessionDetailSheet` thành component dùng chung: `ParentSessionDetailSheet` (hoặc helper function `showParentSessionDetailSheet(BuildContext context, ParentScheduleSession session)`).
+  - Cả Card ca học ở màn hình Trang chủ (`upcoming_schedule_section.dart`) và màn hình Lịch học (`parent_schedule_screen.dart`) đều kích hoạt cùng một modal chi tiết này khi nhấn vào card hoặc nút `Xem chi tiết buổi học >`.
+  - **Đảm bảo tuyệt đối:** Phụ huynh chỉ xem (xem giáo viên, bài học, hình thức/phòng, lưu ý), **KHÔNG có nút vào lớp học**.
 
 ---
 
-## 2. ĐẶC TẢ QUAN TRỌNG: PHỤ HUYNH CHỈ XEM, KHÔNG VÀO LỚP HỌC
+## 2. PHÂN TÍCH 3 ẢNH THIẾT KẾ MỚI CHO QUYỂN LỊCH
 
-### 2.1. Phân định vai trò Phụ huynh vs Học sinh (Deliverable Spec Alignment)
-- **Học sinh (Student Role):** Là người trực tiếp tham gia lớp học trực tuyến, có nút CTA *"Vào lớp ngay"* / *"Tham gia phòng học"*.
-- **Phụ huynh (Parent Role):**
-  - Đóng vai trò **giám sát, đồng hành, nhắc nhở và quản lý học vụ**.
-  - Phụ huynh **KHÔNG** tham gia vào phòng học của con (Google Meet/Zoom) vì lý do quy chế lớp học, tính tập trung của học sinh và bảo mật sư phạm.
-  - Phụ huynh chỉ cần biết: Con học môn gì, bài nào, mấy giờ, ai dạy, và có đang trong giờ học hay không.
-  - Khi cần tìm hiểu sâu, phụ huynh nhấn **`Xem chi tiết buổi học >`** để xem đề cương, tài liệu, kết quả làm bài và nhận xét của giáo viên.
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│ ẢNH 1: HIỆN TRẠNG CẦN THAY THẾ                                          │
+│ [ Hôm nay ] [ Tuần này ] [ Tháng này ]  <-- BỎ HOÀN TOÀN                │
+│ [ Thẻ lịch tuần 7 ngày cố định ]                                       │
+└────────────────────────────────────────────────────────────────────────┘
 
-### 2.2. Quyết định thiết kế Card
-- **LOẠI BỎ HOÀN TOÀN** nút `Vào lớp học ngay` trên tất cả các Card ca học của Phụ huynh.
-- **LOẠI BỎ** hộp nhắc đưa đón cồng kềnh và nút `Bản đồ` rời rạc ở bản thảo cũ. Thông tin địa điểm cơ sở/phòng học được tích hợp tinh tế bên trong trang chi tiết buổi học nếu cần.
-- **THỐNG NHẤT HÀNH ĐỘNG DUY NHẤT:** Ở góc phải dưới mỗi card là link điều hướng:
-  `Xem chi tiết buổi học >` (font 13.5sp, bold 600, màu xanh `cs.blue600`).
-  Chạm vào sẽ mở `ScheduleDetailScreen` (hoặc `LessonDetailScreen` theo locked child context).
+┌────────────────────────────────────────────────────────────────────────┐
+│ ẢNH 2: QUYỂN LỊCH Ở TRẠNG THÁI THU GỌN (WEEKLY VIEW)                   │
+│ ┌────────────────────────────────────────────────────────────────────┐ │
+│ │ 📅 Tuần 42 · 20 - 26 Tháng 10          [ • 14 buổi học trong tuần ]│ │
+│ │                                                                    │ │
+│ │    T2      T3      T4      T5      T6      T7      CN              │ │
+│ │    20      21      22      23     ┌──┐     25      26              │ │
+│ │     •       •       •       •     │24│      •       •              │ │
+│ │                                   └──┘                             │ │
+│ │                                    (chọn: capsule xanh nhạt)       │ │
+│ └────────────────────────────────────────────────────────────────────┘ │
+│ (Chạm vào hoặc bấm toggle để MỞ RỘNG sang xem toàn bộ tháng)           │
+└────────────────────────────────────────────────────────────────────────┘
 
----
-
-## 3. CHIẾN LƯỢC ĐỒNG BỘ 1 CẤU TRÚC CARD CA HỌC DUY NHẤT
-
-### 3.1. Phân tích bối cảnh & Lý do loại bỏ 2 kiểu card riêng rẽ
-Trước đây, ứng dụng tồn tại 2 dạng card ca học khác nhau:
-1. **Ở Trang chủ (Home):** Dùng dạng card ngang tóm tắt (`_ScheduleItemCard`): Khối thời gian `64x52` bên trái, tên môn & con ở giữa, badge trạng thái bên phải.
-2. **Ở Tab Lịch học (Schedule):** Dùng dạng card dọc 4 tầng chi tiết (Avatar con & Status -> Giờ to rõ -> Box tên bài học -> Giáo viên & Link xem chi tiết).
-
-**Quyết định chuẩn hóa:** Loại bỏ dạng card ngang cũ của Trang chủ, **chỉ sử dụng DUY NHẤT 1 cấu trúc Card ca học chuẩn (chuẩn tab Lịch học)** cho toàn bộ ứng dụng Phụ huynh.
-
-### 3.2. Lợi ích vượt trội cho Phụ huynh & Hệ thống
-- **Tính nhất quán nhận thức (Cognitive Consistency):** Phụ huynh không bị bỡ ngỡ giữa 2 cách thể hiện. Bất kể ở Home hay Lịch học, thông tin được quét theo cùng một nhịp thị giác quen thuộc.
-- **Biết ngay hôm nay con học bài gì ngay tại Trang chủ:** Card cũ ở Home chỉ hiện môn học và giờ, không có bài học. Card mới hiển thị khối `Bài học: [Tên chuyên đề]` giúp phụ huynh nắm ngay nội dung con đang học mà không cần bấm vào trang con.
-- **Đồng bộ triệt để quyền hạn Phụ huynh:** Cả Home và Schedule đều không có nút vào lớp học, chỉ có link `Xem chi tiết buổi học >`.
-- **Tối ưu mã nguồn (DRY):** Tạo một component dùng chung duy nhất: `ParentScheduleCard` phục vụ cho cả `upcoming_schedule_section.dart` (Home) và `parent_schedule_screen.dart` (Schedule).
-
-### 3.3. Tác động đến màn hình Trang chủ (Home) & Giải pháp tối ưu
-- **Chiều cao card tăng từ ~76px lên ~145-155px:** 
-  - *Đánh giá:* Mục "Hôm nay / Tiếp theo" ở Home thường chỉ hiển thị 1-2 ca học sắp tới. Chiều cao lớn hơn giúp thẻ card thoáng hơn, chữ to rõ hơn, rất thích hợp cho mắt người lớn tuổi.
-  - *Giải pháp an toàn:* Section "Hôm nay / Tiếp theo" trên Home đã được trang bị cơ chế **Collapse (Thu gọn / Mở rộng)** toàn diện, phụ huynh hoàn toàn chủ động đóng/mở khi cần.
-
-### 3.4. Thiết kế chi tiết Cấu trúc Card chuẩn duy nhất
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ (Avatar M) Minh — Toán (Đại số 10)         [• Đang diễn ra] │ <- Tầng 1: Chủ thể & Trạng thái
-│                                                             │
-│ (Icon Clock) 09:00 — 10:00                                  │ <- Tầng 2: Thời gian to rõ
-│                                                             │
-│ ┌─────────────────────────────────────────────────────────┐ │
-│ │ Bài học: Phương trình bậc hai & Định lý Vi-ét           │ │ <- Tầng 3: Box đề tài bài học
-│ └─────────────────────────────────────────────────────────┘ │
-│                                                             │
-│ (Icon Person) Giáo viên: Cô Lan      Xem chi tiết buổi học >│ <- Tầng 4: Giáo viên & Navigation
-└─────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│ ẢNH 3: QUYỂN LỊCH Ở TRẠNG THÁI MỞ RỘNG (MONTHLY VIEW)                  │
+│ ┌────────────────────────────────────────────────────────────────────┐ │
+│ │ Tháng 10, 2026 📅                                  [ < ]   [ > ]   │ │
+│ │                                                                    │ │
+│ │    T2      T3      T4      T5      T6      T7      CN              │ │
+│ │    28      29      30       1       2       3       4              │ │
+│ │                             •       •              ••              │ │
+│ │     5       6       7       8       9      10      11              │ │
+│ │     •       •       •               •      ••                      │ │
+│ │    12      13      14      15      16      17      18              │ │
+│ │     •              ••       •       •              ••              │ │
+│ │    19      20      21      22      23     (24)     25              │ │
+│ │     •       •       •               •      ••                      │ │
+│ │    26      27      28      29      30      31       1              │ │
+│ │     •       •      ••               •       •                      │ │
+│ │                                                                    │ │
+│ │ ┌────────────────────────────────────────────────────────────────┐ │ │
+│ │ │   🔵 Minh (Toán, Tin, Lý)        🟣 Lan (Anh, Văn)             │ │ │
+│ │ └────────────────────────────────────────────────────────────────┘ │ │
+│ └────────────────────────────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-#### Chi tiết 4 tầng thông tin:
-| Tầng | Thành phần UI | Quy cách thiết kế (Typography & Color Tokens) |
-| :--- | :--- | :--- |
-| **1. Header Card** | - Avatar tròn con (Minh: `#DBEAFE`/`M` xanh; Lan: `#FCE7F3`/`L` hồng).<br>- Tên con — Môn học: `${childName} — ${subjectName}`<br>- Status Badge góc phải | - Avatar radius 13px (đường kính 26px).<br>- Tên con — môn: font 15sp, bold 700, màu `slate900`.<br>- Badge trạng thái bo tròn `AppRadius.borderFull`. |
-| **2. Khối Giờ học** | - Icon thời gian (trái): `access_time_rounded` hoặc `history_rounded`.<br>- Dải giờ: `09:00 — 10:00` | - Icon size 18px.<br>- Dải giờ: font 20sp, bold 800, màu `slate900`, khoảng cách letter-spacing nhẹ. |
-| **3. Box Bài học (Topic Container)** | - Container bo góc bo tròn mềm mại `AppRadius.borderMd` (10px).<br>- Nền xám/xanh rất nhạt `Color(0xFFF8FAFC)`.<br>- Text: `Bài học: ${lessonTopic}` | - Padding `10px 14px`.<br>- Tiền tố `Bài học:` font 13.5sp, semi-bold 600, màu `slate500`.<br>- Tên bài học: font 13.5sp, regular/medium 500, màu `slate800`. |
-| **4. Footer Card** | - Bên trái: Icon người `Icons.person_outline_rounded` (16px) + `Giáo viên: ${instructorName}`.<br>- Bên phải: Link text `Xem chi tiết buổi học` + icon `chevron_right_rounded` (18px). | - Giáo viên: font 13.5sp, màu `slate600`.<br>- Link: font 13.5sp, bold 600, màu xanh thương hiệu `TogetherColorsX.blue600`. |
-
-### 3.5. Quy chuẩn 3 trạng thái Status Badge
-1. **`• Đang diễn ra` (In-Progress):** Nền `Color(0xFFECFDF5)`, chữ & chấm tròn `Color(0xFF10B981)` xanh lá, font 12sp bold 700.
-2. **`Sắp diễn ra` (Upcoming):** Nền `Color(0xFFEFF6FF)`, chữ `Color(0xFF2563EB)` xanh dương, font 12sp bold 700.
-3. **`Đã kết thúc` (Completed):** Nền `Color(0xFFF1F5F9)`, chữ `Color(0xFF64748B)` xám, font 12sp bold 600.
-4. **Ngoại lệ: `Đã đổi lịch` / `Đã hủy`:** Đổi lịch nền vàng cam `#FEF3C7`/`#D97706`; Đã hủy nền đỏ nhạt `#FEE2E2`/`#DC2626`.
-
----
-
-## 4. KIẾN TRÚC GIAO DIỆN & CẤU TRÚC THÀNH PHẦN TOÀN MÀN HÌNH LỊCH HỌC
-
-```text
-ParentScheduleScreen (Scaffold: backgroundColor = surfaceBg)
-├── Header (Container trắng: ParentScheduleHeader)
-│   ├── Icon lịch bo góc xanh + Tiêu đề "Lịch Học"
-│   └── Actions: [Notification Bell Badge, Avatar Circle]
-│
-└── Body Container (surfaceBg, borderRadius top: 24, shadow upward)
-    ├── 1. FamilyScopeSelector ([Tất cả con  2] [Minh] [Lan])
-    ├── vGap16
-    ├── 2. ScheduleSegmentedControl ([Hôm nay] [Tuần này] [Tháng này])
-    ├── vGap16
-    ├── 3. WeekCalendarCard
-    │   ├── Top row: Tuần 42 · 20 - 26 Tháng 10 + [• 14 buổi học trong tuần]
-    │   └── Week strip: T2 20 ... T6 24 (active capsule) ... CN 26 với event dots
-    ├── vGap20
-    ├── 4. DateGroupSection (Hôm nay — Thứ Sáu, 24 Tháng 10  •  3 ca học)
-    │   ├── ParentScheduleCard 1: Minh — Toán (09:00 - 10:00) [• Đang diễn ra]
-    │   ├── ParentScheduleCard 2: Lan — Tiếng Anh (14:00 - 15:30) [Sắp diễn ra]
-    │   └── ParentScheduleCard 3: Minh — Khoa học tự nhiên (07:30 - 08:45) [Đã kết thúc]
-    ├── vGap20
-    └── 5. DateGroupSection (Ngày mai — Thứ Bảy, 25 Tháng 10  •  2 ca học)
-        ├── ParentScheduleCard 4: Lan — Toán tư duy (08:30 - 10:00) [Sắp diễn ra]
-        └── ParentScheduleCard 5: Minh — Vật lý 10 (14:30 - 16:00) [Sắp diễn ra]
-```
-
-### 4.1. Header: Nhận diện Tab Lịch học
-- Nền trắng tinh khiết (`Colors.white`), padding `fromLTRB(16, 8, 16, 16)`.
-- Icon bên trái: Box xanh dương `36x36px` bo góc chứa icon `Icons.calendar_month_rounded`.
-- Tiêu đề: `Lịch Học` (font 20-22sp, bold 700, màu `slate900`).
-- Nút chuông thông báo (kèm badge đỏ khi có tin mới) và avatar phụ huynh bên phải.
-
-### 4.2. Thanh chọn con (Family Scope Selector)
-- Nằm trên nền `surfaceBg` ngay sau phần cong bo góc của Body.
-- Nút xanh `Tất cả các con  2` khi được chọn; các chip con màu trắng nổi bật trên nền `surfaceBg`.
-- Ẩn nút "Tất cả các con" nếu tài khoản chỉ có 1 con.
-
-### 4.3. Bộ lọc thời gian (Segmented Control: Hôm nay / Tuần này / Tháng này)
-- Container nền xám nhạt `Color(0xFFF1F5F9)`, bo góc tròn 12px, padding 4px.
-- 3 Lựa chọn: `[Hôm nay]` | `[Tuần này]` (mặc định) | `[Tháng này]`.
-- Nút đang chọn: Nền trắng `Colors.white`, bo góc tròn 8px, chữ đậm, đổ bóng mềm nhẹ.
-
-### 4.4. Thẻ Lịch tuần thông minh (Week Calendar Card)
-- Container thẻ trắng bo góc `16px`, viền mờ và shadow nhẹ.
-- Header: Icon calendar xanh + `Tuần 42 · 20 - 26 Tháng 10` + Pill badge `• 14 buổi học trong tuần`.
-- Dải 7 ngày: Cột Thứ (`T2`..`CN`) và Ngày (`20`..`26`). Ngày chọn (`T6 24`) được highlight bằng viên thuốc capsule xanh pastel có chấm xanh đậm. Các ngày có ca học có chấm tròn sự kiện bên dưới.
-
-### 4.5. Phân nhóm ca học theo ngày (Timeline Group Header)
-- Dưới dải tuần là các nhóm ca học theo ngày:
-  - Header nhóm: Chấm tròn `•` + Text in hoa `HÔM NAY — THỨ SÁU, 24 THÁNG 10` + Pill badge `3 ca học`.
-  - Nhóm kế tiếp: `• NGÀY MAI — THỨ BẢY, 25 THÁNG 10` + Pill badge `2 ca học`.
+### Các quy tắc thiết kế cốt lõi rút ra từ ảnh:
+1. **Multi-color Dots:**
+   - Mỗi con tương ứng 1 màu dot cố định:
+     - Minh: Xanh dương `Color(0xFF2563EB)`.
+     - Lan: Hồng tím `Color(0xFFEC4899)`.
+   - Nếu trong ngày cả 2 con đều có ca học: Hiển thị 2 chấm dot liền kề `• •` dưới ngày đó.
+   - Nếu chọn 1 con cụ thể: Chỉ hiển thị chấm dot của con đó để giao diện tinh gọn, không gây rối mắt.
+2. **Trạng thái ngày được chọn:**
+   - Dạng tuần (Collapsed): Capsule xanh nhạt bo góc mềm mại, chữ số và thứ màu xanh dương đậm.
+   - Dạng tháng (Expanded): Vòng tròn xanh dương đậm `Color(0xFF2563EB)`, chữ số màu trắng nổi bật.
+3. **Thanh Chú thích (Legend) của Lịch tháng:**
+   - Bo góc tròn mềm mại, nền xám nhạt `Color(0xFFF8FAFC)`.
+   - Hiển thị chấm màu + Tên con + Tên các môn con đang học trong tháng (vd: `🔵 Minh (Toán, Tin, Lý)` và `🟣 Lan (Anh, Văn)`).
+4. **Header tháng tương tác:**
+   - Có 2 nút tròn `<` và `>` để duyệt tháng tiếp theo hoặc lùi lại tháng trước.
+   - Khi chọn một ngày trong tháng, lịch có thể tự động thu gọn lại hoặc người dùng nhấn nút thu gọn để dành trọn vẹn không gian cho danh sách ca học.
 
 ---
 
-## 5. TÁI SỬ DỤNG TỪ STUDENT ROLE & HOME PARENT
+## 3. KIẾN TRÚC GIAO DIỆN & CẤU TRÚC COMPONENT CHUẨN HOÁ
 
-| Thành phần | Nguồn tái sử dụng | Mức độ tái sử dụng & Điều chỉnh cho Parent |
-| :--- | :--- | :--- |
-| **Card Ca học dùng chung (`ParentScheduleCard`)** | Component mới chuẩn hóa | **Dùng chung 100%** cho cả Home (`upcoming_schedule_section.dart`) và Schedule (`parent_schedule_screen.dart`). |
-| **Thanh chọn con (Family Scope)** | `features/parent/presentation/home/widgets/family_scope_selector.dart` | **Tái sử dụng 100%**: Dùng chung logic chọn con, ẩn nút tất cả khi có 1 con, chip trắng nổi trên nền `surfaceBg`. |
-| **Logic tính lịch tuần & Event Dates** | `features/student/presentation/schedule/widgets/calendar_widget.dart` | **Kế thừa 80% logic tính ngày**: Kế thừa thuật toán tính ngày bắt đầu tuần, danh sách `DateTime` 7 ngày, so khớp `isSameDay`. |
-| **Design Tokens & Theme** | `theme/app_colors.dart`, `app_spacing.dart`, `app_radius.dart` | **Tái sử dụng 100%**: Bảng màu `TogetherColorsX.blue600`, `slate900`, `slate500`, radius chuẩn, shadow mềm. |
+### 3.1. Đồng bộ Header với Trang chủ (`ParentAppHeader`)
+- **Tập tin:** `lib/features/parent/presentation/widgets/parent_app_header.dart` (hoặc tái sử dụng cấu trúc `ParentHomeHeader` và mở rộng).
+- **Thuộc tính:**
+  - `leadingIcon`: Icon `Icons.calendar_month_rounded` (màu `cs.blue600`, nền `#EFF6FF`, shape circle 44x44).
+  - `categoryLabel`: Text in hoa `THỜI KHÓA BIỂU` (`11px, w700, cs.slate500, letterSpacing: 1.1`).
+  - `title`: `Lịch học của con` hoặc `Lịch học` (`18px, w700, cs.slate900`).
+  - `trailingActions`: Nút chuông thông báo (kèm badge đỏ) + Avatar tròn phụ huynh (`radius: 20`).
+- **Đảm bảo:** 100% kích thước, padding dọc/ngang, kiểu font, hiệu ứng tap trùng khớp hoàn toàn với Header trang Home.
+
+### 3.2. Chuẩn hoá Thanh chọn con dùng chung (`Shared FamilyScopeSelector`)
+- **Tập tin:** `lib/features/parent/presentation/widgets/family_scope_selector.dart`
+- **Di chuyển & Gom cụm:**
+  - Đưa từ `home/widgets/family_scope_selector.dart` ra `presentation/widgets/family_scope_selector.dart`.
+  - Re-export trong `presentation/widgets/widgets.dart` và `home/widgets/widgets.dart`.
+  - Cả Home và Schedule dùng cùng 1 file, không có sự sai lệch nào về padding hay giao diện.
+
+### 3.3. Quyển lịch thông minh Thu gọn / Mở rộng (`ParentExpandableCalendar`)
+- **Tập tin:** `lib/features/parent/presentation/schedule/widgets/parent_expandable_calendar.dart`
+- **Trạng thái:**
+  - `bool isExpanded` (mặc định: `false` - thu gọn 1 tuần để ưu tiên không gian cho ca học; khi bấm toggle hoặc icon lịch thì mở rộng full tháng).
+- **Thuộc tính:**
+  - `DateTime selectedDate`: Ngày được chọn (mặc định: `DateTime.now()`).
+  - `DateTime currentMonth`: Tháng đang hiển thị (khi ở chế độ tháng).
+  - `Map<DateTime, List<String>> childIdsWithEventsByDate`: Bản đồ lưu ngày -> danh sách `childId` có ca học vào ngày đó để hiển thị dot theo đúng màu con.
+  - `List<FamilyScopeChild> children`: Danh sách con để lấy màu dot và tên con hiển thị legend.
+  - `String? selectedChildId`: Con đang chọn (nếu null là chọn tất cả).
+  - `ValueChanged<DateTime> onDateSelected`: Callback khi tap chọn ngày.
+  - `ValueChanged<DateTime> onMonthChanged`: Callback khi next/prev tháng.
+  - `VoidCallback onToggleExpand`: Callback chuyển đổi thu gọn / mở rộng.
+
+### 3.4. Body hiển thị Card ca học theo ngày được chọn
+- **Tập tin:** Trong `parent_schedule_screen.dart`
+- **Logic hiển thị:**
+  1. Lọc tất cả ca học có `startTime` cùng ngày với `selectedDate`.
+  2. Sắp xếp danh sách ca học tăng dần theo `startTime`.
+  3. **Nếu `selectedChildId == null` (Tất cả con):**
+     - Nhóm theo con: `Map<String, List<ParentScheduleSession>>`.
+     - Duyệt từng con trong `children`:
+       - Nếu con đó có ca học trong ngày:
+         - Render Header con: Avatar tròn con + Tên con (vd: `MINH · LỚP 10A1`) + Badge số lượng ca học (`2 ca học`).
+         - Render danh sách các thẻ `ParentScheduleCard(session: session, onTap: ...)`.
+       - Khoảng cách giữa các section con là `16px`.
+     - Nếu không con nào có ca học: Hiển thị Thẻ Empty State "Không có ca học nào hôm nay".
+  4. **Nếu `selectedChildId != null` (1 con cụ thể):**
+     - Lọc các ca học của con đó trong ngày.
+     - Nếu có: Render danh sách các thẻ `ParentScheduleCard`.
+     - Nếu không: Render Empty State cho con đó.
+
+### 3.5. Đồng bộ chức năng Xem chi tiết ca học trên cả Home và Schedule
+- **Tập tin:** `lib/features/parent/presentation/widgets/parent_session_detail_sheet.dart`
+- **Hàm gọi tiện ích:**
+  ```dart
+  void showParentSessionDetailSheet(
+    BuildContext context, {
+    required ParentScheduleSession session,
+  });
+  ```
+- **Tích hợp:**
+  - **Trên tab Lịch học (`parent_schedule_screen.dart`):** Gọi khi tap vào card hoặc tap nút `Xem chi tiết buổi học >`.
+  - **Trên tab Trang chủ (`upcoming_schedule_section.dart` & `parent_home_screen.dart`):** Khi tap vào card ca học hôm nay hoặc `Xem chi tiết buổi học >` ➔ Mở cùng một BottomSheet chi tiết này.
+- **Nội dung BottomSheet chuẩn:**
+  - Tiêu đề: "CHI TIẾT BUỔI HỌC" + Nút `X` đóng.
+  - Avatar con + `[Tên con] — [Tên môn]` + Status badge (`• Đang diễn ra`, `Sắp diễn ra`, `Đã kết thúc`).
+  - Giờ học to rõ + ngày học (`Thứ X, ngày dd/MM/yyyy`).
+  - Khối nội dung bài học bo góc xám nhạt (`Bài học: ...`).
+  - Hàng thông tin: Giáo viên giảng dạy + Hình thức / Phòng học.
+  - Box ghi chú vàng dịu: Lưu ý phụ huynh chuẩn bị sách vở/tài liệu cho con.
+  - Nút "Đóng" ở đáy màn hình. Tuyệt đối **KHÔNG có nút "Vào lớp học ngay"**.
 
 ---
 
-## 6. MA TRẬN TRẠNG THÁI HỆ THỐNG & CÁC TRƯỜNG HỢP NGOẠI LỆ (EDGE CASES)
+## 4. THIẾT KẾ DATA MODEL, REPOSITORY & BLOC NÂNG CẤP
 
-| Tình huống / Ngữ cảnh | Giao diện hiển thị (UI Behavior) | Hành động của người dùng (Action) |
-| :--- | :--- | :--- |
-| **1. Chưa liên kết con (No-Child)** | Toàn bộ màn hình thay bằng `ParentNoChildView` chuẩn đã xây dựng ở Home. | Bấm nút "Liên kết hồ sơ con" để nhập mã. |
-| **2. Con chưa tham gia lớp nào (No-Class)** | Card Empty State: Icon lớp học mờ, tiêu đề *"Con chưa tham gia lớp học nào"*, giải thích rõ. | Nút "Liên hệ trung tâm / Tư vấn khóa học". |
-| **3. Ngày chọn không có ca học (Empty Date)** | Thẻ All-Clear giữa màn hình: Icon lịch xanh lá `verified_rounded`, *"Không có buổi học nào trong ngày này"*. | Bấm "Xem ngày tiếp theo có ca học" hoặc chuyển tab "Tuần này". |
-| **4. Đang tải dữ liệu (Loading State)** | Skeleton Shimmer: Hiệu ứng nhấp nháy cho dải tuần và 2 thẻ ca học giả lập. | Tránh giật màn hình khi tải mạng chậm. |
-| **5. Lỗi kết nối / Lỗi server (Error State)** | Banner báo lỗi màu đỏ nhạt + Nút "Thử lại", giữ nguyên ngày và tab đang chọn. | Bấm "Thử lại" hoặc kéo xuống để Refresh (`RefreshIndicator`). |
-| **6. Ngoại tuyến (Offline Mode)** | Hiển thị dữ liệu lịch đã lưu trong Local Cache kèm banner nhỏ màu vàng: *"Đang ngoại tuyến — Lịch học cập nhật lúc 08:30"*. | Link xem chi tiết vẫn mở được thông tin offline từ cache. |
+### 4.1. Nâng cấp Repository Interface & Implementation
+- Cập nhật `ParentScheduleRepository`:
+  - `Future<List<ParentScheduleSession>> getScheduleSessions({String? childId, DateTime? date, DateTime? month});`
+  - `Future<Map<DateTime, List<String>>> getEventsMapByMonth({String? childId, required DateTime month});`
+    - Trả về `Map<DateTime, List<String>>` trong đó `key` là ngày, `value` là danh sách `childId` có ca học ngày đó. Nhờ vậy UI dễ dàng render multi-color dots (chấm xanh cho Minh, chấm hồng cho Lan).
 
----
-
-## 7. THIẾT KẾ DATA MODELS, BLOC & REPOSITORY
-
-### 7.1. Data Model: `ParentScheduleSession` (Dùng chung cho cả Home & Schedule)
-```dart
-class ParentScheduleSession {
-  final String id;
-  final String childId;
-  final String childName;
-  final String childInitial;
-  final Color childBadgeColor;
-  final String subjectName;
-  final String lessonTopic;
-  final DateTime startTime;
-  final DateTime endTime;
-  final String instructorName;
-  final ParentSessionStatus status; // inProgress | upcoming | completed | cancelled | rescheduled
-  final String? statusNote;         // Lý do hủy/đổi lịch nếu có
-}
-```
-
-### 7.2. State Management: `ParentScheduleBloc`
+### 4.2. Nâng cấp `ParentScheduleBloc`
 - **Events:**
-  - `ParentScheduleStarted`: Tải lịch ban đầu.
-  - `ParentScheduleChildFilterChanged(String? childId)`: Lọc theo con (null = Tất cả các con).
-  - `ParentScheduleTabChanged(ParentScheduleTab tab)`: Chuyển tab Hôm nay / Tuần này / Tháng này.
-  - `ParentScheduleDateSelected(DateTime date)`: Chọn ngày trên dải tuần.
-  - `ParentScheduleWeekChanged(DateTime weekStart)`: Chuyển tuần.
-  - `ParentScheduleRefreshed`: Kéo làm mới dữ liệu.
-- **States:**
-  - `ParentScheduleInitial`: Khởi tạo.
-  - `ParentScheduleLoading`: Đang fetch dữ liệu.
-  - `ParentScheduleSuccess`: Chứa danh sách `children`, `selectedChildId`, `currentWeekStart`, `selectedDate`, `activeTab`, danh sách `sessions`, `eventDates`.
-  - `ParentScheduleFailure`: Chứa thông báo lỗi.
+  - `ParentScheduleStarted({String? childId, DateTime? initialDate})`: Khởi tạo tải danh sách con, lấy ca học ngày hôm nay theo thời gian thực và lấy map events tháng hiện tại.
+  - `ParentScheduleChildChanged(String? childId)`: Chọn con khác hoặc chọn tất cả con.
+  - `ParentScheduleDateSelected(DateTime date)`: Chọn ngày trên lịch. Tự động load sessions của ngày đó.
+  - `ParentScheduleMonthChanged(DateTime month)`: Chuyển tháng trên lịch mở rộng.
+  - `ParentScheduleCalendarModeToggled()`: Chuyển đổi giữa Thu gọn (Week) và Mở rộng (Month).
+  - `ParentScheduleRefreshed()`: Kéo để tải lại dữ liệu.
+- **State (`ParentScheduleState`):**
+  - `selectedDate`: Ngày đang chọn (mặc định: `DateTime.now()`).
+  - `currentMonth`: Tháng đang hiển thị trên lịch.
+  - `isCalendarExpanded`: `bool` (thu gọn / mở rộng).
+  - `eventsMap`: `Map<DateTime, List<String>>` (ngày -> danh sách con có ca học).
+  - `sessions`: Danh sách ca học của ngày được chọn.
+  - Helper getter `sessionsByChild`: Nhóm ca học theo từng con trong ngày được chọn.
+  - Helper getter `sessionsCountForWeek`: Đếm tổng số buổi học trong tuần chứa `selectedDate` để hiển thị trên badge của lịch thu gọn (vd: `• 14 buổi học trong tuần`).
 
 ---
 
-## 8. KẾ HOẠCH TRIỂN KHAI THEO TỪNG BƯỚC
+## 5. MA TRẬN TRẠNG THÁI & EDGE CASES
 
-> **LƯU Ý:** Giai đoạn này chỉ lập và hoàn thiện tài liệu kế hoạch. KHÔNG viết code sản phẩm ở bước này.
-
-### Bước 1: Chuẩn bị Models & Repository Mock Data
-- Tạo model `ParentScheduleSession` và enum `ParentSessionStatus`, `ParentScheduleTab` (`today`, `week`, `month`).
-- Tạo mock data chuẩn khớp hoàn toàn với ảnh thiết kế:
-  - Minh: Toán (09:00 - 10:00, Đang diễn ra, Cô Lan, Phương trình bậc hai & Định lý Vi-ét).
-  - Lan: Tiếng Anh (14:00 - 15:30, Sắp diễn ra, Thầy Nam, Speaking Fluency & Unit 4 Presentation).
-  - Minh: Khoa học tự nhiên (07:30 - 08:45, Đã kết thúc, Thầy Hùng, Cấu tạo phân tử).
-  - Lan: Toán tư duy ngày mai (08:30 - 10:00, Sắp diễn ra, Cô Hương).
-  - Minh: Vật lý 10 ngày mai (14:30 - 16:00, Sắp diễn ra, Thầy Dũng).
-
-### Bước 2: Xây dựng Component Card Dùng Chung (`ParentScheduleCard`)
-- Xây dựng widget `ParentScheduleCard` theo đúng thiết kế 4 tầng:
-  1. Avatar con + Tên con — Môn học + Badge trạng thái (Đang diễn ra / Sắp diễn ra / Đã kết thúc).
-  2. Icon đồng hồ + Thời gian to rõ (`09:00 — 10:00`).
-  3. Box `Bài học: ${lessonTopic}` nền xám nhạt.
-  4. Footer: `Giáo viên: ${instructorName}` (trái) và link `Xem chi tiết buổi học >` (phải).
-- **Tuyệt đối không có nút "Vào lớp học ngay" hay nút "Bản đồ".**
-
-### Bước 3: Đồng bộ Card sang Màn hình Trang chủ (`ParentHomeScreen`)
-- Cập nhật [`upcoming_schedule_section.dart`](file:///C:/ForteX/mobile/lib/features/parent/presentation/home/widgets/upcoming_schedule_section.dart) ở Trang chủ: Thay thế card ngang cũ `_ScheduleItemCard` bằng card mới `ParentScheduleCard`.
-- Bổ sung data binding trường `lessonTopic` để card hiển thị đầy đủ tên bài học trên Trang chủ.
-
-### Bước 4: Xây dựng BLoC Quản lý State Lịch học
-- Tạo `ParentScheduleBloc`, `ParentScheduleEvent`, `ParentScheduleState`.
-- Hỗ trợ lọc theo con, chọn ngày tuần, chuyển tab (Hôm nay / Tuần này / Tháng này) và nhóm ca học theo ngày.
-
-### Bước 5: Xây dựng UI Components Dải lịch tuần & Bộ lọc
-- Tạo `ScheduleSegmentedControl` (Hôm nay / Tuần này / Tháng này).
-- Tạo `WeekCalendarCard` bọc trong thẻ trắng: header tuần + badge số buổi trong tuần + dải 7 ngày với capsule highlight và chấm event dot.
-- Tạo `DateGroupHeader` hiển thị `• HÔM NAY — THỨ SÁU, 24 THÁNG 10` kèm pill badge `3 ca học`.
-
-### Bước 6: Ráp nối Toàn diện Màn hình `ParentScheduleScreen` & Xử lý Ngoại lệ
-- Tích hợp Header, `FamilyScopeSelector`, `ScheduleSegmentedControl`, `WeekCalendarCard`, danh sách `DateGroupSection` và các `ParentScheduleCard`.
-- Áp dụng phân tầng màu nền: Header trắng, Body `surfaceBg`.
-- Xử lý No-Child, No-Class, Empty Date, Loading Skeleton và Error Retry.
-
-### Bước 7: Kiểm thử & Phân tích Tĩnh
-- Chạy `flutter analyze` đảm bảo không có bất kỳ lỗi linter nào.
-- Kiểm tra tính tương thích và mượt mà trên ứng dụng.
+| Trường hợp (Edge Case) | Hành vi giao diện (Expected UI Behavior) |
+| :--- | :--- |
+| **Hôm nay theo thời gian thực** | Khi mở tab Lịch học, ngày được chọn tự động là `DateTime.now()`. Lịch thu gọn tự động căn tuần chứa ngày hôm nay. |
+| **Ngày có ca học của cả Minh & Lan** | Trên lịch tháng hiển thị 2 chấm tròn kế nhau: `•` (xanh) và `•` (hồng). Khi ở chế độ "Tất cả con", body chia 2 section: Section Minh và Section Lan. |
+| **Ngày chỉ có ca học của 1 con** | Trên lịch tháng chỉ hiển thị 1 chấm màu của con đó. Khi ở chế độ "Tất cả con", body chỉ hiển thị section của con có ca học. |
+| **Ngày không có ca học nào (Ngày nghỉ)** | Lịch không có chấm dot. Body hiển thị Card Empty State thân thiện: "Hôm nay không có ca học nào. Thời gian dành cho nghỉ ngơi hoặc tự ôn tập." |
+| **Đang lọc 1 con cụ thể (vd: Minh)** | Lịch chỉ hiển thị chấm xanh của Minh. Body chỉ hiển thị các ca học của Minh. Không hiển thị Section phân chia con nữa. |
+| **Chưa liên kết tài khoản con nào** | Hiển thị `ParentNoChildView` chuẩn với nút liên kết tài khoản con. |
+| **Kéo xuống làm mới (Pull-to-refresh)** | Reload đồng thời danh sách con, map events tháng và ca học ngày được chọn. |
 
 ---
 
-## 9. CHECKLIST NGHIỆM THU (VERIFICATION CHECKLIST)
+## 6. KẾ HOẠCH TRIỂN KHAI CHI TIẾT THEO TỪNG BƯỚC
 
-- [ ] **Đồng bộ Card duy nhất:** Cả Trang chủ (Home) và Tab Lịch học (Schedule) đều hiển thị cùng 1 cấu trúc card `ParentScheduleCard`.
-- [ ] **Header Tab Lịch học:** Icon lịch vuông xanh + tiêu đề `Lịch Học` + chuông thông báo và avatar.
-- [ ] **Thanh chọn con:** Chip `Tất cả các con  2` màu xanh, chip con nền trắng; ẩn Tất cả khi chỉ có 1 con.
-- [ ] **Bộ lọc 3 Tab:** `Hôm nay` | `Tuần này` | `Tháng này`.
-- [ ] **Thẻ Lịch tuần:** Nằm trong card trắng, có dòng `Tuần 42 · 20 - 26 Tháng 10` + pill `• 14 buổi học trong tuần`; dải 7 ngày có capsule highlight và chấm event dot.
-- [ ] **Phân nhóm ngày:** Dấu chấm tròn + Text in hoa `HÔM NAY — THỨ SÁU, 24 THÁNG 10` + badge `3 ca học`.
-- [ ] **Card Ca học chuẩn:**
-  - [ ] Hiển thị avatar tròn con + Tên con — Môn học.
-  - [ ] Status badge: `• Đang diễn ra` (xanh lá), `Sắp diễn ra` (xanh dương), `Đã kết thúc` (xám).
-  - [ ] Thời gian to rõ (`09:00 — 10:00`, `14:00 — 15:30`...).
-  - [ ] Khối bo góc `Bài học: [Tên bài học]`.
-  - [ ] Footer hiển thị tên giáo viên và link `Xem chi tiết buổi học >`.
-  - [ ] **KHÔNG CÓ nút "Vào lớp học ngay" và KHÔNG CÓ nút "Bản đồ".**
-- [ ] **Ngoại lệ (Edge cases):** Empty date hiển thị thẻ All-clear; No-child hiển thị `ParentNoChildView`.
-- [ ] **Chất lượng mã nguồn:** `flutter analyze` đạt **No issues found!**
+Sau mỗi bước hoàn thành, chạy `flutter analyze` kiểm tra sạch lỗi và thực hiện git commit ngắn gọn theo quy chuẩn Conventional Commits.
+
+### 📌 Bước 1: Chuẩn hoá Shared Components (`FamilyScopeSelector` & `ParentSessionDetailSheet`)
+1. Di chuyển `family_scope_selector.dart` sang `lib/features/parent/presentation/widgets/family_scope_selector.dart`.
+2. Tạo component modal chi tiết buổi học dùng chung: `lib/features/parent/presentation/widgets/parent_session_detail_sheet.dart` với hàm tiện ích `showParentSessionDetailSheet`.
+3. Cập nhật `upcoming_schedule_section.dart` trên trang Home: Khi tap vào card hoặc nút xem chi tiết thì mở `showParentSessionDetailSheet`.
+4. Export các widget trong `lib/features/parent/presentation/widgets/widgets.dart`.
+5. **Git Commit:** `feat(parent): extract shared FamilyScopeSelector and ParentSessionDetailSheet for home and schedule`
+
+### 📌 Bước 2: Nâng cấp Header đồng bộ với Home (`ParentAppHeader`)
+1. Xây dựng component `ParentAppHeader` tại `lib/features/parent/presentation/widgets/parent_app_header.dart` với cấu trúc chuẩn Home (Icon tròn 44x44, category in hoa, tiêu đề 18px w700, chuông thông báo có badge, avatar phụ huynh).
+2. Tích hợp `ParentAppHeader` vào `ParentScheduleScreen`, đồng bộ 100% kích thước, khoảng cách và thẩm mỹ.
+3. **Git Commit:** `feat(parent): standardize ParentAppHeader matching home screen design`
+
+### 📌 Bước 3: Nâng cấp Repository & Data Model hỗ trợ Multi-color Dots & Lịch tháng
+1. Bổ sung phương thức `getEventsMapByMonth` trong `ParentScheduleRepository` và `ParentScheduleRepositoryImpl` trả về `Map<DateTime, List<String>>`.
+2. Tạo mock data ca học phong phú theo cả tháng cho Minh (xanh) và Lan (hồng) để thể hiện rõ multi-color dots trên lịch.
+3. Xoá bỏ enum `ParentScheduleTab` (Hôm nay / Tuần này / Tháng này) không còn dùng.
+4. **Git Commit:** `feat(parent): enhance schedule repository with month events map and multi-child support`
+
+### 📌 Bước 4: Xây dựng Quyển lịch Thu gọn / Mở rộng (`ParentExpandableCalendar`)
+1. Tạo widget `lib/features/parent/presentation/schedule/widgets/parent_expandable_calendar.dart`:
+   - Trạng thái Thu gọn: Dải 7 ngày của tuần, badge tổng số buổi học trong tuần, highlight capsule ngày chọn.
+   - Trạng thái Mở rộng: Lưới ngày trong tháng, 2 nút `< >` chuyển tháng, vòng tròn xanh highlight ngày chọn, multi-color dots theo từng con, thanh chú thích (Legend) môn học của con ở chân card.
+   - Nút / thao tác toggle thu gọn - mở rộng mượt mà.
+2. Xoá bỏ các widget cũ không còn dùng (`schedule_segmented_control.dart`, `week_calendar_card.dart`).
+3. **Git Commit:** `feat(parent): build ParentExpandableCalendar supporting week and month views with multi-color dots`
+
+### 📌 Bước 5: Cập nhật `ParentScheduleBloc` quản lý trạng thái lịch và lọc theo ngày
+1. Cập nhật `parent_schedule_event.dart`: Xoá event tabChanged, thêm event `ParentScheduleCalendarModeToggled`, `ParentScheduleMonthChanged`.
+2. Cập nhật `parent_schedule_state.dart`: Quản lý `isCalendarExpanded`, `eventsMap`, `currentMonth`, helper `sessionsByChild`.
+3. Cập nhật `parent_schedule_bloc.dart`: Xử lý logic tải ca học của ngày được chọn và map chấm sự kiện của tháng.
+4. **Git Commit:** `feat(parent): update ParentScheduleBloc for expandable calendar and date-filtered sessions`
+
+### 📌 Bước 6: Ráp nối hoàn chỉnh `ParentScheduleScreen` theo 5 yêu cầu
+1. Cập nhật `parent_schedule_screen.dart`:
+   - Header chuẩn `ParentAppHeader`.
+   - `FamilyScopeSelector` dùng chung.
+   - `ParentExpandableCalendar` (thu gọn/mở rộng, multi-color dots).
+   - Body: Chỉ hiển thị các ca học trong ngày được chọn.
+     - Khi chọn tất cả con: Phân chia theo Section từng con kèm avatar và số lượng ca.
+     - Khi chọn 1 con: Hiển thị các ca của con đó.
+     - Sắp xếp tăng dần theo `startTime`.
+   - Tap card mở `showParentSessionDetailSheet`.
+2. **Git Commit:** `feat(parent): assemble updated ParentScheduleScreen with date filtering and grouped child sections`
+
+### 📌 Bước 7: Nghiệm thu toàn diện (Verification & Quality Gates)
+1. Chạy `flutter analyze` cho toàn bộ dự án và `lib/features/parent/`.
+2. Kiểm tra không còn bất kỳ lỗi compile hay warning linter nào.
+3. Rà soát lại toàn bộ 5 yêu cầu của User:
+   - Header đồng bộ với Home? -> Đạt.
+   - Thanh chọn con dùng chung 1 component duy nhất? -> Đạt.
+   - Quyển lịch có thu gọn/mở rộng, chuyển tháng, multi-color dots, bỏ option tab? -> Đạt.
+   - Body chỉ hiển thị ca học ngày chọn, gom theo con khi chọn tất cả? -> Đạt.
+   - Xem chi tiết hoạt động trên cả Home và Schedule? -> Đạt.
+
+---
+
+## 7. CHECKLIST NGHIỆM THU CHẤT LƯỢNG
+
+- [ ] **Đồng bộ Header:** Kích thước, padding, icon 44x44, font chữ, chuông thông báo, avatar phụ huynh giữa Home và Schedule hoàn toàn nhất quán.
+- [ ] **Thanh chọn con:** Dùng chung duy nhất một component `FamilyScopeSelector` trong `lib/features/parent/presentation/widgets/`.
+- [ ] **Quyển lịch thu gọn/mở rộng:**
+  - [ ] Mặc định ngày chọn là hôm nay theo thời gian thực (`DateTime.now()`).
+  - [ ] Thu gọn: Hiển thị 1 tuần, badge số ca học trong tuần.
+  - [ ] Mở rộng: Hiển thị toàn bộ tháng, chuyển tháng bằng nút `< >`.
+  - [ ] Multi-color dots: Minh chấm xanh, Lan chấm hồng; 2 con cùng có lịch thì hiện 2 chấm cạnh nhau.
+  - [ ] Chú thích (Legend) hiển thị ở cuối lịch tháng: `• Minh (Toán, Tin, Lý)   • Lan (Anh, Văn)`.
+  - [ ] Đã loại bỏ hoàn toàn bộ chọn 3 tab `Hôm nay / Tuần này / Tháng này`.
+- [ ] **Body danh sách ca học:**
+  - [ ] Chỉ hiển thị các buổi học của ngày đang chọn.
+  - [ ] Chọn "Tất cả con" ➔ Tách thành các Section theo từng con với header con riêng biệt.
+  - [ ] Chọn 1 con ➔ Chỉ hiển thị các ca học của con đó.
+  - [ ] Sắp xếp tăng dần theo giờ bắt đầu (`startTime`).
+  - [ ] Empty state khi ngày chọn không có ca học.
+- [ ] **Xem chi tiết ca học:**
+  - [ ] Hoạt động mượt mà trên cả card ở Home và card ở Schedule.
+  - [ ] Phụ huynh chỉ xem, không có nút vào học.
+- [ ] **Code Quality:** Không lỗi linter, không compile error (`flutter analyze` pass 100%).
