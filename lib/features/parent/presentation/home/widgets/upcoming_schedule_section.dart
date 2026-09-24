@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:study/features/parent/data/models/models.dart';
 import 'package:study/features/parent/presentation/widgets/parent_schedule_card.dart';
+import 'package:study/features/parent/presentation/widgets/parent_session_detail_sheet.dart';
 import 'package:study/theme/theme.dart';
 
 /// Mục "Hôm nay / Tiếp theo": lịch học sắp tới.
@@ -96,7 +97,10 @@ class _UpcomingScheduleSectionState extends State<UpcomingScheduleSection> {
                           session: widget.schedules[i].toSession(),
                           onTap: widget.onScheduleTap != null
                               ? () => widget.onScheduleTap!(widget.schedules[i])
-                              : null,
+                              : () => showParentSessionDetailSheet(
+                                    context,
+                                    session: widget.schedules[i].toSession(),
+                                  ),
                         ),
                       ),
                   ],
