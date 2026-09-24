@@ -12,14 +12,18 @@ class ParentScheduleBloc
       : super(
           ParentScheduleState(
             selectedDate: DateTime.now(),
-            anchorWeekDate: DateTime.now(),
+            currentMonth: DateTime(
+              DateTime.now().year,
+              DateTime.now().month,
+              1,
+            ),
           ),
         ) {
     on<ParentScheduleStarted>(_onStarted);
     on<ParentScheduleChildChanged>(_onChildChanged);
-    on<ParentScheduleTabChanged>(_onTabChanged);
     on<ParentScheduleDateSelected>(_onDateSelected);
-    on<ParentScheduleWeekChanged>(_onWeekChanged);
+    on<ParentScheduleMonthChanged>(_onMonthChanged);
+    on<ParentScheduleCalendarModeToggled>(_onCalendarModeToggled);
     on<ParentScheduleRefreshed>(_onRefreshed);
   }
 
@@ -32,34 +36,37 @@ class ParentScheduleBloc
     emit(state.copyWith(status: ParentScheduleStatus.loading));
     try {
       final now = DateTime.now();
-      final targetDate = event.selectedDate ?? now;
+      final targetDate = event.initialDate ?? now;
+      final currentMonth = DateTime(targetDate.year, targetDate.month, 1);
       final children = await _repository.getChildren();
 
-      // Mặc định chọn con đầu tiên nếu có danh sách con
-      final effectiveChildId = event.childId ??
-          (children.isNotEmpty ? children.first.id : null);
+      final effectiveChildId = event.childId;
 
-      final eventDates = await _repository.getEventDates(
-        childId: effectiveChildId,
-        anchorDate: targetDate,
-      );
-
-      final sessions = await _repository.getScheduleSessions(
-        childId: effectiveChildId,
-        date: targetDate,
-        tab: event.tab,
-      );
+      final results = await Future.wait([
+        _repository.getSessionsForDate(
+          childId: effectiveChildId,
+          date: targetDate,
+        ),
+        _repository.getEventsMapByMonth(
+          childId: effectiveChildId,
+          month: currentMonth,
+        ),
+        _repository.getSessionCountForWeek(
+          childId: effectiveChildId,
+          anchorDate: targetDate,
+        ),
+      ]);
 
       emit(
         state.copyWith(
           status: ParentScheduleStatus.success,
           children: children,
           selectedChildId: effectiveChildId,
-          selectedTab: event.tab,
           selectedDate: targetDate,
-          anchorWeekDate: targetDate,
-          eventDates: eventDates,
-          sessions: sessions,
+          currentMonth: currentMonth,
+          sessions: results[0] as List<ParentScheduleSession>,
+          eventsMap: results[1] as Map<DateTime, List<String>>,
+          totalSessionsInWeek: results[2] as int,
         ),
       );
     } catch (e) {
@@ -85,65 +92,26 @@ class ParentScheduleBloc
     );
     try {
       final results = await Future.wait([
-        _repository.getEventDates(
-          childId: event.childId,
-          anchorDate: state.anchorWeekDate,
-        ),
-        _repository.getScheduleSessions(
+        _repository.getSessionsForDate(
           childId: event.childId,
           date: state.selectedDate,
-          tab: state.selectedTab,
+        ),
+        _repository.getEventsMapByMonth(
+          childId: event.childId,
+          month: state.currentMonth,
+        ),
+        _repository.getSessionCountForWeek(
+          childId: event.childId,
+          anchorDate: state.selectedDate,
         ),
       ]);
 
       emit(
         state.copyWith(
           status: ParentScheduleStatus.success,
-          eventDates: results[0] as List<DateTime>,
-          sessions: results[1] as List<ParentScheduleSession>,
-        ),
-      );
-    } catch (e) {
-      emit(
-        state.copyWith(
-          status: ParentScheduleStatus.failure,
-          errorMessage: e.toString(),
-        ),
-      );
-    }
-  }
-
-  Future<void> _onTabChanged(
-    ParentScheduleTabChanged event,
-    Emitter<ParentScheduleState> emit,
-  ) async {
-    final now = DateTime.now();
-    DateTime targetDate;
-    if (event.tab == ParentScheduleTab.today) {
-      targetDate = now;
-    } else {
-      targetDate = state.selectedDate;
-    }
-
-    emit(
-      state.copyWith(
-        status: ParentScheduleStatus.loading,
-        selectedTab: event.tab,
-        selectedDate: targetDate,
-      ),
-    );
-
-    try {
-      final sessions = await _repository.getScheduleSessions(
-        childId: state.selectedChildId,
-        date: targetDate,
-        tab: event.tab,
-      );
-
-      emit(
-        state.copyWith(
-          status: ParentScheduleStatus.success,
-          sessions: sessions,
+          sessions: results[0] as List<ParentScheduleSession>,
+          eventsMap: results[1] as Map<DateTime, List<String>>,
+          totalSessionsInWeek: results[2] as int,
         ),
       );
     } catch (e) {
@@ -160,24 +128,52 @@ class ParentScheduleBloc
     ParentScheduleDateSelected event,
     Emitter<ParentScheduleState> emit,
   ) async {
+    final newDate = event.date;
+    final isMonthChanged = newDate.year != state.currentMonth.year ||
+        newDate.month != state.currentMonth.month;
+    final updatedMonth = isMonthChanged
+        ? DateTime(newDate.year, newDate.month, 1)
+        : state.currentMonth;
+
     emit(
       state.copyWith(
         status: ParentScheduleStatus.loading,
-        selectedDate: event.date,
+        selectedDate: newDate,
+        currentMonth: updatedMonth,
       ),
     );
 
     try {
-      final sessions = await _repository.getScheduleSessions(
-        childId: state.selectedChildId,
-        date: event.date,
-        tab: state.selectedTab,
-      );
+      final futures = <Future<dynamic>>[
+        _repository.getSessionsForDate(
+          childId: state.selectedChildId,
+          date: newDate,
+        ),
+        _repository.getSessionCountForWeek(
+          childId: state.selectedChildId,
+          anchorDate: newDate,
+        ),
+      ];
+
+      if (isMonthChanged) {
+        futures.add(
+          _repository.getEventsMapByMonth(
+            childId: state.selectedChildId,
+            month: updatedMonth,
+          ),
+        );
+      }
+
+      final results = await Future.wait(futures);
 
       emit(
         state.copyWith(
           status: ParentScheduleStatus.success,
-          sessions: sessions,
+          sessions: results[0] as List<ParentScheduleSession>,
+          totalSessionsInWeek: results[1] as int,
+          eventsMap: isMonthChanged
+              ? (results[2] as Map<DateTime, List<String>>)
+              : null,
         ),
       );
     } catch (e) {
@@ -190,27 +186,28 @@ class ParentScheduleBloc
     }
   }
 
-  Future<void> _onWeekChanged(
-    ParentScheduleWeekChanged event,
+  Future<void> _onMonthChanged(
+    ParentScheduleMonthChanged event,
     Emitter<ParentScheduleState> emit,
   ) async {
+    final newMonth = DateTime(event.month.year, event.month.month, 1);
     emit(
       state.copyWith(
         status: ParentScheduleStatus.loading,
-        anchorWeekDate: event.anchorDate,
+        currentMonth: newMonth,
       ),
     );
 
     try {
-      final eventDates = await _repository.getEventDates(
+      final eventsMap = await _repository.getEventsMapByMonth(
         childId: state.selectedChildId,
-        anchorDate: event.anchorDate,
+        month: newMonth,
       );
 
       emit(
         state.copyWith(
           status: ParentScheduleStatus.success,
-          eventDates: eventDates,
+          eventsMap: eventsMap,
         ),
       );
     } catch (e) {
@@ -221,6 +218,17 @@ class ParentScheduleBloc
         ),
       );
     }
+  }
+
+  void _onCalendarModeToggled(
+    ParentScheduleCalendarModeToggled event,
+    Emitter<ParentScheduleState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        isCalendarExpanded: !state.isCalendarExpanded,
+      ),
+    );
   }
 
   Future<void> _onRefreshed(
@@ -230,14 +238,17 @@ class ParentScheduleBloc
     try {
       final results = await Future.wait([
         _repository.getChildren(),
-        _repository.getEventDates(
-          childId: state.selectedChildId,
-          anchorDate: state.anchorWeekDate,
-        ),
-        _repository.getScheduleSessions(
+        _repository.getSessionsForDate(
           childId: state.selectedChildId,
           date: state.selectedDate,
-          tab: state.selectedTab,
+        ),
+        _repository.getEventsMapByMonth(
+          childId: state.selectedChildId,
+          month: state.currentMonth,
+        ),
+        _repository.getSessionCountForWeek(
+          childId: state.selectedChildId,
+          anchorDate: state.selectedDate,
         ),
       ]);
 
@@ -245,8 +256,9 @@ class ParentScheduleBloc
         state.copyWith(
           status: ParentScheduleStatus.success,
           children: results[0] as List<FamilyScopeChild>,
-          eventDates: results[1] as List<DateTime>,
-          sessions: results[2] as List<ParentScheduleSession>,
+          sessions: results[1] as List<ParentScheduleSession>,
+          eventsMap: results[2] as Map<DateTime, List<String>>,
+          totalSessionsInWeek: results[3] as int,
         ),
       );
     } catch (e) {
