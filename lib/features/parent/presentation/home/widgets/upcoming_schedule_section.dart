@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:study/features/parent/data/models/models.dart';
+import 'package:study/features/parent/presentation/widgets/parent_schedule_card.dart';
 import 'package:study/theme/theme.dart';
 
 /// Mục "Hôm nay / Tiếp theo": lịch học sắp tới.
@@ -90,8 +92,8 @@ class _UpcomingScheduleSectionState extends State<UpcomingScheduleSection> {
                           AppSpacing.lg,
                           0,
                         ),
-                        child: _ScheduleItemCard(
-                          item: widget.schedules[i],
+                        child: ParentScheduleCard(
+                          session: widget.schedules[i].toSession(),
                           onTap: widget.onScheduleTap != null
                               ? () => widget.onScheduleTap!(widget.schedules[i])
                               : null,
@@ -234,185 +236,6 @@ class _EmptyScheduleCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ScheduleItemCard extends StatelessWidget {
-  const _ScheduleItemCard({required this.item, this.onTap});
-
-  final ParentScheduleItem item;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-    final isOnline = item.mode == ParentScheduleMode.online;
-    final duration = '${item.durationMinutes ?? (isOnline ? 60 : 90)}p';
-
-    final timeBoxBg =
-        isOnline ? const Color(0xFFEFF6FF) : const Color(0xFFF1F5F9);
-    final timeColor = isOnline ? cs.blue600 : cs.slate900;
-    final durationColor = isOnline ? cs.blue600 : cs.slate500;
-
-    final childBadgeBg =
-        isOnline ? const Color(0xFFDBEAFE) : const Color(0xFFFEF3C7);
-    final childBadgeColor = isOnline ? cs.blue700 : const Color(0xFFD97706);
-
-    final statusBg =
-        isOnline ? const Color(0xFFEFF6FF) : const Color(0xFFF1F5F9);
-    final statusColor = isOnline ? cs.blue600 : cs.slate700;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: AppRadius.borderLg,
-        border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.5),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppRadius.borderLg,
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                // Khối thời gian bên trái
-                Container(
-                  width: 64,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: timeBoxBg,
-                    borderRadius: AppRadius.borderMd,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        item.startTime,
-                        style: tt.titleMedium?.copyWith(
-                          color: timeColor,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16.5,
-                          height: 1.1,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        duration,
-                        style: tt.labelSmall?.copyWith(
-                          color: durationColor,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                AppSpacing.hGap12,
-                // Cột thông tin ở giữa
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: childBadgeBg,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Text(
-                              item.childName,
-                              style: tt.labelSmall?.copyWith(
-                                color: childBadgeColor,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              item.subjectName,
-                              style: tt.titleSmall?.copyWith(
-                                color: cs.slate900,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 5),
-                      Row(
-                        children: [
-                          Icon(
-                            isOnline
-                                ? Icons.videocam_outlined
-                                : Icons.business_outlined,
-                            size: 15,
-                            color: cs.slate500,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              '${item.locationOrLink} · ${item.teacherOrRoom}',
-                              style: tt.bodySmall?.copyWith(
-                                color: cs.slate600,
-                                fontSize: 12.5,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                AppSpacing.hGap8,
-                // Badge trạng thái bên phải
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: statusBg,
-                    borderRadius: AppRadius.borderFull,
-                  ),
-                  child: Text(
-                    item.statusLabel,
-                    style: tt.labelSmall?.copyWith(
-                      color: statusColor,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
