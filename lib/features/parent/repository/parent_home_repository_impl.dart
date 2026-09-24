@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:study/core/logger/app_logger.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/parent/data/models/models.dart';
@@ -24,7 +25,8 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
       final children = _mergeWithMockChildren(realChildren);
       final target = _resolveChild(children, childId);
 
-      // Nếu phụ huynh chọn con thật Mai Hoàng Tùng, ưu tiên dữ liệu thật từ backend
+      // Nếu phụ huynh chọn con thật Mai Hoàng Tùng, ưu tiên dữ liệu
+      // thật từ backend
       final isRealChildSelected =
           childId != null &&
           (childId == studentTungId ||
@@ -86,9 +88,9 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     );
   }
 
-  // ============================================================================
+  // =========================================================================
   // FETCH HELPERS
-  // ============================================================================
+  // =========================================================================
 
   Future<List<FamilyScopeChild>> _fetchChildren() async {
     try {
@@ -180,9 +182,9 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     }
   }
 
-  // ============================================================================
+  // =========================================================================
   // MAP HELPERS
-  // ============================================================================
+  // =========================================================================
 
   ParentScheduleItem? _mapSchedule(Map<String, dynamic> json) {
     final startTime = _formatTime(json['start_time']);
@@ -263,9 +265,9 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     return double.parse((total / count).toStringAsFixed(1));
   }
 
-  // ============================================================================
+  // =========================================================================
   // EXTRACT HELPERS
-  // ============================================================================
+  // =========================================================================
 
   dynamic _extractData(dynamic responseData) {
     if (responseData is Map<String, dynamic> &&
@@ -297,9 +299,9 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     return children.where((c) => c.id == childId).firstOrNull ?? children.first;
   }
 
-  // ============================================================================
+  // =========================================================================
   // FALLBACK DATA (PREVIEW MOCKUP)
-  // ============================================================================
+  // =========================================================================
 
   static const String studentTungId = '31843f49-fd61-47aa-af78-d1badbdcce52';
   static const String studentMinhId = 'a055e1b3-bbfe-46b1-8e01-df7aac8c2732';
@@ -371,24 +373,49 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   List<ParentScheduleItem> _filterFallbackSchedules(String? childId) {
     const allSchedules = [
       ParentScheduleItem(
-        startTime: '14:00',
+        startTime: '09:00',
+        endTime: '10:00',
         childName: 'Minh',
-        subjectName: 'Đại số 10',
-        locationOrLink: 'Trực tuyến trên Google Meet',
-        teacherOrRoom: 'Thầy Hoàng Long',
+        childInitial: 'M',
+        childBadgeColor: Color(0xFFDBEAFE),
+        subjectName: 'Toán (Đại số 10)',
+        lessonTopic: 'Phương trình bậc hai & Định lý Vi-ét',
+        locationOrLink: 'Google Meet',
+        teacherOrRoom: 'Cô Lan',
         mode: ParentScheduleMode.online,
-        statusLabel: 'Sắp bắt đầu',
+        status: ParentSessionStatus.inProgress,
+        statusLabel: 'Đang diễn ra',
         durationMinutes: 60,
       ),
       ParentScheduleItem(
-        startTime: '16:30',
+        startTime: '14:00',
+        endTime: '15:30',
         childName: 'Lan',
-        subjectName: 'Tiếng Anh',
-        locationOrLink: 'Cơ sở Phan Xích Long',
-        teacherOrRoom: 'Phòng học 302',
+        childInitial: 'L',
+        childBadgeColor: Color(0xFFFCE7F3),
+        subjectName: 'Tiếng Anh giao tiếp',
+        lessonTopic: 'Speaking Fluency & Unit 4 Presentation',
+        locationOrLink: 'Phòng 302, CS Phan Xích Long',
+        teacherOrRoom: 'Thầy Nam',
         mode: ParentScheduleMode.offline,
-        statusLabel: 'Trực tiếp',
+        status: ParentSessionStatus.upcoming,
+        statusLabel: 'Sắp diễn ra',
         durationMinutes: 90,
+      ),
+      ParentScheduleItem(
+        startTime: '07:30',
+        endTime: '08:45',
+        childName: 'Minh',
+        childInitial: 'M',
+        childBadgeColor: Color(0xFFDBEAFE),
+        subjectName: 'Khoa học tự nhiên',
+        lessonTopic: 'Cấu tạo phân tử & Phản ứng hoá học cơ bản',
+        locationOrLink: 'Phòng 101, CS Quận 1',
+        teacherOrRoom: 'Thầy Hùng',
+        mode: ParentScheduleMode.offline,
+        status: ParentSessionStatus.completed,
+        statusLabel: 'Đã kết thúc',
+        durationMinutes: 75,
       ),
     ];
     if (childId == studentMinhId) {
