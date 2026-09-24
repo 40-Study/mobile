@@ -42,7 +42,7 @@ void main() {
         ),
       );
 
-      expect(find.text('Không có lịch học hôm nay'), findsOneWidget);
+      expect(find.text('Quote hôm nay'), findsOneWidget);
     });
   });
 }
