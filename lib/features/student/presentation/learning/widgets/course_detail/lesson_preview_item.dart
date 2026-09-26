@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/course/data/models/course_model.dart';
 import 'package:study/features/student/presentation/learning/widgets/section/section_widgets.dart';
+import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
 
 class LessonPreviewItem extends StatelessWidget {
@@ -63,7 +64,7 @@ class LessonPreviewItem extends StatelessWidget {
                   ],
                 ),
               ),
-              _buildStatusLabel(tt, cs, isCompleted, isInProgress),
+              _buildStatusLabel(context, tt, cs, isCompleted, isInProgress),
             ],
           ),
         ),
@@ -71,12 +72,19 @@ class LessonPreviewItem extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusLabel(TextTheme tt, ColorScheme cs, bool isCompleted, bool isInProgress) {
+  Widget _buildStatusLabel(
+    BuildContext context,
+    TextTheme tt,
+    ColorScheme cs,
+    bool isCompleted,
+    bool isInProgress,
+  ) {
+    final l10n = AppLocalizations.of(context)!;
     if (isCompleted) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Hoàn thành', style: tt.labelSmall?.copyWith(color: cs.primary)),
+          Text(l10n.lessonCompleted, style: tt.labelSmall?.copyWith(color: cs.primary)),
           Icon(Icons.chevron_right_rounded, size: 16, color: cs.primary),
         ],
       );
@@ -85,7 +93,7 @@ class LessonPreviewItem extends StatelessWidget {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Đang học', style: tt.labelSmall?.copyWith(color: cs.primary)),
+          Text(l10n.lessonInProgress, style: tt.labelSmall?.copyWith(color: cs.primary)),
           Icon(Icons.chevron_right_rounded, size: 16, color: cs.primary),
         ],
       );
@@ -93,7 +101,7 @@ class LessonPreviewItem extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('Chưa mở khóa', style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
+        Text(l10n.lessonLocked, style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
         Icon(Icons.chevron_right_rounded, size: 16, color: cs.onSurfaceVariant),
       ],
     );

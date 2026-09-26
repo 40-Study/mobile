@@ -22,7 +22,7 @@ class QuizCardFromModel extends StatelessWidget {
       index: index,
       title: quiz.title,
       difficulty: 'Dễ',
-      questions: quiz.questionCount ?? 0,
+      questions: quiz.questionCount,
       duration: quiz.timeLimitMinutes ?? 10,
       points: 10,
       onComplete: onComplete,
