@@ -9,11 +9,10 @@ import 'package:study/features/student/bloc/schedule/schedule_event.dart';
 import 'package:study/features/student/bloc/schedule/schedule_state.dart';
 import 'package:study/features/student/data/models/schedule_item_model.dart';
 import 'package:study/features/student/presentation/home/widgets/schedule_timeline.dart';
-import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
+import 'package:study/features/student/presentation/learning/course_detail/course_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
 import 'package:study/features/student/presentation/schedule/widgets/widgets.dart';
 import 'package:study/di/di_container.dart';
-import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/tab_screen_header.dart';
 
@@ -35,7 +34,14 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: BlocBuilder<ScheduleBloc, ScheduleState>(
+        child: BlocConsumer<ScheduleBloc, ScheduleState>(
+          listenWhen: (prev, curr) =>
+              curr is ScheduleSuccess && curr.classCourseNavigation != null,
+          listener: (context, state) {
+            if (state is ScheduleSuccess) {
+              _handleClassCourseNavigation(context, state.classCourseNavigation);
+            }
+          },
           builder: (context, state) {
             return switch (state) {
               ScheduleInitial() || ScheduleInProgress() => const Center(
@@ -216,7 +222,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         context,
         MaterialPageRoute<void>(
           builder: (_) => BlocProvider(
-            create: (_) => LessonBloc(diContainer<StudentRepository>())
+            create: (_) => diContainer<LessonBloc>()
               ..add(LessonStarted(item.lessonId!)),
             child: const LessonDetailScreen(),
           ),
@@ -227,14 +233,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         context,
         MaterialPageRoute<void>(
           builder: (_) => BlocProvider(
-            create: (_) => CourseDetailBloc(diContainer<StudentRepository>())
+            create: (_) => diContainer<CourseDetailBloc>()
               ..add(CourseDetailStarted(item.courseId!)),
             child: const CourseDetailScreen(),
           ),
         ),
       );
     } else if (item.classId != null) {
-      _navigateToClassCourse(context, item.classId!);
+      context.read<ScheduleBloc>().add(ScheduleClassCourseRequested(item.classId!));
+      return; // Navigation handled via BlocConsumer listener
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Mở: ${item.title}')),
@@ -242,56 +249,39 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     }
   }
 
-  Future<void> _navigateToClassCourse(BuildContext context, String classId) async {
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
+  void _handleClassCourseNavigation(BuildContext context, ScheduleClassCourseNavigation? nav) {
+    if (nav == null) return;
 
-    try {
-      final repo = diContainer<StudentRepository>();
-      final classResult = await repo.getCourseIdFromClass(classId);
-      if (!context.mounted) return;
-
-      final courseId = classResult.valueOrNull;
-      if (courseId == null) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Không tìm thấy khóa học')),
+    switch (nav) {
+      case ScheduleClassCourseNavigationLoading():
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => const Center(child: CircularProgressIndicator()),
         );
-        return;
-      }
-
-      final enrollmentsResult = await repo.getActiveEnrollments();
-      if (!context.mounted) return;
-      Navigator.pop(context);
-
-      final enrollments = enrollmentsResult.valueOrNull ?? [];
-      final enrollment = enrollments.where((e) => e.courseId == courseId).firstOrNull;
-
-      if (enrollment != null) {
+      case ScheduleClassCourseNavigationSuccess(:final enrollment):
+        Navigator.of(context, rootNavigator: true).pop();
+        context.read<ScheduleBloc>().add(const ScheduleClassCourseNavigationHandled());
         Navigator.push(
           context,
           MaterialPageRoute<void>(
             builder: (_) => BlocProvider(
-              create: (_) => CourseDetailBloc(diContainer<StudentRepository>())
+              create: (_) => diContainer<CourseDetailBloc>()
                 ..add(CourseDetailStarted(enrollment.id)),
               child: const CourseDetailScreen(),
             ),
           ),
         );
-      } else {
+      case ScheduleClassCourseNavigationError(:final message):
+        Navigator.of(context, rootNavigator: true).pop();
+        context.read<ScheduleBloc>().add(const ScheduleClassCourseNavigationHandled());
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Bạn chưa đăng ký khóa học này')),
+          SnackBar(content: Text(
+            message == 'course_not_found'
+                ? 'Không tìm thấy khóa học'
+                : 'Bạn chưa đăng ký khóa học này',
+          )),
         );
-      }
-    } catch (e) {
-      if (!context.mounted) return;
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi: $e')),
-      );
     }
   }
 

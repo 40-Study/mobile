@@ -14,10 +14,10 @@ import 'package:study/features/student/bloc/lesson/lesson_bloc.dart';
 import 'package:study/features/student/bloc/lesson/lesson_event.dart';
 import 'package:study/features/student/data/models/schedule_item_model.dart';
 import 'package:study/features/student/presentation/home/widgets/widgets.dart';
-import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
+import 'package:study/features/student/presentation/learning/course_detail/course_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
-import 'package:study/features/student/repository/student_repository.dart';
+import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/section_header.dart';
 
@@ -119,7 +119,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: BlocBuilder<HomeBloc, HomeState>(
+      body: BlocConsumer<HomeBloc, HomeState>(
+        listenWhen: (prev, curr) =>
+            curr is HomeSuccess && curr.classCourseNavigation != null,
+        listener: (context, state) {
+          if (state is HomeSuccess) {
+            _handleClassCourseNavigation(context, state.classCourseNavigation);
+          }
+        },
         builder: (context, state) {
           return switch (state) {
             HomeInitial() || HomeInProgress() => const Center(
@@ -136,6 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildError(BuildContext context, String message) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Center(
       child: Padding(
@@ -154,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             AppSpacing.vGap16,
             Text(
-              'Không thể tải dữ liệu',
+              l10n.scheduleErrorLoadData,
               style: tt.titleMedium,
               textAlign: TextAlign.center,
             ),
@@ -169,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () =>
                   context.read<HomeBloc>().add(const HomeStarted()),
               icon: const Icon(Icons.refresh),
-              label: const Text('Thử lại'),
+              label: Text(l10n.tryAgainButton),
             ),
           ],
         ),
@@ -418,7 +426,7 @@ class _HomeScreenState extends State<HomeScreen> {
         context,
         MaterialPageRoute<void>(
           builder: (_) => BlocProvider(
-            create: (_) => LessonBloc(diContainer<StudentRepository>())
+            create: (_) => diContainer<LessonBloc>()
               ..add(LessonStarted(item.lessonId!)),
             child: const LessonDetailScreen(),
           ),
@@ -429,17 +437,18 @@ class _HomeScreenState extends State<HomeScreen> {
         context,
         MaterialPageRoute<void>(
           builder: (_) => BlocProvider(
-            create: (_) => CourseDetailBloc(diContainer<StudentRepository>())
+            create: (_) => diContainer<CourseDetailBloc>()
               ..add(CourseDetailStarted(item.courseId!)),
             child: const CourseDetailScreen(),
           ),
         ),
       );
     } else if (item.classId != null) {
-      await _navigateToClassCourse(context, item.classId!);
+      context.read<HomeBloc>().add(HomeClassCourseRequested(item.classId!));
+      return; // Navigation handled via BlocConsumer listener
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Mở: ${item.title}')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.scheduleOpenItem(item.title))),
       );
       return;
     }
@@ -449,56 +458,46 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _navigateToClassCourse(BuildContext context, String classId) async {
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
+  void _handleClassCourseNavigation(BuildContext context, ClassCourseNavigation? nav) {
+    if (nav == null) return;
 
-    try {
-      final repo = diContainer<StudentRepository>();
-      final classResult = await repo.getCourseIdFromClass(classId);
-      if (!context.mounted) return;
+    final l10n = AppLocalizations.of(context)!;
 
-      final courseId = classResult.valueOrNull;
-      if (courseId == null) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Không tìm thấy khóa học')),
+    switch (nav) {
+      case ClassCourseNavigationLoading():
+        showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (_) => const Center(child: CircularProgressIndicator()),
         );
-        return;
-      }
-
-      final enrollmentsResult = await repo.getActiveEnrollments();
-      if (!context.mounted) return;
-      Navigator.pop(context);
-
-      final enrollments = enrollmentsResult.valueOrNull ?? [];
-      final enrollment = enrollments.where((e) => e.courseId == courseId).firstOrNull;
-
-      if (enrollment != null) {
-        await Navigator.push(
+      case ClassCourseNavigationSuccess(:final enrollment):
+        // Close loading dialog if open
+        Navigator.of(context, rootNavigator: true).pop();
+        context.read<HomeBloc>().add(const HomeClassCourseNavigationHandled());
+        Navigator.push(
           context,
           MaterialPageRoute<void>(
             builder: (_) => BlocProvider(
-              create: (_) => CourseDetailBloc(diContainer<StudentRepository>())
+              create: (_) => diContainer<CourseDetailBloc>()
                 ..add(CourseDetailStarted(enrollment.id)),
               child: const CourseDetailScreen(),
             ),
           ),
-        );
-      } else {
+        ).then((_) {
+          if (context.mounted) {
+            context.read<HomeBloc>().add(const HomeRefreshed());
+          }
+        });
+      case ClassCourseNavigationError(:final message):
+        Navigator.of(context, rootNavigator: true).pop();
+        context.read<HomeBloc>().add(const HomeClassCourseNavigationHandled());
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Bạn chưa đăng ký khóa học này')),
+          SnackBar(content: Text(
+            message == 'course_not_found'
+                ? l10n.scheduleCourseNotFound
+                : l10n.scheduleNotEnrolled,
+          )),
         );
-      }
-    } catch (e) {
-      if (!context.mounted) return;
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Lỗi: $e')),
-      );
     }
   }
 
@@ -507,7 +506,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => LessonBloc(diContainer<StudentRepository>())
+          create: (_) => diContainer<LessonBloc>()
             ..add(LessonStarted(lessonId)),
           child: const LessonDetailScreen(),
         ),
@@ -524,7 +523,7 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
           create: (_) =>
-              CourseDetailBloc(diContainer<StudentRepository>())
+              diContainer<CourseDetailBloc>()
                 ..add(CourseDetailStarted(enrollmentId)),
           child: const CourseDetailScreen(),
         ),

@@ -7,6 +7,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc(this._repository) : super(const HomeInitial()) {
     on<HomeStarted>(_onStarted);
     on<HomeRefreshed>(_onRefreshed);
+    on<HomeClassCourseRequested>(_onClassCourseRequested);
+    on<HomeClassCourseNavigationHandled>(_onNavigationHandled);
   }
 
   final StudentRepository _repository;
@@ -45,5 +47,54 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       scheduleItems: schedule.valueOrNull ?? [],
       assignments: assignments.valueOrNull ?? [],
     ));
+  }
+
+  Future<void> _onClassCourseRequested(
+    HomeClassCourseRequested event,
+    Emitter<HomeState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! HomeSuccess) return;
+
+    // Emit loading
+    emit(currentState.copyWith(
+      classCourseNavigation: const ClassCourseNavigationLoading(),
+    ));
+
+    // Get course from class
+    final classResult = await _repository.getCourseIdFromClass(event.classId);
+    final courseId = classResult.valueOrNull;
+
+    if (courseId == null) {
+      emit(currentState.copyWith(
+        classCourseNavigation: const ClassCourseNavigationError('course_not_found'),
+      ));
+      return;
+    }
+
+    // Get enrollments
+    final enrollmentsResult = await _repository.getActiveEnrollments();
+    final enrollments = enrollmentsResult.valueOrNull ?? [];
+    final enrollment = enrollments.where((e) => e.courseId == courseId).firstOrNull;
+
+    if (enrollment != null) {
+      emit(currentState.copyWith(
+        classCourseNavigation: ClassCourseNavigationSuccess(enrollment),
+      ));
+    } else {
+      emit(currentState.copyWith(
+        classCourseNavigation: const ClassCourseNavigationError('not_enrolled'),
+      ));
+    }
+  }
+
+  void _onNavigationHandled(
+    HomeClassCourseNavigationHandled event,
+    Emitter<HomeState> emit,
+  ) {
+    final currentState = state;
+    if (currentState is HomeSuccess) {
+      emit(currentState.copyWith(clearNavigation: true));
+    }
   }
 }
