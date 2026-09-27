@@ -212,7 +212,12 @@ class _LearningScreenState extends State<LearningScreen> {
                 actionLabel: 'Xem tất cả',
                 onActionTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute<Widget>(builder: (_) => const AllCoursesScreen()),
+                  MaterialPageRoute<Widget>(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<LearningBloc>(),
+                        child: const AllCoursesScreen(),
+                      ),
+                    ),
                 ),
               ),
             ),
@@ -329,7 +334,12 @@ class _LearningScreenState extends State<LearningScreen> {
                   actionLabel: 'Xem tất cả',
                   onActionTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute<Widget>(builder: (_) => const ExploreCoursesScreen()),
+                    MaterialPageRoute<Widget>(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<LearningBloc>(),
+                        child: const ExploreCoursesScreen(),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -376,7 +386,12 @@ class _LearningScreenState extends State<LearningScreen> {
           actionLabel: 'Khám phá khóa học',
           onAction: () => Navigator.push(
             context,
-            MaterialPageRoute<Widget>(builder: (_) => const AllCoursesScreen()),
+            MaterialPageRoute<Widget>(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<LearningBloc>(),
+                        child: const AllCoursesScreen(),
+                      ),
+                    ),
           ),
         ),
       ),
