@@ -3,10 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/course/data/models/course_model.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
-import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
+import 'package:study/features/student/presentation/learning/course_detail/course_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/widgets/thumbnail_placeholder.dart';
 import 'package:study/di/di_container.dart';
-import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/theme/theme.dart';
 
 class RecommendationCard extends StatelessWidget {
@@ -126,7 +125,7 @@ class RecommendationCard extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => CourseDetailBloc(diContainer<StudentRepository>())
+          create: (_) => diContainer<CourseDetailBloc>()
             ..add(CourseDetailStarted(course.id, isEnrollment: false)),
           child: const CourseDetailScreen(),
         ),

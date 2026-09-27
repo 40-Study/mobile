@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/student/bloc/quiz/quiz_bloc.dart';
 import 'package:study/features/student/bloc/quiz/quiz_event.dart';
 import 'package:study/features/student/bloc/quiz/quiz_state.dart';
+import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
 
 /// Bottom nav bar cho quiz (prev/next/submit)
@@ -15,6 +16,7 @@ class QuizBottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
     final bloc = context.read<QuizBloc>();
 
     return Container(
@@ -34,7 +36,7 @@ class QuizBottomBar extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: () => bloc.add(const QuizPreviousQuestion()),
               icon: const Icon(Icons.chevron_left_rounded, size: 20),
-              label: const Text('Trước'),
+              label: Text(l10n.quizPrevious),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
@@ -62,7 +64,7 @@ class QuizBottomBar extends StatelessWidget {
                   ? () => bloc.add(const QuizSubmitted())
                   : null,
               icon: const Icon(Icons.check_rounded, size: 20),
-              label: const Text('Nộp bài'),
+              label: Text(l10n.quizSubmit),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
@@ -73,7 +75,7 @@ class QuizBottomBar extends StatelessWidget {
               onPressed: state.currentAnswer != null
                   ? () => bloc.add(const QuizNextQuestion())
                   : null,
-              label: const Text('Tiếp'),
+              label: Text(l10n.quizNext),
               icon: const Icon(Icons.chevron_right_rounded, size: 20),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),

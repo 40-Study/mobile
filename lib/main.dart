@@ -3,7 +3,7 @@ import 'package:study/config/app_config.dart';
 import 'package:study/config/build_type.dart';
 import 'package:study/config/environment.dart';
 
-void main(List<String> args) {
+Future<void> main(List<String> args) async {
   const env = String.fromEnvironment('ENV', defaultValue: 'dev');
 
   final (buildType, envFile) = switch (env) {
@@ -16,5 +16,5 @@ void main(List<String> args) {
     buildType: buildType,
     config: AppConfig(envFileName: envFile),
   );
-  run();
+  await run();
 }

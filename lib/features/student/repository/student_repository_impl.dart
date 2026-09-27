@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:study/core/error/failures.dart';
 import 'package:study/core/error/result.dart';
 import 'package:study/data/last_accessed_course_storage.dart';
@@ -150,25 +149,19 @@ class StudentRepositoryImpl implements StudentRepository {
       // Use enrollments to get pending assignments
       final response = await _courseApi.getMyEnrollments(status: 'active');
       final data = _extractList(response.data['data']);
-      debugPrint('📋 Enrollments count: ${data.length}');
-
       // Collect assignments from enrollments
       final assignments = <AssignmentModel>[];
       for (final enrollment in data) {
         final enrollmentId = enrollment['id'] as String?;
         final assignmentList = enrollment['pending_assignments'] as List? ?? [];
-        debugPrint('📋 Enrollment $enrollmentId: ${assignmentList.length} assignments');
-        debugPrint('📋 Raw: $assignmentList');
         for (final e in assignmentList) {
           final json = Map<String, dynamic>.from(e as Map);
           json['enrollment_id'] = enrollmentId;
           assignments.add(AssignmentModel.fromJson(json));
         }
       }
-      debugPrint('📋 Total assignments: ${assignments.length}');
       return Result.success(assignments);
     } catch (e) {
-      debugPrint('📋 Error: $e');
       return Result.failure(ServerFailure(message: e.toString()));
     }
   }
@@ -270,16 +263,6 @@ class StudentRepositoryImpl implements StudentRepository {
     try {
       final response = await _courseApi.getLesson(lessonId);
       final data = response.data['data'] as Map<String, dynamic>;
-
-      // Debug: check if API returns video content
-      debugPrint('Lesson API response: $data');
-      final contents = data['contents'] as List?;
-      if (contents != null) {
-        for (final c in contents) {
-          debugPrint('Content: type=${c['type']}, video_url=${c['video_url']}');
-        }
-      }
-
       return Result.success(LessonModel.fromJson(data));
     } catch (e) {
       return Result.failure(ServerFailure(message: e.toString()));

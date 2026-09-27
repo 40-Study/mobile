@@ -789,5 +789,184 @@
   "shareOnSocial": "Share portfolio on social media",
   "copyPortfolioLink": "Copy portfolio link",
   "downloadPortfolioPdf": "Download portfolio as PDF",
-  "addItem": "Add item"
+  "addItem": "Add item",
+
+  "courseLoadError": "Cannot load course",
+  "lessonUnlockError": "You need to complete the previous lesson to unlock this one",
+  "certificateIssueError": "Certificate issue error: {error}",
+  "@certificateIssueError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "courseUnsaved": "Course removed from saved",
+  "courseSaved": "Course saved",
+  "enrollmentDeveloping": "Enrollment feature is under development",
+  "enrollNow": "Enroll Now",
+  "viewCertificateButton": "View Certificate",
+  "progress": "Progress",
+  "lessonsCompleted": "You have completed {completed} / {total} lessons",
+  "@lessonsCompleted": {
+    "placeholders": {
+      "completed": {},
+      "total": {}
+    }
+  },
+  "freeCourse": "Free",
+  "lessonCount": "{count} lessons",
+  "@lessonCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "minuteCount": "{count} minutes",
+  "@minuteCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "downloadCourseMaterial": "Download course materials",
+  "openAll": "Open all",
+  "viewInstructorPage": "View instructor page",
+  "coursesAndStudents": "{courses} courses • {students} students",
+  "@coursesAndStudents": {
+    "placeholders": {
+      "courses": {},
+      "students": {}
+    }
+  },
+  "messageInstructor": "Message instructor",
+
+  "lessonCompleted": "Completed",
+  "lessonInProgress": "In Progress",
+  "lessonLocked": "Locked",
+  "lessonNotStarted": "Not Started",
+  "lessonWatched": "Watched",
+  "lessonProgress": "Lesson Progress",
+
+  "settingsAppearance": "Appearance",
+  "settingsNotifications": "Notifications",
+  "settingsLearning": "Learning",
+  "settingsOther": "Other",
+  "settingsLanguage": "Language",
+  "settingsLanguageVietnamese": "Vietnamese",
+  "settingsPushNotifications": "Push notifications",
+  "settingsEmailNotifications": "Email notifications",
+  "settingsScheduleReminders": "Schedule reminders",
+  "settingsAutoplayVideo": "Autoplay video",
+  "settingsPlaybackSpeed": "Default playback speed",
+  "settingsWifiDownload": "Download over Wi-Fi only",
+  "settingsClearCache": "Clear cache",
+  "settingsCacheCleared": "Cache cleared",
+  "settingsVersion": "Version",
+  "settingsDarkTheme": "Dark theme",
+
+  "helpCenterTitle": "Help center",
+  "helpCenterQuestion": "How can we help you?",
+  "helpContactSupport": "Contact support",
+  "helpEmail": "Email",
+  "helpHotline": "Hotline",
+  "helpLiveChat": "Live chat",
+  "helpLiveChatResponse": "Response within minutes",
+  "helpFaq": "Frequently asked questions",
+  "helpFaqPasswordChange": "How to change password?",
+  "helpFaqPasswordChangeAnswer": "Go to Account > Password & Security > Change Password to update your password.",
+  "helpFaqForgotPassword": "I forgot my password, what should I do?",
+  "helpFaqForgotPasswordAnswer": "On the login screen, tap 'Forgot password' and follow the instructions to reset your password via email.",
+  "helpFaqViewCertificate": "How to view earned certificates?",
+  "helpFaqViewCertificateAnswer": "Go to the Achievements tab to view all certificates you have earned.",
+  "helpFaqRefund": "I want a refund for a course?",
+  "helpFaqRefundAnswer": "Contact us via email or hotline within 7 days of purchase for refund support.",
+
+  "scheduleErrorLoadData": "Cannot load data",
+  "scheduleOpenItem": "Open: {title}",
+  "@scheduleOpenItem": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "scheduleCourseNotFound": "Course not found",
+  "scheduleNotEnrolled": "You are not enrolled in this course",
+
+  "quizExitTitle": "Exit quiz?",
+  "quizExitContent": "Your progress will not be saved.",
+  "quizContinue": "Continue",
+  "quizExit": "Exit",
+  "quizPrevious": "Previous",
+  "quizNext": "Next",
+  "quizSubmit": "Submit",
+  "quizBackToLesson": "Back to lesson",
+  "quizRetry": "Retry",
+
+  "exerciseMinutes": "{duration} minutes",
+  "@exerciseMinutes": {
+    "placeholders": {
+      "duration": {}
+    }
+  },
+  "exercisePoints": "{points} points",
+  "@exercisePoints": {
+    "placeholders": {
+      "points": {}
+    }
+  },
+  "exerciseCompletion": "{rate}% completed",
+  "@exerciseCompletion": {
+    "placeholders": {
+      "rate": {}
+    }
+  },
+  "exerciseDoOnWeb": "Do on web",
+  "exerciseViewScore": "View score",
+  "exerciseDoExercise": "Do exercise",
+  "exerciseUnlimited": "Unlimited",
+  "exerciseSubmit": "Submit",
+
+  "errorGeneric": "Error: {message}",
+  "@errorGeneric": {
+    "placeholders": {
+      "message": {}
+    }
+  },
+  "videoLoadError": "Cannot load video",
+  "removeFromSaved": "Removed from saved list",
+
+  "openMenu": "Open menu",
+  "accountLabel": "Account",
+  "notificationLabel": "Notifications",
+
+  "featureDeveloping": "Feature is under development",
+  "goBack": "Go back",
+  "contactSupport": "Contact support",
+  "takePhoto": "Take photo",
+  "chooseFromGallery": "Choose from gallery",
+  "updateSuccess": "Updated successfully",
+  "addRoleSuccess": "Added role {role}",
+  "@addRoleSuccess": {
+    "placeholders": {
+      "role": {}
+    }
+  },
+  "addRoleError": "Error: Cannot add role",
+  "noRoleError": "You don't have a role, please register",
+  "cannotLoginWith": "Cannot login with {provider}",
+  "@cannotLoginWith": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+  "pleaseSelectRole": "Please go back to select a role",
+
+  "parentLinkChild": "Link child profile",
+  "parentManageChildren": "Manage children",
+  "parentPayment": "Payment",
+  "parentLearning": "Learning",
+  "parentHome": "Home",
+  "parentSchedule": "Schedule",
+  "parentConfirmLink": "Confirm link",
+  "parentEditInfo": "Edit info",
+  "parentEditComingSoon": "Edit info - Coming soon",
+  "parentContactSupport": "Contact support",
+
+  "addButton": "Add"
 }

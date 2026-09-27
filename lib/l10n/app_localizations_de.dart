@@ -1377,4 +1377,348 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get addItem => 'Add item';
+
+  @override
+  String get courseLoadError => 'Cannot load course';
+
+  @override
+  String get lessonUnlockError =>
+      'You need to complete the previous lesson to unlock this one';
+
+  @override
+  String certificateIssueError(Object error) {
+    return 'Certificate issue error: $error';
+  }
+
+  @override
+  String get courseUnsaved => 'Course removed from saved';
+
+  @override
+  String get courseSaved => 'Course saved';
+
+  @override
+  String get enrollmentDeveloping => 'Enrollment feature is under development';
+
+  @override
+  String get enrollNow => 'Enroll Now';
+
+  @override
+  String get viewCertificateButton => 'View Certificate';
+
+  @override
+  String get progress => 'Progress';
+
+  @override
+  String lessonsCompleted(Object completed, Object total) {
+    return 'You have completed $completed / $total lessons';
+  }
+
+  @override
+  String get freeCourse => 'Free';
+
+  @override
+  String lessonCount(Object count) {
+    return '$count lessons';
+  }
+
+  @override
+  String minuteCount(Object count) {
+    return '$count minutes';
+  }
+
+  @override
+  String get downloadCourseMaterial => 'Download course materials';
+
+  @override
+  String get openAll => 'Open all';
+
+  @override
+  String get viewInstructorPage => 'View instructor page';
+
+  @override
+  String coursesAndStudents(Object courses, Object students) {
+    return '$courses courses • $students students';
+  }
+
+  @override
+  String get messageInstructor => 'Message instructor';
+
+  @override
+  String get lessonCompleted => 'Completed';
+
+  @override
+  String get lessonInProgress => 'In Progress';
+
+  @override
+  String get lessonLocked => 'Locked';
+
+  @override
+  String get lessonNotStarted => 'Not Started';
+
+  @override
+  String get lessonWatched => 'Watched';
+
+  @override
+  String get lessonProgress => 'Lesson Progress';
+
+  @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsNotifications => 'Notifications';
+
+  @override
+  String get settingsLearning => 'Learning';
+
+  @override
+  String get settingsOther => 'Other';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get settingsLanguageVietnamese => 'Vietnamese';
+
+  @override
+  String get settingsPushNotifications => 'Push notifications';
+
+  @override
+  String get settingsEmailNotifications => 'Email notifications';
+
+  @override
+  String get settingsScheduleReminders => 'Schedule reminders';
+
+  @override
+  String get settingsAutoplayVideo => 'Autoplay video';
+
+  @override
+  String get settingsPlaybackSpeed => 'Default playback speed';
+
+  @override
+  String get settingsWifiDownload => 'Download over Wi-Fi only';
+
+  @override
+  String get settingsClearCache => 'Clear cache';
+
+  @override
+  String get settingsCacheCleared => 'Cache cleared';
+
+  @override
+  String get settingsVersion => 'Version';
+
+  @override
+  String get settingsDarkTheme => 'Dark theme';
+
+  @override
+  String get helpCenterTitle => 'Help center';
+
+  @override
+  String get helpCenterQuestion => 'How can we help you?';
+
+  @override
+  String get helpContactSupport => 'Contact support';
+
+  @override
+  String get helpEmail => 'Email';
+
+  @override
+  String get helpHotline => 'Hotline';
+
+  @override
+  String get helpLiveChat => 'Live chat';
+
+  @override
+  String get helpLiveChatResponse => 'Response within minutes';
+
+  @override
+  String get helpFaq => 'Frequently asked questions';
+
+  @override
+  String get helpFaqPasswordChange => 'How to change password?';
+
+  @override
+  String get helpFaqPasswordChangeAnswer =>
+      'Go to Account > Password & Security > Change Password to update your password.';
+
+  @override
+  String get helpFaqForgotPassword => 'I forgot my password, what should I do?';
+
+  @override
+  String get helpFaqForgotPasswordAnswer =>
+      'On the login screen, tap \'Forgot password\' and follow the instructions to reset your password via email.';
+
+  @override
+  String get helpFaqViewCertificate => 'How to view earned certificates?';
+
+  @override
+  String get helpFaqViewCertificateAnswer =>
+      'Go to the Achievements tab to view all certificates you have earned.';
+
+  @override
+  String get helpFaqRefund => 'I want a refund for a course?';
+
+  @override
+  String get helpFaqRefundAnswer =>
+      'Contact us via email or hotline within 7 days of purchase for refund support.';
+
+  @override
+  String get scheduleErrorLoadData => 'Cannot load data';
+
+  @override
+  String scheduleOpenItem(Object title) {
+    return 'Open: $title';
+  }
+
+  @override
+  String get scheduleCourseNotFound => 'Course not found';
+
+  @override
+  String get scheduleNotEnrolled => 'You are not enrolled in this course';
+
+  @override
+  String get quizExitTitle => 'Exit quiz?';
+
+  @override
+  String get quizExitContent => 'Your progress will not be saved.';
+
+  @override
+  String get quizContinue => 'Continue';
+
+  @override
+  String get quizExit => 'Exit';
+
+  @override
+  String get quizPrevious => 'Previous';
+
+  @override
+  String get quizNext => 'Next';
+
+  @override
+  String get quizSubmit => 'Submit';
+
+  @override
+  String get quizBackToLesson => 'Back to lesson';
+
+  @override
+  String get quizRetry => 'Retry';
+
+  @override
+  String exerciseMinutes(Object duration) {
+    return '$duration minutes';
+  }
+
+  @override
+  String exercisePoints(Object points) {
+    return '$points points';
+  }
+
+  @override
+  String exerciseCompletion(Object rate) {
+    return '$rate% completed';
+  }
+
+  @override
+  String get exerciseDoOnWeb => 'Do on web';
+
+  @override
+  String get exerciseViewScore => 'View score';
+
+  @override
+  String get exerciseDoExercise => 'Do exercise';
+
+  @override
+  String get exerciseUnlimited => 'Unlimited';
+
+  @override
+  String get exerciseSubmit => 'Submit';
+
+  @override
+  String errorGeneric(Object message) {
+    return 'Error: $message';
+  }
+
+  @override
+  String get videoLoadError => 'Cannot load video';
+
+  @override
+  String get removeFromSaved => 'Removed from saved list';
+
+  @override
+  String get openMenu => 'Open menu';
+
+  @override
+  String get accountLabel => 'Account';
+
+  @override
+  String get notificationLabel => 'Notifications';
+
+  @override
+  String get featureDeveloping => 'Feature is under development';
+
+  @override
+  String get goBack => 'Go back';
+
+  @override
+  String get contactSupport => 'Contact support';
+
+  @override
+  String get takePhoto => 'Take photo';
+
+  @override
+  String get chooseFromGallery => 'Choose from gallery';
+
+  @override
+  String get updateSuccess => 'Updated successfully';
+
+  @override
+  String addRoleSuccess(Object role) {
+    return 'Added role $role';
+  }
+
+  @override
+  String get addRoleError => 'Error: Cannot add role';
+
+  @override
+  String get noRoleError => 'You don\'t have a role, please register';
+
+  @override
+  String cannotLoginWith(Object provider) {
+    return 'Cannot login with $provider';
+  }
+
+  @override
+  String get pleaseSelectRole => 'Please go back to select a role';
+
+  @override
+  String get parentLinkChild => 'Link child profile';
+
+  @override
+  String get parentManageChildren => 'Manage children';
+
+  @override
+  String get parentPayment => 'Payment';
+
+  @override
+  String get parentLearning => 'Learning';
+
+  @override
+  String get parentHome => 'Home';
+
+  @override
+  String get parentSchedule => 'Schedule';
+
+  @override
+  String get parentConfirmLink => 'Confirm link';
+
+  @override
+  String get parentEditInfo => 'Edit info';
+
+  @override
+  String get parentEditComingSoon => 'Edit info - Coming soon';
+
+  @override
+  String get parentContactSupport => 'Contact support';
+
+  @override
+  String get addButton => 'Add';
 }

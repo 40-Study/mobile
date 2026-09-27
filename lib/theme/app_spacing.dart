@@ -68,4 +68,19 @@ abstract class AppSpacing {
   // Screen padding
   static const paddingScreen = EdgeInsets.symmetric(horizontal: screenPadding);
   static const paddingScreenAll = EdgeInsets.all(screenPadding);
+
+  // Dialog content padding (legacy compatibility)
+  static const dialogContentPadding = 20.0;
+}
+
+/// Icon size tokens
+abstract class AppIconSize {
+  static const double xs = 14;
+  static const double sm = 16;
+  static const double md = 20;
+  static const double lg = 24;
+  static const double xl = 28;
+  static const double xxl = 32;
+  static const double avatar = 40;
+  static const double hero = 48;
 }

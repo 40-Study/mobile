@@ -36,7 +36,7 @@ class BookmarkItem extends StatelessWidget {
             action: SnackBarAction(
               label: 'Hoàn tác',
               onPressed: () {
-                // TODO: Undo delete
+                // TODO(MOCK-01): Undo delete - re-add bookmark
               },
             ),
           ),
@@ -47,7 +47,7 @@ class BookmarkItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.card),
         child: InkWell(
           onTap: () {
-            // TODO: Navigate to bookmark target
+            // TODO(MOCK-01): Navigate to bookmark target based on type (course/lesson/document)
           },
           borderRadius: BorderRadius.circular(AppRadius.card),
           child: Container(

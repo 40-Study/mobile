@@ -15,8 +15,6 @@ import 'package:study/features/student/presentation/schedule/schedule_screen.dar
 import 'package:study/features/student/presentation/search/search_screen.dart';
 import 'package:study/features/student/presentation/settings/settings_screen.dart';
 import 'package:study/di/di_container.dart';
-import 'package:study/features/auth/repository/auth_repository.dart';
-import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/widgets/app_drawer.dart';
 
 enum StudentTab { home, learning, schedule, achievement, profile }
@@ -32,7 +30,6 @@ class StudentShell extends StatefulWidget {
 
 class _StudentShellState extends State<StudentShell> {
   late StudentTab _currentTab;
-  late Set<int> _visitedTabs;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   PageController? _pageController;
 
@@ -42,7 +39,6 @@ class _StudentShellState extends State<StudentShell> {
   void initState() {
     super.initState();
     _currentTab = widget.initialTab;
-    _visitedTabs = {_currentTab.index};
   }
 
   @override
@@ -54,23 +50,28 @@ class _StudentShellState extends State<StudentShell> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final authState = context.watch<AuthBloc>().state;
-    final userName = authState is AuthAuthenticated
-        ? authState.user.fullName ?? authState.user.username ?? 'Bạn'
-        : 'Bạn';
-    final userEmail = authState is AuthAuthenticated
-        ? authState.user.email
-        : '';
+    // Select chỉ user data cần cho drawer, tránh rebuild khi AuthBloc emit state khác
+    final userData = context.select<AuthBloc, ({String name, String email, String? avatar})>(
+      (bloc) {
+        final state = bloc.state;
+        if (state is AuthAuthenticated) {
+          return (
+            name: state.user.fullName ?? state.user.username ?? 'Bạn',
+            email: state.user.email,
+            avatar: state.user.avatarUrl,
+          );
+        }
+        return (name: 'Bạn', email: '', avatar: null);
+      },
+    );
 
     return Scaffold(
       key: _scaffoldKey,
       drawer: AppDrawer(
-        userName: userName,
-        userEmail: userEmail,
-        userAvatar: authState is AuthAuthenticated
-            ? authState.user.avatarUrl
-            : null,
-        notificationCount: 2,
+        userName: userData.name,
+        userEmail: userData.email,
+        userAvatar: userData.avatar,
+        notificationCount: 0, // TODO: Replace with real notification count from API
         onNotificationsTap: () {
           Navigator.pop(context);
           Navigator.push(
@@ -101,7 +102,7 @@ class _StudentShellState extends State<StudentShell> {
         },
         onHelpTap: () {
           Navigator.pop(context);
-          // TODO: Help screen
+          // TODO(MOCK-01): Help screen not implemented - needs HelpScreen widget
         },
         onLogoutTap: () {
           Navigator.pop(context);
@@ -110,25 +111,21 @@ class _StudentShellState extends State<StudentShell> {
       ),
       body: MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => HomeBloc(diContainer<StudentRepository>())),
-          BlocProvider(create: (_) => LearningBloc(diContainer<StudentRepository>())),
-          BlocProvider(create: (_) => ScheduleBloc(diContainer<StudentRepository>())),
-          BlocProvider(create: (_) => AchievementBloc(
-            diContainer<StudentRepository>(),
-            diContainer<AuthRepository>(),
-          )),
+          BlocProvider(create: (_) => diContainer<HomeBloc>()),
+          BlocProvider(create: (_) => diContainer<LearningBloc>()),
+          BlocProvider(create: (_) => diContainer<ScheduleBloc>()),
+          BlocProvider(create: (_) => diContainer<AchievementBloc>()),
         ],
         child: PageView(
           controller: _controller,
           onPageChanged: (index) {
             setState(() {
               _currentTab = StudentTab.values[index];
-              _visitedTabs.add(index);
             });
           },
           children: List.generate(
             StudentTab.values.length,
-            (index) => _buildTab(index, userName),
+            (index) => _buildTab(index, userData.name),
           ),
         ),
       ),

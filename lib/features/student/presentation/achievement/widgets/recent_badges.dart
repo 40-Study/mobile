@@ -27,7 +27,7 @@ class RecentBadges extends StatelessWidget {
             GestureDetector(
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<Widget>(
                     builder: (_) => AllAchievementsScreen(badges: badges)),
               ),
               child: Text(l10n.viewAll,

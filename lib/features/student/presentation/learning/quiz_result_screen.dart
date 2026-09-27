@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
 
 import 'quiz_screen.dart';
@@ -226,7 +227,7 @@ class QuizResultScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                       ),
-                      child: const Text('Quay lại bài học'),
+                      child: Text(AppLocalizations.of(context)!.quizBackToLesson),
                     ),
                   ),
                   if (quizId != null) ...[
@@ -251,7 +252,7 @@ class QuizResultScreen extends StatelessWidget {
                           ),
                         ),
                         icon: const Icon(Icons.refresh_rounded, size: 20),
-                        label: const Text('Làm lại'),
+                        label: Text(AppLocalizations.of(context)!.quizRetry),
                       ),
                     ),
                   ],

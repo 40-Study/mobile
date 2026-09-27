@@ -1,5 +1,6 @@
 .PHONY: gen genAll rebuild check get localize runDev runQa runProd \
-        release apk debug_apk lines force_upgrade integration_test
+        release apk debug_apk lines force_upgrade integration_test \
+        performance_smoke performance_test
 
 # Clean project, install dependencies & generate sources
 rebuild:
@@ -56,6 +57,15 @@ force_upgrade:
 # Run integration test
 integration_test:
 	flutter test integration_test --flavor dev
+
+# Debug-only smoke run; validates that timing data is captured without hangs.
+performance_smoke:
+	flutter drive --driver=test_driver/integration_test.dart --target=integration_test/performance_test.dart --flavor dev --dart-define=ENV=dev $(if $(DEVICE),-d $(DEVICE),)
+
+# Strict performance gate. Profile mode requires a physical iOS/Android device.
+performance_test:
+	@test -n "$(DEVICE)" || (echo "Usage: make performance_test DEVICE=<physical-device-id>" && exit 1)
+	flutter drive --driver=test_driver/integration_test.dart --target=integration_test/performance_test.dart --profile --flavor dev --dart-define=ENV=dev -d $(DEVICE)
 
 screenshot_test:
 	flutter drive --driver=test_driver/integration_test.dart --target=screenshot_test/settings_screenshot_test.dart --flavor dev

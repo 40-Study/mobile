@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:study/index.dart';
+import 'package:study/theme/app_spacing.dart';
 
 class Separator {
-  static Widget spacer([double space = Space.medium]) => Gap(space);
+  static Widget spacer([double space = AppSpacing.md]) => Gap(space);
 
   static List<Widget> spaceChildren({
-    double space = Space.medium,
+    double space = AppSpacing.md,
     required List<Widget> children,
   }) {
     return children.separate(space);
@@ -22,7 +22,7 @@ class Separator {
 }
 
 extension ListGutter on List<Widget> {
-  List<Widget> separate([double space = Space.medium]) => length <= 1
+  List<Widget> separate([double space = AppSpacing.md]) => length <= 1
       ? this
       : sublist(1).fold([
           first,

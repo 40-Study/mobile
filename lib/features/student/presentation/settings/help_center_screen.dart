@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -9,10 +10,11 @@ class HelpCenterScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Trung tâm hỗ trợ'),
+        title: Text(l10n.helpCenterTitle),
         centerTitle: false,
       ),
       body: ListView(
@@ -34,7 +36,7 @@ class HelpCenterScreen extends StatelessWidget {
                 Icon(Icons.support_agent_rounded, size: 48, color: cs.onPrimary),
                 const SizedBox(height: 12),
                 Text(
-                  'Chúng tôi có thể giúp gì cho bạn?',
+                  l10n.helpCenterQuestion,
                   style: tt.titleMedium?.copyWith(
                     color: cs.onPrimary,
                     fontWeight: FontWeight.w600,
@@ -48,28 +50,28 @@ class HelpCenterScreen extends StatelessWidget {
 
           // Contact options
           Text(
-            'Liên hệ hỗ trợ',
+            l10n.helpContactSupport,
             style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
           _ContactCard(
             icon: Icons.email_outlined,
-            title: 'Email',
+            title: l10n.helpEmail,
             subtitle: 'support@40study.com',
             onTap: () => _launchEmail(context),
           ),
           const SizedBox(height: 8),
           _ContactCard(
             icon: Icons.phone_outlined,
-            title: 'Hotline',
+            title: l10n.helpHotline,
             subtitle: '1900 xxxx xx',
             onTap: () => _launchPhone(context),
           ),
           const SizedBox(height: 8),
           _ContactCard(
             icon: Icons.chat_outlined,
-            title: 'Chat trực tuyến',
-            subtitle: 'Phản hồi trong vài phút',
+            title: l10n.helpLiveChat,
+            subtitle: l10n.helpLiveChatResponse,
             onTap: () {
               // TODO: Open chat
             },
@@ -78,32 +80,32 @@ class HelpCenterScreen extends StatelessWidget {
 
           // FAQ
           Text(
-            'Câu hỏi thường gặp',
+            l10n.helpFaq,
             style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
-          const _FaqItem(
-            question: 'Làm sao để đổi mật khẩu?',
-            answer: 'Vào Tài khoản > Mật khẩu & Bảo mật > Đổi mật khẩu để thay đổi mật khẩu của bạn.',
+          _FaqItem(
+            question: l10n.helpFaqPasswordChange,
+            answer: l10n.helpFaqPasswordChangeAnswer,
           ),
-          const _FaqItem(
-            question: 'Tôi quên mật khẩu, phải làm sao?',
-            answer: 'Tại màn hình đăng nhập, nhấn "Quên mật khẩu" và làm theo hướng dẫn để đặt lại mật khẩu qua email.',
+          _FaqItem(
+            question: l10n.helpFaqForgotPassword,
+            answer: l10n.helpFaqForgotPasswordAnswer,
           ),
-          const _FaqItem(
-            question: 'Làm sao để xem chứng chỉ đã nhận?',
-            answer: 'Vào tab Thành tích để xem tất cả chứng chỉ bạn đã đạt được.',
+          _FaqItem(
+            question: l10n.helpFaqViewCertificate,
+            answer: l10n.helpFaqViewCertificateAnswer,
           ),
-          const _FaqItem(
-            question: 'Tôi muốn hoàn tiền khóa học?',
-            answer: 'Liên hệ với chúng tôi qua email hoặc hotline trong vòng 7 ngày kể từ ngày mua để được hỗ trợ hoàn tiền.',
+          _FaqItem(
+            question: l10n.helpFaqRefund,
+            answer: l10n.helpFaqRefundAnswer,
           ),
           const SizedBox(height: 24),
 
           // App info
           Center(
             child: Text(
-              'Phiên bản 1.2.0',
+              l10n.version('1.2.0'),
               style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
             ),
           ),
