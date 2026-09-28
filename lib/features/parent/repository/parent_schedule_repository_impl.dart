@@ -141,7 +141,10 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
   Future<List<FamilyScopeChild>> _fetchRealChildren() async {
     if (_apiClient == null) return [];
     try {
-      final response = await _apiClient.getChildren();
+      // Giới hạn thời gian chờ tối đa 5 giây để tránh treo UI Lịch học khi mạng lag/lỗi token
+      final response = await _apiClient.getChildren().timeout(
+            const Duration(seconds: 5),
+          );
       final data = _extractData(response.data);
       final list = _extractList(data, keys: ['children', 'items']);
       return list
@@ -168,7 +171,10 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
   ) async {
     if (_apiClient == null) return [];
     try {
-      final response = await _apiClient.getSchedule(childId);
+      // Giới hạn thời gian chờ tối đa 5 giây cho lịch học thật từ backend
+      final response = await _apiClient.getSchedule(childId).timeout(
+            const Duration(seconds: 5),
+          );
       final data = _extractData(response.data);
       final list = _extractList(
         data,

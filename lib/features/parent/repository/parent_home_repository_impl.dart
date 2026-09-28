@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:study/core/logger/app_logger.dart';
 import 'package:study/features/auth/data/models/models.dart';
@@ -89,12 +91,16 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   }
 
   // =========================================================================
-  // FETCH HELPERS
+  // FETCH HELPERS (BỌC TIMEOUT PHÒNG THỦ ĐỂ KHÔNG BAO GIỜ BỊ TREO GIAO DIỆN)
   // =========================================================================
 
   Future<List<FamilyScopeChild>> _fetchChildren() async {
     try {
-      final response = await _api.getChildren();
+      // Chờ tối đa 5 giây; nếu backend phản hồi chậm hoặc lỗi token thì
+      // kích hoạt fallback sang dữ liệu mẫu ngay, tránh đơ Trang chủ.
+      final response = await _api.getChildren().timeout(
+            const Duration(seconds: 5),
+          );
       final data = _extractData(response.data);
       final list = _extractList(data, keys: ['children', 'items']);
       return list
@@ -117,7 +123,9 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   Future<List<ParentScheduleItem>> _fetchSchedules(String? childId) async {
     if (childId == null) return [];
     try {
-      final response = await _api.getSchedule(childId);
+      final response = await _api.getSchedule(childId).timeout(
+            const Duration(seconds: 5),
+          );
       final data = _extractData(response.data);
       final list = _extractList(
         data,
@@ -137,7 +145,9 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   Future<List<ParentAlertItem>> _fetchAlerts(String? childId) async {
     if (childId == null) return [];
     try {
-      final response = await _api.getAssignments(childId);
+      final response = await _api.getAssignments(childId).timeout(
+            const Duration(seconds: 5),
+          );
       final data = _extractData(response.data);
       final list = _extractList(data, keys: ['assignments', 'items']);
       final overdue = list
@@ -155,7 +165,9 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   Future<ParentAnalyticsData?> _fetchAnalytics(FamilyScopeChild? target) async {
     if (target == null) return null;
     try {
-      final response = await _api.getGrades(target.id);
+      final response = await _api.getGrades(target.id).timeout(
+            const Duration(seconds: 5),
+          );
       final data = _extractData(response.data);
       final grades = _extractList(
         data,
