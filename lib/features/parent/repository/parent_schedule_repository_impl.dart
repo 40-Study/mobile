@@ -141,9 +141,9 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
   Future<List<FamilyScopeChild>> _fetchRealChildren() async {
     if (_apiClient == null) return [];
     try {
-      // Giới hạn thời gian chờ tối đa 5 giây để tránh treo UI Lịch học khi mạng lag/lỗi token
+      // Giới hạn thời gian chờ tối đa 10 giây; nếu lỗi mạng thì ném lỗi
       final response = await _apiClient.getChildren().timeout(
-            const Duration(seconds: 5),
+            const Duration(seconds: 10),
           );
       final data = _extractData(response.data);
       final list = _extractList(data, keys: ['children', 'items']);
@@ -160,7 +160,8 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
     } catch (e, stackTrace) {
       AppLogger.w('ParentSchedule: fetch real children failed', e);
       AppLogger.d('ParentSchedule children stackTrace', stackTrace);
-      return [];
+      // Ném lỗi để Bloc xử lý và hiển thị thông báo lỗi trên UI tab Lịch học
+      rethrow;
     }
   }
 
@@ -171,9 +172,9 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
   ) async {
     if (_apiClient == null) return [];
     try {
-      // Giới hạn thời gian chờ tối đa 5 giây cho lịch học thật từ backend
+      // Giới hạn thời gian chờ tối đa 10 giây cho lịch học thật từ backend
       final response = await _apiClient.getSchedule(childId).timeout(
-            const Duration(seconds: 5),
+            const Duration(seconds: 10),
           );
       final data = _extractData(response.data);
       final list = _extractList(
@@ -194,7 +195,8 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
     } catch (e, stackTrace) {
       AppLogger.w('ParentSchedule: fetch real schedule failed', e);
       AppLogger.d('ParentSchedule schedule stackTrace', stackTrace);
-      return [];
+      // Ném lỗi để Bloc xử lý khi tải lịch học thất bại
+      rethrow;
     }
   }
 

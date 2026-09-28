@@ -91,15 +91,15 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   }
 
   // =========================================================================
-  // FETCH HELPERS (BỌC TIMEOUT PHÒNG THỦ ĐỂ KHÔNG BAO GIỜ BỊ TREO GIAO DIỆN)
+  // FETCH HELPERS (BỌC TIMEOUT VÀ BÁO LỖI MINH BẠCH KHI GỌI API THẤT BẠI)
   // =========================================================================
 
   Future<List<FamilyScopeChild>> _fetchChildren() async {
     try {
-      // Chờ tối đa 5 giây; nếu backend phản hồi chậm hoặc lỗi token thì
-      // kích hoạt fallback sang dữ liệu mẫu ngay, tránh đơ Trang chủ.
+      // Giới hạn thời gian chờ tối đa 10 giây; nếu backend phản hồi chậm
+      // hoặc mạng lỗi thì ném lỗi để UI hiển thị thông báo lỗi kèm nút Thử lại.
       final response = await _api.getChildren().timeout(
-            const Duration(seconds: 5),
+            const Duration(seconds: 10),
           );
       final data = _extractData(response.data);
       final list = _extractList(data, keys: ['children', 'items']);
@@ -116,7 +116,9 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     } catch (e, stackTrace) {
       AppLogger.w('ParentHome: fetch children failed', e);
       AppLogger.d('ParentHome children stackTrace', stackTrace);
-      return [];
+      // Ném lỗi để Bloc xử lý và hiển thị màn hình báo lỗi,
+      // không tự ý dùng mock data khi API thất bại.
+      rethrow;
     }
   }
 
@@ -124,7 +126,7 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     if (childId == null) return [];
     try {
       final response = await _api.getSchedule(childId).timeout(
-            const Duration(seconds: 5),
+            const Duration(seconds: 10),
           );
       final data = _extractData(response.data);
       final list = _extractList(
@@ -138,7 +140,8 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     } catch (e, stackTrace) {
       AppLogger.w('ParentHome: fetch schedule failed', e);
       AppLogger.d('ParentHome schedule stackTrace', stackTrace);
-      return [];
+      // Ném lỗi để Bloc xử lý khi tải lịch của con thất bại.
+      rethrow;
     }
   }
 
@@ -146,7 +149,7 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     if (childId == null) return [];
     try {
       final response = await _api.getAssignments(childId).timeout(
-            const Duration(seconds: 5),
+            const Duration(seconds: 10),
           );
       final data = _extractData(response.data);
       final list = _extractList(data, keys: ['assignments', 'items']);
@@ -158,7 +161,8 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     } catch (e, stackTrace) {
       AppLogger.w('ParentHome: fetch alerts failed', e);
       AppLogger.d('ParentHome alerts stackTrace', stackTrace);
-      return [];
+      // Ném lỗi để Bloc xử lý khi tải thông báo bài tập của con thất bại.
+      rethrow;
     }
   }
 
@@ -166,7 +170,7 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     if (target == null) return null;
     try {
       final response = await _api.getGrades(target.id).timeout(
-            const Duration(seconds: 5),
+            const Duration(seconds: 10),
           );
       final data = _extractData(response.data);
       final grades = _extractList(
@@ -190,7 +194,8 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     } catch (e, stackTrace) {
       AppLogger.w('ParentHome: fetch analytics failed', e);
       AppLogger.d('ParentHome analytics stackTrace', stackTrace);
-      return null;
+      // Ném lỗi để Bloc xử lý khi tải phân tích kết quả học tập thất bại.
+      rethrow;
     }
   }
 
