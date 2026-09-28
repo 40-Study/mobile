@@ -893,3 +893,239 @@ Query params: `period` (7d|30d|90d)
 **POST /api/me/portfolio/projects** - Add project
 
 **DELETE /api/me/portfolio/projects/:id** - Delete project
+
+---
+
+## 11. Parent Feature - Session Detail (Chi tiết ca học)
+
+### 11.1. Bối cảnh & Mục tiêu nghiệp vụ
+Màn hình **Chi tiết ca học của con dành cho Phụ huynh** (`ParentSessionDetailScreen`) yêu cầu hiển thị không gian thông tin chuyên sâu theo chuẩn *Locked Child Context* (không có Child Selector, có nút Back bảo toàn state, phụ huynh chỉ giám sát/đồng hành, tuyệt đối không có nút Vào học Meet).
+
+Các nhóm thông tin cần thể hiện trên giao diện:
+1. **Thông tin ca học cốt lõi:** Tên môn, lớp học, mã buổi học (`#MAT10-B24`), khung giờ to rõ (`09:00 — 10:00`), ngày học, chủ đề bài học và mô tả tóm tắt.
+2. **Hình thức & Địa điểm:** Phân biệt rõ ràng giữa Online (`Google Meet`) và Trực tiếp tại cơ sở (`Phòng 401, Cơ sở Phan Xích Long`). Phụ huynh chỉ xem để phối hợp đưa đón hoặc nhắc nhở con.
+3. **Giáo viên phụ trách:** Tên, học vị/chuyên môn (VD: `ThS. Toán`), trường công tác (`THPT Chuyên Hà Nội - Amsterdam`), kèm nút liên hệ/nhắn tin nhanh.
+4. **Trạng thái điểm danh tức thời:** Chưa mở điểm danh, Đã vào lớp lúc HH:mm, Có mặt, Đi muộn (X phút), hoặc Vắng mặt.
+5. **Tài liệu chuẩn bị trước buổi học:** Danh sách file tài liệu đính kèm (giáo trình, file PDF phiếu bài tập do giáo viên tải lên) kèm dung lượng và link tải an toàn.
+6. **Checklist chuẩn bị:** Phân loại rõ ràng giữa (a) Đồ dùng/dụng cụ cần mang theo (máy tính cầm tay, sách bài tập...) và (b) Nhiệm vụ học tập cần hoàn thành trước buổi học (câu hỏi trắc nghiệm khởi động...).
+7. **Gợi ý đồng hành cùng con (Parent Guidance):** Lời khuyên thiết thực từ giáo viên/hệ thống giúp phụ huynh biết cách hỗ trợ con tốt nhất trước buổi học.
+8. **Thông tin dời lịch / Hủy lịch (Rescheduled / Cancelled):** Banner cảnh báo kèm lý do cụ thể từ trung tâm/giáo viên.
+
+---
+
+### 11.2. Đánh giá hiện trạng Backend API
+Hiện tại, backend cung cấp endpoint:
+`GET /parent/children/:id/schedule`
+trả về danh sách `upcoming_sessions` kiểu `ChildUpcomingSessionDto`:
+```go
+type ChildUpcomingSessionDto struct {
+	ID            string    `json:"id"`
+	ClassID       string    `json:"class_id"`
+	ClassName     string    `json:"class_name"`
+	SessionNumber int       `json:"session_number"`
+	Topic         string    `json:"topic,omitempty"`
+	Date          time.Time `json:"date"`
+	StartTime     string    `json:"start_time"`
+	EndTime       string    `json:"end_time"`
+	Room          string    `json:"room,omitempty"`
+}
+```
+
+**Nhận xét:**
+- Dữ liệu hiện tại chỉ đáp ứng đủ việc hiển thị thẻ tóm tắt trên Lịch học và Trang chủ.
+- Còn **thiếu 6 nhóm dữ liệu quan trọng**:
+  1. ❌ Chưa có danh sách tài liệu đính kèm (`materials`).
+  2. ❌ Chưa có checklist chuẩn bị (`preparation_checklist`).
+  3. ❌ Chưa có lời khuyên gợi ý phụ huynh (`parent_guidance`).
+  4. ❌ Chưa có thông tin chi tiết giáo viên (học vị, trường công tác, avatar, khả năng nhắn tin).
+  5. ❌ Chưa có trạng thái điểm danh tức thời theo ca học (`attendance`).
+  6. ❌ Chưa có thông tin lý do khi đổi/hủy lịch (`change_info`).
+
+---
+
+### 11.3. Đề xuất đặc tả Backend API mới
+
+#### Endpoint khuyến nghị
+`GET /parent/children/:childId/sessions/:sessionId`
+
+> **Xác thực & Phân quyền:**  
+> - Bắt buộc Bearer Token của tài khoản Phụ huynh.  
+> - Backend kiểm tra quan hệ `parent_student_relations` để đảm bảo Phụ huynh có quyền xem thông tin của `childId`.
+
+#### 1. DTO Go đề xuất (`backend/internal/dto/parent_session_detail_dto.go`)
+
+```go
+package dto
+
+import "time"
+
+// ParentSessionDetailDto - DTO chi tiết buổi học dành cho Phụ huynh
+type ParentSessionDetailDto struct {
+	ID            string    `json:"id"`             // ID ca học
+	ClassID       string    `json:"class_id"`       // ID lớp học
+	ClassName     string    `json:"class_name"`     // Tên lớp / môn học (VD: "Toán học (Đại số 10)")
+	SessionNumber int       `json:"session_number"` // Thứ tự buổi học (VD: 24)
+	SessionCode   string    `json:"session_code"`   // Mã buổi học định danh (VD: "#MAT10-B24")
+	Topic         string    `json:"topic"`          // Tên chủ đề bài học
+	Description   *string   `json:"description"`    // Mô tả chi tiết chương/bài học
+	Date          time.Time `json:"date"`           // Ngày học
+	StartTime     string    `json:"start_time"`     // Giờ bắt đầu (HH:MM, VD: "09:00")
+	EndTime       string    `json:"end_time"`       // Giờ kết thúc (HH:MM, VD: "10:00")
+	Room          string    `json:"room"`           // Phòng học ("P.401, CS Phan Xích Long" hoặc "Google Meet")
+	IsOnline      bool      `json:"is_online"`      // true nếu học trực tuyến, false nếu học tại cơ sở
+	MeetingURL    *string   `json:"meeting_url,omitempty"` // URL phòng học nếu online (không gửi cho phụ huynh)
+
+	// Trạng thái buổi học: upcoming, in_progress, completed, rescheduled, cancelled
+	Status string `json:"status"`
+
+	// Thông tin dời lịch / hủy lịch nếu có
+	ChangeInfo *SessionChangeInfoDto `json:"change_info,omitempty"`
+
+	// Thông tin chi tiết giáo viên
+	Teacher TeacherDetailDto `json:"teacher"`
+
+	// Trạng thái điểm danh buổi học
+	Attendance SessionAttendanceDto `json:"attendance"`
+
+	// Danh sách file tài liệu đính kèm
+	Materials []SessionMaterialDto `json:"materials"`
+
+	// Danh sách việc / dụng cụ cần chuẩn bị
+	PreparationChecklist []SessionChecklistItemDto `json:"preparation_checklist"`
+
+	// Lời khuyên đồng hành dành cho phụ huynh
+	ParentGuidance *string `json:"parent_guidance,omitempty"`
+
+	// ID bài học để chuyển tiếp sang xem chi tiết bài giảng
+	LessonID *string `json:"lesson_id,omitempty"`
+}
+
+// SessionChangeInfoDto - Thông tin khi buổi học bị hủy hoặc dời lịch
+type SessionChangeInfoDto struct {
+	OriginalDate      *time.Time `json:"original_date,omitempty"`
+	RescheduledToDate *time.Time `json:"rescheduled_to_date,omitempty"`
+	Reason            string     `json:"reason"` // Lý do đổi lịch từ trung tâm/giáo viên
+}
+
+// TeacherDetailDto - Thông tin giáo viên
+type TeacherDetailDto struct {
+	ID        string  `json:"id"`
+	FullName  string  `json:"full_name"`
+	Title     *string `json:"title,omitempty"`      // Học vị: "ThS. Toán", "Thầy/Cô"
+	School    *string `json:"school,omitempty"`     // Nơi công tác: "THPT Chuyên Hà Nội - Amsterdam"
+	AvatarURL *string `json:"avatar_url,omitempty"` // Ảnh đại diện
+	CanChat   bool    `json:"can_chat"`             // Cho phép phụ huynh gửi tin nhắn trực tiếp
+}
+
+// SessionAttendanceDto - Điểm danh buổi học
+type SessionAttendanceDto struct {
+	Status      string     `json:"status"` // not_opened, present, late, absent_excused, absent_unexcused
+	StatusLabel string     `json:"status_label"` // Label: "Chưa mở điểm danh", "Có mặt", "Vắng mặt"
+	CheckInTime *time.Time `json:"check_in_time,omitempty"`
+	LateMinutes int        `json:"late_minutes,omitempty"`
+	Note        *string    `json:"note,omitempty"` // Ghi chú của giáo viên điểm danh
+}
+
+// SessionMaterialDto - File tài liệu học tập
+type SessionMaterialDto struct {
+	ID          string    `json:"id"`
+	FileName    string    `json:"file_name"`    // VD: "Bai_tap_chuyen_de_Parabol_T10.pdf"
+	FileSize    string    `json:"file_size"`    // VD: "2.4 MB"
+	FileType    string    `json:"file_type"`    // "pdf", "docx", "pptx", "zip"
+	DownloadURL string    `json:"download_url"` // Đường dẫn tải file an toàn
+	UploadedAt  time.Time `json:"uploaded_at"`  // Thời gian giáo viên tải lên
+}
+
+// SessionChecklistItemDto - Mục cần chuẩn bị trước buổi học
+type SessionChecklistItemDto struct {
+	ID          string  `json:"id"`
+	Title       string  `json:"title"`        // VD: "Mang theo máy tính Casio fx-580VNX hoặc tương đương"
+	Type        string  `json:"type"`         // "tool" (dụng cụ mang theo) | "task" (nhiệm vụ học tập cần làm)
+	IsCompleted bool    `json:"is_completed"` // true nếu học sinh đã hoàn thành trên hệ thống
+	ActionHint  *string `json:"action_hint,omitempty"` // Gợi ý phụ huynh cách nhắc nhở con
+}
+```
+
+#### 2. Response JSON mẫu thành công (`200 OK`)
+
+```json
+{
+  "message": "success",
+  "data": {
+    "id": "sess-mat10-b24",
+    "class_id": "cls-toan-10a1",
+    "class_name": "Toán học (Đại số 10)",
+    "session_number": 24,
+    "session_code": "#MAT10-B24",
+    "topic": "Phương trình bậc hai & Ứng dụng parabol thực tế",
+    "description": "Chương trình chuyên sâu Đại số & Giải tích 10",
+    "date": "2024-10-24T00:00:00Z",
+    "start_time": "09:00",
+    "end_time": "10:00",
+    "room": "Google Meet",
+    "is_online": true,
+    "meeting_url": null,
+    "status": "upcoming",
+    "change_info": null,
+    "teacher": {
+      "id": "tch-lan-01",
+      "full_name": "Cô Lan",
+      "title": "ThS. Toán",
+      "school": "THPT Chuyên Hà Nội - Amsterdam",
+      "avatar_url": "https://cdn.40study.com/teachers/lan.jpg",
+      "can_chat": true
+    },
+    "attendance": {
+      "status": "not_opened",
+      "status_label": "Chưa mở điểm danh (Mở trước giờ học 10p)",
+      "check_in_time": null,
+      "late_minutes": 0,
+      "note": null
+    },
+    "materials": [
+      {
+        "id": "mat-01",
+        "file_name": "Bai_tap_chuyen_de_Parabol_T10.pdf",
+        "file_size": "2.4 MB",
+        "file_type": "pdf",
+        "download_url": "https://storage.40study.com/materials/Bai_tap_chuyen_de_Parabol_T10.pdf",
+        "uploaded_at": "2024-10-23T15:30:00Z"
+      }
+    ],
+    "preparation_checklist": [
+      {
+        "id": "chk-01",
+        "title": "Mang theo máy tính Casio fx-580VNX hoặc tương đương.",
+        "type": "tool",
+        "is_completed": false,
+        "action_hint": "Nhắc con sạc pin hoặc kiểm tra máy tính trước khi vào bàn học"
+      },
+      {
+        "id": "chk-02",
+        "title": "Hoàn thành 5 câu hỏi trắc nghiệm khởi động trên ứng dụng.",
+        "type": "task",
+        "is_completed": true,
+        "action_hint": "Con đã hoàn thành câu hỏi khởi động"
+      }
+    ],
+    "parent_guidance": "Phụ huynh nên nhắc con kiểm tra tai nghe, đường truyền Internet và vào bàn học trước 5–10 phút để bài học đạt kết quả tốt nhất.",
+    "lesson_id": "lsn-parabol-10"
+  }
+}
+```
+
+---
+
+### 11.4. Quy tắc hiển thị Empty State trên Mobile khi API chưa trả về dữ liệu
+
+Theo chỉ đạo sản phẩm, **tuyệt đối không bịa fake mock data cho tài khoản thật**. Khi các trường thông tin chưa được backend cung cấp, Mobile sẽ hiển thị trạng thái rỗng tường minh và thẩm mỹ:
+
+| Trường dữ liệu | Giá trị từ API | Quy tắc hiển thị trên giao diện Mobile (`ParentSessionDetailScreen`) |
+|---|---|---|
+| `materials` | `[]` hoặc `null` | Hiển thị card trạng thái rỗng sạch sẽ: Icon folder mở `Icons.folder_open_outlined` + text: `"Chưa có tài liệu đính kèm cho buổi học này."` |
+| `preparation_checklist` | `[]` hoặc `null` | Hiển thị card trạng thái rỗng: Icon checklist `Icons.assignment_outlined` + text: `"Chưa có nhiệm vụ hoặc dụng cụ yêu cầu riêng."` |
+| `parent_guidance` | `null` hoặc rỗng `""` | Hiển thị card thông báo nhẹ nhàng: Icon bóng đèn `Icons.lightbulb_outline` + text: `"Chưa có gợi ý đặc biệt từ giáo viên cho buổi học này."` |
+| `teacher.title` / `school` | `null` | Chỉ hiển thị tên giáo viên (`Cô Lan`), không tự sinh học vị giả. |
+| `attendance` | `null` | Hiển thị trạng thái an toàn: `"Chưa có thông tin điểm danh"` (hoặc tự động tính `"Chưa mở điểm danh"` nếu ca học trong tương lai). |
+| `change_info` | `null` | Ẩn hoàn toàn khối cảnh báo dời/hủy lịch. |
+| `lesson_id` | `null` | Vô hiệu hóa nút CTA `[📖 Xem chi tiết bài học & giáo trình]` kèm SnackBar báo: `"Chưa có thông tin giáo trình chi tiết cho buổi học này."` |
