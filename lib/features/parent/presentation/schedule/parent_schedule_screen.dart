@@ -9,6 +9,7 @@ import 'package:study/features/parent/data/models/family_scope_child.dart';
 import 'package:study/features/parent/data/models/parent_schedule_session.dart';
 import 'package:study/features/parent/presentation/children/manage_children_screen.dart';
 import 'package:study/features/parent/presentation/home/widgets/parent_no_child_view.dart';
+import 'package:study/features/parent/presentation/schedule/parent_session_detail_screen.dart';
 import 'package:study/features/parent/presentation/schedule/widgets/date_group_header.dart';
 import 'package:study/features/parent/presentation/schedule/widgets/parent_expandable_calendar.dart';
 import 'package:study/features/parent/presentation/widgets/widgets.dart';
@@ -119,9 +120,14 @@ class _ScheduleContent extends StatelessWidget {
 
   void _showSessionDetails(
     BuildContext context,
-    ParentScheduleSession session,
-  ) {
-    showParentSessionDetailSheet(context, session: session);
+    ParentScheduleSession session, {
+    FamilyScopeChild? child,
+  }) {
+    ParentSessionDetailScreen.open(
+      context,
+      session: session,
+      child: child,
+    );
   }
 
   @override
@@ -276,11 +282,18 @@ class _ScheduleContent extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           ...state.sessions.map((session) {
+            final child = state.children
+                .where((c) => c.id == session.childId)
+                .firstOrNull;
             return Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: ParentScheduleCard(
                 session: session,
-                onTap: () => _showSessionDetails(context, session),
+                onTap: () => _showSessionDetails(
+                  context,
+                  session,
+                  child: child,
+                ),
               ),
             );
           }),
@@ -332,7 +345,11 @@ class _ScheduleContent extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 10),
                       child: ParentScheduleCard(
                         session: session,
-                        onTap: () => _showSessionDetails(context, session),
+                        onTap: () => _showSessionDetails(
+                          context,
+                          session,
+                          child: child,
+                        ),
                       ),
                     );
                   }),

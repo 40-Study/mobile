@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:study/features/parent/data/models/parent_schedule_session.dart';
+import 'package:study/features/parent/presentation/schedule/parent_session_detail_screen.dart';
 import 'package:study/theme/theme.dart';
 
-/// Hiển thị Modal Bottom Sheet chi tiết ca học dành cho Phụ huynh.
+/// Mở màn hình xem chi tiết ca học dành cho Phụ huynh.
 /// Dùng chung cho cả màn hình Trang chủ (Home) và Tab Lịch học (Schedule).
 ///
 /// Phụ huynh chỉ có vai trò quan sát, xem thông tin bài học, giáo viên, phòng.
@@ -12,12 +13,7 @@ void showParentSessionDetailSheet(
   BuildContext context, {
   required ParentScheduleSession session,
 }) {
-  showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    builder: (_) => ParentSessionDetailSheet(session: session),
-  );
+  ParentSessionDetailScreen.open(context, session: session);
 }
 
 class ParentSessionDetailSheet extends StatelessWidget {
