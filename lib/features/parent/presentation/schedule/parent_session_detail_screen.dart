@@ -11,6 +11,7 @@ import 'package:study/theme/theme.dart';
 /// 2. Vai trò Phụ huynh: Chỉ xem thông tin, tuyệt đối KHÔNG có nút vào Meet.
 /// 3. Back navigation: Nút Back quay lại màn hình trước và bảo toàn trạng thái.
 /// 4. Dữ liệu thật: Hiển thị Empty State trang nhã khi API chưa trả về dữ liệu.
+/// 5. Phân tích kết quả: Hiển thị đánh giá giáo viên và bài tập khi đã xong.
 class ParentSessionDetailScreen extends StatefulWidget {
   const ParentSessionDetailScreen({
     super.key,
@@ -59,8 +60,18 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
+    // Tính toán surfaceBg đồng bộ với Trang chủ và Tab Lịch học
+    final surfaceBg = Color.alphaBlend(
+      cs.primary.withValues(
+        alpha: Theme.of(context).brightness == Brightness.light
+            ? 0.045
+            : 0.065,
+      ),
+      cs.surfaceContainer,
+    );
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: surfaceBg,
       appBar: _buildAppBar(context, cs),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -77,21 +88,25 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
               const SizedBox(height: 12),
             ],
 
-            // 3. Khối thông tin cốt lõi của ca học
+            // 3. Khối thông tin cốt lõi của ca học (môn, giờ, phòng, giáo viên)
             _buildSessionHeroCard(cs),
             const SizedBox(height: 16),
 
-            // 4. Section Chuẩn bị trước buổi học (Tài liệu & Checklist)
-            _buildPreparationSection(cs),
-            const SizedBox(height: 16),
-
-            // 5. Card Gợi ý đồng hành cùng con (hoặc Empty state nếu chưa có)
-            _buildParentGuidanceCard(cs),
-            const SizedBox(height: 16),
+            // 4. Nếu ca học đã kết thúc -> Hiển thị Section Kết quả & Phân tích
+            if (_detail.isCompleted) ...[
+              _buildCompletedAnalysisSection(cs),
+              const SizedBox(height: 16),
+            ] else ...[
+              // Nếu ca học sắp tới -> Hiển thị Chuẩn bị & Lời khuyên đồng hành
+              _buildPreparationSection(cs),
+              const SizedBox(height: 16),
+              _buildParentGuidanceCard(cs),
+              const SizedBox(height: 16),
+            ],
           ],
         ),
       ),
-      // 6. Thanh hành động cố định ở đáy màn hình an toàn với Safe Area
+      // 5. Thanh hành động cố định ở đáy màn hình an toàn với Safe Area
       bottomNavigationBar: _buildStickyBottomActionBar(context, cs),
     );
   }
@@ -172,6 +187,13 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x050F172A),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -591,7 +613,346 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
     }
   }
 
-  /// Section Chuẩn bị trước buổi học (Tài liệu đính kèm & Checklist)
+  // ===========================================================================
+  // SECTION: KẾT QUẢ & PHÂN TÍCH BUỔI HỌC (KHI CA HỌC ĐÃ KẾT THÚC)
+  // ===========================================================================
+
+  Widget _buildCompletedAnalysisSection(ColorScheme cs) {
+    final tt = Theme.of(context).textTheme;
+    final analysis = _detail.completedAnalysis;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x050F172A),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.analytics_outlined,
+                size: 16,
+                color: cs.blue600,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'KẾT QUẢ & PHÂN TÍCH BUỔI HỌC',
+                style: tt.labelSmall?.copyWith(
+                  color: cs.slate400,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 11,
+                  letterSpacing: 0.6,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // 1. Lưới thống kê nhanh (Thời lượng học, Bài kiểm tra, Đánh giá)
+          _buildAnalysisMetricsGrid(analysis, cs),
+          const Divider(height: 24),
+
+          // 2. Nhận xét chi tiết từ giáo viên
+          _buildTeacherCommentBox(analysis, cs),
+          const Divider(height: 24),
+
+          // 3. Bài tập về nhà được giao sau buổi học
+          _buildHomeworkAssignedBox(analysis, cs),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnalysisMetricsGrid(
+    SessionCompletedAnalysis? analysis,
+    ColorScheme cs,
+  ) {
+    final hasMinutes = analysis != null && analysis.attendedMinutes > 0;
+
+    return Row(
+      children: [
+        // Metric 1: Thời lượng học
+        Expanded(
+          child: _buildMetricTile(
+            icon: Icons.timer_outlined,
+            iconColor: const Color(0xFF16A34A),
+            label: 'Thời lượng',
+            value: hasMinutes
+                ? '${analysis.attendedMinutes}/${analysis.totalMinutes}p'
+                : (analysis?.attendanceStatus ?? 'Có mặt'),
+            subBadge: hasMinutes ? '${analysis.attendancePercentage}%' : null,
+            cs: cs,
+          ),
+        ),
+        const SizedBox(width: 8),
+        // Metric 2: Kiểm tra trên lớp
+        Expanded(
+          child: _buildMetricTile(
+            icon: Icons.quiz_outlined,
+            iconColor: cs.blue600,
+            label: 'Kiểm tra',
+            value: analysis?.quizScore != null
+                ? '${analysis!.quizScore}/10'
+                : 'Chưa có',
+            subBadge: analysis?.quizCorrectAnswers != null
+                ? 'Đúng ${analysis!.quizCorrectAnswers}/${analysis.quizTotalQuestions}'
+                : null,
+            cs: cs,
+          ),
+        ),
+        const SizedBox(width: 8),
+        // Metric 3: Mức độ tương tác
+        Expanded(
+          child: _buildMetricTile(
+            icon: Icons.star_rounded,
+            iconColor: const Color(0xFFD97706),
+            label: 'Đánh giá',
+            value: analysis?.hasTeacherComment == true
+                ? 'Tích cực'
+                : 'Hoàn thành',
+            subBadge: 'Buổi học',
+            cs: cs,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMetricTile({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String value,
+    String? subBadge,
+    required ColorScheme cs,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 14, color: iconColor),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: cs.slate500,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: TextStyle(
+              color: cs.slate900,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (subBadge != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              subBadge,
+              style: TextStyle(
+                color: cs.slate500,
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTeacherCommentBox(
+    SessionCompletedAnalysis? analysis,
+    ColorScheme cs,
+  ) {
+    if (analysis == null || !analysis.hasTeacherComment) {
+      return _buildEmptyStateBox(
+        icon: Icons.chat_bubble_outline,
+        message: 'Nhận xét: Chưa có đánh giá từ giáo viên cho buổi học này.',
+        cs: cs,
+      );
+    }
+
+    final teacherName = _detail.teacherInfo?.displayTitleWithName ??
+        _detail.session.instructorName;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0FDF4),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFDCFCE7)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(
+                Icons.record_voice_over_outlined,
+                size: 16,
+                color: Color(0xFF16A34A),
+              ),
+              SizedBox(width: 6),
+              Text(
+                'Nhận xét từ giáo viên',
+                style: TextStyle(
+                  color: Color(0xFF14532D),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '“${analysis.teacherComment!}”',
+            style: const TextStyle(
+              color: Color(0xFF166534),
+              fontSize: 12.5,
+              height: 1.45,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              '— $teacherName',
+              style: const TextStyle(
+                color: Color(0xFF15803D),
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeworkAssignedBox(
+    SessionCompletedAnalysis? analysis,
+    ColorScheme cs,
+  ) {
+    if (analysis == null || !analysis.hasHomework) {
+      return _buildEmptyStateBox(
+        icon: Icons.assignment_outlined,
+        message:
+            'Bài tập về nhà: Chưa có bài tập được giao cho buổi học này.',
+        cs: cs,
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFDBEAFE)),
+            ),
+            child: Icon(
+              Icons.assignment_outlined,
+              size: 20,
+              color: cs.blue600,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  analysis.homeworkTitle!,
+                  style: TextStyle(
+                    color: cs.slate900,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
+                if (analysis.homeworkDueDate != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    'Hạn nộp: ${analysis.homeworkDueDate!}',
+                    style: TextStyle(
+                      color: cs.slate600,
+                      fontSize: 11.5,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF3C7),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              analysis.homeworkStatus ?? 'Chưa nộp',
+              style: const TextStyle(
+                color: Color(0xFFB45309),
+                fontWeight: FontWeight.w700,
+                fontSize: 11,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // SECTION: CHUẨN BỊ TRƯỚC BUỔI HỌC (KHI CA HỌC SẮP DIỄN RA)
+  // ===========================================================================
+
   Widget _buildPreparationSection(ColorScheme cs) {
     final tt = Theme.of(context).textTheme;
 
@@ -602,6 +963,13 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x050F172A),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -644,7 +1012,6 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
     );
   }
 
-  /// Thẻ hiển thị file đính kèm
   Widget _buildMaterialItem(SessionMaterial mat, ColorScheme cs) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -656,7 +1023,6 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
       ),
       child: Row(
         children: [
-          // Icon PDF đỏ bo góc
           Container(
             width: 38,
             height: 38,
@@ -675,7 +1041,6 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
             ),
           ),
           const SizedBox(width: 10),
-          // Tên file và dung lượng
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -701,7 +1066,6 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
               ],
             ),
           ),
-          // Nút tải file
           IconButton(
             icon: Icon(
               Icons.download_rounded,
@@ -716,7 +1080,6 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
     );
   }
 
-  /// Một mục checklist chuẩn bị
   Widget _buildChecklistItem(SessionChecklistItem item, ColorScheme cs) {
     final isTask = item.type == ChecklistItemType.task;
 
@@ -761,7 +1124,6 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
     );
   }
 
-  /// Card Gợi ý đồng hành cùng con (hoặc Empty state khi không có)
   Widget _buildParentGuidanceCard(ColorScheme cs) {
     final tt = Theme.of(context).textTheme;
 
@@ -781,6 +1143,13 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
         color: const Color(0xFFF0FDF4),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFDCFCE7)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x050F172A),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -817,7 +1186,6 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
     );
   }
 
-  /// Hộp hiển thị rỗng thanh lịch (Empty state) cho tài liệu / checklist
   Widget _buildEmptyStateBox({
     required IconData icon,
     required String message,
@@ -852,6 +1220,8 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
 
   /// Sticky Bottom Action Bar với Safe Area
   Widget _buildStickyBottomActionBar(BuildContext context, ColorScheme cs) {
+    final isDone = _detail.isCompleted;
+
     return SafeArea(
       top: false,
       child: Container(
@@ -872,16 +1242,23 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Primary Button: Xem chi tiết bài học
+            // Primary Button: Xem kết quả / chi tiết bài học
             SizedBox(
               width: double.infinity,
               height: 48,
               child: OutlinedButton.icon(
                 onPressed: () => _handleOpenLessonDetail(context),
-                icon: const Icon(Icons.menu_book_rounded, size: 20),
-                label: const Text(
-                  'Xem chi tiết bài học & giáo trình',
-                  style: TextStyle(
+                icon: Icon(
+                  isDone
+                      ? Icons.analytics_outlined
+                      : Icons.menu_book_rounded,
+                  size: 20,
+                ),
+                label: Text(
+                  isDone
+                      ? 'Xem chi tiết kết quả & bài tập'
+                      : 'Xem chi tiết bài học & giáo trình',
+                  style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
@@ -898,42 +1275,82 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
             ),
             const SizedBox(height: 10),
 
-            // Hàng tác vụ phụ: Xin vắng & Nhắn tin giáo viên
+            // Hàng tác vụ phụ: Xin vắng / Nhắn tin / Đánh giá
             Row(
               children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () => _openAbsenceRequestSheet(context),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.warning_amber_rounded,
-                            size: 16,
-                            color: Color(0xFFD97706),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Xin phép vắng / Muộn',
-                            style: TextStyle(
-                              color: cs.slate700,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12.5,
+                if (!isDone) ...[
+                  // Buổi học sắp tới: Nút Xin vắng / muộn
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => _openAbsenceRequestSheet(context),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.warning_amber_rounded,
+                              size: 16,
+                              color: Color(0xFFD97706),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 6),
+                            Text(
+                              'Xin phép vắng / Muộn',
+                              style: TextStyle(
+                                color: cs.slate700,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12.5,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Container(
-                  height: 16,
-                  width: 1,
-                  color: const Color(0xFFCBD5E1),
-                ),
+                  Container(
+                    height: 16,
+                    width: 1,
+                    color: const Color(0xFFCBD5E1),
+                  ),
+                ] else ...[
+                  // Buổi học đã kết thúc: Nút Đánh giá buổi học
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => _openFeedbackSheet(context),
+                      borderRadius: BorderRadius.circular(8),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.star_outline_rounded,
+                              size: 16,
+                              color: Color(0xFFD97706),
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              'Đánh giá buổi học',
+                              style: TextStyle(
+                                color: Color(0xFFB45309),
+                                fontWeight: FontWeight.w700,
+                                fontSize: 12.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    height: 16,
+                    width: 1,
+                    color: const Color(0xFFCBD5E1),
+                  ),
+                ],
+
+                // Nút Nhắn tin giáo viên
                 Expanded(
                   child: InkWell(
                     onTap: () => _openTeacherChatSheet(context),
@@ -1093,6 +1510,18 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
       builder: (_) => _TeacherChatBottomSheet(
         teacher: _detail.teacherInfo ??
             TeacherDetailInfo(fullName: _detail.session.instructorName),
+      ),
+    );
+  }
+
+  void _openFeedbackSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _SessionFeedbackBottomSheet(
+        subjectName: _detail.session.subjectName,
+        instructorName: _detail.session.instructorName,
       ),
     );
   }
@@ -1367,6 +1796,151 @@ class _TeacherChatBottomSheet extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Modal Bottom Sheet Đánh giá buổi học sau khi ca học đã kết thúc
+class _SessionFeedbackBottomSheet extends StatefulWidget {
+  const _SessionFeedbackBottomSheet({
+    required this.subjectName,
+    required this.instructorName,
+  });
+
+  final String subjectName;
+  final String instructorName;
+
+  @override
+  State<_SessionFeedbackBottomSheet> createState() =>
+      _SessionFeedbackBottomSheetState();
+}
+
+class _SessionFeedbackBottomSheetState
+    extends State<_SessionFeedbackBottomSheet> {
+  int _rating = 5;
+  final _feedbackController = TextEditingController();
+
+  @override
+  void dispose() {
+    _feedbackController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        12,
+        20,
+        MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: cs.slate300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'ĐÁNH GIÁ BUỔI HỌC',
+                style: TextStyle(
+                  color: cs.slate900,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 14,
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close_rounded, size: 20),
+                visualDensity: VisualDensity.compact,
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Môn: ${widget.subjectName} • GV: ${widget.instructorName}',
+            style: TextStyle(color: cs.slate600, fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          // Hàng chọn số sao
+          Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(5, (index) {
+                final starIndex = index + 1;
+                return IconButton(
+                  onPressed: () => setState(() => _rating = starIndex),
+                  icon: Icon(
+                    starIndex <= _rating
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
+                    size: 36,
+                    color: const Color(0xFFD97706),
+                  ),
+                );
+              }),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Khung nhập góp ý
+          TextField(
+            controller: _feedbackController,
+            maxLines: 3,
+            decoration: InputDecoration(
+              hintText: 'Nhập ý kiến góp ý của phụ huynh (tùy chọn)...',
+              hintStyle: TextStyle(color: cs.slate400, fontSize: 13),
+              filled: true,
+              fillColor: const Color(0xFFF8FAFC),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Nút gửi đánh giá
+          SizedBox(
+            width: double.infinity,
+            height: 46,
+            child: FilledButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Cảm ơn phụ huynh đã gửi đánh giá buổi học!'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              style: FilledButton.styleFrom(
+                backgroundColor: cs.slate900,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Gửi đánh giá'),
             ),
           ),
         ],

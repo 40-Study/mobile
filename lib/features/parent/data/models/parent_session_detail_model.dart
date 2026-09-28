@@ -126,6 +126,78 @@ class TeacherDetailInfo {
   }
 }
 
+/// Dữ liệu phân tích và kết quả khi ca học đã kết thúc.
+class SessionCompletedAnalysis {
+  const SessionCompletedAnalysis({
+    required this.attendanceStatus,
+    this.checkInTime,
+    this.attendedMinutes = 0,
+    this.totalMinutes = 0,
+    this.quizScore,
+    this.maxQuizScore = 10.0,
+    this.quizCorrectAnswers,
+    this.quizTotalQuestions,
+    this.teacherComment,
+    this.homeworkTitle,
+    this.homeworkDueDate,
+    this.homeworkStatus,
+  });
+
+  /// Trạng thái có mặt ("Có mặt", "Đi muộn", "Vắng mặt")
+  final String attendanceStatus;
+
+  /// Giờ vào lớp thực tế (VD: "09:02")
+  final String? checkInTime;
+
+  /// Số phút tham gia học thực tế (VD: 58)
+  final int attendedMinutes;
+
+  /// Tổng thời lượng ca học tính bằng phút (VD: 60)
+  final int totalMinutes;
+
+  /// Điểm số bài kiểm tra / quiz trong buổi học (VD: 9.0)
+  final double? quizScore;
+
+  /// Thang điểm tối đa (mặc định 10.0)
+  final double maxQuizScore;
+
+  /// Số câu làm đúng (VD: 9)
+  final int? quizCorrectAnswers;
+
+  /// Tổng số câu hỏi (VD: 10)
+  final int? quizTotalQuestions;
+
+  /// Nhận xét chi tiết từ giáo viên đứng lớp
+  final String? teacherComment;
+
+  /// Tên bài tập về nhà được giao sau buổi học
+  final String? homeworkTitle;
+
+  /// Hạn nộp bài tập về nhà (VD: "23:59 Ngày mai")
+  final String? homeworkDueDate;
+
+  /// Trạng thái nộp bài tập ("Chưa nộp", "Đã nộp", "Đang chấm")
+  final String? homeworkStatus;
+
+  /// Tỷ lệ thời gian tham gia lớp (phần trăm 0 - 100)
+  int get attendancePercentage {
+    if (totalMinutes <= 0) return 100;
+    final pct = ((attendedMinutes / totalMinutes) * 100).round();
+    return pct > 100 ? 100 : pct;
+  }
+
+  /// Có bài tập về nhà được giao hay không
+  bool get hasHomework =>
+      homeworkTitle != null && homeworkTitle!.trim().isNotEmpty;
+
+  /// Có nhận xét từ giáo viên hay không
+  bool get hasTeacherComment =>
+      teacherComment != null && teacherComment!.trim().isNotEmpty;
+
+  /// Có điểm quiz / kiểm tra trên lớp hay không
+  bool get hasQuizScore => quizScore != null;
+}
+
 /// Model dữ liệu chi tiết cho màn hình Chi tiết ca học của Phụ huynh.
 class ParentSessionDetail {
   const ParentSessionDetail({
@@ -141,6 +213,7 @@ class ParentSessionDetail {
     this.sessionCode,
     this.rescheduleReason,
     this.lessonId,
+    this.completedAnalysis,
   });
 
   /// Factory chuyển đổi từ session và child
@@ -148,6 +221,8 @@ class ParentSessionDetail {
     ParentScheduleSession session, {
     FamilyScopeChild? child,
   }) {
+    final isDone = session.status == ParentSessionStatus.completed;
+
     // 1. Kiểm tra nếu là 2 con mẫu demo (Minh & Lan)
     final isMinh = session.childName.toLowerCase().contains('minh') ||
         session.childId == 'a055e1b3-bbfe-46b1-8e01-df7aac8c2732';
@@ -170,9 +245,11 @@ class ParentSessionDetail {
           school: 'THPT Chuyên Hà Nội - Amsterdam',
           canChat: true,
         ),
-        attendanceInfo: const SessionAttendanceInfo(
-          status: 'not_opened',
-          statusLabel: 'Chưa mở điểm danh\n(Mở trước giờ học 10p)',
+        attendanceInfo: SessionAttendanceInfo(
+          status: isDone ? 'present' : 'not_opened',
+          statusLabel: isDone
+              ? 'Có mặt (Vào lớp lúc 09:02)'
+              : 'Chưa mở điểm danh\n(Mở trước giờ học 10p)',
         ),
         materials: const [
           SessionMaterial(
@@ -204,6 +281,24 @@ class ParentSessionDetail {
             'Internet và vào bàn học trước 5–10 phút để bài học đạt kết '
             'quả tốt nhất.',
         lessonId: 'lesson_parabol_10',
+        completedAnalysis: isDone
+            ? const SessionCompletedAnalysis(
+                attendanceStatus: 'Có mặt',
+                checkInTime: '09:02',
+                attendedMinutes: 58,
+                totalMinutes: 60,
+                quizScore: 9.0,
+                quizCorrectAnswers: 9,
+                quizTotalQuestions: 10,
+                teacherComment:
+                    'Minh tích cực phát biểu, nắm vững định lý Vi-ét và '
+                    'giải quyết tốt các bài toán cực trị parabol thực tế.',
+                homeworkTitle:
+                    'Bài tập vận dụng Parabol & Phương trình bậc hai',
+                homeworkDueDate: '23:59 Ngày mai',
+                homeworkStatus: 'Chưa nộp',
+              )
+            : null,
       );
     }
 
@@ -223,9 +318,11 @@ class ParentSessionDetail {
           school: 'Học viện Ngoại ngữ Hà Nội',
           canChat: true,
         ),
-        attendanceInfo: const SessionAttendanceInfo(
-          status: 'not_opened',
-          statusLabel: 'Chưa mở điểm danh\n(Mở trước giờ học 10p)',
+        attendanceInfo: SessionAttendanceInfo(
+          status: isDone ? 'present' : 'not_opened',
+          statusLabel: isDone
+              ? 'Có mặt (Vào lớp lúc 14:00)'
+              : 'Chưa mở điểm danh\n(Mở trước giờ học 10p)',
         ),
         materials: const [
           SessionMaterial(
@@ -248,6 +345,24 @@ class ParentSessionDetail {
             'Phụ huynh nên khích lệ Lan tự tin nói tiếng Anh to rõ và '
             'không ngắt lời khi con đang luyện tập cùng nhóm.',
         lessonId: 'lesson_speaking_7',
+        completedAnalysis: isDone
+            ? const SessionCompletedAnalysis(
+                attendanceStatus: 'Có mặt',
+                checkInTime: '14:00',
+                attendedMinutes: 90,
+                totalMinutes: 90,
+                quizScore: 8.5,
+                quizCorrectAnswers: 17,
+                quizTotalQuestions: 20,
+                teacherComment:
+                    'Lan phát âm chuẩn, ngữ điệu tự nhiên và tương tác '
+                    'nhóm sôi nổi trong phần thuyết trình Unit 4.',
+                homeworkTitle:
+                    'Ghi âm bài nói Unit 4: Presentation Skills',
+                homeworkDueDate: '20:00 Thứ Bảy',
+                homeworkStatus: 'Chưa nộp',
+              )
+            : null,
       );
     }
 
@@ -270,19 +385,31 @@ class ParentSessionDetail {
         school: null,
         canChat: true,
       ),
-      attendanceInfo: session.startTime.isAfter(DateTime.now())
+      attendanceInfo: isDone
           ? const SessionAttendanceInfo(
-              status: 'not_opened',
-              statusLabel: 'Chưa mở điểm danh\n(Mở trước giờ học 10p)',
-            )
-          : const SessionAttendanceInfo(
               status: 'present',
               statusLabel: 'Có mặt',
-            ),
+            )
+          : (session.startTime.isAfter(DateTime.now())
+              ? const SessionAttendanceInfo(
+                  status: 'not_opened',
+                  statusLabel: 'Chưa mở điểm danh\n(Mở trước giờ học 10p)',
+                )
+              : const SessionAttendanceInfo(
+                  status: 'present',
+                  statusLabel: 'Có mặt',
+                )),
       materials: const [],
       checklist: const [],
       parentGuidance: null,
       rescheduleReason: session.statusNote,
+      completedAnalysis: isDone
+          ? const SessionCompletedAnalysis(
+              attendanceStatus: 'Có mặt',
+              attendedMinutes: 0,
+              totalMinutes: 0,
+            )
+          : null,
     );
   }
 
@@ -322,6 +449,9 @@ class ParentSessionDetail {
   /// ID bài giảng để chuyển tiếp sang xem chi tiết bài học
   final String? lessonId;
 
+  /// Dữ liệu phân tích và kết quả sau khi buổi học kết thúc
+  final SessionCompletedAnalysis? completedAnalysis;
+
   /// Có tài liệu đính kèm hay không
   bool get hasMaterials => materials.isNotEmpty;
 
@@ -335,4 +465,11 @@ class ParentSessionDetail {
   /// Ca học có bị dời lịch hoặc hủy không
   bool get hasRescheduleInfo =>
       rescheduleReason != null && rescheduleReason!.isNotEmpty;
+
+  /// Ca học đã kết thúc hay chưa
+  bool get isCompleted =>
+      session.status == ParentSessionStatus.completed;
+
+  /// Có dữ liệu phân tích kết quả buổi học hay không
+  bool get hasCompletedAnalysis => completedAnalysis != null;
 }

@@ -996,8 +996,27 @@ type ParentSessionDetailDto struct {
 	// Lời khuyên đồng hành dành cho phụ huynh
 	ParentGuidance *string `json:"parent_guidance,omitempty"`
 
+	// Dữ liệu phân tích và kết quả sau khi buổi học kết thúc (chỉ có khi status == completed)
+	CompletedAnalysis *SessionCompletedAnalysisDto `json:"completed_analysis,omitempty"`
+
 	// ID bài học để chuyển tiếp sang xem chi tiết bài giảng
 	LessonID *string `json:"lesson_id,omitempty"`
+}
+
+// SessionCompletedAnalysisDto - Phân tích dữ liệu học tập khi ca học đã kết thúc
+type SessionCompletedAnalysisDto struct {
+	AttendanceStatus   string   `json:"attendance_status"`              // "present", "late", "absent"
+	CheckInTime        *string  `json:"check_in_time,omitempty"`        // "09:02"
+	AttendedMinutes    int      `json:"attended_minutes"`               // 58
+	TotalMinutes       int      `json:"total_minutes"`                  // 60
+	QuizScore          *float64 `json:"quiz_score,omitempty"`           // 9.0
+	MaxQuizScore       float64  `json:"max_quiz_score"`                 // 10.0
+	QuizCorrectAnswers *int     `json:"quiz_correct_answers,omitempty"` // 9
+	QuizTotalQuestions *int     `json:"quiz_total_questions,omitempty"` // 10
+	TeacherComment     *string  `json:"teacher_comment,omitempty"`      // Nhận xét của GV
+	HomeworkTitle      *string  `json:"homework_title,omitempty"`       // Tên bài tập về nhà
+	HomeworkDueDate    *string  `json:"homework_due_date,omitempty"`    // Hạn nộp bài
+	HomeworkStatus     *string  `json:"homework_status,omitempty"`      // "not_submitted", "submitted", "graded"
 }
 
 // SessionChangeInfoDto - Thông tin khi buổi học bị hủy hoặc dời lịch
@@ -1128,4 +1147,5 @@ Theo chỉ đạo sản phẩm, **tuyệt đối không bịa fake mock data cho
 | `teacher.title` / `school` | `null` | Chỉ hiển thị tên giáo viên (`Cô Lan`), không tự sinh học vị giả. |
 | `attendance` | `null` | Hiển thị trạng thái an toàn: `"Chưa có thông tin điểm danh"` (hoặc tự động tính `"Chưa mở điểm danh"` nếu ca học trong tương lai). |
 | `change_info` | `null` | Ẩn hoàn toàn khối cảnh báo dời/hủy lịch. |
+| `completed_analysis` | `null` | Hiển thị card trạng thái rỗng cho kết quả buổi học: Nhận xét: "Chưa có đánh giá từ giáo viên cho buổi học này", Bài tập về nhà: "Chưa có bài tập được giao cho buổi học này." |
 | `lesson_id` | `null` | Vô hiệu hóa nút CTA `[📖 Xem chi tiết bài học & giáo trình]` kèm SnackBar báo: `"Chưa có thông tin giáo trình chi tiết cho buổi học này."` |
