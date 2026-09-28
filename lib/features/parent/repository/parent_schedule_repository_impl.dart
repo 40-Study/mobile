@@ -251,6 +251,8 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
     final realChildren = await _fetchRealChildren();
 
     // 1. Tải lịch của con thật từ backend
+    // Mai Hoàng Tùng là tài khoản thật, chỉ hiển thị lịch học thật từ API,
+    // tuyệt đối không tự sinh mock ca học khi backend chưa có lịch.
     if (realChildren.isNotEmpty) {
       for (final child in realChildren) {
         if (childId == null || childId == child.id) {
@@ -261,24 +263,13 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
           );
           if (realSessions.isNotEmpty) {
             list.addAll(realSessions);
-          } else if (enablePreviewFallback) {
-            // Nếu backend chưa có lịch cho con thật, sinh mock mẫu cho con thật
-            list.addAll(_buildMockSessionsForTung(anchorDate, child));
           }
         }
       }
-    } else if (enablePreviewFallback &&
-        (childId == null || childId == studentTungId)) {
-      // Mock con thật Mai Hoàng Tùng
-      final tungChild = FamilyScopeChild.sample(
-        id: studentTungId,
-        name: 'Mai Hoàng Tùng',
-        className: '12A',
-      );
-      list.addAll(_buildMockSessionsForTung(anchorDate, tungChild));
     }
 
     // 2. Gộp mock sessions của Minh & Lan khi enablePreviewFallback
+    // để phục vụ demo tính năng Family Scope
     if (enablePreviewFallback) {
       if (childId == null ||
           childId == studentMinhId ||
@@ -291,7 +282,7 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
   }
 
   // =========================================================================
-  // MOCK DATA GENERATORS (DEMO FULL TÍNH NĂNG NHIỀU CON)
+  // MOCK DATA GENERATORS (DEMO FAMILY SCOPE CHO 2 CON MẪU MINH & LAN)
   // =========================================================================
 
   List<FamilyScopeChild> _mergeWithMockChildren(List<FamilyScopeChild> real) {
@@ -330,66 +321,6 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
           className: '7B',
           initialLetter: 'L',
           badgeColor: Color(0xFFFCE7F3),
-        ),
-      );
-    }
-
-    return list;
-  }
-
-  List<ParentScheduleSession> _buildMockSessionsForTung(
-    DateTime anchorMonth,
-    FamilyScopeChild tung,
-  ) {
-    final now = DateTime.now();
-    final y = anchorMonth.year;
-    final m = anchorMonth.month;
-    final daysInMonth = DateTime(y, m + 1, 0).day;
-    final list = <ParentScheduleSession>[];
-
-    // Ca học hôm nay của Tùng
-    if (now.year == y && now.month == m) {
-      list.add(
-        ParentScheduleSession(
-          id: 'mock_${now.day}_tung_1',
-          childId: tung.id,
-          childName: tung.name,
-          childInitial: tung.initialLetter,
-          childBadgeColor: tung.badgeColor,
-          subjectName: 'Toán nâng cao 12',
-          lessonTopic: 'Chuyên đề Nguyên hàm & Tích phân từng phần',
-          startTime: DateTime(y, m, now.day, 7, 30),
-          endTime: DateTime(y, m, now.day, 9, 0),
-          instructorName: 'Thầy Hưng',
-          status: ParentSessionStatus.completed,
-          roomOrPlatform: 'Phòng 401, CS Quận 1',
-        ),
-      );
-    }
-
-    // Các ngày con Tùng học trong tháng: 4, 8, 12, 16, 20, 24, 28
-    final tungDays = {4, 8, 12, 16, 20, 24, 28};
-    for (final day in tungDays) {
-      final isToday = now.year == y && now.month == m && day == now.day;
-      if (day > daysInMonth || isToday) continue;
-      list.add(
-        ParentScheduleSession(
-          id: 'mock_${day}_tung',
-          childId: tung.id,
-          childName: tung.name,
-          childInitial: tung.initialLetter,
-          childBadgeColor: tung.badgeColor,
-          subjectName: day % 2 == 0 ? 'Toán 12' : 'Vật lý 12',
-          lessonTopic: day % 2 == 0
-              ? 'Khảo sát hàm số & Ứng dụng đạo hàm'
-              : 'Dao động điều hoà & Con lắc lò xo',
-          startTime: DateTime(y, m, day, 18, 0),
-          endTime: DateTime(y, m, day, 19, 30),
-          instructorName: 'Thầy Hưng',
-          status: day < now.day
-              ? ParentSessionStatus.completed
-              : ParentSessionStatus.upcoming,
-          roomOrPlatform: 'Google Meet',
         ),
       );
     }
