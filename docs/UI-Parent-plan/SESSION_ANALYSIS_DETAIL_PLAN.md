@@ -1,28 +1,30 @@
 # KẾ HOẠCH TRIỂN KHAI MÀN HÌNH PHÂN TÍCH KẾT QUẢ BUỔI HỌC DÀNH CHO PHỤ HUYNH
-## (PARENT SESSION LEARNING ANALYSIS & FEEDBACK)
+## (PARENT SESSION LEARNING ANALYSIS & FEEDBACK) - PHIÊN BẢN 2.1
 
 > **Dự án:** 40Study Mobile & Backend Platform  
 > **Module Mobile:** Parent Experience (`mobile/lib/features/parent/`) - Nhánh `UI/Parent`  
 > **Module Backend:** Parent Dashboard Service (`backend/internal/`) - Nhánh `tung/parent_role`  
 > **Tài liệu tham chiếu:**  
 > - `C:\Users\tungm\Downloads\deliverable.md` (Đặc tả UX Deliverable A–H, Locked child context, Lesson Detail #9)  
-> - Ảnh thiết kế: `uploaded_media_1790610728113.png` (Chi tiết phân tích kết quả buổi học & nhận xét)  
+> - Bản thiết kế V1: `uploaded_media_1790610728113.png`  
+> - Bản thiết kế V2 (Mới nhất): `uploaded_media_1790611681012.png`  
 > - Hệ thống backend hiện tại: `backend/internal/` (Go / Fiber / GORM / PostgreSQL)  
 > **Ngày cập nhật:** 28/09/2026  
-> **Phiên bản:** 2.0 (Bổ sung thiết kế & quy chuẩn cách ly tuyệt đối cho Backend API mới)  
+> **Phiên bản:** 2.1 (Phân tích thiết kế V2, quy chuẩn màu nền surfaceBg & cách ly Backend)  
 
 ---
 
 ## MỤC LỤC
 1. [TỔNG QUAN & BỐI CẢNH DỰ ÁN](#1-tổng-quan--bối-cảnh-dự-án)
-2. [PHÂN TÍCH ĐỐI CHIẾU THIẾT KẾ VỚI DELIVERABLE.MD](#2-phân-tích-đối-chiếu-thiết-kế-với-deliverablemd)
-3. [CÁC ĐIỂM CHƯA HỢP LÝ TRONG THIẾT KẾ & ĐỀ XUẤT GIẢI PHÁP](#3-các-điểm-chưa-hợp-lý-trong-thiết-kế--đề-xuất-giải-pháp)
-4. [QUY TẮC CÁCH LY PHẠM VI TUYỆT ĐỐI CHO BACKEND (STRICT SCOPE ISOLATION)](#4-quy-tắc-cách-ly-phạm-vi-tuyệt-đối-cho-backend)
-5. [ĐẶC TẢ CHI TIẾT API BACKEND MỚI (BACKEND API SPECIFICATION)](#5-đặc-tả-chi-tiết-api-backend-mới)
-6. [THIẾT KẾ KIẾN TRÚC UI/UX TRÊN MOBILE APP](#6-thiết-kế-kiến-trúc-uiux-trên-mobile-app)
-7. [MA TRẬN DỮ LIỆU & EMPTY / EDGE STATES](#7-ma-trận-dữ-liệu--empty--edge-states)
-8. [LỘ TRÌNH TRIỂN KHAI TỪNG BƯỚC (ROADMAP)](#8-lộ-trình-triển-khai-từng-bước)
-9. [TIÊU CHÍ NGHIỆM THU & BẢO ĐẢM CHẤT LƯỢNG (QUALITY GATES)](#9-tiêu-chí-nghiệm-thu--bảo-đảm-chất-lượng)
+2. [PHÂN TÍCH ĐỐI CHIẾU BẢN THIẾT KẾ V2 VỚI DELIVERABLE.MD](#2-phân-tích-đối-chiếu-bản-thiết-kế-v2-với-deliverablemd)
+3. [CÁC ĐIỂM CẢI TIẾN TRONG THIẾT KẾ V2 & CÁC ĐIỂM CHƯA HỢP LÝ CẦN KHẮC PHỤC](#3-các-điểm-cải-tiến-trong-thiết-kế-v2--các-điểm-chưa-hợp-lý-cần-khắc-phục)
+4. [QUY CHUẨN MÀU NỀN SURFACEBG & HỆ THỐNG PHÂN TẦNG THỊ GIÁC (VISUAL ELEVATION)](#4-quy-chuẩn-màu-nền-surfacebg--hệ-thống-phân-tầng-thị-giác)
+5. [QUY TẮC CÁCH LY PHẠM VI TUYỆT ĐỐI CHO BACKEND (STRICT SCOPE ISOLATION)](#5-quy-tắc-cách-ly-phạm-vi-tuyệt-đối-cho-backend)
+6. [ĐẶC TẢ CHI TIẾT API BACKEND MỚI (BACKEND API SPECIFICATION)](#6-đặc-tả-chi-tiết-api-backend-mới)
+7. [THIẾT KẾ KIẾN TRÚC UI/UX TRÊN MOBILE APP](#7-thiết-kế-kiến-trúc-uiux-trên-mobile-app)
+8. [MA TRẬN DỮ LIỆU & EMPTY / EDGE STATES](#8-ma-trận-dữ-liệu--empty--edge-states)
+9. [LỘ TRÌNH TRIỂN KHAI TỪNG BƯỚC (ROADMAP)](#9-lộ-trình-triển-khai-từng-bước)
+10. [TIÊU CHÍ NGHIỆM THU & BẢO ĐẢM CHẤT LƯỢNG (QUALITY GATES)](#10-tiêu-chí-nghiệm-thu--bảo-đảm-chất-lượng)
 
 ---
 
@@ -41,72 +43,101 @@ Dựa trên tài liệu UX chuẩn (`deliverable.md` - Màn hình #9 **Lesson De
 
 ---
 
-## 2. PHÂN TÍCH ĐỐI CHIẾU THIẾT KẾ VỚI DELIVERABLE.MD
+## 2. PHÂN TÍCH ĐỐI CHIẾU BẢN THIẾT KẾ V2 VỚI DELIVERABLE.MD
 
-| Tiêu chí | Quy định trong `deliverable.md` | Thiết kế trong Ảnh 1 | Đánh giá đối chiếu |
+| Tiêu chí | Quy định trong `deliverable.md` | Bản thiết kế V2 (`uploaded_media_1790611681012.png`) | Đánh giá đối chiếu |
 |---|---|---|---|
 | **Context Scope** | *Locked child context* (Dòng 71, 254): Header có nút Back + tiêu đề ghi rõ tên con (VD: `Bài học: Phân số cơ bản · Minh`). Không có child selector. | Header có `<` Back, tiêu đề `Bài học: Phân số cơ bản · Minh`, phụ đề `Toán nâng cao 10 · Buổi 8`. | **Rất tốt, tuân thủ 100% chuẩn scope**. |
 | **Tab Navigation** | Dòng 386: Gồm 2 tab: `Tổng quan` (nội dung/hoạt động) và `Kết quả & nhận xét` (kết quả bài tập, nhận xét giáo viên). | Có 2 Tab: `Tổng quan` và `Kết quả & nhận xét` với dot notification màu xanh. | **Rất tốt, chuẩn cấu trúc phân tầng**. |
-| **Vai trò Phụ huynh (Parent Role)** | Dòng 408: *Phụ huynh chỉ theo dõi, không nộp bài hay làm bài thay con*. Nút hành động phải phản ánh vai trò đồng hành/nhắc nhở. | Nút CTA đáy màn hình: `[Luyện tập bổ trợ ngay ->]`. | **CHƯA PHÙ HỢP:** Tạo cảm giác phụ huynh là người bấm vào làm bài tập của học sinh. |
-| **Privacy & Metric Gate** | Dòng 35, Dòng 109 (Mục H.2): *Tạm hoãn và KHÔNG hiển thị focus/engagement score* cho đến khi có cơ chế và chính sách dữ liệu hợp pháp. | Có chip `Tương tác: • Tích cực` và `Chuyên cần: ★★★★★ 5/5`. | **CẦN ĐIỀU CHỈNH:** Vi phạm gate privacy / đo lường chưa có căn cứ dữ liệu chuẩn xác. |
-| **Tài liệu & Video** | Dòng 386: Tab Tổng quan quản lý nội dung tài liệu/bài học, Tab Kết quả tập trung vào năng lực của con. | Tab "Kết quả & nhận xét" chứa cả khối `TÀI LIỆU BÀI GIẢNG & VIDEO XEM LẠI`. | **BỊ TRÙNG LẶP / QUÁ TẢI:** Làm loãng trọng tâm kết quả của con và redundancy với Tab Tổng quan. |
-| **Khả năng tiếp cận (Accessibility)** | Dòng 137: Không truyền đạt xu hướng hay kết quả chỉ bằng màu sắc. | Điểm số `3/5`, `60%`, có nhãn `Cần rèn luyện thêm`, badge `Chính xác` / `Chưa đạt`. | **Tốt:** Đạt chuẩn WCAG về nhãn text đi kèm màu sắc. |
+| **Vai trò Phụ huynh (Parent Role)** | Dòng 408 & Dòng 99 (Mục G): *Phụ huynh chỉ theo dõi, không làm bài thay con*. Nút hành động phải phản ánh vai trò đồng hành/nhắc nhở. | Đã đổi nút chính thành `[ 🔔 Nhắc con ôn luyện ]`. | **XUẤT SẮC:** Đã sửa đúng vai trò phụ huynh, loại bỏ nút "Luyện tập bổ trợ ngay" của học sinh. |
+| **Privacy & Metric Gate** | Dòng 35, Dòng 109 (Mục H.2): *Tạm hoãn và KHÔNG hiển thị focus/engagement score* cho đến khi có cơ chế và chính sách dữ liệu hợp pháp. | Đã thay thế bằng `Chuyên cần: • Có mặt đúng giờ` và `Học 58/60 phút`. | **XUẤT SẮC:** Đã gỡ bỏ chip rating 5 sao và focus score vi phạm gate, chuyển sang số liệu học vụ chuẩn xác. |
+| **Tài liệu & Video** | Dòng 386: Tab Tổng quan quản lý nội dung tài liệu/bài học, Tab Kết quả tập trung vào năng lực của con. | Đã nén khối này thành banner nhỏ dẫn sang: `Xem tại Tổng quan >`. | **CẢI THIỆN ĐÁNG KỂ:** Không còn chiếm diện tích lớn, nhưng cần tinh chỉnh lỗi cắt cụt chữ (ellipsis). |
+| **Màu nền (Background)** | Deliverable & UI System: Nền màn hình phải dùng `surfaceBg` đồng bộ với Trang chủ và Lịch học để làm nổi bật các thẻ Card màu trắng. | Nền màn hình hiện tại vẫn là màu trắng tuyền (`#FFFFFF`). | **CHƯA ĐẠT:** Thiếu tương phản phân tầng thị giác (flat elevation), các card trắng bị chìm. |
 
 ---
 
-## 3. CÁC ĐIỂM CHƯA HỢP LÝ TRONG THIẾT KẾ & ĐỀ XUẤT GIẢI PHÁP
+## 3. CÁC ĐIỂM CẢI TIẾN TRONG THIẾT KẾ V2 & CÁC ĐIỂM CHƯA HỢP LÝ CẦN KHẮC PHỤC
 
-### 3.1. Điểm chưa hợp lý #1: Nút CTA chính `[Luyện tập bổ trợ ngay ->]` gây nhầm lẫn vai trò người dùng
-- **Phân tích:** Phụ huynh sử dụng app để đồng hành, theo dõi con. Nút kêu gọi hành động `[Luyện tập bổ trợ ngay ->]` là CTA điển hình của ứng dụng Học sinh (Student App). Khi phụ huynh bấm vào, họ không phải là người trực tiếp làm bài tập trắc nghiệm hay giải toán.
-- **Đề xuất giải pháp:**
-  - **Phương án A (Khuyên dùng):** Đổi nhãn thành `[Nhắc con luyện tập]` hoặc `[Cùng con ôn luyện (Xem đề)]`. Khi bấm vào sẽ mở bản xem trước của bài tập kèm nút nhắc nhở con hoặc gợi ý cách phụ huynh hướng dẫn con giải.
-  - **Phương án B:** Điều hướng sang màn hình chi tiết bài tập về nhà `Homework Detail Screen` (đã quy định ở Screen #11 trong deliverable) để phụ huynh theo dõi tiến độ nộp bài của con.
-
-### 3.2. Điểm chưa hợp lý #2: Hiển thị chỉ số "Tương tác: Tích cực" và "Chuyên cần: 5/5 sao"
-- **Phân tích:**
-  - `deliverable.md` đã ghi rất rõ tại Dòng 3 và Dòng 109: Chỉ số tập trung/tương tác (`focus/engagement score`) **bị tạm dừng triển khai** do chưa có chính sách pháp lý về quyền riêng tư dữ liệu của trẻ em (Privacy & Lawful basis) và cơ chế đo lường đáng tin cậy.
-  - Đánh giá chuyên cần bằng `5/5 sao` mang tính chất xếp hạng dịch vụ, không phù hợp với nghiệp vụ học vụ (điểm danh thường là: *Có mặt đúng giờ*, *Đi muộn X phút*, *Vắng có phép*).
-- **Đề xuất giải pháp:**
-  - Tạm ẩn chip `Tương tác: • Tích cực` để tuân thủ Gate bảo mật của dự án.
-  - Chuyển `Chuyên cần: ★★★★★ 5/5` thành số liệu điểm danh chuẩn xác:
-    `Chuyên cần: Có mặt đúng giờ (Học 58/60 phút)`.
-
-### 3.3. Điểm chưa hợp lý #3: Khối Tài liệu & Video xem lại đặt trong Tab Kết quả
-- **Phân tích:**
-  - Đưa cả Slide PDF và Video Record buổi học dài 48 phút vào Tab "Kết quả & nhận xét" khiến màn hình bị dài quá mức và gây trùng lặp với Tab "Tổng quan".
-  - Phụ huynh vào tab này với mục đích chính là xem: *Con học thế nào? Điểm mấy? Thầy cô nhận xét gì? Có bài tập về nhà không?*
-- **Đề xuất giải pháp:**
-  - Đưa toàn bộ File tài liệu và Trình phát video bài giảng sang **Tab "Tổng quan"**.
-  - Tại Tab "Kết quả & nhận xét", nếu muốn dẫn chứng bài giảng, chỉ để một liên kết tinh gọn:
-    `[🎬 Xem lại video bài giảng tại Tab Tổng quan ->]`.
-
-### 3.4. Điểm chưa hợp lý #4: Phân tích lỗi chi tiết từng câu vượt quá khả năng của Backend hiện tại
-- **Phân tích:**
-  - Thiết kế có ghi: `Câu 3 & 5: Quy đồng mẫu thức - Lỗi đổi dấu tử số khi nhân lượng liên hợp`.
-  - Backend hiện tại chưa có hệ thống AI Diagnostic hay Knowledge Concept Tree gắn theo từng câu hỏi trắc nghiệm để tự động phát hiện loại lỗi ngữ nghĩa này.
-- **Đề xuất giải pháp:**
-  - **Giai đoạn hiện tại:** Hiển thị kết quả dạng danh sách câu:
-    - `[✓] Câu 1: Rút gọn biểu thức — Chính xác`
-    - `[✗] Câu 3: Quy đồng mẫu thức — Chưa chính xác`
-    - Text link: `[Xem chi tiết bài làm của con ->]` mở xem đáp án con đã chọn vs đáp án đúng.
-  - **Giai đoạn nâng cao:** Cung cấp trường `error_note` (optional) trong API để nếu giáo viên chủ động nhập ghi chú hoặc AI có chẩn đoán thì hiển thị thêm.
-
-### 3.5. Điểm chưa hợp lý #5: Chưa có kịch bản cho các trạng thái thiếu dữ liệu (Empty States)
-- **Phân tích:**
-  - Thiết kế chỉ có duy nhất trường hợp lý tưởng. Nếu buổi học vừa kết thúc giáo viên chưa chấm, hoặc buổi học không có quiz, hoặc học sinh vắng mặt thì giao diện sẽ hiển thị thế nào?
-- **Đề xuất giải pháp:**
-  - Xây dựng ma trận Empty State tinh tế cho từng Card: khi không có Quiz, khi giáo viên chưa gửi nhận xét, khi không giao bài tập về nhà.
+### 3.1. Những điểm đã cải tiến xuất sắc trong Thiết kế V2:
+1. **Nút Primary CTA chuyển đúng vai trò phụ huynh:** Nút `[ 🔔 Nhắc con ôn luyện ]` đã khắc phục hoàn toàn sự nhầm lẫn với app học sinh.
+2. **Tuân thủ Gate quyền riêng tư & đo lường:** Loại bỏ chip `Tương tác: • Tích cực` và `Chuyên cần 5 sao`, thay bằng thông số học vụ chuẩn: `Có mặt đúng giờ` & `Học 58/60 phút`.
+3. **Giảm tải tab Kết quả:** Đã chuyển phần lớn tải trọng tài liệu & video sang Tab Tổng quan qua banner điều hướng.
 
 ---
 
-## 4. QUY TẮC CÁCH LY PHẠM VI TUYỆT ĐỐI CHO BACKEND (STRICT SCOPE ISOLATION)
+### 3.2. Các điểm CHƯA HỢP LÝ trong Bản V2 cần xử lý:
+
+#### 🔴 Điểm #1: Background toàn màn hình vẫn để màu trắng tuyền (`#FFFFFF`)
+- **Vấn đề:** Cả nền màn hình và nền của các khối Card đều dùng màu trắng `#FFFFFF`.
+- **Hậu quả:** Giao diện bị phẳng lì (flat design thiếu chiều sâu), không có độ phân tầng thị giác giữa nền và Card chứa nội dung, viền mỏng không đủ làm nổi bật khối thông tin.
+- **Giải pháp:** Sử dụng màu nền `surfaceBg` chuẩn (pha nhẹ giữa `cs.primary` và `cs.surfaceContainer`) đồng bộ với `ParentHomeScreen` và `ParentScheduleScreen`. Khi đó các Card nội dung màu trắng bo góc 16px sẽ nổi bật rõ rệt.
+
+#### 🔴 Điểm #2: Khoảng trống lớn bất thường (Empty Gap) trong Card Kết quả bài tập
+- **Vấn đề:** Sau khi bỏ danh sách chẩn đoán lỗi câu hỏi, giữa dòng `Thời gian làm: 18 phút / 25 phút` và dòng link `Xem chi tiết bài làm của con ->` xuất hiện một khoảng trống lớn không có nội dung, trông như lỗi layout.
+- **Giải pháp:**
+  - Bổ sung **Visual Progress Segment Bar** nhỏ gọn thể hiện trực quan tỷ lệ làm bài: 3 vạch xanh lá (Đúng) và 2 vạch đỏ cam (Sai).
+  - Kèm dòng tóm tắt súc tích: `Đúng 3/5 câu trắc nghiệm • Cần ôn lại phần rút gọn mẫu thức`.
+  - Hoặc co gọn padding hợp lý để card cân đối, không để khoảng trống vô nghĩa.
+
+#### 🔴 Điểm #3: Bị cắt chữ (Text Truncation / Ellipsis `...`) ở các thành phần chính
+- **Vấn đề trên thiết kế V2:**
+  - Banner tài liệu ghi: `Tài liệu bài giảng & Video...` bị cắt cụt từ.
+  - Nút bấm bên trái ở Bottom Bar: `💬 Nhắn tin cô ...` bị cắt mất tên cô giáo do chiều rộng cố định quá hẹp.
+- **Giải pháp:**
+  - Với Banner tài liệu: Viết gọn lại thành 2 dòng rõ nghĩa:  
+    Dòng 1: `Tài liệu & Video bài giảng`  
+    Dòng 2: `Đã lưu trữ trong tab Tổng quan`
+  - Với Nút Bottom Bar: Đổi nhãn nút phụ thành `[ 💬 Nhắn tin ]` (ngắn gọn, xúc tích, không bị cắt chữ trên màn hình hẹp), dành đủ không gian cho nút chính `[ 🔔 Nhắc con ôn luyện ]`.
+
+#### 🔴 Điểm #4: Chưa đặc tả luồng hành động khi bấm `[ 🔔 Nhắc con ôn luyện ]`
+- **Vấn đề:** Khi phụ huynh bấm vào nút chuông nhắc nhở này, hệ thống sẽ thực hiện hành động gì?
+- **Giải pháp:** Mở một `ReminderActionSheet` với 2 lựa chọn tiện lợi cho phụ huynh:
+  1. *Gửi thông báo nhắc nhở vào app học tập của con* (kèm cơ chế chống spam/cooldown 15 phút theo chuẩn `deliverable.md` mục G.99).
+  2. *Chia sẻ nhắc nhở qua Zalo / Tin nhắn SMS* (tự động tạo sẵn lời nhắn: *"Minh ơi, cô Lan nhắc con ôn lại Bài luyện tập 5 môn Toán tối nay nhé!"*).
+
+---
+
+## 4. QUY CHUẨN MÀU NỀN SURFACEBG & HỆ THỐNG PHÂN TẦNG THỊ GIÁC
+
+Để màn hình có độ sâu và nổi bật các thẻ Card thông tin giống hệt Trang chủ và Tab Lịch học, toàn bộ cấu trúc màu sắc được chuẩn hóa theo quy tắc sau:
+
+### 4.1. Công thức tính màu nền `surfaceBg`
+```dart
+// Áp dụng cho Scaffold.backgroundColor:
+final isLight = Theme.of(context).brightness == Brightness.light;
+final surfaceBg = Color.alphaBlend(
+  cs.primary.withValues(alpha: isLight ? 0.045 : 0.065),
+  cs.surfaceContainer,
+);
+```
+- **Hiệu ứng thị giác:** Tạo ra nền xám-xanh nhẹ tinh tế (`#F8FAFC` - `#F1F5F9`), giúp mắt thư giãn khi đọc văn bản dài.
+
+### 4.2. Quy cách tạo khối Card nội dung trên nền `surfaceBg`
+Mỗi khối thông tin (`SessionQuizResultCard`, `SessionTeacherFeedbackCard`, `SessionHomeworkCard`) được đóng gói trong một Container:
+- **Màu nền Card:** `Colors.white` (ở Dark mode dùng `cs.surface`).
+- **Bo góc:** `BorderRadius.circular(16)`.
+- **Viền:** `Border.all(color: const Color(0xFFE2E8F0), width: 1)`.
+- **Đổ bóng (Elevation):**
+  ```dart
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.03),
+      blurRadius: 10,
+      offset: const Offset(0, 3),
+    ),
+  ],
+  ```
+
+---
+
+## 5. QUY TẮC CÁCH LY PHẠM VI TUYỆT ĐỐI CHO BACKEND (STRICT SCOPE ISOLATION)
 
 > **CHỈ ĐẠO BẮT BUỘC TỪ NGƯỜI DÙNG:**  
 > *"Bạn có quyền thêm api trong backend, tuy nhiên không được động tới các api khác, chỉ được hoạt động trong phạm vi api này thôi."*
 
-Để tuân thủ 100% nguyên tắc không làm ảnh hưởng đến bất kỳ API nào khác đang hoạt động ổn định trên hệ thống, toàn bộ thay đổi Backend được thiết kế theo cơ chế **Non-breaking Additive Only** (Chỉ thêm mới, không sửa đổi logic cũ):
+Toàn bộ thay đổi Backend tuân thủ nguyên tắc **Non-breaking Additive Only** (Chỉ thêm mới, không sửa đổi logic cũ):
 
-### 4.1. Ma trận phân bổ file Backend được phép can thiệp
+### 5.1. Ma trận phân bổ file Backend được phép can thiệp
 
 | File Backend | Hành động | Phạm vi can thiệp chi tiết | Đảm bảo an toàn |
 |---|---|---|---|
@@ -116,7 +147,7 @@ Dựa trên tài liệu UX chuẩn (`deliverable.md` - Màn hình #9 **Lesson De
 | `backend/internal/service/parent_dashboard_service.go` | **CHỈ THÊM METHOD MỚI** | 1. Bổ sung signature `GetChildSessionAnalysis(...)` vào interface `ParentDashboardServiceInterface`.<br>2. Cài đặt hàm `GetChildSessionAnalysis` ở cuối file. | Không đụng đến logic của `GetChildOverview`, `GetChildCourses`, `GetChildGrades`, `GetChildSchedule`, `GetChildAttendance`, `GetChildAssignments`. |
 | `backend/internal/service/parent_dashboard_session_analysis_test.go` | **TẠO MỚI HOÀN TOÀN** | Viết unit test riêng cho service method mới. | Không sửa các file test hiện có. |
 
-### 4.2. Nguyên tắc tái sử dụng dữ liệu an toàn (Zero DB Migration)
+### 5.2. Nguyên tắc tái sử dụng dữ liệu an toàn (Zero DB Migration)
 - **Không thay đổi Schema DB:** Tận dụng 100% các bảng sẵn có trong PostgreSQL:
   - Bảng `parent_student_relations`: Xác thực quyền xem con.
   - Bảng `class_sessions`: Lấy thông tin môn học, ca học, ngày giờ.
@@ -128,9 +159,9 @@ Dựa trên tài liệu UX chuẩn (`deliverable.md` - Màn hình #9 **Lesson De
 
 ---
 
-## 5. ĐẶC TẢ CHI TIẾT API BACKEND MỚI
+## 6. ĐẶC TẢ CHI TIẾT API BACKEND MỚI
 
-### 5.1. Thông tin Endpoint
+### 6.1. Thông tin Endpoint
 - **HTTP Method:** `GET`
 - **Route Path:** `/api/parent/children/:id/sessions/:sessionId/analysis`
   - `:id`: UUID của học sinh (con).
@@ -138,7 +169,7 @@ Dựa trên tài liệu UX chuẩn (`deliverable.md` - Màn hình #9 **Lesson De
 - **Middlewares:** `middleware.AuthMiddleware` (yêu cầu JWT token của phụ huynh).
 - **Authorization:** Gọi `verifyParentChildRelation(parentID, childID)` đảm bảo quan hệ `active` và phụ huynh có quyền xem học tập (`can_view_grades` hoặc `can_view_progress`).
 
-### 5.2. File DTO mới: `backend/internal/dto/child_session_analysis_dto.go`
+### 6.2. File DTO mới: `backend/internal/dto/child_session_analysis_dto.go`
 
 ```go
 package dto
@@ -190,15 +221,7 @@ type SessionQuizAnalysisDto struct {
 	Percentage     float64                 `json:"percentage"`      // 60.0
 	TimeSpentMins  int                     `json:"time_spent_mins"` // 18
 	TimeLimitMins  int                     `json:"time_limit_mins"` // 25
-	Breakdown      []QuizQuestionResultDto `json:"breakdown"`
 	CanViewDetail  bool                    `json:"can_view_detail"`
-}
-
-type QuizQuestionResultDto struct {
-	QuestionGroup string  `json:"question_group"` // "Câu 1, 2 & 4: Rút gọn biểu thức"
-	IsCorrect     bool    `json:"is_correct"`
-	StatusText    string  `json:"status_text"`    // "Chính xác" | "Chưa đạt"
-	ErrorNote     *string `json:"error_note,omitempty"` // "Lỗi đổi dấu tử số..."
 }
 
 type SessionTeacherFeedbackDto struct {
@@ -227,88 +250,58 @@ type SessionRecordingDto struct {
 }
 ```
 
-### 5.3. Logic tổng hợp trong Service (`GetChildSessionAnalysis`)
-```go
-func (s *ParentDashboardService) GetChildSessionAnalysis(
-	ctx context.Context,
-	parentID, childID, sessionID uuid.UUID,
-) (*dto.ChildSessionAnalysisResponseDto, error) {
-	// 1. Xác thực quan hệ Phụ huynh - Con
-	relation, err := s.verifyParentChildRelation(ctx, parentID, childID)
-	if err != nil {
-		return nil, err
-	}
-	if !relation.CanViewGrades && !relation.CanViewProgress {
-		return nil, errors.New("không có quyền xem kết quả học tập")
-	}
-
-	// 2. Lấy thông tin ClassSession
-	session, err := s.scheduleRepo.GetSessionByID(ctx, sessionID)
-	if err != nil || session == nil {
-		return nil, errors.New("không tìm thấy thông tin ca học")
-	}
-
-	// 3. Lấy điểm danh của học sinh trong ca học này
-	att, _ := s.scheduleRepo.GetAttendanceBySessionAndStudent(ctx, sessionID, childID)
-
-	// 4. Lấy điểm số & nhận xét giáo viên từ bảng grades
-	grades, _ := s.gradeRepo.GetGradesByStudentID(ctx, childID)
-	// Tìm grade có session_id trùng với sessionID
-
-	// 5. Lấy thông tin bài tập về nhà được giao
-	// 6. Tổng hợp dữ liệu thành ChildSessionAnalysisResponseDto
-	...
-}
-```
-
 ---
 
-## 6. THIẾT KẾ KIẾN TRÚC UI/UX TRÊN MOBILE APP
+## 7. THIẾT KẾ KIẾN TRÚC UI/UX TRÊN MOBILE APP
 
-### 6.1. Tổ chức Màn hình & Tích hợp Tab
+### 7.1. Cấu trúc Màn hình & Tích hợp Tab
 Màn hình được triển khai trong file:  
 [`mobile/lib/features/parent/presentation/schedule/parent_session_detail_screen.dart`](file:///C:/ForteX/mobile/lib/features/parent/presentation/schedule/parent_session_detail_screen.dart)
 
-Sử dụng cấu trúc `DefaultTabController(length: 2, ...)`:
-- **AppBar:**
+- **Scaffold Background:** Sử dụng màu `surfaceBg`.
+- **Top Bar (AppBar):**
   - Nút Back `<` (bảo toàn state).
   - Status Tag & ID ca học: `• HOÀN THÀNH HÔM NAY` | `ID: TOAN10-B08`.
   - Title: `Bài học: Phân số cơ bản · Minh` (Locked child context).
   - Subtitle: `Toán nâng cao 10 · Buổi 8 (Thứ Năm, 24/10)`.
-  - Nút `⋮` mở Action Sheet (Chia sẻ báo cáo điểm, Báo cáo thắc mắc).
+  - Nút `⋮` mở Action Sheet.
   - **TabBar:** `[ Tổng quan ]` | `[ Kết quả & nhận xét (•) ]`.
 
-### 6.2. Cấu trúc Tab "Kết quả & nhận xét" (Từ trên xuống dưới)
+### 7.2. Cấu trúc Tab "Kết quả & nhận xét" (Từ trên xuống dưới)
 
 1. **Card 1: Kết quả bài tập trên lớp (`SessionQuizResultCard`)**
    - Tiêu đề phụ: `Quiz & Thực hành tính toán nhanh`.
-   - Badge đánh giá: `Cần rèn luyện thêm` (cam) / `Xuất sắc` (xanh) / `Đạt yêu cầu` (xanh lá).
-   - Chỉ số điểm: `3 / 5 đúng` kèm badge `60%`.
-   - Vòng tròn tiến độ tròn `CircularProgressIndicator` với tỷ lệ 3/5.
+   - Badge đánh giá: `Cần rèn luyện thêm` (màu cam).
+   - Điểm số: `3 / 5 đúng` kèm badge `60%`, vòng tròn donut `3/5`.
    - Thời gian làm: `18 phút / 25 phút`.
-   - Danh sách câu hỏi: Phân nhóm câu đúng (màu xanh kèm checkmark) và câu chưa đạt (màu đỏ kèm icon cảnh báo và ghi chú lỗi nếu có).
-   - Nút hành động phụ: TextButton `[Xem chi tiết bài làm của con ->]` mở dialog/sheet xem câu trả lời.
+   - **Thanh Progress Bar tỷ lệ:** 3 vạch xanh lá (Đúng) + 2 vạch đỏ cam (Chưa đạt) lấp đầy khoảng trống thừa một cách tinh tế.
+   - Text link: `[Xem chi tiết bài làm của con ->]`.
 
 2. **Card 2: Đánh giá & nhận xét của giáo viên (`SessionTeacherFeedbackCard`)**
    - Header giáo viên: Avatar tròn, Họ tên, Học vị (`ThS. Toán`), Phân môn (`Bộ môn Toán`).
    - Thời gian nhận xét: `Đã nhận xét lúc 11:30 hôm nay`.
-   - Hộp trích dẫn (Quote container) với viền dọc màu xanh thương hiệu chứa toàn bộ lời khuyên, nhận xét của giáo viên dành riêng cho con.
-   - Tag học vụ chuẩn xác: `Chuyên cần: Đúng giờ (58/60 phút)`. *(Không hiển thị focus score theo Gate UX).*
+   - Hộp trích dẫn (Quote container) với viền dọc màu xanh thương hiệu chứa toàn bộ lời khuyên của cô giáo.
+   - Tag học vụ chuẩn: `Chuyên cần: • Có mặt đúng giờ` | `Học 58/60 phút`.
 
-3. **Card 3: Bài tập về nhà & Bước tiếp theo (`SessionHomeworkNextStepCard`)**
-   - Card nền kem viền cam nhạt cảnh báo bài tập cần hoàn thành.
+3. **Banner Điều hướng Tài liệu & Video bài giảng**
+   - Container bo góc 14px, viền xanh nhạt, icon máy quay video.
+   - Text không bị cắt cụt: `Tài liệu & Video bài giảng` • `Đã lưu trữ trong tab Tổng quan`.
+   - Action link: `Xem tại Tổng quan >` (khi bấm sẽ tự động chuyển sang Tab 1 `Tổng quan`).
+
+4. **Card 3: Bước tiếp theo cho Phụ huynh & Con (`SessionHomeworkNextStepCard`)**
+   - Card nền kem viền cam nhạt.
    - Icon cảnh báo màu cam.
    - Tên bài tập: `Toán 10 — Bài luyện tập 5: Rút gọn phân số có ẩn`.
    - Hạn chót nộp bài: `Hạn chót: 20:00 tối nay` (chữ đỏ nổi bật).
-   - Link điều hướng mở rộng: `[📊 Xem phân tích chi tiết tiến độ (Insights) ->]` mở màn hình Insights được filter sẵn môn Toán.
+   - Link điều hướng mở rộng: `[📊 Xem phân tích chi tiết (Insights) ->]` mở màn hình Insights được filter sẵn môn Toán.
 
-4. **Sticky Bottom Action Bar (Cố định ở đáy)**
-   - Nút phụ (Trái): `[ 💬 Nhắn tin cô Lan ]` (Outline Button).
-   - Nút chính (Phải): `[ Nhắc con ôn luyện -> ]` hoặc `[ Xem bài tập về nhà -> ]` (Elevated Button màu xanh primary).
+5. **Sticky Bottom Action Bar (Cố định ở đáy)**
+   - Nút phụ (Trái): `[ 💬 Nhắn tin ]` (Outline Button không bị cụt chữ).
+   - Nút chính (Phải): `[ 🔔 Nhắc con ôn luyện ]` (Elevated Button màu xanh primary).
 
 ---
 
-## 7. MA TRẬN DỮ LIỆU & EMPTY / EDGE STATES
+## 8. MA TRẬN DỮ LIỆU & EMPTY / EDGE STATES
 
 | Tình huống thực tế | Dữ liệu API trả về | Cách hiển thị trên giao diện (Mobile UI) |
 |---|---|---|
@@ -320,7 +313,7 @@ Sử dụng cấu trúc `DefaultTabController(length: 2, ...)`:
 
 ---
 
-## 8. LỘ TRÌNH TRIỂN KHAI TỪNG BƯỚC
+## 9. LỘ TRÌNH TRIỂN KHAI TỪNG BƯỚC
 
 ### Giai đoạn 1: Bổ sung Backend API (Nhánh `tung/parent_role`, cách ly tuyệt đối)
 - **Bước 1.1:** Tạo file DTO mới `backend/internal/dto/child_session_analysis_dto.go`.
@@ -334,22 +327,25 @@ Sử dụng cấu trúc `DefaultTabController(length: 2, ...)`:
 - **Bước 2.2:** Cung cấp mock data đầy đủ cho học sinh mẫu `Minh` và cơ chế fallback Empty State chuẩn cho tài khoản thật `Mai Hoàng Tùng`.
 
 ### Giai đoạn 3: Hoàn thiện Giao diện Mobile Tab "Kết quả & nhận xét" (Nhánh `UI/Parent`)
-- **Bước 3.1:** Tích hợp `DefaultTabController(length: 2)` vào `parent_session_detail_screen.dart`.
-- **Bước 3.2:** Xây dựng Widget `_buildQuizResultCard` (điểm số, tỷ lệ, danh sách câu đúng/sai).
-- **Bước 3.3:** Xây dựng Widget `_buildTeacherFeedbackCard` (hộp thoại trích dẫn, tag chuyên cần chuẩn).
-- **Bước 3.4:** Xây dựng Widget `_buildHomeworkNextStepCard` và liên kết sang Insights.
-- **Bước 3.5:** Tối ưu Sticky Bottom Bar cho phụ huynh.
-- **Bước 3.6:** Chạy `flutter analyze` đạt 0 issues, commit ngắn gọn bằng tiếng Việt và push lên `UI/Parent`.
+- **Bước 3.1:** Đảm bảo `Scaffold.backgroundColor` sử dụng `surfaceBg` chuẩn, các Card trắng nổi bật.
+- **Bước 3.2:** Tích hợp `DefaultTabController(length: 2)` vào `parent_session_detail_screen.dart`.
+- **Bước 3.3:** Xây dựng Widget `_buildQuizResultCard` (điểm số, progress bar tỷ lệ đúng/sai, không bị khoảng trống thừa).
+- **Bước 3.4:** Xây dựng Widget `_buildTeacherFeedbackCard` (hộp thoại trích dẫn, tag chuyên cần chuẩn).
+- **Bước 3.5:** Bổ sung banner chuyển tab tài liệu & video không bị cắt chữ.
+- **Bước 3.6:** Xây dựng Widget `_buildHomeworkNextStepCard` và liên kết sang Insights.
+- **Bước 3.7:** Tối ưu Sticky Bottom Bar cho phụ huynh: `[💬 Nhắn tin]` và `[🔔 Nhắc con ôn luyện]`.
+- **Bước 3.8:** Chạy `flutter analyze` đạt 0 issues, commit ngắn gọn bằng tiếng Việt và push lên `UI/Parent`.
 
 ---
 
-## 9. TIÊU CHÍ NGHIỆM THU & BẢO ĐẢM CHẤT LƯỢNG (QUALITY GATES)
+## 10. TIÊU CHÍ NGHIỆM THU & BẢO ĐẢM CHẤT LƯỢNG (QUALITY GATES)
 
 1. **Không hồi quy Backend (Zero Regressions):** Toàn bộ 7 API phụ huynh hiện có và các API hệ thống khác hoạt động bình thường 100%, không bị ảnh hưởng.
 2. **Khóa ngữ cảnh chuẩn:** AppBar hiển thị đúng tên con và thông tin buổi học, không có child selector.
-3. **Chuyển Tab mượt mà:** Chuyển đổi giữa `Tổng quan` và `Kết quả & nhận xét` mượt mà, lưu giữ vị trí cuộn.
-4. **Phân cấp thị giác rõ nét:** Nền `surfaceBg`, các Card trắng nổi bật, điểm số và câu hỏi trực quan.
-5. **Không vi phạm Privacy Gate:** Không hiển thị focus/engagement score giả định.
-6. **Đúng vai trò phụ huynh:** Nút hành động ở đáy màn hình phù hợp với phụ huynh (nhắc con / xem bài tập), không phải nút làm bài thi của học sinh.
-7. **Xử lý Empty State mượt mà:** Tài khoản con thật không bị crash, hiển thị thông báo rỗng chuẩn mực khi chưa có dữ liệu từ backend.
-8. **Linter & Clean Code:** `flutter analyze` đạt 0 issues, comment giải thích rõ ràng bằng tiếng Việt.
+3. **Màu nền surfaceBg đạt chuẩn:** Không dùng background trắng tuyền, các card nội dung màu trắng nổi bật rõ nét.
+4. **Không bị cắt cụt chữ:** Toàn bộ text trên banner và nút bấm hiển thị đầy đủ, co giãn responsive tốt.
+5. **Chuyển Tab mượt mà:** Chuyển đổi giữa `Tổng quan` và `Kết quả & nhận xét` mượt mà, lưu giữ vị trí cuộn.
+6. **Không vi phạm Privacy Gate:** Không hiển thị focus/engagement score giả định.
+7. **Đúng vai trò phụ huynh:** Nút hành động ở đáy màn hình là `[🔔 Nhắc con ôn luyện]`, phản ánh đúng vai trò đồng hành.
+8. **Xử lý Empty State mượt mà:** Tài khoản con thật không bị crash, hiển thị thông báo rỗng chuẩn mực khi chưa có dữ liệu từ backend.
+9. **Linter & Clean Code:** `flutter analyze` đạt 0 issues, comment giải thích rõ ràng bằng tiếng Việt.
