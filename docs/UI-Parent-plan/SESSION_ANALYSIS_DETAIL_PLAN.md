@@ -1,14 +1,15 @@
 # KẾ HOẠCH TRIỂN KHAI MÀN HÌNH PHÂN TÍCH KẾT QUẢ BUỔI HỌC DÀNH CHO PHỤ HUYNH
 ## (PARENT SESSION LEARNING ANALYSIS & FEEDBACK)
 
-> **Dự án:** 40Study Mobile App  
-> **Module:** Parent Experience (`mobile/lib/features/parent/`)  
+> **Dự án:** 40Study Mobile & Backend Platform  
+> **Module Mobile:** Parent Experience (`mobile/lib/features/parent/`) - Nhánh `UI/Parent`  
+> **Module Backend:** Parent Dashboard Service (`backend/internal/`) - Nhánh `tung/parent_role`  
 > **Tài liệu tham chiếu:**  
 > - `C:\Users\tungm\Downloads\deliverable.md` (Đặc tả UX Deliverable A–H, Locked child context, Lesson Detail #9)  
 > - Ảnh thiết kế: `uploaded_media_1790610728113.png` (Chi tiết phân tích kết quả buổi học & nhận xét)  
 > - Hệ thống backend hiện tại: `backend/internal/` (Go / Fiber / GORM / PostgreSQL)  
-> **Ngày lập kế hoạch:** 28/09/2026  
-> **Phiên bản:** 1.0  
+> **Ngày cập nhật:** 28/09/2026  
+> **Phiên bản:** 2.0 (Bổ sung thiết kế & quy chuẩn cách ly tuyệt đối cho Backend API mới)  
 
 ---
 
@@ -16,11 +17,12 @@
 1. [TỔNG QUAN & BỐI CẢNH DỰ ÁN](#1-tổng-quan--bối-cảnh-dự-án)
 2. [PHÂN TÍCH ĐỐI CHIẾU THIẾT KẾ VỚI DELIVERABLE.MD](#2-phân-tích-đối-chiếu-thiết-kế-với-deliverablemd)
 3. [CÁC ĐIỂM CHƯA HỢP LÝ TRONG THIẾT KẾ & ĐỀ XUẤT GIẢI PHÁP](#3-các-điểm-chưa-hợp-lý-trong-thiết-kế--đề-xuất-giải-pháp)
-4. [ĐẶC TẢ API BACKEND CẦN BỔ SUNG (BACKEND API SPECIFICATION)](#4-đặc-tả-api-backend-cần-bổ-sung)
-5. [THIẾT KẾ KIẾN TRÚC UI/UX TRÊN MOBILE APP](#5-thiết-kế-kiến-trúc-uiux-trên-mobile-app)
-6. [MA TRẬN DỮ LIỆU & EMPTY / EDGE STATES](#6-ma-trận-dữ-liệu--empty--edge-states)
-7. [LỘ TRÌNH TRIỂN KHAI TỪNG BƯỚC (STEP-BY-STEP ROADMAP)](#7-lộ-trình-triển-khai-từng-bước)
-8. [TIÊU CHÍ NGHIỆM THU (ACCEPTANCE CRITERIA)](#8-tiêu-chí-nghiệm-thu)
+4. [QUY TẮC CÁCH LY PHẠM VI TUYỆT ĐỐI CHO BACKEND (STRICT SCOPE ISOLATION)](#4-quy-tắc-cách-ly-phạm-vi-tuyệt-đối-cho-backend)
+5. [ĐẶC TẢ CHI TIẾT API BACKEND MỚI (BACKEND API SPECIFICATION)](#5-đặc-tả-chi-tiết-api-backend-mới)
+6. [THIẾT KẾ KIẾN TRÚC UI/UX TRÊN MOBILE APP](#6-thiết-kế-kiến-trúc-uiux-trên-mobile-app)
+7. [MA TRẬN DỮ LIỆU & EMPTY / EDGE STATES](#7-ma-trận-dữ-liệu--empty--edge-states)
+8. [LỘ TRÌNH TRIỂN KHAI TỪNG BƯỚC (ROADMAP)](#8-lộ-trình-triển-khai-từng-bước)
+9. [TIÊU CHÍ NGHIỆM THU & BẢO ĐẢM CHẤT LƯỢNG (QUALITY GATES)](#9-tiêu-chí-nghiệm-thu--bảo-đảm-chất-lượng)
 
 ---
 
@@ -97,106 +99,173 @@ Dựa trên tài liệu UX chuẩn (`deliverable.md` - Màn hình #9 **Lesson De
 
 ---
 
-## 4. ĐẶC TẢ API BACKEND CẦN BỔ SUNG
+## 4. QUY TẮC CÁCH LY PHẠM VI TUYỆT ĐỐI CHO BACKEND (STRICT SCOPE ISOLATION)
 
-Hiện tại Backend đã có bảng `grades`, `session_attendances`, `assignments`. Backend cần xây dựng thêm Endpoint tổng hợp (aggregation) để cung cấp toàn bộ dữ liệu phân tích buổi học cho phụ huynh.
+> **CHỈ ĐẠO BẮT BUỘC TỪ NGƯỜI DÙNG:**  
+> *"Bạn có quyền thêm api trong backend, tuy nhiên không được động tới các api khác, chỉ được hoạt động trong phạm vi api này thôi."*
 
-### 4.1. Thông tin Endpoint
-- **Method:** `GET`
-- **URL:** `/api/parent/children/:childId/sessions/:sessionId/analysis`
-- **Quyền truy cập:** `AuthMiddleware` + Kiểm tra quan hệ Phụ huynh - Con (`verifyParentChildRelation`).
+Để tuân thủ 100% nguyên tắc không làm ảnh hưởng đến bất kỳ API nào khác đang hoạt động ổn định trên hệ thống, toàn bộ thay đổi Backend được thiết kế theo cơ chế **Non-breaking Additive Only** (Chỉ thêm mới, không sửa đổi logic cũ):
 
-### 4.2. Response DTO (Go struct)
+### 4.1. Ma trận phân bổ file Backend được phép can thiệp
+
+| File Backend | Hành động | Phạm vi can thiệp chi tiết | Đảm bảo an toàn |
+|---|---|---|---|
+| `backend/internal/dto/child_session_analysis_dto.go` | **TẠO MỚI HOÀN TOÀN** | Định nghĩa toàn bộ DTO Response chuyên biệt cho endpoint này. | Không chạm vào `parent_dashboard_dto.go` hay các DTO dùng chung khác. |
+| `backend/internal/router/parent_dashboard_router.go` | **CHỈ THÊM 1 DÒNG** | Thêm duy nhất 1 route: `children.Get("/sessions/:sessionId/analysis", h.GetChildSessionAnalysis)`. | Giữ nguyên 100% 7 routes hiện có (`overview`, `courses`, `grades`, `schedule`, `timetable`, `attendance`, `assignments`). |
+| `backend/internal/handler/parent_dashboard_handler.go` | **CHỈ THÊM METHOD MỚI** | Thêm hàm `GetChildSessionAnalysis(c *fiber.Ctx) error`. | Không sửa đổi một dòng code nào trong 7 handler functions hiện tại. |
+| `backend/internal/service/parent_dashboard_service.go` | **CHỈ THÊM METHOD MỚI** | 1. Bổ sung signature `GetChildSessionAnalysis(...)` vào interface `ParentDashboardServiceInterface`.<br>2. Cài đặt hàm `GetChildSessionAnalysis` ở cuối file. | Không đụng đến logic của `GetChildOverview`, `GetChildCourses`, `GetChildGrades`, `GetChildSchedule`, `GetChildAttendance`, `GetChildAssignments`. |
+| `backend/internal/service/parent_dashboard_session_analysis_test.go` | **TẠO MỚI HOÀN TOÀN** | Viết unit test riêng cho service method mới. | Không sửa các file test hiện có. |
+
+### 4.2. Nguyên tắc tái sử dụng dữ liệu an toàn (Zero DB Migration)
+- **Không thay đổi Schema DB:** Tận dụng 100% các bảng sẵn có trong PostgreSQL:
+  - Bảng `parent_student_relations`: Xác thực quyền xem con.
+  - Bảng `class_sessions`: Lấy thông tin môn học, ca học, ngày giờ.
+  - Bảng `session_attendances`: Lấy thời gian vào lớp, số phút tham gia, trạng thái đúng giờ.
+  - Bảng `grades`: Lấy điểm quiz trên lớp (`score`, `max_score`) và nhận xét của giáo viên (`feedback`).
+  - Bảng `assignments`: Lấy bài tập về nhà liên quan đến buổi học.
+  - Bảng `users`: Lấy thông tin họ tên, avatar của giáo viên giảng dạy.
+- **Xử lý Graceful Failure:** Nếu một trong các dữ liệu phụ (quiz, nhận xét, bài tập) chưa có trong DB, API tự động trả về `nil` cho trường đó thay vì trả về lỗi 500.
+
+---
+
+## 5. ĐẶC TẢ CHI TIẾT API BACKEND MỚI
+
+### 5.1. Thông tin Endpoint
+- **HTTP Method:** `GET`
+- **Route Path:** `/api/parent/children/:id/sessions/:sessionId/analysis`
+  - `:id`: UUID của học sinh (con).
+  - `:sessionId`: UUID của ca học cụ thể.
+- **Middlewares:** `middleware.AuthMiddleware` (yêu cầu JWT token của phụ huynh).
+- **Authorization:** Gọi `verifyParentChildRelation(parentID, childID)` đảm bảo quan hệ `active` và phụ huynh có quyền xem học tập (`can_view_grades` hoặc `can_view_progress`).
+
+### 5.2. File DTO mới: `backend/internal/dto/child_session_analysis_dto.go`
 
 ```go
 package dto
 
 import "time"
 
-// ChildSessionAnalysisResponseDto - Dữ liệu chi tiết phân tích buổi học của con
+// ChildSessionAnalysisResponseDto - Phân tích chi tiết buổi học của con
 type ChildSessionAnalysisResponseDto struct {
-    SessionID     string `json:"session_id"`
-    SessionCode   string `json:"session_code"`   // VD: "TOAN10-B08"
-    SessionNumber int    `json:"session_number"` // 8
-    LessonTitle   string `json:"lesson_title"`   // "Phân số cơ bản"
-    ClassName     string `json:"class_name"`     // "Toán nâng cao 10"
-    SessionDate   string `json:"session_date"`   // "2024-10-24"
-    Status        string `json:"status"`         // "completed", "in_progress", "upcoming"
-    StatusLabel   string `json:"status_label"`   // "Hoàn thành hôm nay"
+	SessionID     string `json:"session_id"`
+	SessionCode   string `json:"session_code"`   // VD: "TOAN10-B08"
+	SessionNumber int    `json:"session_number"` // 8
+	LessonTitle   string `json:"lesson_title"`   // "Phân số cơ bản"
+	ClassName     string `json:"class_name"`     // "Toán nâng cao 10"
+	SessionDate   string `json:"session_date"`   // "2024-10-24"
+	Status        string `json:"status"`         // "completed", "in_progress", "upcoming"
+	StatusLabel   string `json:"status_label"`   // "Hoàn thành hôm nay"
 
-    // 1. Kết quả kiểm tra / Quiz trên lớp
-    QuizResult *SessionQuizAnalysisDto `json:"quiz_result,omitempty"`
+	// 1. Điểm danh & Chuyên cần
+	Attendance *SessionAttendanceSummaryDto `json:"attendance,omitempty"`
 
-    // 2. Nhận xét của giáo viên
-    TeacherFeedback *SessionTeacherFeedbackDto `json:"teacher_feedback,omitempty"`
+	// 2. Kết quả kiểm tra / Quiz trên lớp
+	QuizResult *SessionQuizAnalysisDto `json:"quiz_result,omitempty"`
 
-    // 3. Bài tập về nhà được giao
-    Homework *SessionHomeworkTaskDto `json:"homework,omitempty"`
+	// 3. Nhận xét của giáo viên
+	TeacherFeedback *SessionTeacherFeedbackDto `json:"teacher_feedback,omitempty"`
 
-    // 4. Video xem lại & tài liệu (nếu có)
-    Recording *SessionRecordingDto `json:"recording,omitempty"`
+	// 4. Bài tập về nhà được giao
+	Homework *SessionHomeworkTaskDto `json:"homework,omitempty"`
+
+	// 5. Video xem lại bài giảng (nếu có)
+	Recording *SessionRecordingDto `json:"recording,omitempty"`
+}
+
+type SessionAttendanceSummaryDto struct {
+	Status          string  `json:"status"`           // "present", "late", "absent"
+	CheckInTime     *string `json:"check_in_time"`    // "08:58"
+	AttendedMinutes int     `json:"attended_minutes"` // 58
+	TotalMinutes    int     `json:"total_minutes"`    // 60
+	AttendanceLabel string  `json:"attendance_label"` // "Chuyên cần: Đúng giờ (58/60 phút)"
 }
 
 type SessionQuizAnalysisDto struct {
-    Title          string                  `json:"title"`           // "Quiz & Thực hành tính toán nhanh"
-    ScoreLabel     string                  `json:"score_label"`     // "Cần rèn luyện thêm" | "Xuất sắc" | "Đạt yêu cầu"
-    CorrectCount   int                     `json:"correct_count"`   // 3
-    TotalQuestions int                     `json:"total_questions"` // 5
-    Percentage     float64                 `json:"percentage"`      // 60.0
-    TimeSpentMins  int                     `json:"time_spent_mins"` // 18
-    TimeLimitMins  int                     `json:"time_limit_mins"` // 25
-    Breakdown      []QuizQuestionResultDto `json:"breakdown"`
-    CanViewDetail  bool                    `json:"can_view_detail"` // Cho phép xem chi tiết bài làm
-    SubmissionID   *string                 `json:"submission_id,omitempty"`
+	Title          string                  `json:"title"`           // "Quiz & Thực hành tính toán nhanh"
+	ScoreLabel     string                  `json:"score_label"`     // "Cần rèn luyện thêm" | "Xuất sắc" | "Đạt yêu cầu"
+	Score          float64                 `json:"score"`           // 6.0
+	MaxScore       float64                 `json:"max_score"`       // 10.0
+	CorrectCount   int                     `json:"correct_count"`   // 3
+	TotalQuestions int                     `json:"total_questions"` // 5
+	Percentage     float64                 `json:"percentage"`      // 60.0
+	TimeSpentMins  int                     `json:"time_spent_mins"` // 18
+	TimeLimitMins  int                     `json:"time_limit_mins"` // 25
+	Breakdown      []QuizQuestionResultDto `json:"breakdown"`
+	CanViewDetail  bool                    `json:"can_view_detail"`
 }
 
 type QuizQuestionResultDto struct {
-    QuestionGroup string  `json:"question_group"` // "Câu 1, 2 & 4: Rút gọn biểu thức"
-    IsCorrect     bool    `json:"is_correct"`
-    StatusText    string  `json:"status_text"`    // "Chính xác" | "Chưa đạt"
-    ErrorNote     *string `json:"error_note,omitempty"` // "Lỗi đổi dấu tử số..."
+	QuestionGroup string  `json:"question_group"` // "Câu 1, 2 & 4: Rút gọn biểu thức"
+	IsCorrect     bool    `json:"is_correct"`
+	StatusText    string  `json:"status_text"`    // "Chính xác" | "Chưa đạt"
+	ErrorNote     *string `json:"error_note,omitempty"` // "Lỗi đổi dấu tử số..."
 }
 
 type SessionTeacherFeedbackDto struct {
-    TeacherID       string     `json:"teacher_id"`
-    TeacherName     string     `json:"teacher_name"`     // "Cô Phạm Hồng Lan"
-    TeacherTitle    *string    `json:"teacher_title"`    // "ThS. Toán"
-    Subject         string     `json:"subject"`          // "Bộ môn Toán"
-    AvatarURL       *string    `json:"avatar_url"`
-    Comment         string     `json:"comment"`          // Nội dung nhận xét
-    CommentedAt     *time.Time `json:"commented_at"`     // Thời gian gửi nhận xét
-    AttendanceLabel string     `json:"attendance_label"` // "Chuyên cần: Đúng giờ (58/60 phút)"
-    CanChat         bool       `json:"can_chat"`
+	TeacherID   string     `json:"teacher_id"`
+	TeacherName string     `json:"teacher_name"`     // "Cô Phạm Hồng Lan"
+	TeacherRole *string    `json:"teacher_role"`     // "ThS. Toán"
+	Subject     string     `json:"subject"`          // "Bộ môn Toán"
+	AvatarURL   *string    `json:"avatar_url"`
+	Comment     string     `json:"comment"`          // Lời nhận xét
+	CommentedAt *time.Time `json:"commented_at"`     // Thời gian gửi nhận xét
+	CanChat     bool       `json:"can_chat"`
 }
 
 type SessionHomeworkTaskDto struct {
-    AssignmentID string     `json:"assignment_id"`
-    Title        string     `json:"title"`         // "Toán 10 — Bài luyện tập 5: Rút gọn phân số có ẩn"
-    DueDate      *time.Time `json:"due_date"`      // 2024-10-24T20:00:00Z
-    DueDateText  string     `json:"due_date_text"` // "20:00 tối nay"
-    Status       string     `json:"status"`        // "pending", "submitted", "graded", "overdue"
+	AssignmentID string     `json:"assignment_id"`
+	Title        string     `json:"title"`         // "Toán 10 — Bài luyện tập 5: Rút gọn phân số có ẩn"
+	DueDate      *time.Time `json:"due_date"`      // 2024-10-24T20:00:00Z
+	DueDateText  string     `json:"due_date_text"` // "20:00 tối nay"
+	Status       string     `json:"status"`        // "pending", "submitted", "graded", "overdue"
 }
 
 type SessionRecordingDto struct {
-    DurationMins int    `json:"duration_mins"` // 48
-    Quality      string `json:"quality"`       // "1080p"
-    VideoURL     string `json:"video_url"`     // URL video phát lại
+	DurationMins int    `json:"duration_mins"` // 48
+	Quality      string `json:"quality"`       // "1080p"
+	VideoURL     string `json:"video_url"`     // URL video phát lại
 }
 ```
 
-### 4.3. Logic tổng hợp dữ liệu Backend (`ParentDashboardService`)
-1. **Kiểm tra quyền:** Xác thực `parentID` có quan hệ `active` với `childID` qua `parent_student_relations`.
-2. **Lấy thông tin Session:** Truy vấn bảng `class_sessions` theo `sessionID` để lấy tên môn, ngày học, thứ tự buổi học.
-3. **Lấy điểm danh:** Truy vấn bảng `session_attendances` theo `session_id` và `student_id` -> tính ra số phút tham gia, trạng thái đúng giờ/muộn.
-4. **Lấy kết quả Quiz:** Truy vấn bảng `grades` (hoặc `quiz_submissions`) có `session_id` tương ứng -> lấy điểm số, số câu đúng/sai.
-5. **Lấy nhận xét của giáo viên:** Lấy từ cột `feedback` trong bảng `grades` hoặc bảng nhận xét chuyên cần.
-6. **Lấy bài tập về nhà:** Truy vấn bảng `assignments` có `session_id` hoặc được giao trong ngày của buổi học đó.
+### 5.3. Logic tổng hợp trong Service (`GetChildSessionAnalysis`)
+```go
+func (s *ParentDashboardService) GetChildSessionAnalysis(
+	ctx context.Context,
+	parentID, childID, sessionID uuid.UUID,
+) (*dto.ChildSessionAnalysisResponseDto, error) {
+	// 1. Xác thực quan hệ Phụ huynh - Con
+	relation, err := s.verifyParentChildRelation(ctx, parentID, childID)
+	if err != nil {
+		return nil, err
+	}
+	if !relation.CanViewGrades && !relation.CanViewProgress {
+		return nil, errors.New("không có quyền xem kết quả học tập")
+	}
+
+	// 2. Lấy thông tin ClassSession
+	session, err := s.scheduleRepo.GetSessionByID(ctx, sessionID)
+	if err != nil || session == nil {
+		return nil, errors.New("không tìm thấy thông tin ca học")
+	}
+
+	// 3. Lấy điểm danh của học sinh trong ca học này
+	att, _ := s.scheduleRepo.GetAttendanceBySessionAndStudent(ctx, sessionID, childID)
+
+	// 4. Lấy điểm số & nhận xét giáo viên từ bảng grades
+	grades, _ := s.gradeRepo.GetGradesByStudentID(ctx, childID)
+	// Tìm grade có session_id trùng với sessionID
+
+	// 5. Lấy thông tin bài tập về nhà được giao
+	// 6. Tổng hợp dữ liệu thành ChildSessionAnalysisResponseDto
+	...
+}
+```
 
 ---
 
-## 5. THIẾT KẾ KIẾN TRÚC UI/UX TRÊN MOBILE APP
+## 6. THIẾT KẾ KIẾN TRÚC UI/UX TRÊN MOBILE APP
 
-### 5.1. Tổ chức Màn hình & Tích hợp Tab
+### 6.1. Tổ chức Màn hình & Tích hợp Tab
 Màn hình được triển khai trong file:  
 [`mobile/lib/features/parent/presentation/schedule/parent_session_detail_screen.dart`](file:///C:/ForteX/mobile/lib/features/parent/presentation/schedule/parent_session_detail_screen.dart)
 
@@ -209,7 +278,7 @@ Sử dụng cấu trúc `DefaultTabController(length: 2, ...)`:
   - Nút `⋮` mở Action Sheet (Chia sẻ báo cáo điểm, Báo cáo thắc mắc).
   - **TabBar:** `[ Tổng quan ]` | `[ Kết quả & nhận xét (•) ]`.
 
-### 5.2. Cấu trúc Tab "Kết quả & nhận xét" (Từ trên xuống dưới)
+### 6.2. Cấu trúc Tab "Kết quả & nhận xét" (Từ trên xuống dưới)
 
 1. **Card 1: Kết quả bài tập trên lớp (`SessionQuizResultCard`)**
    - Tiêu đề phụ: `Quiz & Thực hành tính toán nhanh`.
@@ -239,44 +308,48 @@ Sử dụng cấu trúc `DefaultTabController(length: 2, ...)`:
 
 ---
 
-## 6. MA TRẬN DỮ LIỆU & EMPTY / EDGE STATES
+## 7. MA TRẬN DỮ LIỆU & EMPTY / EDGE STATES
 
 | Tình huống thực tế | Dữ liệu API trả về | Cách hiển thị trên giao diện (Mobile UI) |
 |---|---|---|
 | **Ca học sắp tới (`upcoming`)** | Chưa có kết quả, `status == "upcoming"` | Tab Kết quả hiển thị Empty State lịch sự: Icon đồng hồ + Text: *"Buổi học chưa diễn ra. Kết quả và nhận xét của giáo viên sẽ hiển thị sau khi buổi học kết thúc."* |
 | **Buổi học vừa xong, giáo viên chưa chấm/nhận xét** | `quiz_result == null`, `teacher_feedback == null` | Card Nhận xét hiển thị: Icon ghi chú + Text: *"Giáo viên đang hoàn thiện đánh giá buổi học. Phụ huynh vui lòng quay lại sau ít phút."* |
 | **Buổi học không có Quiz trên lớp** | `quiz_result == null` | Card Quiz tự động ẩn, chỉ hiển thị nhận xét buổi học và bài tập về nhà. |
-| **Con vắng mặt có phép / không phép** | `attendance_status == "absent"` | Hiển thị Banner cảnh báo: *"Con vắng mặt trong buổi học này. Phụ huynh nên nhắc con xem lại Video bài giảng ở tab Tổng quan để theo kịp tiến độ."* |
+| **Con vắng mặt có phép / không phép** | `attendance.status == "absent"` | Hiển thị Banner cảnh báo: *"Con vắng mặt trong buổi học này. Phụ huynh nên nhắc con xem lại Video bài giảng ở tab Tổng quan để theo kịp tiến độ."* |
 | **Không có bài tập về nhà** | `homework == null` | Card bài tập hiển thị: Icon check xanh + Text: *"Không có bài tập về nhà cho buổi học này. Con đã hoàn thành tốt nội dung trên lớp."* |
 
 ---
 
-## 7. LỘ TRÌNH TRIỂN KHAI TỪNG BƯỚC
+## 8. LỘ TRÌNH TRIỂN KHAI TỪNG BƯỚC
 
-### Giai đoạn 1: Chuẩn hóa Model & Mock Data trên Mobile
-- **Bước 1.1:** Cập nhật file [`parent_session_detail_model.dart`](file:///C:/ForteX/mobile/lib/features/parent/data/models/parent_session_detail_model.dart) để bổ sung đầy đủ các DTO theo thiết kế mới: `SessionQuizAnalysis`, `QuizQuestionBreakdown`, `SessionTeacherFeedback`, `SessionHomeworkTask`.
-- **Bước 1.2:** Cung cấp mock data đầy đủ cho tài khoản mẫu `Minh` (buổi học hoàn thành có quiz 3/5, nhận xét chi tiết, bài tập về nhà) và giữ rỗng cho tài khoản thật `Mai Hoàng Tùng` (để test Empty State).
+### Giai đoạn 1: Bổ sung Backend API (Nhánh `tung/parent_role`, cách ly tuyệt đối)
+- **Bước 1.1:** Tạo file DTO mới `backend/internal/dto/child_session_analysis_dto.go`.
+- **Bước 1.2:** Thêm signature vào interface và viết hàm `GetChildSessionAnalysis` trong `backend/internal/service/parent_dashboard_service.go`.
+- **Bước 1.3:** Thêm method `GetChildSessionAnalysis` trong `backend/internal/handler/parent_dashboard_handler.go`.
+- **Bước 1.4:** Thêm duy nhất 1 route vào `backend/internal/router/parent_dashboard_router.go`.
+- **Bước 1.5:** Chạy `go build ./...` và unit test để đảm bảo biên dịch 100% không lỗi. Commit ngắn gọn bằng tiếng Việt và push lên nhánh `tung/parent_role`.
 
-### Giai đoạn 2: Xây dựng Giao diện Tab "Kết quả & nhận xét"
-- **Bước 2.1:** Thêm `TabController` vào [`parent_session_detail_screen.dart`](file:///C:/ForteX/mobile/lib/features/parent/presentation/schedule/parent_session_detail_screen.dart) gồm 2 tab: `Tổng quan` và `Kết quả & nhận xét`.
-- **Bước 2.2:** Xây dựng Widget `_buildQuizResultCard` hiển thị điểm số, vòng tròn tỷ lệ, danh sách câu đúng/chưa đạt.
-- **Bước 2.3:** Xây dựng Widget `_buildTeacherFeedbackCard` hiển thị nhận xét giáo viên và tag chuyên cần chuẩn.
-- **Bước 2.4:** Xây dựng Widget `_buildHomeworkNextStepCard` hiển thị bài tập về nhà cần làm và link xem Insights.
-- **Bước 2.5:** Điều chỉnh Bottom Action Bar: Đổi nút thành `[Nhắc con ôn tập]` / `[Xem bài tập về nhà]`.
+### Giai đoạn 2: Cập nhật Mobile Data Model & Repository (Nhánh `UI/Parent`)
+- **Bước 2.1:** Cập nhật [`parent_session_detail_model.dart`](file:///C:/ForteX/mobile/lib/features/parent/data/models/parent_session_detail_model.dart) map theo cấu trúc DTO mới.
+- **Bước 2.2:** Cung cấp mock data đầy đủ cho học sinh mẫu `Minh` và cơ chế fallback Empty State chuẩn cho tài khoản thật `Mai Hoàng Tùng`.
 
-### Giai đoạn 3: Kiểm thử Linter, Trạng thái & Tài liệu
-- **Bước 3.1:** Chạy `flutter analyze` đảm bảo không có lỗi linter.
-- **Bước 3.2:** Test hiển thị trên cả 2 theme (Sáng / Tối) và kiểm tra Empty State cho tài khoản thật.
-- **Bước 3.3:** Cập nhật tài liệu [`mobile/docs/api-requirements.md`](file:///C:/ForteX/mobile/docs/api-requirements.md) và commit code với message tiếng Việt rõ ràng.
+### Giai đoạn 3: Hoàn thiện Giao diện Mobile Tab "Kết quả & nhận xét" (Nhánh `UI/Parent`)
+- **Bước 3.1:** Tích hợp `DefaultTabController(length: 2)` vào `parent_session_detail_screen.dart`.
+- **Bước 3.2:** Xây dựng Widget `_buildQuizResultCard` (điểm số, tỷ lệ, danh sách câu đúng/sai).
+- **Bước 3.3:** Xây dựng Widget `_buildTeacherFeedbackCard` (hộp thoại trích dẫn, tag chuyên cần chuẩn).
+- **Bước 3.4:** Xây dựng Widget `_buildHomeworkNextStepCard` và liên kết sang Insights.
+- **Bước 3.5:** Tối ưu Sticky Bottom Bar cho phụ huynh.
+- **Bước 3.6:** Chạy `flutter analyze` đạt 0 issues, commit ngắn gọn bằng tiếng Việt và push lên `UI/Parent`.
 
 ---
 
-## 8. TIÊU CHÍ NGHIỆM THU (ACCEPTANCE CRITERIA)
+## 9. TIÊU CHÍ NGHIỆM THU & BẢO ĐẢM CHẤT LƯỢNG (QUALITY GATES)
 
-1. **Khóa ngữ cảnh chuẩn:** AppBar hiển thị đúng tên con và thông tin buổi học, không có child selector.
-2. **Chuyển Tab mượt mà:** Chuyển đổi giữa `Tổng quan` và `Kết quả & nhận xét` mượt mà, lưu giữ vị trí cuộn.
-3. **Phân cấp thị giác rõ nét:** Nền `surfaceBg`, các Card trắng nổi bật, điểm số và câu hỏi trực quan.
-4. **Không vi phạm Privacy Gate:** Không hiển thị focus/engagement score giả định.
-5. **Đúng vai trò phụ huynh:** Nút hành động ở đáy màn hình phù hợp với phụ huynh (nhắc con / xem bài tập), không phải nút làm bài thi của học sinh.
-6. **Xử lý Empty State mượt mà:** Tài khoản con thật không bị crash, hiển thị thông báo rỗng chuẩn mực khi chưa có dữ liệu từ backend.
-7. **Linter & Clean Code:** `flutter analyze` đạt 0 issues, comment giải thích rõ ràng bằng tiếng Việt.
+1. **Không hồi quy Backend (Zero Regressions):** Toàn bộ 7 API phụ huynh hiện có và các API hệ thống khác hoạt động bình thường 100%, không bị ảnh hưởng.
+2. **Khóa ngữ cảnh chuẩn:** AppBar hiển thị đúng tên con và thông tin buổi học, không có child selector.
+3. **Chuyển Tab mượt mà:** Chuyển đổi giữa `Tổng quan` và `Kết quả & nhận xét` mượt mà, lưu giữ vị trí cuộn.
+4. **Phân cấp thị giác rõ nét:** Nền `surfaceBg`, các Card trắng nổi bật, điểm số và câu hỏi trực quan.
+5. **Không vi phạm Privacy Gate:** Không hiển thị focus/engagement score giả định.
+6. **Đúng vai trò phụ huynh:** Nút hành động ở đáy màn hình phù hợp với phụ huynh (nhắc con / xem bài tập), không phải nút làm bài thi của học sinh.
+7. **Xử lý Empty State mượt mà:** Tài khoản con thật không bị crash, hiển thị thông báo rỗng chuẩn mực khi chưa có dữ liệu từ backend.
+8. **Linter & Clean Code:** `flutter analyze` đạt 0 issues, comment giải thích rõ ràng bằng tiếng Việt.
