@@ -133,14 +133,22 @@ class SessionCompletedAnalysis {
     this.checkInTime,
     this.attendedMinutes = 0,
     this.totalMinutes = 0,
+    this.quizTitle,
+    this.scoreLabel,
     this.quizScore,
     this.maxQuizScore = 10.0,
     this.quizCorrectAnswers,
     this.quizTotalQuestions,
+    this.timeSpentMins = 0,
+    this.timeLimitMins = 0,
     this.teacherComment,
+    this.teacherSubject,
+    this.teacherCommentTime,
     this.homeworkTitle,
     this.homeworkDueDate,
     this.homeworkStatus,
+    this.hasRecording = false,
+    this.recordingDuration,
   });
 
   /// Trạng thái có mặt ("Có mặt", "Đi muộn", "Vắng mặt")
@@ -155,20 +163,38 @@ class SessionCompletedAnalysis {
   /// Tổng thời lượng ca học tính bằng phút (VD: 60)
   final int totalMinutes;
 
-  /// Điểm số bài kiểm tra / quiz trong buổi học (VD: 9.0)
+  /// Tiêu đề bài kiểm tra trên lớp (VD: "Quiz & Thực hành tính toán nhanh")
+  final String? quizTitle;
+
+  /// Nhãn đánh giá học lực (VD: "Cần rèn luyện thêm", "Xuất sắc")
+  final String? scoreLabel;
+
+  /// Điểm số bài kiểm tra / quiz trong buổi học (VD: 6.0)
   final double? quizScore;
 
   /// Thang điểm tối đa (mặc định 10.0)
   final double maxQuizScore;
 
-  /// Số câu làm đúng (VD: 9)
+  /// Số câu làm đúng (VD: 3)
   final int? quizCorrectAnswers;
 
-  /// Tổng số câu hỏi (VD: 10)
+  /// Tổng số câu hỏi (VD: 5)
   final int? quizTotalQuestions;
+
+  /// Thời gian làm bài thực tế tính bằng phút (VD: 18)
+  final int timeSpentMins;
+
+  /// Thời gian tối đa làm bài tính bằng phút (VD: 25)
+  final int timeLimitMins;
 
   /// Nhận xét chi tiết từ giáo viên đứng lớp
   final String? teacherComment;
+
+  /// Bộ môn giảng dạy của giáo viên (VD: "Bộ môn Toán")
+  final String? teacherSubject;
+
+  /// Thời gian giáo viên gửi nhận xét (VD: "Đã nhận xét lúc 11:30 hôm nay")
+  final String? teacherCommentTime;
 
   /// Tên bài tập về nhà được giao sau buổi học
   final String? homeworkTitle;
@@ -179,11 +205,24 @@ class SessionCompletedAnalysis {
   /// Trạng thái nộp bài tập ("Chưa nộp", "Đã nộp", "Đang chấm")
   final String? homeworkStatus;
 
+  /// Có video xem lại buổi học hay không
+  final bool hasRecording;
+
+  /// Thời lượng video xem lại (VD: "48 phút")
+  final String? recordingDuration;
+
   /// Tỷ lệ thời gian tham gia lớp (phần trăm 0 - 100)
   int get attendancePercentage {
     if (totalMinutes <= 0) return 100;
     final pct = ((attendedMinutes / totalMinutes) * 100).round();
     return pct > 100 ? 100 : pct;
+  }
+
+  /// Tỷ lệ phần trăm làm đúng câu hỏi quiz (0 - 100)
+  int get quizPercentage {
+    if (quizTotalQuestions == null || quizTotalQuestions! <= 0) return 0;
+    if (quizCorrectAnswers == null) return 0;
+    return ((quizCorrectAnswers! / quizTotalQuestions!) * 100).round();
   }
 
   /// Có bài tập về nhà được giao hay không
@@ -283,20 +322,32 @@ class ParentSessionDetail {
         lessonId: 'lesson_parabol_10',
         completedAnalysis: isDone
             ? const SessionCompletedAnalysis(
-                attendanceStatus: 'Có mặt',
-                checkInTime: '09:02',
+                attendanceStatus: 'Có mặt đúng giờ',
+                checkInTime: '08:58',
                 attendedMinutes: 58,
                 totalMinutes: 60,
-                quizScore: 9.0,
-                quizCorrectAnswers: 9,
-                quizTotalQuestions: 10,
+                quizTitle: 'Quiz & Thực hành tính toán nhanh',
+                scoreLabel: 'Cần rèn luyện thêm',
+                quizScore: 6.0,
+                maxQuizScore: 10.0,
+                quizCorrectAnswers: 3,
+                quizTotalQuestions: 5,
+                timeSpentMins: 18,
+                timeLimitMins: 25,
+                teacherSubject: 'Bộ môn Toán',
+                teacherCommentTime: 'Đã nhận xét lúc 11:30 hôm nay',
                 teacherComment:
-                    'Minh tích cực phát biểu, nắm vững định lý Vi-ét và '
-                    'giải quyết tốt các bài toán cực trị parabol thực tế.',
+                    'Minh nắm nhanh định nghĩa và tính chất cơ bản, '
+                    'tương tác sôi nổi trong giờ học. Tuy nhiên khi làm bài '
+                    'thực hành, con còn vội vàng ở bước rút gọn phân số chứa '
+                    'biến số nên tính nhầm dấu. Phụ huynh nhắc con làm '
+                    'thêm bài tập luyện tập số 5 để khắc phục nhé!',
                 homeworkTitle:
-                    'Bài tập vận dụng Parabol & Phương trình bậc hai',
-                homeworkDueDate: '23:59 Ngày mai',
+                    'Toán 10 — Bài luyện tập 5: Rút gọn phân số có ẩn',
+                homeworkDueDate: 'Hạn chót: 20:00 tối nay',
                 homeworkStatus: 'Chưa nộp',
+                hasRecording: true,
+                recordingDuration: '48 phút',
               )
             : null,
       );

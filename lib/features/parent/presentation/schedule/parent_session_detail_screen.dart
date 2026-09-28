@@ -43,8 +43,10 @@ class ParentSessionDetailScreen extends StatefulWidget {
       _ParentSessionDetailScreenState();
 }
 
-class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
+class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen>
+    with SingleTickerProviderStateMixin {
   late final ParentSessionDetail _detail;
+  late final TabController _tabController;
 
   @override
   void initState() {
@@ -54,6 +56,22 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
       widget.session,
       child: widget.child,
     );
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: _detail.isCompleted ? 1 : 0,
+    );
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -73,47 +91,26 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
     return Scaffold(
       backgroundColor: surfaceBg,
       appBar: _buildAppBar(context, cs),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. Thẻ định danh con (tinh gọn, không lặp lại tên lớp)
-            _buildChildIdentityCard(cs),
-            const SizedBox(height: 12),
-
-            // 2. Banner cảnh báo đổi lịch hoặc hủy ca học (nếu có)
-            if (_detail.hasRescheduleInfo) ...[
-              _buildRescheduleBanner(cs),
-              const SizedBox(height: 12),
-            ],
-
-            // 3. Khối thông tin cốt lõi của ca học (môn, giờ, phòng, giáo viên)
-            _buildSessionHeroCard(cs),
-            const SizedBox(height: 16),
-
-            // 4. Nếu ca học đã kết thúc -> Hiển thị Section Kết quả & Phân tích
-            if (_detail.isCompleted) ...[
-              _buildCompletedAnalysisSection(cs),
-              const SizedBox(height: 16),
-            ] else ...[
-              // Nếu ca học sắp tới -> Hiển thị Chuẩn bị & Lời khuyên đồng hành
-              _buildPreparationSection(cs),
-              const SizedBox(height: 16),
-              _buildParentGuidanceCard(cs),
-              const SizedBox(height: 16),
-            ],
-          ],
-        ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildOverviewTab(cs),
+          _buildAnalysisTab(cs),
+        ],
       ),
-      // 5. Thanh hành động cố định ở đáy màn hình an toàn với Safe Area
+      // Thanh hành động cố định ở đáy màn hình an toàn với Safe Area
       bottomNavigationBar: _buildStickyBottomActionBar(context, cs),
     );
   }
 
-  /// AppBar chuẩn Locked Child Context với nút Back và 2 icon phụ
+  /// AppBar chuẩn Locked Child Context với TabBar 2 Tab
   PreferredSizeWidget _buildAppBar(BuildContext context, ColorScheme cs) {
     final tt = Theme.of(context).textTheme;
+    final isDone = _detail.isCompleted;
+    final lessonTitle = _detail.session.lessonTopic.isNotEmpty
+        ? _detail.session.lessonTopic
+        : _detail.session.subjectName;
+    final dateStr = _formatDayOfWeekAndDate(_detail.session.startTime);
 
     return AppBar(
       backgroundColor: Colors.white,
@@ -132,48 +129,294 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isDone
+                      ? const Color(0xFFECFDF5)
+                      : const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 5,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: isDone
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFF3B82F6),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      isDone ? 'HOÀN THÀNH HÔM NAY' : 'SẮP DIỄN RA',
+                      style: TextStyle(
+                        color: isDone
+                            ? const Color(0xFF047857)
+                            : const Color(0xFF1D4ED8),
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'ID: ${_detail.sessionCode ?? 'TOAN10-B08'}',
+                style: TextStyle(
+                  color: cs.slate400,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
+          ),
+          const SizedBox(height: 3),
           Text(
-            'Buổi học • ${_detail.session.childName}',
+            'Bài học: $lessonTitle · ${_detail.session.childName}',
             style: tt.titleMedium?.copyWith(
               color: cs.slate900,
               fontWeight: FontWeight.w700,
-              fontSize: 16,
+              fontSize: 15,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 1),
           Text(
-            _detail.schoolYear ?? 'Niên khóa 2024–2025',
+            '${_detail.studentMajor ?? _detail.session.subjectName} · $dateStr',
             style: tt.labelSmall?.copyWith(
               color: cs.slate500,
-              fontSize: 12,
+              fontSize: 11.5,
               fontWeight: FontWeight.w500,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
       actions: [
-        // Nút thêm lịch nhắc nhở vào Calendar thiết bị
-        IconButton(
-          icon: Icon(
-            Icons.event_note_outlined,
-            color: cs.slate700,
-            size: 22,
-          ),
-          tooltip: 'Thêm vào lịch',
-          onPressed: () => _handleAddToCalendar(context),
-        ),
-        // Nút chia sẻ thông tin ca học
-        IconButton(
-          icon: Icon(
-            Icons.share_outlined,
-            color: cs.slate700,
-            size: 20,
-          ),
-          tooltip: 'Chia sẻ',
-          onPressed: () => _handleShareSession(context),
+        PopupMenuButton<String>(
+          icon: Icon(Icons.more_vert_rounded, color: cs.slate700, size: 22),
+          onSelected: (val) {
+            if (val == 'calendar') _handleAddToCalendar(context);
+            if (val == 'share') _handleShareSession(context);
+            if (val == 'lesson') _handleOpenLessonDetail(context);
+            if (val == 'feedback') _openFeedbackSheet(context);
+            if (val == 'report') _handleReportIssue(context);
+          },
+          itemBuilder: (ctx) => [
+            const PopupMenuItem(
+              value: 'calendar',
+              child: Row(
+                children: [
+                  Icon(Icons.event_note_outlined, size: 18),
+                  SizedBox(width: 8),
+                  Text('Thêm vào lịch'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: 'share',
+              child: Row(
+                children: [
+                  Icon(Icons.share_outlined, size: 18),
+                  SizedBox(width: 8),
+                  Text('Chia sẻ buổi học'),
+                ],
+              ),
+            ),
+            const PopupMenuItem(
+              value: 'lesson',
+              child: Row(
+                children: [
+                  Icon(Icons.menu_book_outlined, size: 18),
+                  SizedBox(width: 8),
+                  Text('Chi tiết giáo trình'),
+                ],
+              ),
+            ),
+            if (isDone)
+              const PopupMenuItem(
+                value: 'feedback',
+                child: Row(
+                  children: [
+                    Icon(Icons.star_outline_rounded, size: 18),
+                    SizedBox(width: 8),
+                    Text('Đánh giá buổi học'),
+                  ],
+                ),
+              ),
+            const PopupMenuItem(
+              value: 'report',
+              child: Row(
+                children: [
+                  Icon(Icons.flag_outlined, size: 18),
+                  SizedBox(width: 8),
+                  Text('Báo cáo thắc mắc'),
+                ],
+              ),
+            ),
+          ],
         ),
         const SizedBox(width: 4),
       ],
+      bottom: TabBar(
+        controller: _tabController,
+        labelColor: cs.primary,
+        unselectedLabelColor: cs.slate500,
+        indicatorColor: cs.primary,
+        indicatorWeight: 3,
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelStyle: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 13.5,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 13.5,
+        ),
+        tabs: [
+          const Tab(text: 'Tổng quan'),
+          Tab(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Kết quả & nhận xét'),
+                if (isDone) ...[
+                  const SizedBox(width: 6),
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF2563EB),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Tab 1: Tổng quan buổi học (thông tin, chuẩn bị, video bài giảng)
+  Widget _buildOverviewTab(ColorScheme cs) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. Thẻ định danh con (tinh gọn)
+          _buildChildIdentityCard(cs),
+          const SizedBox(height: 12),
+
+          // 2. Banner cảnh báo đổi lịch hoặc hủy ca học (nếu có)
+          if (_detail.hasRescheduleInfo) ...[
+            _buildRescheduleBanner(cs),
+            const SizedBox(height: 12),
+          ],
+
+          // 3. Khối thông tin cốt lõi của ca học (môn, giờ, phòng, giáo viên)
+          _buildSessionHeroCard(cs),
+          const SizedBox(height: 16),
+
+          // 4. Nếu ca học đã kết thúc -> Hiển thị Tài liệu & Video ghi hình
+          if (_detail.isCompleted) ...[
+            _buildPreparationSection(cs),
+            const SizedBox(height: 16),
+            _buildRecordingVideoSection(cs),
+            const SizedBox(height: 16),
+          ] else ...[
+            // Nếu ca học sắp tới -> Hiển thị Chuẩn bị & Lời khuyên đồng hành
+            _buildPreparationSection(cs),
+            const SizedBox(height: 16),
+            _buildParentGuidanceCard(cs),
+            const SizedBox(height: 16),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Tab 2: Kết quả & nhận xét buổi học (Quiz, Nhận xét GV, Bài tập về nhà)
+  Widget _buildAnalysisTab(ColorScheme cs) {
+    if (!_detail.isCompleted) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFEFF6FF),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.access_time_rounded,
+                  size: 36,
+                  color: cs.primary,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Buổi học chưa diễn ra',
+                style: TextStyle(
+                  color: cs.slate900,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Kết quả bài tập trên lớp và nhận xét của giáo viên '
+                'sẽ hiển thị sau khi buổi học kết thúc.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: cs.slate500,
+                  fontSize: 13,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 1. Kết quả bài tập trên lớp (Quiz, Điểm, Segment Bar)
+          _buildQuizResultCard(cs),
+          const SizedBox(height: 14),
+
+          // 2. Đánh giá & nhận xét của giáo viên (Trích dẫn, Tag chuyên cần)
+          _buildTeacherFeedbackCard(cs),
+          const SizedBox(height: 14),
+
+          // 3. Banner tài liệu & video chuyển sang tab Tổng quan
+          _buildResourcesQuickBanner(cs),
+          const SizedBox(height: 16),
+
+          // 4. Bước tiếp theo cho Phụ huynh & Con (Bài tập + Link Insights)
+          _buildHomeworkNextStepCard(cs),
+        ],
+      ),
     );
   }
 
@@ -614,12 +857,13 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
   }
 
   // ===========================================================================
-  // SECTION: KẾT QUẢ & PHÂN TÍCH BUỔI HỌC (KHI CA HỌC ĐÃ KẾT THÚC)
+  // SECTION: VIDEO BÀI GIẢNG XEM LẠI (RECORDING)
   // ===========================================================================
 
-  Widget _buildCompletedAnalysisSection(ColorScheme cs) {
+  Widget _buildRecordingVideoSection(ColorScheme cs) {
     final tt = Theme.of(context).textTheme;
     final analysis = _detail.completedAnalysis;
+    final hasRecording = analysis?.hasRecording ?? false;
 
     return Container(
       width: double.infinity,
@@ -642,13 +886,13 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
           Row(
             children: [
               Icon(
-                Icons.analytics_outlined,
-                size: 16,
-                color: cs.blue600,
+                Icons.videocam_outlined,
+                size: 18,
+                color: cs.primary,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               Text(
-                'KẾT QUẢ & PHÂN TÍCH BUỔI HỌC',
+                'VIDEO BÀI GIẢNG XEM LẠI',
                 style: tt.labelSmall?.copyWith(
                   color: cs.slate400,
                   fontWeight: FontWeight.w800,
@@ -658,135 +902,81 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
-
-          // 1. Lưới thống kê nhanh (Thời lượng học, Bài kiểm tra, Đánh giá)
-          _buildAnalysisMetricsGrid(analysis, cs),
-          const Divider(height: 24),
-
-          // 2. Nhận xét chi tiết từ giáo viên
-          _buildTeacherCommentBox(analysis, cs),
-          const Divider(height: 24),
-
-          // 3. Bài tập về nhà được giao sau buổi học
-          _buildHomeworkAssignedBox(analysis, cs),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAnalysisMetricsGrid(
-    SessionCompletedAnalysis? analysis,
-    ColorScheme cs,
-  ) {
-    final hasMinutes = analysis != null && analysis.attendedMinutes > 0;
-
-    return Row(
-      children: [
-        // Metric 1: Thời lượng học
-        Expanded(
-          child: _buildMetricTile(
-            icon: Icons.timer_outlined,
-            iconColor: const Color(0xFF16A34A),
-            label: 'Thời lượng',
-            value: hasMinutes
-                ? '${analysis.attendedMinutes}/${analysis.totalMinutes}p'
-                : (analysis?.attendanceStatus ?? 'Có mặt'),
-            subBadge: hasMinutes ? '${analysis.attendancePercentage}%' : null,
-            cs: cs,
-          ),
-        ),
-        const SizedBox(width: 8),
-        // Metric 2: Kiểm tra trên lớp
-        Expanded(
-          child: _buildMetricTile(
-            icon: Icons.quiz_outlined,
-            iconColor: cs.blue600,
-            label: 'Kiểm tra',
-            value: analysis?.quizScore != null
-                ? '${analysis!.quizScore}/10'
-                : 'Chưa có',
-            subBadge: analysis?.quizCorrectAnswers != null
-                ? 'Đúng ${analysis!.quizCorrectAnswers}/${analysis.quizTotalQuestions}'
-                : null,
-            cs: cs,
-          ),
-        ),
-        const SizedBox(width: 8),
-        // Metric 3: Mức độ tương tác
-        Expanded(
-          child: _buildMetricTile(
-            icon: Icons.star_rounded,
-            iconColor: const Color(0xFFD97706),
-            label: 'Đánh giá',
-            value: analysis?.hasTeacherComment == true
-                ? 'Tích cực'
-                : 'Hoàn thành',
-            subBadge: 'Buổi học',
-            cs: cs,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMetricTile({
-    required IconData icon,
-    required Color iconColor,
-    required String label,
-    required String value,
-    String? subBadge,
-    required ColorScheme cs,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 14, color: iconColor),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: cs.slate500,
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w600,
+          const SizedBox(height: 12),
+          if (hasRecording) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    height: 160,
+                    width: double.infinity,
+                    color: const Color(0xFF0F172A),
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.play_arrow_rounded,
+                          size: 38,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  Positioned(
+                    bottom: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.75),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        analysis?.recordingDuration ?? '48 phút',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              color: cs.slate900,
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          if (subBadge != null) ...[
-            const SizedBox(height: 2),
+            const SizedBox(height: 10),
             Text(
-              subBadge,
+              _detail.session.lessonTopic.isNotEmpty
+                  ? _detail.session.lessonTopic
+                  : 'Ghi hình buổi học',
+              style: TextStyle(
+                color: cs.slate900,
+                fontWeight: FontWeight.w700,
+                fontSize: 13.5,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Video chất lượng 1080p · Lưu trữ 30 ngày trong hồ sơ',
               style: TextStyle(
                 color: cs.slate500,
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
+                fontSize: 11.5,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            ),
+          ] else ...[
+            _buildEmptyStateBox(
+              icon: Icons.videocam_off_outlined,
+              message: 'Chưa có video ghi hình cho buổi học này.',
+              cs: cs,
             ),
           ],
         ],
@@ -794,69 +984,242 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
     );
   }
 
-  Widget _buildTeacherCommentBox(
-    SessionCompletedAnalysis? analysis,
-    ColorScheme cs,
-  ) {
-    if (analysis == null || !analysis.hasTeacherComment) {
-      return _buildEmptyStateBox(
-        icon: Icons.chat_bubble_outline,
-        message: 'Nhận xét: Chưa có đánh giá từ giáo viên cho buổi học này.',
-        cs: cs,
-      );
-    }
+  // ===========================================================================
+  // SECTION: TAB KẾT QUẢ & NHẬN XÉT (THEO THIẾT KẾ V2)
+  // ===========================================================================
 
-    final teacherName = _detail.teacherInfo?.displayTitleWithName ??
-        _detail.session.instructorName;
+  Widget _buildQuizResultCard(ColorScheme cs) {
+    final tt = Theme.of(context).textTheme;
+    final analysis = _detail.completedAnalysis;
+    final correct = analysis?.quizCorrectAnswers ?? 3;
+    final total = analysis?.quizTotalQuestions ?? 5;
+    final percentage = analysis?.quizPercentage ?? 60;
+    final scoreLabel = analysis?.scoreLabel ?? 'Cần rèn luyện thêm';
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0FDF4),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFDCFCE7)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x050F172A),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          // Header: Tiêu đề + Badge đánh giá
+          Row(
             children: [
-              Icon(
-                Icons.record_voice_over_outlined,
-                size: 16,
-                color: Color(0xFF16A34A),
-              ),
-              SizedBox(width: 6),
               Text(
-                'Nhận xét từ giáo viên',
-                style: TextStyle(
-                  color: Color(0xFF14532D),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 12.5,
+                'KẾT QUẢ BÀI TẬP TRÊN LỚP',
+                style: tt.labelSmall?.copyWith(
+                  color: cs.slate400,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 11,
+                  letterSpacing: 0.6,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 9,
+                  vertical: 3.5,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFBEB),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFFDE68A)),
+                ),
+                child: Text(
+                  scoreLabel,
+                  style: const TextStyle(
+                    color: Color(0xFFB45309),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
+
+          // Tên bài quiz
           Text(
-            '“${analysis.teacherComment!}”',
-            style: const TextStyle(
-              color: Color(0xFF166534),
-              fontSize: 12.5,
-              height: 1.45,
-              fontStyle: FontStyle.italic,
+            analysis?.quizTitle ?? 'Quiz & Thực hành tính toán nhanh',
+            style: TextStyle(
+              color: cs.slate900,
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
             ),
           ),
-          const SizedBox(height: 4),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              '— $teacherName',
-              style: const TextStyle(
-                color: Color(0xFF15803D),
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+          const SizedBox(height: 14),
+
+          // Khối thống kê kết quả: Vòng tròn + Điểm + Thời gian
+          Row(
+            children: [
+              // Vòng tròn tỷ lệ Donut
+              SizedBox(
+                width: 54,
+                height: 54,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    CircularProgressIndicator(
+                      value: percentage / 100,
+                      strokeWidth: 5.5,
+                      backgroundColor: const Color(0xFFF1F5F9),
+                      valueColor: const AlwaysStoppedAnimation(
+                        Color(0xFF2563EB),
+                      ),
+                    ),
+                    Center(
+                      child: Text(
+                        '$correct/$total',
+                        style: TextStyle(
+                          color: cs.slate900,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 14),
+
+              // Cột thông tin điểm số
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          '$correct / $total đúng',
+                          style: TextStyle(
+                            color: cs.slate900,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 17,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '$percentage%',
+                            style: const TextStyle(
+                              color: Color(0xFF1D4ED8),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Thời gian làm: ${analysis?.timeSpentMins ?? 18} phút / '
+                      '${analysis?.timeLimitMins ?? 25} phút',
+                      style: TextStyle(
+                        color: cs.slate500,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Visual Progress Segment Bar lấp đầy khoảng trống thừa
+          Row(
+            children: List.generate(total, (index) {
+              final isCorrect = index < correct;
+              return Expanded(
+                child: Container(
+                  height: 6,
+                  margin: EdgeInsets.only(
+                    right: index < total - 1 ? 4 : 0,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isCorrect
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFF43F5E),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(height: 8),
+
+          // Tóm tắt kết quả bài làm
+          Row(
+            children: [
+              Icon(
+                Icons.info_outline_rounded,
+                size: 14,
+                color: cs.slate400,
+              ),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  'Đúng $correct/$total câu trắc nghiệm • '
+                  'Cần ôn lại dạng quy đồng mẫu',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: cs.slate600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+          const SizedBox(height: 10),
+
+          // Nút xem chi tiết bài làm
+          InkWell(
+            onTap: () => _showQuizAnswersSheet(context),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Text(
+                    'Xem chi tiết bài làm của con',
+                    style: TextStyle(
+                      color: cs.blue600,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 15,
+                    color: cs.blue600,
+                  ),
+                ],
               ),
             ),
           ),
@@ -865,41 +1228,525 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
     );
   }
 
-  Widget _buildHomeworkAssignedBox(
-    SessionCompletedAnalysis? analysis,
-    ColorScheme cs,
-  ) {
-    if (analysis == null || !analysis.hasHomework) {
-      return _buildEmptyStateBox(
-        icon: Icons.assignment_outlined,
-        message:
-            'Bài tập về nhà: Chưa có bài tập được giao cho buổi học này.',
-        cs: cs,
-      );
-    }
+  Widget _buildTeacherFeedbackCard(ColorScheme cs) {
+    final tt = Theme.of(context).textTheme;
+    final analysis = _detail.completedAnalysis;
+    final teacher = _detail.teacherInfo;
+    final comment = analysis?.teacherComment ??
+        'Giáo viên đang hoàn thiện nhận xét buổi học.';
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFBFDBFE)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x050F172A),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'ĐÁNH GIÁ & NHẬN XÉT CỦA GIÁO VIÊN',
+            style: tt.labelSmall?.copyWith(
+              color: cs.slate400,
+              fontWeight: FontWeight.w800,
+              fontSize: 11,
+              letterSpacing: 0.6,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Thông tin giáo viên
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: const Color(0xFFEFF6FF),
+                child: Text(
+                  teacher?.fullName.isNotEmpty == true
+                      ? teacher!.fullName[0].toUpperCase()
+                      : 'C',
+                  style: const TextStyle(
+                    color: Color(0xFF1D4ED8),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      teacher?.displayTitleWithName ??
+                          _detail.session.instructorName,
+                      style: TextStyle(
+                        color: cs.slate900,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13.5,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${analysis?.teacherSubject ?? "Bộ môn Toán"} · '
+                      '${analysis?.teacherCommentTime ?? "Hôm nay"}',
+                      style: TextStyle(
+                        color: cs.slate500,
+                        fontSize: 11.5,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Hộp trích dẫn lời nhận xét
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: const Border(
+                left: BorderSide(color: Color(0xFF2563EB), width: 3.5),
+                top: BorderSide(color: Color(0xFFE2E8F0)),
+                right: BorderSide(color: Color(0xFFE2E8F0)),
+                bottom: BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+            ),
+            child: Text(
+              '“$comment”',
+              style: TextStyle(
+                color: cs.slate800,
+                fontSize: 12.5,
+                height: 1.45,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Tag chuyên cần chuẩn (tuân thủ privacy gate)
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 9,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFECFDF5),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFA7F3D0)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      size: 13,
+                      color: Color(0xFF059669),
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Chuyên cần: • '
+                      '${analysis?.attendanceStatus ?? "Có mặt đúng giờ"}',
+                      style: const TextStyle(
+                        color: Color(0xFF065F46),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 9,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Học ${analysis?.attendedMinutes ?? 58}/${analysis?.totalMinutes ?? 60} phút',
+                  style: TextStyle(
+                    color: cs.slate700,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResourcesQuickBanner(ColorScheme cs) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFDBEAFE)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x050F172A),
+            blurRadius: 6,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.video_library_outlined,
+              color: Color(0xFF2563EB),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tài liệu & Video bài giảng',
+                  style: TextStyle(
+                    color: cs.slate900,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Đã lưu trữ đầy đủ trong hồ sơ',
+                  style: TextStyle(
+                    color: cs.slate500,
+                    fontSize: 11.5,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          InkWell(
+            onTap: () => _tabController.animateTo(0),
+            borderRadius: BorderRadius.circular(8),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Xem tại Tổng quan',
+                    style: TextStyle(
+                      color: Color(0xFF2563EB),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                  SizedBox(width: 2),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    size: 16,
+                    color: Color(0xFF2563EB),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeworkNextStepCard(ColorScheme cs) {
+    final analysis = _detail.completedAnalysis;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFEF3C7),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.notifications_active_outlined,
+                  size: 16,
+                  color: Color(0xFFD97706),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'BƯỚC TIẾP THEO CHO PHỤ HUYNH & CON',
+                style: TextStyle(
+                  color: Color(0xFFB45309),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 11,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Bài tập về nhà:',
+            style: TextStyle(
+              color: cs.slate600,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            analysis?.homeworkTitle ??
+                'Toán 10 — Bài luyện tập 5: Rút gọn phân số có ẩn',
+            style: TextStyle(
+              color: cs.slate900,
+              fontWeight: FontWeight.w700,
+              fontSize: 13.5,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 3,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEE2E2),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  analysis?.homeworkDueDate ?? 'Hạn chót: 20:00 tối nay',
+                  style: const TextStyle(
+                    color: Color(0xFFDC2626),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 3,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  analysis?.homeworkStatus ?? 'Chưa nộp',
+                  style: const TextStyle(
+                    color: Color(0xFFB45309),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Divider(height: 1, color: Color(0xFFFDE68A)),
+          const SizedBox(height: 10),
+          InkWell(
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Đang chuyển sang màn hình Báo cáo phân tích chuyên sâu '
+                    '(Insights)...',
+                  ),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.insights_rounded,
+                    size: 16,
+                    color: Color(0xFFB45309),
+                  ),
+                  SizedBox(width: 6),
+                  Text(
+                    'Xem phân tích xu hướng học tập (Insights) ->',
+                    style: TextStyle(
+                      color: Color(0xFFB45309),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showQuizAnswersSheet(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: cs.slate300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'CHI TIẾT BÀI QUIZ TRÊN LỚP',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close_rounded, size: 20),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Học sinh làm đúng 3 / 5 câu trắc nghiệm (60%)',
+              style: TextStyle(color: cs.slate600, fontSize: 13),
+            ),
+            const Divider(height: 24),
+            _buildQuizAnswerTile(
+              questionNum: 1,
+              topic: 'Xác định tập nghiệm phương trình bậc nhất',
+              isCorrect: true,
+              detail: 'Đúng · Hoàn thành trong 2.5 phút',
+            ),
+            _buildQuizAnswerTile(
+              questionNum: 2,
+              topic: 'Biến đổi phân thức đại số cơ bản',
+              isCorrect: true,
+              detail: 'Đúng · Hoàn thành trong 3 phút',
+            ),
+            _buildQuizAnswerTile(
+              questionNum: 3,
+              topic: 'Quy đồng mẫu thức chứa tham số',
+              isCorrect: false,
+              detail: 'Chưa chính xác · Chọn B (Đáp án đúng: C)',
+            ),
+            _buildQuizAnswerTile(
+              questionNum: 4,
+              topic: 'Rút gọn biểu thức điều kiện xác định',
+              isCorrect: true,
+              detail: 'Đúng · Hoàn thành trong 4 phút',
+            ),
+            _buildQuizAnswerTile(
+              questionNum: 5,
+              topic: 'Tìm giá trị nguyên để biểu thức đạt cực đại',
+              isCorrect: false,
+              detail: 'Chưa chính xác · Chọn A (Đáp án đúng: D)',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuizAnswerTile({
+    required int questionNum,
+    required String topic,
+    required bool isCorrect,
+    required String detail,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            width: 24,
+            height: 24,
+            alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFDBEAFE)),
+              color: isCorrect
+                  ? const Color(0xFFDCFCE7)
+                  : const Color(0xFFFEE2E2),
+              shape: BoxShape.circle,
             ),
             child: Icon(
-              Icons.assignment_outlined,
-              size: 20,
-              color: cs.blue600,
+              isCorrect ? Icons.check_rounded : Icons.close_rounded,
+              size: 15,
+              color: isCorrect
+                  ? const Color(0xFF16A34A)
+                  : const Color(0xFFDC2626),
             ),
           ),
           const SizedBox(width: 10),
@@ -908,43 +1755,220 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  analysis.homeworkTitle!,
-                  style: TextStyle(
-                    color: cs.slate900,
+                  'Câu $questionNum: $topic',
+                  style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
+                    color: Color(0xFF0F172A),
                   ),
                 ),
-                if (analysis.homeworkDueDate != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    'Hạn nộp: ${analysis.homeworkDueDate!}',
-                    style: TextStyle(
-                      color: cs.slate600,
-                      fontSize: 11.5,
-                    ),
+                const SizedBox(height: 2),
+                Text(
+                  detail,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: isCorrect
+                        ? const Color(0xFF15803D)
+                        : const Color(0xFFB91C1C),
                   ),
-                ],
+                ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFEF3C7),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              analysis.homeworkStatus ?? 'Chưa nộp',
-              style: const TextStyle(
-                color: Color(0xFFB45309),
-                fontWeight: FontWeight.w700,
-                fontSize: 11,
+        ],
+      ),
+    );
+  }
+
+  void _showReminderActionSheet(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final childName = _detail.session.childName;
+    final homeworkTitle = _detail.completedAnalysis?.homeworkTitle ??
+        'Bài luyện tập sau buổi học';
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: cs.slate300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-        ],
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'NHẮC CON ÔN LUYỆN BÀI HỌC',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close_rounded, size: 20),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Gửi nhắc nhở học tập đến $childName để con hoàn thành '
+              'bài tập đúng hạn.',
+              style: TextStyle(color: cs.slate600, fontSize: 13, height: 1.4),
+            ),
+            const Divider(height: 24),
+            // Tùy chọn 1: Gửi thông báo app
+            InkWell(
+              onTap: () {
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Đã gửi thông báo nhắc học đến máy của $childName.',
+                    ),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFDBEAFE)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.notifications_active_rounded,
+                        color: Color(0xFF2563EB),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Gửi thông báo vào máy của con',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              color: Color(0xFF1E3A8A),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Con sẽ nhận được pop-up nhắc làm bài '
+                            'tập ngay lập tức.',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: cs.slate600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Tùy chọn 2: Sao chép lời nhắn Zalo/SMS
+            InkWell(
+              onTap: () {
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Đã sao chép lời nhắn! Phụ huynh có thể dán vào '
+                      'Zalo/SMS để gửi cho con.',
+                    ),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.copy_rounded,
+                        color: Color(0xFF475569),
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Sao chép lời nhắn gửi qua Zalo / SMS',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Mẫu: "$childName ơi, con nhớ hoàn thành '
+                            '$homeworkTitle..."',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: cs.slate500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1218,14 +2242,14 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
     );
   }
 
-  /// Sticky Bottom Action Bar với Safe Area
+  /// Sticky Bottom Action Bar với Safe Area chuẩn thiết kế V2
   Widget _buildStickyBottomActionBar(BuildContext context, ColorScheme cs) {
     final isDone = _detail.isCompleted;
 
     return SafeArea(
       top: false,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
         decoration: const BoxDecoration(
           color: Colors.white,
           border: Border(
@@ -1239,150 +2263,134 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Primary Button: Xem kết quả / chi tiết bài học
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: OutlinedButton.icon(
-                onPressed: () => _handleOpenLessonDetail(context),
-                icon: Icon(
-                  isDone
-                      ? Icons.analytics_outlined
-                      : Icons.menu_book_rounded,
-                  size: 20,
-                ),
-                label: Text(
-                  isDone
-                      ? 'Xem chi tiết kết quả & bài tập'
-                      : 'Xem chi tiết bài học & giáo trình',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: cs.blue600,
-                  side: BorderSide(color: cs.blue200, width: 1.2),
-                  backgroundColor: const Color(0xFFEFF6FF),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-
-            // Hàng tác vụ phụ: Xin vắng / Nhắn tin / Đánh giá
-            Row(
-              children: [
-                if (!isDone) ...[
-                  // Buổi học sắp tới: Nút Xin vắng / muộn
+        child: isDone
+            ? Row(
+                children: [
+                  // Nút phụ bên trái: Nhắn tin cho giáo viên
                   Expanded(
-                    child: InkWell(
-                      onTap: () => _openAbsenceRequestSheet(context),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.warning_amber_rounded,
-                              size: 16,
-                              color: Color(0xFFD97706),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Xin phép vắng / Muộn',
-                              style: TextStyle(
-                                color: cs.slate700,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12.5,
-                              ),
-                            ),
-                          ],
+                    flex: 2,
+                    child: SizedBox(
+                      height: 46,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _openTeacherChatSheet(context),
+                        icon: const Icon(
+                          Icons.chat_bubble_outline_rounded,
+                          size: 16,
+                        ),
+                        label: const Text(
+                          'Nhắn tin',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: cs.slate700,
+                          side: const BorderSide(
+                            color: Color(0xFFCBD5E1),
+                            width: 1.2,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  Container(
-                    height: 16,
-                    width: 1,
-                    color: const Color(0xFFCBD5E1),
-                  ),
-                ] else ...[
-                  // Buổi học đã kết thúc: Nút Đánh giá buổi học
+                  const SizedBox(width: 10),
+                  // Nút chính bên phải: Nhắc con ôn luyện bài học
                   Expanded(
-                    child: InkWell(
-                      onTap: () => _openFeedbackSheet(context),
-                      borderRadius: BorderRadius.circular(8),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 6),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.star_outline_rounded,
-                              size: 16,
-                              color: Color(0xFFD97706),
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              'Đánh giá buổi học',
-                              style: TextStyle(
-                                color: Color(0xFFB45309),
-                                fontWeight: FontWeight.w700,
-                                fontSize: 12.5,
-                              ),
-                            ),
-                          ],
+                    flex: 3,
+                    child: SizedBox(
+                      height: 46,
+                      child: FilledButton.icon(
+                        onPressed: () => _showReminderActionSheet(context),
+                        icon: const Icon(
+                          Icons.notifications_active_rounded,
+                          size: 17,
+                        ),
+                        label: const Text(
+                          'Nhắc con ôn luyện',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13.5,
+                          ),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF2563EB),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  Container(
-                    height: 16,
-                    width: 1,
-                    color: const Color(0xFFCBD5E1),
                   ),
                 ],
-
-                // Nút Nhắn tin giáo viên
-                Expanded(
-                  child: InkWell(
-                    onTap: () => _openTeacherChatSheet(context),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.mail_outline_rounded,
-                            size: 16,
-                            color: cs.blue600,
+              )
+            : Row(
+                children: [
+                  // Khi buổi học chưa diễn ra: Xin vắng / muộn
+                  Expanded(
+                    child: SizedBox(
+                      height: 46,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _openAbsenceRequestSheet(context),
+                        icon: const Icon(
+                          Icons.warning_amber_rounded,
+                          size: 16,
+                          color: Color(0xFFD97706),
+                        ),
+                        label: const Text(
+                          'Xin vắng / Muộn',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
                           ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Nhắn tin giáo viên',
-                            style: TextStyle(
-                              color: cs.blue600,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12.5,
-                            ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: cs.slate700,
+                          side: const BorderSide(
+                            color: Color(0xFFCBD5E1),
+                            width: 1.2,
                           ),
-                        ],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
-        ),
+                  const SizedBox(width: 10),
+                  // Nhắn tin giáo viên
+                  Expanded(
+                    child: SizedBox(
+                      height: 46,
+                      child: FilledButton.icon(
+                        onPressed: () => _openTeacherChatSheet(context),
+                        icon: const Icon(
+                          Icons.chat_bubble_outline_rounded,
+                          size: 16,
+                        ),
+                        label: const Text(
+                          'Nhắn tin giáo viên',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF2563EB),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -1524,6 +2532,34 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen> {
         instructorName: _detail.session.instructorName,
       ),
     );
+  }
+
+  void _handleReportIssue(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Đã gửi thông tin thắc mắc tới ban quản trị lớp học.',
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  String _formatDayOfWeekAndDate(DateTime date) {
+    final weekdays = [
+      '',
+      'Thứ Hai',
+      'Thứ Ba',
+      'Thứ Tư',
+      'Thứ Năm',
+      'Thứ Sáu',
+      'Thứ Bảy',
+      'Chủ Nhật',
+    ];
+    final wd = weekdays[date.weekday];
+    final d = date.day.toString().padLeft(2, '0');
+    final m = date.month.toString().padLeft(2, '0');
+    return '$wd, $d/$m';
   }
 
   String _formatDateFull(DateTime date) {
