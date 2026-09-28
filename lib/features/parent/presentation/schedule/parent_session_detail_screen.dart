@@ -128,58 +128,8 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen>
       titleSpacing: 0,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                decoration: BoxDecoration(
-                  color: isDone
-                      ? const Color(0xFFECFDF5)
-                      : const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 5,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: isDone
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFF3B82F6),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      isDone ? 'HOÀN THÀNH HÔM NAY' : 'SẮP DIỄN RA',
-                      style: TextStyle(
-                        color: isDone
-                            ? const Color(0xFF047857)
-                            : const Color(0xFF1D4ED8),
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              Text(
-                'ID: ${_detail.sessionCode ?? 'TOAN10-B08'}',
-                style: TextStyle(
-                  color: cs.slate400,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(width: 12),
-            ],
-          ),
-          const SizedBox(height: 3),
           Text(
             'Bài học: $lessonTitle · ${_detail.session.childName}',
             style: tt.titleMedium?.copyWith(
@@ -409,11 +359,7 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen>
           _buildTeacherFeedbackCard(cs),
           const SizedBox(height: 14),
 
-          // 3. Banner tài liệu & video chuyển sang tab Tổng quan
-          _buildResourcesQuickBanner(cs),
-          const SizedBox(height: 16),
-
-          // 4. Bước tiếp theo cho Phụ huynh & Con (Bài tập + Link Insights)
+          // 3. Bước tiếp theo cho Phụ huynh & Con (Bài tập + Link Insights)
           _buildHomeworkNextStepCard(cs),
         ],
       ),
@@ -1394,95 +1340,6 @@ class _ParentSessionDetailScreenState extends State<ParentSessionDetailScreen>
                 ),
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildResourcesQuickBanner(ColorScheme cs) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFDBEAFE)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x050F172A),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(
-              Icons.video_library_outlined,
-              color: Color(0xFF2563EB),
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Tài liệu & Video bài giảng',
-                  style: TextStyle(
-                    color: cs.slate900,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Đã lưu trữ đầy đủ trong hồ sơ',
-                  style: TextStyle(
-                    color: cs.slate500,
-                    fontSize: 11.5,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          InkWell(
-            onTap: () => _tabController.animateTo(0),
-            borderRadius: BorderRadius.circular(8),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Xem tại Tổng quan',
-                    style: TextStyle(
-                      color: Color(0xFF2563EB),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12,
-                    ),
-                  ),
-                  SizedBox(width: 2),
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    size: 16,
-                    color: Color(0xFF2563EB),
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),
