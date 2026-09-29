@@ -517,13 +517,14 @@ class _AnalyticsContent extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Hộp thư phân tích >',
+                  'Tất cả phân tích >',
                   style: tt.labelMedium?.copyWith(
                     color: cs.blue600,
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                   ),
                 ),
+
               ],
             ),
           ),
@@ -624,13 +625,14 @@ class _MultiChildAnalyticsContent extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Hộp thư phân tích >',
+                          'Tất cả phân tích >',
                           style: tt.labelMedium?.copyWith(
                             color: cs.blue600,
                             fontWeight: FontWeight.w700,
                             fontSize: 13,
                           ),
                         ),
+
                       ],
                     ),
                   ),

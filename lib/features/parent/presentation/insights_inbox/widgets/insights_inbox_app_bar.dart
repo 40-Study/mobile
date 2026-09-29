@@ -8,14 +8,14 @@ class InsightsInboxAppBar extends StatelessWidget {
     this.totalChildrenCount = 0,
     required this.unreadCount,
     required this.onBack,
-    required this.onMarkAllAsRead,
+    this.onMarkAllAsRead,
     this.onFilterTap,
   });
 
   final int totalChildrenCount;
   final int unreadCount;
   final VoidCallback onBack;
-  final VoidCallback onMarkAllAsRead;
+  final VoidCallback? onMarkAllAsRead;
   final VoidCallback? onFilterTap;
 
   @override
@@ -63,7 +63,7 @@ class InsightsInboxAppBar extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Family Insights Inbox',
+                      'Family Insights',
                       style: tt.titleLarge?.copyWith(
                         color: cs.slate900,
                         fontWeight: FontWeight.w800,
@@ -109,36 +109,6 @@ class InsightsInboxAppBar extends StatelessWidget {
             ),
           ),
 
-          // Nút "Đọc tất cả"
-          InkWell(
-            onTap: onMarkAllAsRead,
-            borderRadius: AppRadius.borderSm,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 6,
-                vertical: 4,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.done_all_rounded,
-                    size: 15,
-                    color: Color(0xFF2563EB),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Đọc tất cả',
-                    style: tt.labelSmall?.copyWith(
-                      color: const Color(0xFF2563EB),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 11.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
           if (onFilterTap != null)
             IconButton(
               onPressed: onFilterTap,
@@ -154,4 +124,5 @@ class InsightsInboxAppBar extends StatelessWidget {
     );
   }
 }
+
 

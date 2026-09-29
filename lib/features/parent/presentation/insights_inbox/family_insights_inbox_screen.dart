@@ -94,7 +94,6 @@ class _FamilyInsightsInboxContent extends StatelessWidget {
           totalChildrenCount: 2,
           unreadCount: 0,
           onBack: () => Navigator.pop(context),
-          onMarkAllAsRead: () {},
         ),
         const SizedBox(height: 16),
         const InsightsInboxSkeleton(),
@@ -115,7 +114,7 @@ class _FamilyInsightsInboxContent extends StatelessWidget {
             Icon(Icons.error_outline_rounded, size: 48, color: cs.error),
             AppSpacing.vGap12,
             Text(
-              'Không thể tải hộp thư phân tích',
+              'Không thể tải phân tích học tập',
               style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             AppSpacing.vGap8,
@@ -162,17 +161,9 @@ class _FamilyInsightsInboxContent extends StatelessWidget {
               totalChildrenCount: state.children.length,
               unreadCount: state.unreadCount,
               onBack: () => Navigator.pop(context),
-              onMarkAllAsRead: () {
-                bloc.add(const FamilyInsightsInboxMarkAllAsRead());
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Đã đánh dấu tất cả là đã đọc'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
             ),
           ),
+
 
           // 2. GHIM THANH CHỌN CON (Sticky Header đồng bộ FamilyScopeSelector)
           SliverPersistentHeader(
