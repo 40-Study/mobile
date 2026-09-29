@@ -21,6 +21,9 @@ jobs:
     name: App
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    # Đưa secret lên env của job để `if:` của bước Codacy kiểm tra được (if không đọc trực tiếp secrets)
+    env:
+      CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
     steps:
       - name: Checkout
@@ -101,7 +104,13 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
 
+      # Repo chưa có secret CODACY_PROJECT_TOKEN: bỏ qua upload và cảnh báo thay vì làm đỏ CI
+      - name: Codacy token missing
+        if: env.CODACY_PROJECT_TOKEN == ''
+        run: echo "::warning::Chưa cấu hình secret CODACY_PROJECT_TOKEN, bỏ qua upload coverage lên Codacy."
+
       - name: Codacy Coverage Reporter
+        if: env.CODACY_PROJECT_TOKEN != ''
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
