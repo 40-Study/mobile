@@ -153,7 +153,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
         if (context.mounted) {
           Navigator.push(
             context,
-            MaterialPageRoute(
+            MaterialPageRoute<void>(
               builder: (_) => CertificateDetailScreen(certificate: cert!),
             ),
           );
@@ -1014,7 +1014,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
 
   Widget _buildBottomBar(BuildContext context, CourseDetailSuccess state) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
 
     return Container(
       padding: EdgeInsets.fromLTRB(
@@ -1074,12 +1073,6 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
     return null;
   }
 
-  int _getLessonIndex(CourseDetailSuccess state, LessonModel lesson) {
-    final allLessons = state.sections
-        .expand((s) => s.lessons ?? <LessonModel>[])
-        .toList();
-    return allLessons.indexWhere((l) => l.id == lesson.id);
-  }
 
   String _formatCount(int count) {
     if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}k';

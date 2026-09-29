@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
-import 'package:study/features/course/data/models/certificate_model.dart';
 import 'package:study/features/student/bloc/achievement/achievement_event.dart';
 import 'package:study/features/student/bloc/achievement/achievement_state.dart';
 import 'package:study/features/student/data/models/models.dart';

@@ -286,7 +286,7 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
   }
 
   void _showFilterSheet(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -300,7 +300,7 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
       // Navigate to full detail screen for completed certificates
       Navigator.push(
         context,
-        MaterialPageRoute(
+        MaterialPageRoute<void>(
           builder: (_) => CertificateDetailScreen(
             certificate: CertificateModel(
               id: cert.id,
@@ -314,7 +314,7 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
       );
     } else {
       // Show bottom sheet for in-progress
-      showModalBottomSheet(
+      showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         shape: const RoundedRectangleBorder(

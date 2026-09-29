@@ -11,8 +11,6 @@ import 'package:study/features/student/presentation/learning/all_courses_screen.
 import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/explore_courses_screen.dart';
 import 'package:study/features/student/presentation/learning/widgets/learning_cards.dart';
-import 'package:study/features/student/presentation/notification/notification_screen.dart';
-import 'package:study/features/student/presentation/search/search_screen.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/theme/theme.dart';
@@ -48,8 +46,6 @@ class _LearningScreenState extends State<LearningScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
 
     return Scaffold(
       body: SafeArea(
@@ -166,8 +162,6 @@ class _LearningScreenState extends State<LearningScreen> {
   }
 
   Widget _buildContent(BuildContext context, LearningSuccess state) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
 
     if (state.enrollments.isEmpty) {
       return _buildEmptyState(context);
@@ -222,7 +216,7 @@ class _LearningScreenState extends State<LearningScreen> {
                 actionLabel: 'Xem tất cả',
                 onActionTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const AllCoursesScreen()),
+                  MaterialPageRoute<void>(builder: (_) => const AllCoursesScreen()),
                 ),
               ),
             ),
@@ -339,7 +333,7 @@ class _LearningScreenState extends State<LearningScreen> {
                   actionLabel: 'Xem tất cả',
                   onActionTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const ExploreCoursesScreen()),
+                    MaterialPageRoute<void>(builder: (_) => const ExploreCoursesScreen()),
                   ),
                 ),
               ),
@@ -386,7 +380,7 @@ class _LearningScreenState extends State<LearningScreen> {
           actionLabel: 'Khám phá khóa học',
           onAction: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const AllCoursesScreen()),
+            MaterialPageRoute<void>(builder: (_) => const AllCoursesScreen()),
           ),
         ),
       ),

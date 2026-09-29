@@ -304,7 +304,6 @@ class InstructorDetailScreen extends StatelessWidget {
   }
 
   Widget _buildExpertiseSection(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
     final skills = [

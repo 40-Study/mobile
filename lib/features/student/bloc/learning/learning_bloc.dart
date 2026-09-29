@@ -43,7 +43,7 @@ class LearningBloc extends Bloc<LearningEvent, LearningState> {
     enrollmentsResult.when(
       success: (enrollments) {
         final List<CourseModel> courses = coursesResult.when(
-          success: (c) => c ?? <CourseModel>[],
+          success: (c) => c,
           failure: (_) => <CourseModel>[],
         ) ?? <CourseModel>[];
 

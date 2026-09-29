@@ -13,7 +13,6 @@ import 'package:study/features/student/presentation/settings/help_center_screen.
 import 'package:study/features/student/presentation/settings/settings_screen.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
-import 'package:study/widgets/app_header_bar.dart';
 import 'package:study/widgets/cached_avatar.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -196,7 +195,7 @@ class _ProfileContent extends StatelessWidget {
   void _navigateToEditProfile(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
           create: (_) => AccountCubit(
             authRepository: context.read<AuthRepository>(),
@@ -210,28 +209,28 @@ class _ProfileContent extends StatelessWidget {
   void _navigateToSecurity(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const SecurityScreen()),
+      MaterialPageRoute<void>(builder: (_) => const SecurityScreen()),
     );
   }
 
   void _navigateToSettings(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+      MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
     );
   }
 
   void _navigateToHelpCenter(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const HelpCenterScreen()),
+      MaterialPageRoute<void>(builder: (_) => const HelpCenterScreen()),
     );
   }
 
   void _navigateToPortfolio(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const PortfolioScreen()),
+      MaterialPageRoute<void>(builder: (_) => const PortfolioScreen()),
     );
   }
 
@@ -240,7 +239,7 @@ class _ProfileContent extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),

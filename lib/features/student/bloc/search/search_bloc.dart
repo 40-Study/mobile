@@ -47,7 +47,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         final results = filtered.map((course) => SearchResult(
           id: course.id,
           title: course.title,
-          subtitle: '${course.categoryName ?? 'Khóa học'} · ${course.totalLessons ?? 0} bài',
+          subtitle: '${course.categoryName ?? 'Khóa học'} · ${course.totalLessons} bài',
           type: SearchFilter.course,
         )).toList();
 

@@ -80,7 +80,7 @@ class _TopBar extends StatelessWidget {
   void _showMoreOptions(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -485,7 +485,7 @@ class _CertificatePreview extends StatelessWidget {
   void _showFullScreen(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => _FullScreenCertificate(certificate: certificate),
       ),
     );
@@ -773,41 +773,6 @@ class _InfoDivider extends StatelessWidget {
 // ============================================================
 // SKILLS SECTION
 // ============================================================
-class _SkillsSection extends StatelessWidget {
-  const _SkillsSection({required this.skills});
-
-  final List<String> skills;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    if (skills.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(AppLocalizations.of(context)!.skillsEarned,
-              style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-          AppSpacing.vGap16,
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: skills.map((skill) => _SkillChip(skill: skill)).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _SkillChip extends StatelessWidget {
   const _SkillChip({required this.skill});
