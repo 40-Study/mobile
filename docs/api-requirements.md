@@ -1149,3 +1149,267 @@ Theo chỉ đạo sản phẩm, **tuyệt đối không bịa fake mock data cho
 | `change_info` | `null` | Ẩn hoàn toàn khối cảnh báo dời/hủy lịch. |
 | `completed_analysis` | `null` | Hiển thị card trạng thái rỗng cho kết quả buổi học: Nhận xét: "Chưa có đánh giá từ giáo viên cho buổi học này", Bài tập về nhà: "Chưa có bài tập được giao cho buổi học này." |
 | `lesson_id` | `null` | Vô hiệu hóa nút CTA `[📖 Xem chi tiết bài học & giáo trình]` kèm SnackBar báo: `"Chưa có thông tin giáo trình chi tiết cho buổi học này."` |
+
+---
+
+## 12. Parent Feature - Family Insights & Encouragement (Phân tích học tập gia đình & Gửi lời khích lệ)
+
+### 12.1. Bối cảnh & Mục tiêu nghiệp vụ
+Trong hệ thống Parent Portal, khối **Phân tích học tập** trên trang Home và màn hình chuyên biệt **Family Insights** (`FamilyInsightsInboxScreen`) đóng vai trò:
+1. **Thông tin phân tích đa chiều:** Tổng hợp các dấu mốc bứt phá học tập (*Breakthrough*), các điểm kiến thức con đang yếu cần gia đình hỗ trợ (*Attention*), và thói quen rèn luyện kỷ luật / chuỗi chuyên cần (*Reward & Streak*).
+2. **Hỗ trợ đa đối tượng (Family Scope):**
+   - Chế độ *"Tất cả các con"*: gom và hiển thị dòng thời gian phân tích của toàn bộ các con trong gia đình, phân nhóm rõ ràng theo từng con.
+   - Chế độ lọc theo từng con (`child_id`): chỉ hiển thị những phân tích thuộc về con được chọn.
+3. **Tương tác 2 chiều (Parent-Child Encouragement Loop):**
+   - Khi xem thẻ Khen thưởng / Chuyên cần, phụ huynh có thể bấm `[ 💙 Gửi lời khen & khích lệ con ]`.
+   - Hệ thống ghi nhận trạng thái đã khích lệ, đồng thời tạo thông báo (Notification) đẩy về ứng dụng của con, giúp thắt chặt sợi dây đồng hành giữa cha mẹ và con cái.
+
+---
+
+### 12.2. Đánh giá hiện trạng Backend API
+Hiện tại, backend đã có các API chi tiết cho từng con:
+- `GET /parent/children/:id/overview` (XP, tỷ lệ hoàn thành, chuỗi ngày)
+- `GET /parent/children/:id/assignments` (Bài tập đã nộp, đang làm, quá hạn)
+- `GET /parent/children/:id/grades` (Bảng điểm các bài kiểm tra)
+- `GET /parent/children/:id/sessions/:sessionId/analysis` (Nhận xét buổi học của giáo viên)
+
+**Nhược điểm & Khoảng trống:**
+1. ❌ **Chưa có API tổng hợp Insights:** Chưa có endpoint gom các sự kiện phân tích thành dòng thời gian chuẩn hóa để Mobile hiển thị thẻ thông minh.
+2. ❌ **Chưa có API gửi lời khích lệ:** Chưa có endpoint tiếp nhận hành động gửi lời khen của phụ huynh và đẩy notification sang tài khoản học sinh.
+
+---
+
+### 12.3. Đặc tả Backend API đề xuất
+
+#### 1. Lấy danh sách phân tích học tập (Family Insights)
+- **Endpoint:** `GET /api/parent/insights`
+- **Auth Middleware:** Yêu cầu JWT token của Phụ huynh (`user_id`).
+- **Query Parameters:**
+  - `child_id` *(tùy chọn, string UUID)*: ID của con. Nếu không truyền, backend trả về insights của tất cả các con thuộc phụ huynh này.
+  - `page` *(tùy chọn, int, mặc định 1)*
+  - `page_size` *(tùy chọn, int, mặc định 20)*
+
+##### Go DTOs đề xuất (`backend/internal/dto/parent_insights_dto.go`):
+```go
+package dto
+
+import "time"
+
+// FamilyInsightCategory phân loại thẻ phân tích
+type FamilyInsightCategory string
+
+const (
+	InsightCategoryBreakthrough FamilyInsightCategory = "breakthrough" // Tiến bộ vượt bậc
+	InsightCategoryAttention    FamilyInsightCategory = "attention"    // Cần chú ý
+	InsightCategoryReward       FamilyInsightCategory = "reward"       // Khen thưởng & Thói quen tự học
+)
+
+// InsightMetricDto số liệu định lượng làm bằng chứng
+type InsightMetricDto struct {
+	Label      string `json:"label"`       // VD: "TỶ LỆ CHÍNH XÁC", "THỜI GIAN ĐỌC"
+	Value      string `json:"value"`       // VD: "90%", "14 phút"
+	Delta      string `json:"delta,omitempty"` // VD: "+15%", "-3.5m"
+	IsPositive bool   `json:"is_positive"` // true = màu xanh tích cực, false = cảnh báo
+}
+
+// InsightStreakInfoDto thông tin chuỗi ngày chuyên cần
+type InsightStreakInfoDto struct {
+	CurrentDays      int      `json:"current_days"`       // VD: 5
+	ActiveDayLabels  []string `json:"active_day_labels"`  // VD: ["T2", "T3", "T4", "T5", "T6"]
+}
+
+// FamilyInsightItemDto thẻ phân tích chi tiết
+type FamilyInsightItemDto struct {
+	ID             string                `json:"id"`
+	ChildID        string                `json:"child_id"`
+	ChildName      string                `json:"child_name"`
+	ClassName      string                `json:"class_name"`
+	SubjectOrSkill string                `json:"subject_or_skill"`
+	Category       FamilyInsightCategory `json:"category"` // breakthrough, attention, reward
+	TimeAgoText    string                `json:"time_ago_text"`
+	Title          string                `json:"title"`
+	Description    string                `json:"description"`
+	HighlightText  *string               `json:"highlight_text,omitempty"`
+	Metrics        []InsightMetricDto    `json:"metrics"`
+	TeacherQuote   *string               `json:"teacher_quote,omitempty"`
+	StreakInfo     *InsightStreakInfoDto `json:"streak_info,omitempty"`
+	HasEncouraged  bool                  `json:"has_encouraged"`
+	ActionLabel    *string               `json:"action_label,omitempty"`
+	ActionRoute    *string               `json:"action_route,omitempty"`
+	IsRead         bool                  `json:"is_read"`
+	CreatedAt      time.Time             `json:"created_at"`
+}
+
+// FamilyInsightsResponseDto response trả về danh sách phân tích
+type FamilyInsightsResponseDto struct {
+	Insights    []FamilyInsightItemDto `json:"insights"`
+	Total       int64                  `json:"total"`
+	UnreadCount int                    `json:"unread_count"`
+	Page        int                    `json:"page"`
+	PageSize    int                    `json:"page_size"`
+}
+```
+
+##### Response Mẫu (200 OK):
+```json
+{
+  "message": "success",
+  "data": {
+    "insights": [
+      {
+        "id": "ins-breakthrough-minh-01",
+        "child_id": "a055e1b3-bbfe-46b1-8e01-df7aac8c2732",
+        "child_name": "Minh",
+        "class_name": "10A1",
+        "subject_or_skill": "Đọc hiểu Tiếng Anh & Ngữ liệu",
+        "category": "breakthrough",
+        "time_ago_text": "2 giờ trước",
+        "title": "Tiến bộ vượt bậc",
+        "description": "Cải thiện rõ rệt ở dạng bài Đọc hiểu so với 3 buổi trước. Em hoàn thành nhanh hơn 20% thời lượng và suy luận chính xác 9/10 câu mức độ vận dụng cao.",
+        "highlight_text": "Đọc hiểu",
+        "metrics": [
+          {
+            "label": "TỶ LỆ CHÍNH XÁC",
+            "value": "90%",
+            "delta": "+15%",
+            "is_positive": true
+          },
+          {
+            "label": "THỜI GIAN ĐỌC",
+            "value": "14 phút",
+            "delta": "-3.5m",
+            "is_positive": true
+          }
+        ],
+        "teacher_quote": null,
+        "streak_info": null,
+        "has_encouraged": false,
+        "action_label": "Xem chi tiết bài thi & gợi ý luyện tập →",
+        "action_route": "/exam-detail",
+        "is_read": false,
+        "created_at": "2026-09-29T14:30:00Z"
+      },
+      {
+        "id": "ins-attention-lan-01",
+        "child_id": "a0f88b81-94ca-4328-b46a-b61a1a53a9ad",
+        "child_name": "Lan",
+        "class_name": "7B",
+        "subject_or_skill": "Viết luận / Ngữ văn chuyên sâu",
+        "category": "attention",
+        "time_ago_text": "Hôm qua",
+        "title": "Cần chú ý",
+        "description": "Kết quả dạng viết luận nghị luận xã hội đang thấp hơn mức kỳ vọng. Lan cần củng cố lại phương pháp phân tách luận điểm và liên kết các đoạn mở - kết để tránh lan man.",
+        "highlight_text": "viết luận nghị luận xã hội",
+        "metrics": [],
+        "teacher_quote": "GV bộ môn đã gửi dàn ý mẫu cho Lan ôn tập cuối tuần. Gia đình nên nhắc bé dành 20 phút viết thử 1 đoạn văn.",
+        "streak_info": null,
+        "has_encouraged": false,
+        "action_label": "Xem lộ trình bổ trợ kỹ năng viết →",
+        "action_route": "/curriculum-detail",
+        "is_read": false,
+        "created_at": "2026-09-28T10:15:00Z"
+      },
+      {
+        "id": "ins-reward-minh-01",
+        "child_id": "a055e1b3-bbfe-46b1-8e01-df7aac8c2732",
+        "child_name": "Minh",
+        "class_name": "10A1",
+        "subject_or_skill": "Kỷ luật & Thói quen tự học",
+        "category": "reward",
+        "time_ago_text": "3 ngày trước",
+        "title": "Khen thưởng",
+        "description": "Minh đã duy trì xuất sắc chuỗi chuyên cần 5 ngày liên tiếp trên ứng dụng 40Study. Hoàn thành 100% nhiệm vụ bài tập về nhà đúng hạn.",
+        "highlight_text": "chuyên cần 5 ngày liên tiếp",
+        "metrics": [],
+        "teacher_quote": null,
+        "streak_info": {
+          "current_days": 5,
+          "active_day_labels": ["T2", "T3", "T4", "T5", "T6"]
+        },
+        "has_encouraged": false,
+        "action_label": null,
+        "action_route": null,
+        "is_read": true,
+        "created_at": "2026-09-26T08:00:00Z"
+      }
+    ],
+    "total": 3,
+    "unread_count": 2,
+    "page": 1,
+    "page_size": 20
+  }
+}
+```
+
+---
+
+#### 2. Gửi lời khen & khích lệ con (Send Encouragement)
+- **Endpoint:** `POST /api/parent/insights/:id/encourage`
+- **Auth Middleware:** Yêu cầu JWT token của Phụ huynh (`user_id`).
+- **Path Parameter:** `id` (string - ID của thẻ insight cần gửi khích lệ).
+- **Request Body (JSON):**
+```json
+{
+  "child_id": "a055e1b3-bbfe-46b1-8e01-df7aac8c2732",
+  "message": "Bố mẹ rất tự hào về thành tích tự học chăm chỉ của con!"
+}
+```
+
+##### Response Mẫu (200 OK):
+```json
+{
+  "message": "success",
+  "data": {
+    "insight_id": "ins-reward-minh-01",
+    "child_id": "a055e1b3-bbfe-46b1-8e01-df7aac8c2732",
+    "has_encouraged": true,
+    "encouraged_at": "2026-09-29T22:45:00Z"
+  }
+}
+```
+
+##### Quy tắc xử lý nghiệp vụ Backend:
+1. **Xác thực quan hệ:** Backend kiểm tra `parent_student_relations` để bảo đảm `parent_id` có quyền tương tác với `child_id`.
+2. **Ghi nhận trạng thái:** Đánh dấu đã gửi khích lệ cho insight (lưu vào Redis key `parent:encouraged:{parent_id}:{insight_id}` với TTL 30 ngày hoặc lưu trường `has_encouraged` trong DB).
+3. **Đẩy thông báo cho học sinh (Notification Loop):** Tự động thêm 1 bản ghi vào bảng `notifications` của con (`user_id = child_id`):
+   - `notification_type`: `"streak"` hoặc `"achievement"`.
+   - `title`: `"Lời khen từ phụ huynh!"`.
+   - `content`: `"Bố/Mẹ vừa gửi lời khích lệ và tự hào về thành tích học tập chăm chỉ của bạn!"`.
+
+---
+
+#### 3. Đánh dấu tất cả phân tích là đã đọc (Mark All As Read)
+- **Endpoint:** `POST /api/parent/insights/read-all`
+- **Auth Middleware:** Yêu cầu JWT token của Phụ huynh (`user_id`).
+- **Request Body (tùy chọn):**
+```json
+{
+  "child_id": "a055e1b3-bbfe-46b1-8e01-df7aac8c2732"
+}
+```
+*(Nếu không truyền `child_id`, backend sẽ đánh dấu đã đọc cho tất cả insights của phụ huynh).*
+
+##### Response Mẫu (200 OK):
+```json
+{
+  "message": "success",
+  "data": {
+    "updated_count": 2
+  }
+}
+```
+
+---
+
+### 12.4. Quy tắc Fallback & Hiển thị trên Mobile (`FamilyInsightsRepositoryImpl`)
+
+| Trường dữ liệu | Giá trị từ API | Quy tắc hiển thị trên giao diện Mobile |
+|---|---|---|
+| `insights` | Danh sách rỗng `[]` và không bật preview | Hiển thị Empty State với icon `Icons.insights_outlined` + text: `"Chưa có phân tích học tập mới cho giai đoạn này."` |
+| `metrics` | Rỗng `[]` hoặc `null` | Ẩn hoàn toàn khối 2 pill số liệu định lượng, thẻ co giãn tự nhiên. |
+| `teacher_quote` | `null` hoặc rỗng `""` | Ẩn khối trích dẫn của giáo viên (Callout card viền cam). |
+| `streak_info` | `null` | Ẩn khối hiển thị chuỗi chuyên cần T2–T6. |
+| `has_encouraged` | `true` | Nút khích lệ tự động đổi thành `[ ✓ Đã gửi lời khích lệ ]` với style nền xám nhạt, viền mờ, không bấm lại được. |
+| `action_label` | `null` hoặc rỗng `""` | Ẩn liên kết điều hướng chân thẻ. |
+| Lỗi kết nối / Backend chưa có DB | Mạng lỗi hoặc timeout | Tự động kích hoạt **Preview Fallback** (`enablePreviewFallback = true`) nạp 3 thẻ mẫu tiêu chuẩn (Minh Đọc hiểu, Lan Viết luận, Minh Chuyên cần) để đảm bảo UI không bao giờ bị gãy trong giai đoạn trải nghiệm. |
+
