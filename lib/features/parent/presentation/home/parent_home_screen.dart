@@ -4,7 +4,6 @@ import 'package:study/di/di_container.dart';
 import 'package:study/features/parent/bloc/home/parent_home_bloc.dart';
 import 'package:study/features/parent/bloc/home/parent_home_event.dart';
 import 'package:study/features/parent/bloc/home/parent_home_state.dart';
-import 'package:study/features/parent/data/models/models.dart';
 import 'package:study/features/parent/presentation/children/manage_children_screen.dart';
 import 'package:study/features/parent/presentation/home/widgets/widgets.dart';
 import 'package:study/features/parent/repository/parent_home_repository.dart';
@@ -76,10 +75,8 @@ class _HomeContent extends StatelessWidget {
                   const ParentHomeRefreshed(),
                 ),
               ),
-              ParentHomeSuccess(:final data, :final selectedChildId) =>
-                _HomeSuccess(
-                  data: data,
-                  selectedChildId: selectedChildId,
+              final ParentHomeSuccess successState => _HomeSuccess(
+                  state: successState,
                   surfaceBg: surfaceBg,
                   onNavigateToProfile: onNavigateToProfile,
                   onNavigateToSchedule: onNavigateToSchedule,
@@ -94,6 +91,15 @@ class _HomeContent extends StatelessWidget {
                       (s) => s is ParentHomeSuccess || s is ParentHomeFailure,
                     );
                   },
+                  onRetryAlerts: () => context.read<ParentHomeBloc>().add(
+                    const ParentHomeSectionRetried(ParentHomeSection.alerts),
+                  ),
+                  onRetrySchedules: () => context.read<ParentHomeBloc>().add(
+                    const ParentHomeSectionRetried(ParentHomeSection.schedules),
+                  ),
+                  onRetryAnalytics: () => context.read<ParentHomeBloc>().add(
+                    const ParentHomeSectionRetried(ParentHomeSection.analytics),
+                  ),
                 ),
             },
           ),
@@ -105,21 +111,25 @@ class _HomeContent extends StatelessWidget {
 
 class _HomeSuccess extends StatelessWidget {
   const _HomeSuccess({
-    required this.data,
-    required this.selectedChildId,
+    required this.state,
     required this.surfaceBg,
     required this.onChildSelected,
     required this.onRefresh,
+    required this.onRetryAlerts,
+    required this.onRetrySchedules,
+    required this.onRetryAnalytics,
     this.onNavigateToProfile,
     this.onNavigateToSchedule,
     this.onNavigateToLearning,
   });
 
-  final ParentHomeData data;
-  final String? selectedChildId;
+  final ParentHomeSuccess state;
   final Color surfaceBg;
   final ValueChanged<String?> onChildSelected;
   final Future<void> Function() onRefresh;
+  final VoidCallback onRetryAlerts;
+  final VoidCallback onRetrySchedules;
+  final VoidCallback onRetryAnalytics;
   final VoidCallback? onNavigateToProfile;
   final VoidCallback? onNavigateToSchedule;
   final VoidCallback? onNavigateToLearning;
@@ -127,7 +137,7 @@ class _HomeSuccess extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final hasChildren = data.children.isNotEmpty;
+    final hasChildren = state.children.isNotEmpty;
 
     if (!hasChildren) {
       return RefreshIndicator(
@@ -167,10 +177,6 @@ class _HomeSuccess extends StatelessWidget {
         ),
       );
     }
-
-    final alerts = data.alerts;
-    final schedules = data.schedules;
-    final analytics = data.analytics;
 
     return RefreshIndicator(
       onRefresh: onRefresh,
@@ -214,24 +220,33 @@ class _HomeSuccess extends StatelessWidget {
             child: Column(
               children: [
                 FamilyScopeSelector(
-                  children: data.children,
-                  selectedChildId: selectedChildId,
+                  children: state.children,
+                  selectedChildId: state.selectedChildId,
                   onSelected: onChildSelected,
                   onLinkChild: () => _openManageChildren(context),
                 ),
                 const SizedBox(height: 20),
                 ActionRequiredSection(
-                  alerts: alerts,
+                  alerts: state.alerts,
+                  status: state.alertsStatus,
+                  errorMessage: state.alertsErrorMessage,
+                  onRetry: onRetryAlerts,
                   childrenNames: _childrenNamesText(),
                 ),
                 const SizedBox(height: 20),
                 UpcomingScheduleSection(
-                  schedules: schedules,
+                  schedules: state.schedules,
+                  status: state.schedulesStatus,
+                  errorMessage: state.schedulesErrorMessage,
+                  onRetry: onRetrySchedules,
                   onViewFullSchedule: onNavigateToSchedule,
                 ),
                 const SizedBox(height: 20),
                 LearningAnalyticsCard(
-                  analytics: analytics,
+                  analytics: state.analytics,
+                  status: state.analyticsStatus,
+                  errorMessage: state.analyticsErrorMessage,
+                  onRetry: onRetryAnalytics,
                   onViewLearning: onNavigateToLearning,
                 ),
               ],
@@ -258,11 +273,11 @@ class _HomeSuccess extends StatelessWidget {
 
   // Tên con để render câu giải thích empty state, VD "Minh & Lan" / "các con".
   String _childrenNamesText() {
-    final children = data.children;
+    final children = state.children;
     if (children.isEmpty) return 'các con';
-    if (selectedChildId != null) {
+    if (state.selectedChildId != null) {
       for (final c in children) {
-        if (c.id == selectedChildId) return c.name;
+        if (c.id == state.selectedChildId) return c.name;
       }
       return children.first.name;
     }

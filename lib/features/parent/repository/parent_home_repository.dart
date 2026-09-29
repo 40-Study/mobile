@@ -1,6 +1,20 @@
-import 'package:study/features/parent/data/models/parent_home_data.dart';
+import 'package:study/features/parent/data/models/models.dart';
 
-/// Repository tổng hợp dữ liệu cho Parent Home Screen.
+/// Repository tổng hợp và phân mảnh dữ liệu cho Parent Home Screen.
 abstract class ParentHomeRepository {
+  /// Lấy toàn bộ dashboard cùng lúc
   Future<ParentHomeData> getHomeDashboard({String? childId});
+
+  /// Lấy danh sách con
+  Future<List<FamilyScopeChild>> getChildren();
+
+  /// Lấy danh sách cảnh báo "Cần xử lý" của con (hoặc tất cả các con nếu
+  /// [childId] là null)
+  Future<List<ParentAlertItem>> getAlerts({String? childId});
+
+  /// Lấy lịch học sắp tới
+  Future<List<ParentScheduleItem>> getSchedules({String? childId});
+
+  /// Lấy dữ liệu phân tích học tập
+  Future<ParentAnalyticsData?> getAnalytics({String? childId});
 }

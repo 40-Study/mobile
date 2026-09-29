@@ -90,6 +90,41 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     );
   }
 
+  @override
+  Future<List<FamilyScopeChild>> getChildren() async {
+    final realChildren = await _fetchChildren();
+    if (enablePreviewFallback) {
+      return _mergeWithMockChildren(realChildren);
+    }
+    return realChildren;
+  }
+
+  @override
+  Future<List<ParentAlertItem>> getAlerts({String? childId}) async {
+    if (enablePreviewFallback) {
+      return _filterFallbackAlerts(childId);
+    }
+    return _fetchAlerts(childId);
+  }
+
+  @override
+  Future<List<ParentScheduleItem>> getSchedules({String? childId}) async {
+    if (enablePreviewFallback) {
+      return _filterFallbackSchedules(childId);
+    }
+    return _fetchSchedules(childId);
+  }
+
+  @override
+  Future<ParentAnalyticsData?> getAnalytics({String? childId}) async {
+    final children = await getChildren();
+    final target = _resolveChild(children, childId);
+    if (enablePreviewFallback) {
+      return _fallbackAnalytics(target);
+    }
+    return _fetchAnalytics(target);
+  }
+
   // =========================================================================
   // FETCH HELPERS (BỌC TIMEOUT VÀ BÁO LỖI MINH BẠCH KHI GỌI API THẤT BẠI)
   // =========================================================================
@@ -231,9 +266,15 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
 
     final title = json['title'] as String? ?? 'Bài tập';
     final dueDate = json['due_date'] as String? ?? '';
+    final id = json['id'] as String? ?? json['assignment_id'] as String?;
+    final studentId =
+        json['student_id'] as String? ?? json['child_id'] as String?;
 
     return ParentAlertItem(
+      tier: ParentAlertTier.emergency,
       type: ParentAlertType.overdue,
+      childId: studentId,
+      targetId: id,
       childName: json['child_name'] as String? ?? 'Con',
       subjectName: json['course_name'] as String? ?? '',
       detail: '1 bài tập "$title" đã quá hạn nộp',
@@ -360,31 +401,68 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   }
 
   List<ParentAlertItem> _filterFallbackAlerts(String? childId) {
-    const allAlerts = [
-      ParentAlertItem(
+    final allAlerts = [
+      // Tier 1: Khẩn cấp / Quá hạn / Đổi lịch bất thường
+      const ParentAlertItem(
+        tier: ParentAlertTier.emergency,
         type: ParentAlertType.overdue,
+        childId: studentMinhId,
         childName: 'Minh',
         subjectName: 'Hình học 10',
         detail: '1 bài tập trắc nghiệm đã quá hạn nộp',
         metaText: 'Hạn chót: 23:59 hôm qua',
         tagLabel: 'Quá hạn',
       ),
-      ParentAlertItem(
+      const ParentAlertItem(
+        tier: ParentAlertTier.emergency,
         type: ParentAlertType.scheduleChange,
+        childId: studentLanId,
         childName: 'Lan',
         subjectName: 'Anh văn giao tiếp',
         detail: 'Lớp đổi giờ bắt đầu sang 17:00 (lùi 30 phút)',
-        metaText: 'Giáo viên vừa xác nhận',
-        tagLabel: 'Thay đổi',
+        metaText: 'Giáo viên vừa cập nhật',
+        tagLabel: 'Đổi lịch',
+      ),
+      // Tier 2: Đến hạn trong hôm nay
+      const ParentAlertItem(
+        tier: ParentAlertTier.dueToday,
+        type: ParentAlertType.dueToday,
+        childId: studentMinhId,
+        childName: 'Minh',
+        subjectName: 'Ngữ văn 10',
+        detail: 'Bài viết luận văn học đến hạn nộp tối nay',
+        metaText: 'Hạn chót: 23:59 hôm nay',
+        tagLabel: 'Đến hạn hôm nay',
+      ),
+      // Tier 3: Sự kiện tiếp theo (Sắp tới)
+      const ParentAlertItem(
+        tier: ParentAlertTier.nextEvent,
+        type: ParentAlertType.upcomingExam,
+        childId: studentLanId,
+        childName: 'Lan',
+        subjectName: 'Toán 7',
+        detail: 'Bài kiểm tra giữa kỳ vào Thứ Năm tuần này',
+        metaText: 'Chuẩn bị máy tính Casio & thước kẻ',
+        tagLabel: 'Sắp tới',
+      ),
+      // Tier 4: Tổng quan / Thông tin chung
+      const ParentAlertItem(
+        tier: ParentAlertTier.generalInfo,
+        type: ParentAlertType.announcement,
+        childId: studentMinhId,
+        childName: 'Minh',
+        subjectName: 'Vật lý 10',
+        detail: 'Giáo viên nhận xét: Nắm vững kiến thức động học',
+        metaText: 'Đã hoàn thành 5/5 bài tập tuần 4',
+        tagLabel: 'Thông tin',
       ),
     ];
-    if (childId == studentMinhId) {
-      return allAlerts.where((a) => a.childName == 'Minh').toList();
-    }
-    if (childId == studentLanId) {
-      return allAlerts.where((a) => a.childName == 'Lan').toList();
-    }
-    return allAlerts;
+
+    final filtered = (childId == null
+            ? allAlerts
+            : allAlerts.where((a) => a.childId == childId).toList())
+      ..sort((a, b) => a.tier.index.compareTo(b.tier.index));
+    return filtered;
   }
 
   List<ParentScheduleItem> _filterFallbackSchedules(String? childId) {

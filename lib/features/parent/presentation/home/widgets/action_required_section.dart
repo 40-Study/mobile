@@ -1,22 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:study/features/parent/bloc/home/parent_home_state.dart';
 import 'package:study/features/parent/data/models/models.dart';
+import 'package:study/features/parent/presentation/home/widgets/home_section_skeletons.dart';
+import 'package:study/features/parent/presentation/home/widgets/section_error_card.dart';
 import 'package:study/theme/theme.dart';
 
-/// Mục "Cần xử lý": bài tập quá hạn + thay đổi lịch học.
-/// Khi rỗng hiển thị trạng thái "0 việc tồn đọng" (All-Clear).
-/// Tiêu đề nằm ngoài card, hỗ trợ thu gọn/mở rộng (mặc định: mở toàn bộ).
+/// Mục "Cần xử lý": phân loại theo 4 mức ưu tiên (Tier 1 -> Tier 4).
+/// Hỗ trợ Partial Failure (tự có skeleton và error retry riêng) và Collapse.
 class ActionRequiredSection extends StatefulWidget {
   const ActionRequiredSection({
     super.key,
     required this.alerts,
     required this.childrenNames,
+    this.status = HomeSectionStatus.success,
+    this.errorMessage,
+    this.onRetry,
     this.onAlertTap,
   });
 
   final List<ParentAlertItem> alerts;
-
-  /// Tên con để render câu giải thích, VD "Minh & Lan" / "Minh" / "các con".
   final String childrenNames;
+  final HomeSectionStatus status;
+  final String? errorMessage;
+  final VoidCallback? onRetry;
   final ValueChanged<ParentAlertItem>? onAlertTap;
 
   @override
@@ -30,74 +36,113 @@ class _ActionRequiredSectionState extends State<ActionRequiredSection> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isEmpty = widget.alerts.isEmpty;
+    final hasEmergency = widget.alerts.any(
+      (a) => a.tier == ParentAlertTier.emergency,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(context, isEmpty),
+        _buildHeader(context, isEmpty, hasEmergency),
         AnimatedCrossFade(
           duration: const Duration(milliseconds: 250),
           crossFadeState: _isExpanded
               ? CrossFadeState.showFirst
               : CrossFadeState.showSecond,
-          firstChild: isEmpty
-              ? Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg,
-                    AppSpacing.sm,
-                    AppSpacing.lg,
-                    0,
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: AppRadius.borderLg,
-                      border: Border.all(
-                        color: const Color(0xFFA7F3D0),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: cs.shadow.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: _EmptyAlertCard(
-                      childrenNames: widget.childrenNames,
-                    ),
-                  ),
-                )
-              : Column(
-                  children: [
-                    for (var i = 0; i < widget.alerts.length; i++)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppSpacing.lg,
-                          AppSpacing.sm,
-                          AppSpacing.lg,
-                          0,
-                        ),
-                        child: _AlertItemCard(
-                          alert: widget.alerts[i],
-                          onTap: widget.onAlertTap != null
-                              ? () => widget.onAlertTap!(widget.alerts[i])
-                              : null,
-                        ),
-                      ),
-                  ],
-                ),
+          firstChild: _buildContent(context, cs, isEmpty),
           secondChild: const SizedBox.shrink(),
         ),
       ],
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isEmpty) {
+  Widget _buildContent(BuildContext context, ColorScheme cs, bool isEmpty) {
+    if (widget.status == HomeSectionStatus.loading) {
+      return const ActionRequiredSkeleton();
+    }
+
+    if (widget.status == HomeSectionStatus.failure) {
+      return SectionErrorCard(
+        message: widget.errorMessage ?? 'Không thể tải danh sách cần xử lý',
+        onRetry: widget.onRetry ?? () {},
+      );
+    }
+
+    if (isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.sm,
+          AppSpacing.lg,
+          0,
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: AppRadius.borderLg,
+            border: Border.all(
+              color: const Color(0xFFA7F3D0),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: cs.shadow.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: _EmptyAlertCard(
+            childrenNames: widget.childrenNames,
+          ),
+        ),
+      );
+    }
+
+    // Đảm bảo sắp xếp đúng 4 Tiers: Tier 1 -> Tier 4
+    final sortedAlerts = List<ParentAlertItem>.from(widget.alerts)
+      ..sort((a, b) => a.tier.index.compareTo(b.tier.index));
+
+    return Column(
+      children: [
+        for (var i = 0; i < sortedAlerts.length; i++)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.sm,
+              AppSpacing.lg,
+              0,
+            ),
+            child: _AlertItemCard(
+              alert: sortedAlerts[i],
+              onTap: widget.onAlertTap != null
+                  ? () => widget.onAlertTap!(sortedAlerts[i])
+                  : null,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, bool isEmpty, bool hasEmergency) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final dotColor = isEmpty ? AchievementColors.green : AchievementColors.red;
+
+    final dotColor = isEmpty
+        ? AchievementColors.green
+        : (hasEmergency ? AchievementColors.red : const Color(0xFFD97706));
+
+    final countLabel = isEmpty
+        ? '0 việc tồn đọng'
+        : '${widget.alerts.length} nhắc nhở';
+
+    final badgeBg = isEmpty
+        ? const Color(0xFFECFDF5)
+        : (hasEmergency ? const Color(0xFFFEE2E2) : const Color(0xFFFEF3C7));
+
+    final badgeTextColor = isEmpty
+        ? const Color(0xFF059669)
+        : (hasEmergency ? AchievementColors.red : const Color(0xFFB45309));
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
@@ -131,31 +176,26 @@ class _ActionRequiredSectionState extends State<ActionRequiredSection> {
                 ),
               ),
               const Spacer(),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: isEmpty
-                      ? const Color(0xFFECFDF5)
-                      : const Color(0xFFFEE2E2),
-                  borderRadius: AppRadius.borderFull,
-                  border: isEmpty
-                      ? Border.all(color: const Color(0xFFA7F3D0))
-                      : null,
-                ),
-                child: Text(
-                  isEmpty
-                      ? '0 việc tồn đọng'
-                      : '${widget.alerts.length} nhắc nhở',
-                  style: tt.labelSmall?.copyWith(
-                    color: isEmpty
-                        ? const Color(0xFF059669)
-                        : AchievementColors.red,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
+              if (widget.status == HomeSectionStatus.success)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: badgeBg,
+                    borderRadius: AppRadius.borderFull,
+                    border: isEmpty
+                        ? Border.all(color: const Color(0xFFA7F3D0))
+                        : null,
+                  ),
+                  child: Text(
+                    countLabel,
+                    style: tt.labelSmall?.copyWith(
+                      color: badgeTextColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
-              ),
               AppSpacing.hGap8,
               AnimatedRotation(
                 turns: _isExpanded ? 0 : 0.5,
@@ -244,12 +284,32 @@ class _AlertItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final isOverdue = alert.type == ParentAlertType.overdue;
-    final accent = isOverdue ? AchievementColors.red : const Color(0xFFD97706);
-    final iconBg = isOverdue
-        ? const Color(0xFFFEE2E2)
-        : const Color(0xFFFEF3C7);
-    final tagBg = isOverdue ? const Color(0xFFFEE2E2) : const Color(0xFFFEF3C7);
+
+    // Màu sắc và Icon trực quan theo 4 Tiers
+    final (Color accent, Color bg, IconData iconData) = switch (alert.tier) {
+      ParentAlertTier.emergency => (
+          AchievementColors.red,
+          const Color(0xFFFEE2E2),
+          alert.type == ParentAlertType.overdue
+              ? Icons.assignment_late_outlined
+              : Icons.update_rounded,
+        ),
+      ParentAlertTier.dueToday => (
+          const Color(0xFFD97706),
+          const Color(0xFFFEF3C7),
+          Icons.alarm_rounded,
+        ),
+      ParentAlertTier.nextEvent => (
+          const Color(0xFF2563EB),
+          const Color(0xFFEFF6FF),
+          Icons.event_note_rounded,
+        ),
+      ParentAlertTier.generalInfo => (
+          const Color(0xFF475569),
+          const Color(0xFFF1F5F9),
+          Icons.info_outline_rounded,
+        ),
+    };
 
     return Container(
       decoration: BoxDecoration(
@@ -280,13 +340,11 @@ class _AlertItemCard extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: iconBg,
+                    color: bg,
                     borderRadius: AppRadius.borderMd,
                   ),
                   child: Icon(
-                    isOverdue
-                        ? Icons.assignment_late_outlined
-                        : Icons.update_rounded,
+                    iconData,
                     color: accent,
                     size: 22,
                   ),
@@ -316,9 +374,7 @@ class _AlertItemCard extends StatelessWidget {
                       Row(
                         children: [
                           Icon(
-                            isOverdue
-                                ? Icons.schedule_rounded
-                                : Icons.info_outline_rounded,
+                            Icons.schedule_rounded,
                             size: 13,
                             color: accent,
                           ),
@@ -348,7 +404,7 @@ class _AlertItemCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: tagBg,
+                        color: bg,
                         borderRadius: AppRadius.borderFull,
                       ),
                       child: Text(

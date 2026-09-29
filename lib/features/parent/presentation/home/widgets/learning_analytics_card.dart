@@ -1,20 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:study/features/parent/bloc/home/parent_home_state.dart';
 import 'package:study/features/parent/data/models/models.dart';
+import 'package:study/features/parent/presentation/home/widgets/home_section_skeletons.dart';
+import 'package:study/features/parent/presentation/home/widgets/section_error_card.dart';
 import 'package:study/theme/theme.dart';
 
 /// Card Phân tích học tập: điểm TB, AI insight, điều hướng báo cáo.
 /// Khi chưa có dữ liệu hiển thị Empty State.
 /// Tiêu đề nằm ngoài card, hỗ trợ thu gọn/mở rộng (mặc định: mở toàn bộ).
+/// Hỗ trợ Partial Failure và Skeleton loading riêng biệt.
 class LearningAnalyticsCard extends StatefulWidget {
   const LearningAnalyticsCard({
     super.key,
     required this.analytics,
+    this.status = HomeSectionStatus.success,
+    this.errorMessage,
+    this.onRetry,
     this.onViewDetail,
     this.onViewAllReports,
     this.onViewLearning,
   });
 
   final ParentAnalyticsData? analytics;
+  final HomeSectionStatus status;
+  final String? errorMessage;
+  final VoidCallback? onRetry;
   final VoidCallback? onViewDetail;
   final VoidCallback? onViewAllReports;
   final VoidCallback? onViewLearning;
@@ -39,24 +49,39 @@ class _LearningAnalyticsCardState extends State<LearningAnalyticsCard> {
           crossFadeState: _isExpanded
               ? CrossFadeState.showFirst
               : CrossFadeState.showSecond,
-          firstChild: Container(
-            margin: const EdgeInsets.fromLTRB(
-              AppSpacing.lg,
-              AppSpacing.sm,
-              AppSpacing.lg,
-              0,
-            ),
-            child: data == null
-                ? _EmptyAnalyticsCard(onViewLearning: widget.onViewLearning)
-                : _AnalyticsContent(
-                    analytics: data,
-                    onViewDetail: widget.onViewDetail,
-                    onViewAllReports: widget.onViewAllReports,
-                  ),
-          ),
+          firstChild: _buildContent(context, data),
           secondChild: const SizedBox.shrink(),
         ),
       ],
+    );
+  }
+
+  Widget _buildContent(BuildContext context, ParentAnalyticsData? data) {
+    if (widget.status == HomeSectionStatus.loading) {
+      return const LearningAnalyticsSkeleton();
+    }
+
+    if (widget.status == HomeSectionStatus.failure) {
+      return SectionErrorCard(
+        message: widget.errorMessage ?? 'Không thể tải phân tích học tập',
+        onRetry: widget.onRetry ?? () {},
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        AppSpacing.sm,
+        AppSpacing.lg,
+        0,
+      ),
+      child: data == null
+          ? _EmptyAnalyticsCard(onViewLearning: widget.onViewLearning)
+          : _AnalyticsContent(
+              analytics: data,
+              onViewDetail: widget.onViewDetail,
+              onViewAllReports: widget.onViewAllReports,
+            ),
     );
   }
 

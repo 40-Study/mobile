@@ -1,21 +1,27 @@
-/// Base event cho Parent Home BLoC.
+/// Sự kiện cho Parent Home BLoC.
 sealed class ParentHomeEvent {
   const ParentHomeEvent();
 }
 
-/// Khởi tạo và tải dữ liệu lần đầu.
 class ParentHomeStarted extends ParentHomeEvent {
   const ParentHomeStarted();
 }
 
-/// Phụ huynh chọn 1 con (hoặc "Tất cả các con" với `childId = null`).
 class ParentHomeChildSelected extends ParentHomeEvent {
   const ParentHomeChildSelected(this.childId);
 
   final String? childId;
 }
 
-/// Kéo xuống để refresh.
 class ParentHomeRefreshed extends ParentHomeEvent {
   const ParentHomeRefreshed();
+}
+
+/// Các khối chức năng hỗ trợ Retry cục bộ khi gặp lỗi (Partial Failure)
+enum ParentHomeSection { alerts, schedules, analytics }
+
+class ParentHomeSectionRetried extends ParentHomeEvent {
+  const ParentHomeSectionRetried(this.section);
+
+  final ParentHomeSection section;
 }

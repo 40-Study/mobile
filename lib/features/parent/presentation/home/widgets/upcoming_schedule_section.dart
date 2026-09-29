@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:study/features/parent/bloc/home/parent_home_state.dart';
 import 'package:study/features/parent/data/models/models.dart';
+import 'package:study/features/parent/presentation/home/widgets/home_section_skeletons.dart';
+import 'package:study/features/parent/presentation/home/widgets/section_error_card.dart';
 import 'package:study/features/parent/presentation/schedule/parent_session_detail_screen.dart';
 import 'package:study/features/parent/presentation/widgets/parent_schedule_card.dart';
 import 'package:study/theme/theme.dart';
@@ -8,15 +11,22 @@ import 'package:study/theme/theme.dart';
 /// Mục "Hôm nay / Tiếp theo": lịch học sắp tới.
 /// Khi rỗng hiển thị Empty State "Hôm nay không có ca học nào".
 /// Tiêu đề nằm ngoài card, mỗi ca học là một thẻ card độc lập, hỗ trợ thu gọn/mở rộng.
+/// Hỗ trợ Partial Failure và Skeleton loading riêng biệt.
 class UpcomingScheduleSection extends StatefulWidget {
   const UpcomingScheduleSection({
     super.key,
     required this.schedules,
+    this.status = HomeSectionStatus.success,
+    this.errorMessage,
+    this.onRetry,
     this.onViewFullSchedule,
     this.onScheduleTap,
   });
 
   final List<ParentScheduleItem> schedules;
+  final HomeSectionStatus status;
+  final String? errorMessage;
+  final VoidCallback? onRetry;
   final VoidCallback? onViewFullSchedule;
   final ValueChanged<ParentScheduleItem>? onScheduleTap;
 
@@ -56,57 +66,74 @@ class _UpcomingScheduleSectionState extends State<UpcomingScheduleSection> {
           crossFadeState: _isExpanded
               ? CrossFadeState.showFirst
               : CrossFadeState.showSecond,
-          firstChild: widget.schedules.isEmpty
-              ? Container(
-                  margin: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg,
-                    AppSpacing.sm,
-                    AppSpacing.lg,
-                    0,
-                  ),
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: AppRadius.borderLg,
-                    border: Border.all(
-                      color: cs.outlineVariant.withValues(alpha: 0.5),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: cs.shadow.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: _EmptyScheduleCard(
-                    onViewFullSchedule: widget.onViewFullSchedule,
-                  ),
-                )
-              : Column(
-                  children: [
-                    for (var i = 0; i < widget.schedules.length; i++)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppSpacing.lg,
-                          AppSpacing.sm,
-                          AppSpacing.lg,
-                          0,
-                        ),
-                        child: ParentScheduleCard(
-                          session: widget.schedules[i].toSession(),
-                          onTap: widget.onScheduleTap != null
-                              ? () => widget.onScheduleTap!(widget.schedules[i])
-                              : () => ParentSessionDetailScreen.open(
-                                    context,
-                                    session: widget.schedules[i].toSession(),
-                                  ),
-                        ),
-                      ),
-                  ],
-                ),
+          firstChild: _buildContent(context, cs),
           secondChild: const SizedBox.shrink(),
         ),
+      ],
+    );
+  }
+
+  Widget _buildContent(BuildContext context, ColorScheme cs) {
+    if (widget.status == HomeSectionStatus.loading) {
+      return const UpcomingScheduleSkeleton();
+    }
+
+    if (widget.status == HomeSectionStatus.failure) {
+      return SectionErrorCard(
+        message: widget.errorMessage ?? 'Không thể tải lịch học lúc này',
+        onRetry: widget.onRetry ?? () {},
+      );
+    }
+
+    if (widget.schedules.isEmpty) {
+      return Container(
+        margin: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.sm,
+          AppSpacing.lg,
+          0,
+        ),
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: AppRadius.borderLg,
+          border: Border.all(
+            color: cs.outlineVariant.withValues(alpha: 0.5),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: cs.shadow.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: _EmptyScheduleCard(
+          onViewFullSchedule: widget.onViewFullSchedule,
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        for (var i = 0; i < widget.schedules.length; i++)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.sm,
+              AppSpacing.lg,
+              0,
+            ),
+            child: ParentScheduleCard(
+              session: widget.schedules[i].toSession(),
+              onTap: widget.onScheduleTap != null
+                  ? () => widget.onScheduleTap!(widget.schedules[i])
+                  : () => ParentSessionDetailScreen.open(
+                        context,
+                        session: widget.schedules[i].toSession(),
+                      ),
+            ),
+          ),
       ],
     );
   }
