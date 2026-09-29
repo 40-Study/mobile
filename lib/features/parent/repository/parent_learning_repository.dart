@@ -1,6 +1,7 @@
 import 'package:study/features/parent/data/models/family_scope_child.dart';
 import 'package:study/features/parent/data/models/parent_class_detail_model.dart';
 import 'package:study/features/parent/data/models/parent_learning_hub_data.dart';
+import 'package:study/features/parent/data/models/parent_learning_insights_model.dart';
 
 /// Interface repository quản lý dữ liệu cho phân hệ Học tập (Parent Learning)
 abstract class ParentLearningRepository {
@@ -19,4 +20,7 @@ abstract class ParentLearningRepository {
     String classId, {
     String? childId,
   });
+
+  /// Lấy báo cáo phân tích sư phạm chuyên sâu của con (Learning Insights)
+  Future<ParentLearningInsightsModel?> getLearningInsights(String childId);
 }

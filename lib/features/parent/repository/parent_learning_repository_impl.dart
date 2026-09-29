@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:study/features/parent/data/models/family_scope_child.dart';
 import 'package:study/features/parent/data/models/parent_class_detail_model.dart';
 import 'package:study/features/parent/data/models/parent_learning_hub_data.dart';
+import 'package:study/features/parent/data/models/parent_learning_insights_model.dart';
 import 'package:study/features/parent/repository/parent_learning_repository.dart';
 
 class ParentLearningRepositoryImpl implements ParentLearningRepository {
@@ -112,6 +113,131 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
     );
   }
 
+  @override
+  Future<ParentLearningInsightsModel?> getLearningInsights(
+      String childId) async {
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+
+    final map = _getSampleInsightsMap();
+    return map[childId] ?? map[studentMinhId];
+  }
+
+  Map<String, ParentLearningInsightsModel> _getSampleInsightsMap() {
+    return {
+      studentMinhId: const ParentLearningInsightsModel(
+        childId: studentMinhId,
+        childName: 'Nguyễn Nhật Minh',
+        childInitials: 'M',
+        className: '10A1',
+        semester: 'Lớp 10A1 · Học kỳ I 2024–2025',
+        updateStatus: 'Đang cập nhật tuần 12',
+        overviewTitle: 'Tổng quan kỳ I (12 tuần)',
+        weekBadge: 'Tuần 12',
+        attendanceRatePercent: 92,
+        attendanceDeltaText: '+4% (23/25 buổi)',
+        homeworkCompletionPercent: 85,
+        homeworkDeltaText: 'Đúng hạn (17/20)',
+        averageGrade: 8.6,
+        gradeDeltaText: '+0.8 với đầu kỳ',
+        focusAndInteractionPercent: 88,
+        focusAndInteractionStatus: 'Rất tích cực',
+        focusTrendAverageDelta: '+12% trung bình',
+        focusTrendPoints: [
+          FocusTrendDataPoint(week: 1, score: 72, label: 'T1'),
+          FocusTrendDataPoint(week: 2, score: 76, label: 'T2'),
+          FocusTrendDataPoint(week: 3, score: 74, label: 'T3'),
+          FocusTrendDataPoint(week: 4, score: 80, label: 'T4'),
+          FocusTrendDataPoint(week: 5, score: 83, label: 'T5'),
+          FocusTrendDataPoint(week: 6, score: 81, label: 'T6'),
+          FocusTrendDataPoint(week: 7, score: 86, label: 'T7'),
+          FocusTrendDataPoint(week: 8, score: 84, label: 'T8'),
+          FocusTrendDataPoint(week: 9, score: 89, label: 'T9'),
+          FocusTrendDataPoint(week: 10, score: 87, label: 'T10'),
+          FocusTrendDataPoint(week: 11, score: 92, label: 'T11'),
+          FocusTrendDataPoint(week: 12, score: 88, label: 'T12'),
+        ],
+        focusTrendNote:
+            'Minh duy trì độ tập trung trên 85% vào các buổi cuối tuần '
+            '(T6–CN), tương tác đều đặn trong các phần thảo luận và bài tập '
+            'nhóm.',
+        improvementFocusBadge: '1 trọng tâm',
+        observationContent:
+            'Minh hoàn thành 3/5 bài dạng phân số & rút gọn biểu thức trong 2 '
+            'buổi gần nhất (tỷ lệ đúng 60%).',
+        interpretationContent:
+            'Thấp hơn mức trung bình đại số của Minh (85%+). Em thường vấp lỗi '
+            'nhầm dấu khi quy đồng đa thức phức tạp.',
+        actionContent:
+            'Nhắc Minh xem lại bài giảng Buổi 8; kết nối trực tiếp với Cô Lan '
+            '(GV Toán) để nhận 3 bài tập củng cố cá nhân hoá.',
+        evidenceActionText:
+            'Xem bài tập và bài kiểm tra chi tiết (Evidence) →',
+        strengthBadge: 'Phát huy tốt',
+        strengthTitle: 'Tư duy không gian & Ứng dụng thực tế',
+        strengthContent:
+            'Phản xạ xuất sắc ở đồ thị hàm số và bài toán liên môn (đạt 95% '
+            'điểm tuyệt đối trong đợt kiểm tra 15 phút vừa qua).',
+        teacherName: 'Cô Lan',
+        teacherSubject: 'GV Toán',
+      ),
+      studentLanId: const ParentLearningInsightsModel(
+        childId: studentLanId,
+        childName: 'Nguyễn Mai Lan',
+        childInitials: 'L',
+        className: '7B',
+        semester: 'Lớp 7B · Học kỳ I 2024–2025',
+        updateStatus: 'Đang cập nhật tuần 12',
+        overviewTitle: 'Tổng quan kỳ I (12 tuần)',
+        weekBadge: 'Tuần 12',
+        attendanceRatePercent: 96,
+        attendanceDeltaText: '+2% (24/25 buổi)',
+        homeworkCompletionPercent: 90,
+        homeworkDeltaText: 'Đúng hạn (19/20)',
+        averageGrade: 8.9,
+        gradeDeltaText: '+0.5 với đầu kỳ',
+        focusAndInteractionPercent: 92,
+        focusAndInteractionStatus: 'Xuất sắc',
+        focusTrendAverageDelta: '+8% trung bình',
+        focusTrendPoints: [
+          FocusTrendDataPoint(week: 1, score: 80, label: 'T1'),
+          FocusTrendDataPoint(week: 2, score: 82, label: 'T2'),
+          FocusTrendDataPoint(week: 3, score: 85, label: 'T3'),
+          FocusTrendDataPoint(week: 4, score: 87, label: 'T4'),
+          FocusTrendDataPoint(week: 5, score: 86, label: 'T5'),
+          FocusTrendDataPoint(week: 6, score: 89, label: 'T6'),
+          FocusTrendDataPoint(week: 7, score: 91, label: 'T7'),
+          FocusTrendDataPoint(week: 8, score: 90, label: 'T8'),
+          FocusTrendDataPoint(week: 9, score: 93, label: 'T9'),
+          FocusTrendDataPoint(week: 10, score: 92, label: 'T10'),
+          FocusTrendDataPoint(week: 11, score: 95, label: 'T11'),
+          FocusTrendDataPoint(week: 12, score: 92, label: 'T12'),
+        ],
+        focusTrendNote:
+            'Lan duy trì độ tập trung ổn định và phát biểu đóng góp tích cực '
+            'trong giờ Ngữ văn và Tiếng Anh.',
+        improvementFocusBadge: '1 trọng tâm',
+        observationContent:
+            'Lan cần chú ý thêm ở phần lập luận phản biện trong bài viết luận '
+            'văn học kỳ này.',
+        interpretationContent:
+            'Em diễn đạt lưu loát nhưng đôi lúc thiếu dẫn chứng định lượng để '
+            'bảo vệ luận điểm.',
+        actionContent:
+            'Khuyến khích Lan đọc thêm tài liệu mở rộng và thảo luận cùng giáo '
+            'viên hướng dẫn.',
+        evidenceActionText:
+            'Xem bài tập và bài kiểm tra chi tiết (Evidence) →',
+        strengthBadge: 'Phát huy tốt',
+        strengthTitle: 'Cảm thụ ngôn ngữ & Diễn đạt',
+        strengthContent:
+            'Khả năng hành văn mượt mà, giàu cảm xúc, đạt 9.5 điểm bài kiểm '
+            'tra định kỳ.',
+        teacherName: 'Thầy Hưng',
+        teacherSubject: 'GV Ngữ văn',
+      ),
+    };
+  }
+
   Map<String, ParentLearningHubData> _getSampleHubDataMap() {
     return {
       // Dữ liệu cho Minh (Đúng chuẩn theo Ảnh 1)
@@ -144,3 +270,4 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
     };
   }
 }
+

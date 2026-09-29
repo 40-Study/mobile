@@ -7,6 +7,7 @@ import 'package:study/features/parent/bloc/learning/parent_learning_state.dart';
 import 'package:study/features/parent/data/models/parent_learning_hub_data.dart';
 import 'package:study/features/parent/presentation/children/manage_children_screen.dart';
 import 'package:study/features/parent/presentation/learning/class_detail/parent_class_detail_screen.dart';
+import 'package:study/features/parent/presentation/learning/insights/parent_learning_insights_screen.dart';
 import 'package:study/features/parent/presentation/learning/widgets/learning_hub_header.dart';
 import 'package:study/features/parent/presentation/learning/widgets/learning_hub_navigation_card.dart';
 import 'package:study/features/parent/presentation/widgets/widgets.dart';
@@ -329,10 +330,17 @@ class _LearningView extends StatelessWidget {
   // ===================== NAVIGATION HELPERS =====================
 
   void _openLearningInsights(BuildContext context, ParentLearningHubData data) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Mở Insights / Phân tích chi tiết của ${data.childName}'),
-        duration: const Duration(seconds: 2),
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => ParentLearningInsightsScreen(
+          childId: data.childId,
+          childName: data.childName,
+          onNavigateToRecommendations: () {
+            Navigator.pop(context);
+            _openRecommendedCourses(context, data);
+          },
+        ),
       ),
     );
   }
