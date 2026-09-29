@@ -42,7 +42,7 @@ class ContributionGrid extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: cs.primaryContainer,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.borderSm,
                 ),
                 child: Text(l10n.daysLearned(totalDays),
                     style: tt.labelMedium

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/theme/theme.dart';
 
 class ErrorView extends StatelessWidget {
   const ErrorView({super.key, required this.message, required this.onRetry});
@@ -13,7 +14,7 @@ class ErrorView extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: AppSpacing.paddingXxl,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

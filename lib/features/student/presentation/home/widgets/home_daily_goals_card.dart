@@ -129,7 +129,7 @@ class _EmptyGoalsBanner extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: AppSpacing.paddingSm,
                         decoration: BoxDecoration(
                           color: goalColor.withValues(alpha: 0.12),
                           shape: BoxShape.circle,

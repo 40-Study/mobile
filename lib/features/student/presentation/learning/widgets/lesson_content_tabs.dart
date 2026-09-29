@@ -21,7 +21,7 @@ class LessonContentTabs extends StatelessWidget {
         color: cs.surfaceContainer,
         borderRadius: BorderRadius.circular(AppRadius.card),
       ),
-      padding: const EdgeInsets.all(4),
+      padding: AppSpacing.paddingXs,
       child: Row(
         children: LessonContentTab.values.map((tab) {
           final isSelected = tab == selectedTab;

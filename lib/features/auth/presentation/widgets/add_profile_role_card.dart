@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/presentation/utils/role_utils.dart';
+import 'package:study/theme/theme.dart';
 
 class AddProfileRoleCard extends StatelessWidget {
   const AddProfileRoleCard({super.key, required this.role, required this.onTap});
@@ -17,12 +18,12 @@ class AddProfileRoleCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.borderLg,
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.paddingLg,
           decoration: BoxDecoration(
             color: cs.surface,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.borderLg,
             border: Border.all(color: cs.outlineVariant),
             boxShadow: [
               BoxShadow(
@@ -54,7 +55,7 @@ class AddProfileRoleCard extends StatelessWidget {
                   size: 28,
                 ),
               ),
-              const SizedBox(width: 16),
+              AppSpacing.hGap16,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +67,7 @@ class AddProfileRoleCard extends StatelessWidget {
                         color: cs.onSurface,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    AppSpacing.vGap4,
                     Text(
                       _getRoleDescription(role.name),
                       style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),

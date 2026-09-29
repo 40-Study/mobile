@@ -98,7 +98,7 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
           ),
           AppSpacing.vGap8,
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: AppRadius.borderXs,
             child: LinearProgressIndicator(
               value: progress,
               backgroundColor: cs.outline.withValues(alpha: 0.2),

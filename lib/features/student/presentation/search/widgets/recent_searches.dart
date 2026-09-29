@@ -22,7 +22,7 @@ class RecentSearches extends StatelessWidget {
     if (searches.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(32),
+          padding: AppSpacing.paddingXxl,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

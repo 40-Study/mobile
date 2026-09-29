@@ -48,7 +48,7 @@ class ParentScheduleCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: AppRadius.borderLg,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: AppSpacing.paddingLg,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -231,7 +231,7 @@ class ParentScheduleCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadius.borderSm,
         border: Border.all(
           color: const Color(0xFFE2E8F0),
           width: 0.8,

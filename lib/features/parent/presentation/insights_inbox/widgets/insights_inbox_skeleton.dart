@@ -47,7 +47,7 @@ class InsightsInboxSkeleton extends StatelessWidget {
                               height: 14,
                               decoration: BoxDecoration(
                                 color: cs.slate100,
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: AppRadius.borderXs,
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -56,7 +56,7 @@ class InsightsInboxSkeleton extends StatelessWidget {
                               height: 11,
                               decoration: BoxDecoration(
                                 color: cs.slate100,
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: AppRadius.borderXs,
                               ),
                             ),
                           ],
@@ -78,7 +78,7 @@ class InsightsInboxSkeleton extends StatelessWidget {
                     height: 12,
                     decoration: BoxDecoration(
                       color: cs.slate100,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: AppRadius.borderXs,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -87,7 +87,7 @@ class InsightsInboxSkeleton extends StatelessWidget {
                     height: 12,
                     decoration: BoxDecoration(
                       color: cs.slate100,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: AppRadius.borderXs,
                     ),
                   ),
                   const SizedBox(height: 16),

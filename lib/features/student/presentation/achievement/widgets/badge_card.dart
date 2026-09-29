@@ -48,7 +48,7 @@ class BadgeCard extends StatelessWidget {
                           const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: cs.primary,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: AppRadius.borderXs,
                       ),
                       child: Text(AppLocalizations.of(context)!.newBadge,
                           style: tt.labelSmall?.copyWith(

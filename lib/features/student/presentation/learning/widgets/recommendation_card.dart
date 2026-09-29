@@ -81,7 +81,7 @@ class RecommendationCard extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: cs.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: AppRadius.borderXs,
                             ),
                             child: Text(
                               course.level!,

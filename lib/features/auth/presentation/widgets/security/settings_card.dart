@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/theme/theme.dart';
 
 class SettingsCard extends StatelessWidget {
   const SettingsCard({super.key, required this.children});
@@ -12,7 +13,7 @@ class SettingsCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.borderLg,
         boxShadow: [
           BoxShadow(
             color: cs.shadow.withValues(alpha: 0.05),

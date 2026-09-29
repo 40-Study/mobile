@@ -138,7 +138,7 @@ class CourseProgressCard extends StatelessWidget {
                   ),
                   AppSpacing.vGap8,
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: AppRadius.borderXs,
                     child: LinearProgressIndicator(
                       value: progress,
                       minHeight: 8,

@@ -6,6 +6,7 @@ import 'package:study/features/auth/bloc/account/account_cubit.dart';
 import 'package:study/features/auth/bloc/account/account_state.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/l10n/app_localizations.dart';
+import 'package:study/theme/theme.dart';
 import 'package:study/widgets/cached_avatar.dart';
 
 /// Avatar section với camera button và change photo
@@ -108,7 +109,7 @@ class EditProfileAvatar extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
+                AppSpacing.vGap8,
                 TextButton(
                   onPressed: isUploading ? null : onPickImage,
                   child: Text(

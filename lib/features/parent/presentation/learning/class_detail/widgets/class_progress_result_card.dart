@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/parent/data/models/parent_class_detail_model.dart';
+import 'package:study/theme/theme.dart';
 
 /// Card 3 chỉ số lớn: Buổi học hoàn thành, Chuyên cần %, Điểm trung bình
 /// và Thanh tiến độ
@@ -14,10 +15,10 @@ class ClassProgressResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.paddingLg,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.borderLg,
         border: Border.all(
           color: const Color(0xFFF1F5F9),
           width: 1.5,

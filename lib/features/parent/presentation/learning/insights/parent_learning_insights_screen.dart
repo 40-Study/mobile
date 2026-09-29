@@ -150,7 +150,7 @@ class _ParentLearningInsightsScreenState
     if (_errorMessage != null || _insights == null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: AppSpacing.paddingXl,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -348,7 +348,7 @@ class _ParentLearningInsightsScreenState
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   side: const BorderSide(color: Color(0xFFE2E8F0)),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.borderMd,
                   ),
                 ),
               ),
@@ -372,7 +372,7 @@ class _ParentLearningInsightsScreenState
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.borderMd,
                   ),
                 ),
                 child: const Text(
@@ -539,10 +539,10 @@ class _ParentLearningInsightsScreenState
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: AppSpacing.paddingMd,
                   decoration: BoxDecoration(
                     color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.borderMd,
                     border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
                   child: const Column(

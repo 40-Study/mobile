@@ -66,7 +66,7 @@ class BadgeDetailSheet extends StatelessWidget {
               child: Column(
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: AppRadius.borderXs,
                     child: LinearProgressIndicator(
                       value: badge.progressPercent,
                       minHeight: 8,

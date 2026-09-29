@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/theme/theme.dart';
 
 class LinkedAccountItem extends StatelessWidget {
   const LinkedAccountItem({
@@ -23,13 +24,13 @@ class LinkedAccountItem extends StatelessWidget {
 
     return ListTile(
       onTap: isLoading ? null : onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
       leading: Container(
         width: 48,
         height: 48,
         decoration: BoxDecoration(
           color: _getProviderColor(provider).withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.borderMd,
         ),
         child: Icon(
           _getProviderIcon(provider),
@@ -57,10 +58,10 @@ class LinkedAccountItem extends StatelessWidget {
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           : Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 6),
               decoration: BoxDecoration(
                 color: isLinked ? cs.errorContainer : cs.primaryContainer,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: AppRadius.borderXl,
               ),
               child: Text(
                 isLinked ? 'Hủy' : 'Liên kết',

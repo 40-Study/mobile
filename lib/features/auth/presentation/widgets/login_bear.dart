@@ -27,6 +27,7 @@ class AuthBearState extends State<AuthBear> {
   SMINumber? _numLook;
   SMITrigger? _trigSuccess;
   SMITrigger? _trigFail;
+  bool _riveLoadStarted = false;
 
   void triggerSuccess() => _trigSuccess?.fire();
   void triggerFail() => _trigFail?.fire();
@@ -36,7 +37,6 @@ class AuthBearState extends State<AuthBear> {
   @override
   void initState() {
     super.initState();
-    _loadRive();
     widget.emailFocus?.addListener(_onEmailFocusChange);
     for (final fn in widget.passwordFocusNodes) {
       fn.addListener(_onPasswordFocusChange);
@@ -44,30 +44,43 @@ class AuthBearState extends State<AuthBear> {
     widget.emailController?.addListener(_onEmailTextChange);
   }
 
-  Future<void> _loadRive() async {
-    final file = await RiveFile.asset('assets/rive/teddy_login.riv');
-    final artboard = file.mainArtboard;
-
-    // The first Shape is typically the artboard background rectangle.
-    var bgCleared = false;
-    artboard.forEachComponent((child) {
-      if (!bgCleared && child is Shape && child.fills.isNotEmpty) {
-        child.fills.first.paint.color = const Color(0x00000000);
-        bgCleared = true;
-      }
-    });
-
-    _ctrl = StateMachineController.fromArtboard(artboard, 'Login Machine');
-    if (_ctrl != null) {
-      artboard.addController(_ctrl!);
-      _isChecking = _ctrl!.getBoolInput('isChecking');
-      _isHandsUp = _ctrl!.getBoolInput('isHandsUp');
-      _numLook = _ctrl!.getNumberInput('numLook');
-      _trigSuccess = _ctrl!.getTriggerInput('trigSuccess');
-      _trigFail = _ctrl!.getTriggerInput('trigFail');
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_riveLoadStarted && !MediaQuery.disableAnimationsOf(context)) {
+      _riveLoadStarted = true;
+      _loadRive();
     }
+  }
 
-    if (mounted) setState(() => _artboard = artboard);
+  Future<void> _loadRive() async {
+    try {
+      final file = await RiveFile.asset('assets/rive/teddy_login.riv');
+      final artboard = file.mainArtboard;
+
+      // The first Shape is typically the artboard background rectangle.
+      var bgCleared = false;
+      artboard.forEachComponent((child) {
+        if (!bgCleared && child is Shape && child.fills.isNotEmpty) {
+          child.fills.first.paint.color = const Color(0x00000000);
+          bgCleared = true;
+        }
+      });
+
+      _ctrl = StateMachineController.fromArtboard(artboard, 'Login Machine');
+      if (_ctrl != null) {
+        artboard.addController(_ctrl!);
+        _isChecking = _ctrl!.getBoolInput('isChecking');
+        _isHandsUp = _ctrl!.getBoolInput('isHandsUp');
+        _numLook = _ctrl!.getNumberInput('numLook');
+        _trigSuccess = _ctrl!.getTriggerInput('trigSuccess');
+        _trigFail = _ctrl!.getTriggerInput('trigFail');
+      }
+
+      if (mounted) setState(() => _artboard = artboard);
+    } catch (_) {
+      // Keep authentication usable when an optional native animation fails.
+    }
   }
 
   @override

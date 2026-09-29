@@ -149,7 +149,7 @@ class _LayoutSectionTile extends StatelessWidget {
           ReorderableDragStartListener(
             index: index,
             child: Container(
-              padding: const EdgeInsets.all(8),
+              padding: AppSpacing.paddingSm,
               decoration: BoxDecoration(
                 color: cs.primary.withValues(alpha: 0.1),
                 borderRadius: AppRadius.borderSm,

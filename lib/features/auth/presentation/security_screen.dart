@@ -9,6 +9,7 @@ import 'package:study/features/auth/presentation/change_password_screen.dart';
 import 'package:study/features/auth/presentation/widgets/security/widgets.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/l10n/app_localizations.dart';
+import 'package:study/theme/theme.dart';
 import 'package:study/widgets/app_header_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -66,11 +67,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
             final linkedAccounts = _getLinkedAccounts(state);
 
             return ListView(
-              padding: const EdgeInsets.all(16),
+              padding: AppSpacing.paddingLg,
               children: [
                 // Login section
                 SectionHeader(title: l10n.loginSection),
-                const SizedBox(height: 12),
+                AppSpacing.vGap12,
                 SettingsCard(
                   children: [
                     SettingsItem(
@@ -81,11 +82,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                AppSpacing.vGap24,
 
                 // Linked accounts section
                 SectionHeader(title: l10n.linkedAccounts),
-                const SizedBox(height: 12),
+                AppSpacing.vGap12,
                 LinkedAccountsList(
                   linkedAccounts: linkedAccounts,
                   isLoading: state is SecurityLoading,
@@ -95,7 +96,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
                   onUnlink: _showUnlinkDialog,
                   onLink: _linkAccount,
                 ),
-                const SizedBox(height: 24),
+                AppSpacing.vGap24,
 
                 // Devices section
                 Row(
@@ -112,17 +113,17 @@ class _SecurityScreenState extends State<SecurityScreen> {
                       ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                AppSpacing.vGap12,
                 DevicesList(
                   devices: devices,
                   isLoading: state is SecurityLoading,
                   onRefresh: () => _cubit.loadDevices(),
                 ),
-                const SizedBox(height: 24),
+                AppSpacing.vGap24,
 
                 // Advanced section
                 SectionHeader(title: l10n.advanced),
-                const SizedBox(height: 12),
+                AppSpacing.vGap12,
                 SettingsCard(
                   children: [
                     SettingsItem(
@@ -144,11 +145,11 @@ class _SecurityScreenState extends State<SecurityScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 32),
+                AppSpacing.vGap32,
 
                 // Footer
                 _buildFooter(tt, cs, l10n),
-                const SizedBox(height: 32),
+                AppSpacing.vGap32,
               ],
             );
           },
@@ -175,7 +176,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
               );
             },
           ),
-          const SizedBox(height: 4),
+          AppSpacing.vGap4,
           Text(
             '40STUDY SECURITY HUB',
             style: tt.labelSmall?.copyWith(

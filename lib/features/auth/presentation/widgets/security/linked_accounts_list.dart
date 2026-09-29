@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/presentation/widgets/security/linked_account_item.dart';
+import 'package:study/theme/theme.dart';
 
 class LinkedAccountsList extends StatelessWidget {
   const LinkedAccountsList({
@@ -27,10 +28,10 @@ class LinkedAccountsList extends StatelessWidget {
 
     if (isLoading) {
       return Container(
-        padding: const EdgeInsets.all(32),
+        padding: AppSpacing.paddingXxl,
         decoration: BoxDecoration(
           color: cs.surface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadius.borderLg,
         ),
         child: const Center(child: CircularProgressIndicator()),
       );
@@ -39,7 +40,7 @@ class LinkedAccountsList extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.borderLg,
         boxShadow: [
           BoxShadow(
             color: cs.shadow.withValues(alpha: 0.05),

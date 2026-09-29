@@ -163,7 +163,7 @@ class CertificateCard extends StatelessWidget {
                   height: 44,
                   decoration: BoxDecoration(
                     color: accent,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.borderMd,
                   ),
                   child: const Icon(Icons.workspace_premium_rounded,
                       color: Colors.white, size: 22),

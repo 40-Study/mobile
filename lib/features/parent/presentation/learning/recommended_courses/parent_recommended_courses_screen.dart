@@ -165,7 +165,7 @@ class _ParentRecommendedCoursesScreenState
     if (_errorMessage != null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: AppSpacing.paddingXl,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -294,7 +294,7 @@ class _ParentRecommendedCoursesScreenState
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.borderLg,
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(

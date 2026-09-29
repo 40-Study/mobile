@@ -41,7 +41,7 @@ class ParentExpandableCalendar extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.paddingLg,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: AppRadius.borderLg,
@@ -191,10 +191,10 @@ class ParentExpandableCalendar extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 2),
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: AppSpacing.paddingVerticalSm,
           decoration: BoxDecoration(
             color: capsuleBg,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.borderLg,
             border: isSelected
                 ? Border.all(
                     color: cs.blue600.withValues(alpha: 0.25),
@@ -419,7 +419,7 @@ class ParentExpandableCalendar extends StatelessWidget {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: AppRadius.borderLg,
       child: Container(
         width: 32,
         height: 32,

@@ -172,10 +172,11 @@ class _FamilyInsightsInboxContent extends StatelessWidget {
               backgroundColor: surfaceBg,
               height: 64,
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: AppSpacing.paddingVerticalSm,
                 child: FamilyScopeSelector(
                   children: state.children,
                   selectedChildId: state.selectedChildId,
+                  compactEmpty: true,
                   onSelected: (childId) {
                     bloc.add(FamilyInsightsInboxChildFilterChanged(childId));
                   },

@@ -225,7 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   scheduleCount: state.scheduleItems.length,
                   assignmentCount: state.assignments.length,
                 ),
-                const SizedBox(height: 20),
+                AppSpacing.vGap24,
                 if (state.continueLearning != null)
                   ContinueLearningCard(
                     enrollment: state.continueLearning!,

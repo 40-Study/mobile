@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/theme/theme.dart';
 
 class BookmarkEmptyView extends StatelessWidget {
   const BookmarkEmptyView({super.key, this.hasFilter = false});
@@ -12,7 +13,7 @@ class BookmarkEmptyView extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: AppSpacing.paddingXxl,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

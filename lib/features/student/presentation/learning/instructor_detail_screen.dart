@@ -489,7 +489,7 @@ class InstructorDetailScreen extends StatelessWidget {
         icon: const Icon(Icons.chat_bubble_outline_rounded),
         label: const Text('Nhắn tin cho cô'),
         style: FilledButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: AppSpacing.paddingVerticalLg,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),

@@ -111,7 +111,7 @@ class BadgeItem extends StatelessWidget {
               Container(
                 width: 100,
                 height: 100,
-                padding: const EdgeInsets.all(4),
+                padding: AppSpacing.paddingXs,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(color: color, width: 3),

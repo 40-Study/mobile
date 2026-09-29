@@ -24,7 +24,7 @@ class ChildGroupSubHeader extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: AppSpacing.paddingVerticalSm,
       child: Row(
         children: [
           CircleAvatar(

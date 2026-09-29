@@ -44,7 +44,7 @@ class ActionRequiredSkeleton extends StatelessWidget {
                         height: 14,
                         decoration: BoxDecoration(
                           color: cs.slate100,
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: AppRadius.borderXs,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -53,7 +53,7 @@ class ActionRequiredSkeleton extends StatelessWidget {
                         height: 11,
                         decoration: BoxDecoration(
                           color: cs.slate100,
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: AppRadius.borderXs,
                         ),
                       ),
                     ],
@@ -87,7 +87,7 @@ class UpcomingScheduleSkeleton extends StatelessWidget {
             color: cs.outlineVariant.withValues(alpha: 0.3),
           ),
         ),
-        padding: const EdgeInsets.all(16),
+        padding: AppSpacing.paddingLg,
         child: Row(
           children: [
             Container(
@@ -109,7 +109,7 @@ class UpcomingScheduleSkeleton extends StatelessWidget {
                     height: 15,
                     decoration: BoxDecoration(
                       color: cs.slate100,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: AppRadius.borderXs,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -118,7 +118,7 @@ class UpcomingScheduleSkeleton extends StatelessWidget {
                     height: 12,
                     decoration: BoxDecoration(
                       color: cs.slate100,
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: AppRadius.borderXs,
                     ),
                   ),
                 ],
@@ -161,7 +161,7 @@ class LearningAnalyticsSkeleton extends StatelessWidget {
                   height: 14,
                   decoration: BoxDecoration(
                     color: cs.slate100,
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: AppRadius.borderXs,
                   ),
                 ),
                 const Spacer(),
@@ -190,7 +190,7 @@ class LearningAnalyticsSkeleton extends StatelessWidget {
               height: 14,
               decoration: BoxDecoration(
                 color: cs.slate100,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: AppRadius.borderXs,
               ),
             ),
           ],

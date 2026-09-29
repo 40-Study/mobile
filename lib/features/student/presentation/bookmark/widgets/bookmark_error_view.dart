@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/theme/theme.dart';
 
 class BookmarkErrorView extends StatelessWidget {
   const BookmarkErrorView({
@@ -17,7 +18,7 @@ class BookmarkErrorView extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: AppSpacing.paddingXxl,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

@@ -69,7 +69,7 @@ class SessionInfoCard extends StatelessWidget {
           ),
           AppSpacing.vGap12,
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: AppRadius.borderXs,
             child: LinearProgressIndicator(
               value: progress / 100,
               minHeight: 6,

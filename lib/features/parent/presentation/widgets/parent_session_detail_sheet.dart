@@ -111,10 +111,10 @@ class ParentSessionDetailSheet extends StatelessWidget {
 
           // Giờ học to rõ + Status
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: AppSpacing.paddingMd,
             decoration: BoxDecoration(
               color: const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.borderMd,
               border: Border.all(color: const Color(0xFFBFDBFE), width: 0.8),
             ),
             child: Row(
@@ -149,7 +149,7 @@ class ParentSessionDetailSheet extends StatelessWidget {
           // Khối nội dung bài học
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: AppSpacing.paddingMd,
             decoration: BoxDecoration(
               color: const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(10),
@@ -210,7 +210,7 @@ class ParentSessionDetailSheet extends StatelessWidget {
 
           // Ghi chú nhắc nhở phụ huynh (đúng vai trò giám sát)
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: AppSpacing.paddingMd,
             decoration: BoxDecoration(
               color: const Color(0xFFFFFBEB),
               borderRadius: BorderRadius.circular(10),
@@ -248,7 +248,7 @@ class ParentSessionDetailSheet extends StatelessWidget {
                 backgroundColor: cs.slate900,
                 padding: const EdgeInsets.symmetric(vertical: 13),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.borderMd,
                 ),
               ),
               child: const Text('Đóng'),

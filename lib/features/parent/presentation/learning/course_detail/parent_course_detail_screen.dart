@@ -3,6 +3,7 @@ import 'package:study/di/di_container.dart';
 import 'package:study/features/parent/data/models/parent_course_recommendation_models.dart';
 import 'package:study/features/parent/repository/parent_learning_repository.dart';
 import 'package:study/features/parent/repository/parent_learning_repository_impl.dart';
+import 'package:study/theme/theme.dart';
 
 /// Màn hình Chi tiết Khóa học Gợi ý (Course Detail) dành cho Phụ huynh.
 ///
@@ -128,7 +129,7 @@ class _ParentCourseDetailScreenState extends State<ParentCourseDetailScreen> {
     if (_errorMessage != null || _course == null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: AppSpacing.paddingXl,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -310,7 +311,7 @@ class _ParentCourseDetailScreenState extends State<ParentCourseDetailScreen> {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF0F7FF),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.borderLg,
         border: Border.all(
           color: const Color(0xFFBFDBFE),
           width: 1,
@@ -558,7 +559,7 @@ class _ParentCourseDetailScreenState extends State<ParentCourseDetailScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.borderLg,
             border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
           child: Column(
@@ -567,7 +568,7 @@ class _ParentCourseDetailScreenState extends State<ParentCourseDetailScreen> {
               final isTeacher = item['isTeacher'] as bool? ?? false;
 
               return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: AppSpacing.paddingVerticalSm,
                 child: Row(
                   children: [
                     Icon(
@@ -815,7 +816,7 @@ class _ParentCourseDetailScreenState extends State<ParentCourseDetailScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.borderMd,
                   ),
                 ),
                 child: const Row(
@@ -891,7 +892,7 @@ class _ParentCourseDetailScreenState extends State<ParentCourseDetailScreen> {
       builder: (ctx) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: AppRadius.borderLg,
           ),
           title: const Text('Xác nhận đăng ký khóa học'),
           content: Text(

@@ -106,7 +106,7 @@ class _CourseCard extends StatelessWidget {
                       // Thumbnail
                       Positioned.fill(
                         child: Padding(
-                          padding: const EdgeInsets.all(4),
+                          padding: AppSpacing.paddingXs,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(28),
                             child: course?.thumbnailUrl != null
@@ -184,7 +184,7 @@ class _CourseCard extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: progressColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppRadius.borderMd,
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,

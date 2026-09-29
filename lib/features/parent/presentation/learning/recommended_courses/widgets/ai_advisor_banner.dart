@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/theme/theme.dart';
 
 /// Banner thông báo phân tích từ Cố vấn AI & Giáo viên
 class AiAdvisorBanner extends StatelessWidget {
@@ -19,7 +20,7 @@ class AiAdvisorBanner extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: const Color(0xFFF0F7FF),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.borderLg,
         border: Border.all(
           color: const Color(0xFFBFDBFE),
           width: 1,

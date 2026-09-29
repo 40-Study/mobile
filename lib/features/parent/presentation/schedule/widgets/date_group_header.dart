@@ -52,7 +52,7 @@ class DateGroupHeader extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: AppSpacing.paddingVerticalSm,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

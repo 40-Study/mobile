@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/theme/theme.dart';
 
 class EmptyView extends StatelessWidget {
   const EmptyView({super.key});
@@ -10,7 +11,7 @@ class EmptyView extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: AppSpacing.paddingXxl,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

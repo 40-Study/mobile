@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/theme/theme.dart';
 
 /// Khối tư vấn định hướng lộ trình 1-1 và gọi điện trực tiếp
 class CourseConsultationCard extends StatelessWidget {
@@ -16,10 +17,10 @@ class CourseConsultationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.paddingLg,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.borderLg,
         border: Border.all(
           color: const Color(0xFFE2E8F0).withValues(alpha: 0.8),
         ),
@@ -96,7 +97,7 @@ class CourseConsultationCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.borderMd,
                     ),
                   ),
                 ),
@@ -105,14 +106,14 @@ class CourseConsultationCard extends StatelessWidget {
               // Nút gọi điện
               InkWell(
                 onTap: onCallHotline,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.borderMd,
                 child: Container(
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     border: Border.all(color: const Color(0xFFE2E8F0)),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.borderMd,
                   ),
                   child: const Icon(
                     Icons.phone_outlined,

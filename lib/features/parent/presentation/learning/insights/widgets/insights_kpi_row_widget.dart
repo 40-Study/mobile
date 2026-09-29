@@ -78,7 +78,7 @@ class InsightsKpiRowWidget extends StatelessWidget {
 
         // Card chỉ số
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.paddingLg,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: AppRadius.borderLg,

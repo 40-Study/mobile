@@ -34,7 +34,7 @@ class HelpCenterScreen extends StatelessWidget {
             child: Column(
               children: [
                 Icon(Icons.support_agent_rounded, size: 48, color: cs.onPrimary),
-                const SizedBox(height: 12),
+                AppSpacing.vGap12,
                 Text(
                   l10n.helpCenterQuestion,
                   style: tt.titleMedium?.copyWith(
@@ -46,7 +46,7 @@ class HelpCenterScreen extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          AppSpacing.vGap24,
 
           // Contact options
           Text(
@@ -60,14 +60,14 @@ class HelpCenterScreen extends StatelessWidget {
             subtitle: 'support@40study.com',
             onTap: () => _launchEmail(context),
           ),
-          const SizedBox(height: 8),
+          AppSpacing.vGap8,
           _ContactCard(
             icon: Icons.phone_outlined,
             title: l10n.helpHotline,
             subtitle: '1900 xxxx xx',
             onTap: () => _launchPhone(context),
           ),
-          const SizedBox(height: 8),
+          AppSpacing.vGap8,
           _ContactCard(
             icon: Icons.chat_outlined,
             title: l10n.helpLiveChat,
@@ -76,7 +76,7 @@ class HelpCenterScreen extends StatelessWidget {
               // TODO: Open chat
             },
           ),
-          const SizedBox(height: 24),
+          AppSpacing.vGap24,
 
           // FAQ
           Text(
@@ -100,7 +100,7 @@ class HelpCenterScreen extends StatelessWidget {
             question: l10n.helpFaqRefund,
             answer: l10n.helpFaqRefundAnswer,
           ),
-          const SizedBox(height: 24),
+          AppSpacing.vGap24,
 
           // App info
           Center(
@@ -109,7 +109,7 @@ class HelpCenterScreen extends StatelessWidget {
               style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
             ),
           ),
-          const SizedBox(height: 32),
+          AppSpacing.vGap32,
         ],
       ),
     );
@@ -171,7 +171,7 @@ class _ContactCard extends StatelessWidget {
                 ),
                 child: Icon(icon, color: cs.primary, size: 22),
               ),
-              const SizedBox(width: 12),
+              AppSpacing.hGap12,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

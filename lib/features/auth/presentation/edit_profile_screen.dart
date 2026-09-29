@@ -122,7 +122,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           }
         },
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: AppSpacing.paddingXl,
           child: Form(
             key: _formKey,
             child: Column(
@@ -132,7 +132,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   pickedImagePath: _pickedImagePath,
                   onPickImage: _pickAndUploadImage,
                 ),
-                const SizedBox(height: 32),
+                AppSpacing.vGap32,
 
                 // Form fields
                 EditProfileTextField(
@@ -145,7 +145,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                AppSpacing.vGap16,
 
                 EditProfileTextField(
                   controller: _phoneController,
@@ -161,7 +161,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                AppSpacing.vGap16,
 
                 EditProfileTextField(
                   controller: _dobController,
@@ -171,7 +171,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   onTap: _selectDate,
                   suffixIcon: Icons.chevron_right_rounded,
                 ),
-                const SizedBox(height: 24),
+                AppSpacing.vGap24,
 
                 // Email (readonly)
                 const EditProfileEmailField(),

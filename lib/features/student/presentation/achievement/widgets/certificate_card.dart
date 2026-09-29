@@ -97,7 +97,7 @@ class CertificateListCard extends StatelessWidget {
                   if (!isCompleted) ...[
                     AppSpacing.vGap8,
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
+                      borderRadius: AppRadius.borderXs,
                       child: LinearProgressIndicator(
                         value: certificate.progress,
                         minHeight: 4,

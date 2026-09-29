@@ -152,18 +152,18 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
                   color: cs.primary,
                 ),
               ),
-              const SizedBox(height: 24),
+              AppSpacing.vGap24,
               Text(
                 'Bạn đã có tất cả vai trò',
                 style: tt.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 8),
+              AppSpacing.vGap8,
               Text(
                 'Không có vai trò nào khác để thêm vào tài khoản của bạn',
                 style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              AppSpacing.vGap24,
               OutlinedButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text('Quay lại'),
@@ -177,11 +177,11 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
     return Stack(
       children: [
         ListView(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.paddingLg,
           children: [
             // Header
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(AppSpacing.xl - 4),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -191,12 +191,12 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: AppRadius.borderLg,
               ),
               child: Column(
                 children: [
                   Icon(Icons.person_add_outlined, size: 48, color: cs.primary),
-                  const SizedBox(height: 12),
+                  AppSpacing.vGap12,
                   Text(
                     'Chọn vai trò muốn thêm',
                     style: tt.titleMedium?.copyWith(
@@ -204,7 +204,7 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
                       color: cs.onPrimaryContainer,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  AppSpacing.vGap4,
                   Text(
                     'Vai trò mới sẽ được thêm vào tài khoản của bạn',
                     style: tt.bodySmall?.copyWith(
@@ -215,7 +215,7 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            AppSpacing.vGap24,
 
             // Available roles
             Text(
@@ -226,7 +226,7 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
                 letterSpacing: 0.5,
               ),
             ),
-            const SizedBox(height: 12),
+            AppSpacing.vGap12,
 
             ..._availableRoles.map(
               (role) => Padding(
@@ -238,7 +238,7 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            AppSpacing.vGap16,
 
             // Already have section
             if (_existingProfiles.isNotEmpty) ...[
@@ -250,7 +250,7 @@ class _AddProfileScreenState extends State<AddProfileScreen> {
                   letterSpacing: 0.5,
                 ),
               ),
-              const SizedBox(height: 12),
+              AppSpacing.vGap12,
               ..._existingProfiles.map(
                 (profile) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),

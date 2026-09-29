@@ -266,7 +266,7 @@ class _HeroLinkChildCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             height: 48,
-            child: FilledButton.icon(
+            child: FilledButton(
               onPressed: onLinkChild,
               style: FilledButton.styleFrom(
                 backgroundColor: cs.blue600,
@@ -276,14 +276,24 @@ class _HeroLinkChildCard extends StatelessWidget {
                 ),
                 elevation: 0,
               ),
-              icon: const Icon(Icons.add_rounded, size: 20),
-              label: Text(
-                'Liên kết hồ sơ con ngay',
-                style: tt.labelLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.add_rounded, size: 20),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'Liên kết hồ sơ con ngay',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: tt.labelLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

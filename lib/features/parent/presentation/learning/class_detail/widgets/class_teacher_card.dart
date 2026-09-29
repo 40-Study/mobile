@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/parent/data/models/parent_class_detail_model.dart';
+import 'package:study/theme/theme.dart';
 
 /// Card thông tin Giáo viên và Lịch học cố định trong màn hình Chi tiết Lớp học
 class ClassTeacherCard extends StatelessWidget {
@@ -17,10 +18,10 @@ class ClassTeacherCard extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.paddingLg,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.borderLg,
         border: Border.all(
           color: const Color(0xFFF1F5F9),
           width: 1.5,

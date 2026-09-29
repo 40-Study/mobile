@@ -14,6 +14,7 @@ class FamilyScopeSelector extends StatelessWidget {
     required this.onSelected,
     this.onLinkChild,
     this.showAllOption = true,
+    this.compactEmpty = false,
   });
 
   final List<FamilyScopeChild> children;
@@ -21,10 +22,12 @@ class FamilyScopeSelector extends StatelessWidget {
   final ValueChanged<String?> onSelected;
   final VoidCallback? onLinkChild;
   final bool showAllOption;
+  final bool compactEmpty;
 
   @override
   Widget build(BuildContext context) {
     if (children.isEmpty) {
+      if (compactEmpty) return _buildCompactEmptyState(context);
       return _buildEmptyState(context);
     }
 
@@ -55,6 +58,37 @@ class FamilyScopeSelector extends StatelessWidget {
             onTap: () => onSelected(child.id),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildCompactEmptyState(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return SizedBox(
+      height: 44,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        child: Row(
+          children: [
+            Icon(Icons.family_restroom_outlined, size: 20, color: cs.slate500),
+            AppSpacing.hGap8,
+            Expanded(
+              child: Text(
+                'Chưa liên kết tài khoản con',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: tt.bodySmall?.copyWith(color: cs.slate600),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: onLinkChild,
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: const Text('Liên kết'),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -92,7 +92,7 @@ class BookmarkItem extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: typeColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: AppRadius.borderXs,
                             ),
                             child: Text(
                               _getTypeLabel(bookmark.type),

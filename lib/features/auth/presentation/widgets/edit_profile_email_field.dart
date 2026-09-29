@@ -19,16 +19,16 @@ class EditProfileEmailField extends StatelessWidget {
         final email = state is AuthAuthenticated ? state.user.email : '';
 
         return Container(
-          padding: const EdgeInsets.all(16),
+          padding: AppSpacing.paddingLg,
           decoration: BoxDecoration(
             color: cs.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppRadius.borderMd,
             border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
           ),
           child: Row(
             children: [
               Icon(Icons.email_outlined, color: cs.primary),
-              const SizedBox(width: 16),
+              AppSpacing.hGap16,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,7 +37,7 @@ class EditProfileEmailField extends StatelessWidget {
                       l10n.emailLabel,
                       style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 2), // ponytail: no token for 2px, keep literal
                     Text(
                       email,
                       style: tt.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
@@ -46,10 +46,10 @@ class EditProfileEmailField extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
                 decoration: BoxDecoration(
                   color: AchievementColors.green.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.borderMd,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -59,7 +59,7 @@ class EditProfileEmailField extends StatelessWidget {
                       size: 14,
                       color: AchievementColors.green,
                     ),
-                    const SizedBox(width: 4),
+                    AppSpacing.hGap4,
                     Text(
                       'Đã xác thực',
                       style: tt.labelSmall?.copyWith(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/presentation/utils/role_utils.dart';
+import 'package:study/theme/theme.dart';
 
 class AddProfileExistingCard extends StatelessWidget {
   const AddProfileExistingCard({super.key, required this.profile});
@@ -13,10 +14,10 @@ class AddProfileExistingCard extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: AppSpacing.paddingMd,
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.borderMd,
       ),
       child: Row(
         children: [
@@ -33,7 +34,7 @@ class AddProfileExistingCard extends StatelessWidget {
               size: 20,
             ),
           ),
-          const SizedBox(width: 12),
+          AppSpacing.hGap12,
           Expanded(
             child: Text(
               RoleUtils.getLabel(profile.roleName),

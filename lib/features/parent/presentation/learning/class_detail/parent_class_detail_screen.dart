@@ -6,6 +6,7 @@ import 'package:study/features/parent/presentation/learning/class_detail/widgets
 import 'package:study/features/parent/presentation/learning/class_detail/widgets/class_teacher_card.dart';
 import 'package:study/features/parent/repository/parent_learning_repository.dart';
 import 'package:study/features/parent/repository/parent_learning_repository_impl.dart';
+import 'package:study/theme/theme.dart';
 
 /// Màn hình Chi tiết Lớp học của con dành cho Phụ huynh (Locked Child Context).
 ///
@@ -160,7 +161,7 @@ class _ParentClassDetailScreenState extends State<ParentClassDetailScreen> {
     if (_errorMessage != null || _classDetail == null) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: AppSpacing.paddingXl,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -247,7 +248,7 @@ class _ParentClassDetailScreenState extends State<ParentClassDetailScreen> {
               backgroundColor: const Color(0xFF2563EB),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.borderMd,
               ),
               elevation: 0,
             ),

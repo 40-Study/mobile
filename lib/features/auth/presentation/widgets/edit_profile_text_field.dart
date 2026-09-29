@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/theme/theme.dart';
 
 /// Styled text field cho edit profile form
 class EditProfileTextField extends StatelessWidget {
@@ -42,19 +43,19 @@ class EditProfileTextField extends StatelessWidget {
         filled: true,
         fillColor: cs.surfaceContainerLowest,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.borderMd,
           borderSide: BorderSide(color: cs.outlineVariant),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.borderMd,
           borderSide: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.5)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.borderMd,
           borderSide: BorderSide(color: cs.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.borderMd,
           borderSide: BorderSide(color: cs.error),
         ),
       ),

@@ -43,7 +43,7 @@ class LearningTrendChart extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: cs.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.borderSm,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

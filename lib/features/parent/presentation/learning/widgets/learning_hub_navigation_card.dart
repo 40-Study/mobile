@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/theme/theme.dart';
 
 /// Thẻ Card điều hướng lớn tại màn hình chính tab Học tập (Learning Root Hub).
 ///
@@ -56,7 +57,7 @@ class LearningHubNavigationCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.borderLg,
         border: Border.all(
           color: const Color(0xFFF1F5F9),
           width: 1.5,
@@ -73,9 +74,9 @@ class LearningHubNavigationCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadius.borderLg,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: AppSpacing.paddingLg,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -85,7 +86,7 @@ class LearningHubNavigationCard extends StatelessWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     color: iconBgColor,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.borderMd,
                   ),
                   alignment: Alignment.center,
                   child: Icon(

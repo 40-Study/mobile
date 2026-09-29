@@ -128,7 +128,7 @@ class _CourseCard extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: cs.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: AppRadius.borderXs,
                               ),
                               child: Text(
                                 course.level!,
@@ -164,7 +164,7 @@ class _CourseCard extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.green.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: AppRadius.borderMd,
                               ),
                               child: Text(
                                 'Miễn phí',

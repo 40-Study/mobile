@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/parent/data/models/parent_course_recommendation_models.dart';
+import 'package:study/theme/theme.dart';
 
 /// Thẻ hiển thị khóa học đề xuất cá nhân hoá cho học sinh
 class RecommendedCourseCard extends StatelessWidget {
@@ -15,10 +16,10 @@ class RecommendedCourseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.paddingLg,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.borderLg,
         border: Border.all(
           color: const Color(0xFFE2E8F0).withValues(alpha: 0.8),
         ),

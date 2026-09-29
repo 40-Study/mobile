@@ -346,7 +346,7 @@ class InsightCardItem extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: AppSpacing.paddingMd,
       decoration: BoxDecoration(
         color: const Color(0xFFFFFBEB),
         borderRadius: AppRadius.borderMd,

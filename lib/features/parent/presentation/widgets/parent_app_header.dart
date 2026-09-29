@@ -73,6 +73,8 @@ class ParentAppHeader extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                         letterSpacing: 1.1,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
                     Text(

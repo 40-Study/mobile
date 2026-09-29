@@ -199,7 +199,7 @@ class _RegisterFormScreenState extends State<RegisterFormScreen> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: cs.primaryContainer,
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: AppRadius.borderXl,
                                   ),
                                   child: Text(
                                     RoleUtils.getLabel(_selectedRole!.name),

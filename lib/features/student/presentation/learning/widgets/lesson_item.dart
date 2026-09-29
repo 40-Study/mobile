@@ -29,7 +29,7 @@ class LessonItem extends StatelessWidget {
 
     return InkWell(
       onTap: status != LessonStatus.locked ? onTap : null,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: AppRadius.borderSm,
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -65,7 +65,7 @@ class LessonItem extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: cs.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.borderMd,
                 ),
                 child: Text(
                   'Dang hoc',

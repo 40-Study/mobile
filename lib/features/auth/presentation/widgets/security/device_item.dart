@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/l10n/app_localizations.dart';
+import 'package:study/theme/theme.dart';
 
 class DeviceItem extends StatelessWidget {
   const DeviceItem({super.key, required this.device});
@@ -13,7 +14,7 @@ class DeviceItem extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: AppSpacing.paddingLg,
       child: Row(
         children: [
           Container(
@@ -23,14 +24,14 @@ class DeviceItem extends StatelessWidget {
               color: device.isCurrent
                   ? cs.primaryContainer
                   : cs.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.borderMd,
             ),
             child: Icon(
               _getDeviceIcon(device.os ?? ''),
               color: device.isCurrent ? cs.primary : cs.onSurfaceVariant,
             ),
           ),
-          const SizedBox(width: 12),
+          AppSpacing.hGap12,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,15 +50,15 @@ class DeviceItem extends StatelessWidget {
                       ),
                     ),
                     if (device.isCurrent) ...[
-                      const SizedBox(width: 8),
+                      AppSpacing.hGap8,
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
+                          horizontal: AppSpacing.sm,
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
                           color: cs.primary,
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: AppRadius.borderSm,
                         ),
                         child: Text(
                           AppLocalizations.of(context)!.thisDevice,
@@ -71,7 +72,7 @@ class DeviceItem extends StatelessWidget {
                     ],
                   ],
                 ),
-                const SizedBox(height: 4),
+                AppSpacing.vGap4,
                 Text(
                   _buildDeviceInfo(),
                   style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),

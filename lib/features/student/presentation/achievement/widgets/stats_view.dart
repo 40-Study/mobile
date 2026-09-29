@@ -323,7 +323,7 @@ class _StatCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.borderMd,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

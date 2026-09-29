@@ -14,6 +14,7 @@ import 'package:study/features/parent/presentation/learning/widgets/learning_hub
 import 'package:study/features/parent/presentation/widgets/widgets.dart';
 import 'package:study/features/parent/repository/parent_learning_repository.dart';
 import 'package:study/features/parent/repository/parent_learning_repository_impl.dart';
+import 'package:study/theme/theme.dart';
 
 /// Màn hình chính của Tab Học tập dành cho Phụ huynh (Learning Root Hub).
 ///
@@ -97,6 +98,7 @@ class _LearningView extends StatelessWidget {
                           children: state.children,
                           selectedChildId: state.selectedChildId,
                           showAllOption: false,
+                          compactEmpty: true,
                           onSelected: (childId) {
                             if (childId != null) {
                               context.read<ParentLearningBloc>().add(
@@ -416,7 +418,7 @@ class _LearningError extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: AppSpacing.paddingXl,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

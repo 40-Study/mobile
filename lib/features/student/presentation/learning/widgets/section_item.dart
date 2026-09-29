@@ -29,7 +29,7 @@ class SectionItem extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: AppRadius.borderMd,
         border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.3)),
       ),
       child: Column(
@@ -70,7 +70,7 @@ class SectionItem extends StatelessWidget {
                       color: completedCount == lessons.length
                           ? Colors.green.withValues(alpha: 0.1)
                           : cs.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.borderMd,
                     ),
                     child: Text(
                       completedCount == lessons.length ? 'Xong' : 'Dang hoc',

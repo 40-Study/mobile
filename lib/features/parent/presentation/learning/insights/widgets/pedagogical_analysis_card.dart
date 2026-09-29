@@ -186,7 +186,7 @@ class PedagogicalAnalysisCard extends StatelessWidget {
         // Liên kết bằng chứng minh bạch (Evidence Link)
         InkWell(
           onTap: onTapEvidence,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: AppRadius.borderSm,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Row(

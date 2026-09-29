@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/presentation/widgets/security/device_item.dart';
 import 'package:study/l10n/app_localizations.dart';
+import 'package:study/theme/theme.dart';
 
 class DevicesList extends StatelessWidget {
   const DevicesList({
@@ -21,10 +22,10 @@ class DevicesList extends StatelessWidget {
 
     if (isLoading) {
       return Container(
-        padding: const EdgeInsets.all(32),
+        padding: AppSpacing.paddingXxl,
         decoration: BoxDecoration(
           color: cs.surface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadius.borderLg,
         ),
         child: const Center(child: CircularProgressIndicator()),
       );
@@ -32,20 +33,20 @@ class DevicesList extends StatelessWidget {
 
     if (devices.isEmpty) {
       return Container(
-        padding: const EdgeInsets.all(32),
+        padding: AppSpacing.paddingXxl,
         decoration: BoxDecoration(
           color: cs.surface,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: AppRadius.borderLg,
         ),
         child: Column(
           children: [
             Icon(Icons.devices, size: 48, color: cs.onSurfaceVariant),
-            const SizedBox(height: 16),
+            AppSpacing.vGap16,
             Text(
               AppLocalizations.of(context)!.noDevices,
               style: TextStyle(color: cs.onSurfaceVariant),
             ),
-            const SizedBox(height: 8),
+            AppSpacing.vGap8,
             TextButton.icon(
               onPressed: onRefresh,
               icon: const Icon(Icons.refresh),
@@ -59,7 +60,7 @@ class DevicesList extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.borderLg,
         boxShadow: [
           BoxShadow(
             color: cs.shadow.withValues(alpha: 0.05),

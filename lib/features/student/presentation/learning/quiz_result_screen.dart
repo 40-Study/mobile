@@ -151,7 +151,7 @@ class QuizResultScreen extends StatelessWidget {
                           ),
                           AppSpacing.vGap12,
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: AppRadius.borderXs,
                             child: LinearProgressIndicator(
                               value: total > 0 ? correct / total : 0,
                               backgroundColor: cs.outlineVariant.withValues(alpha: 0.3),

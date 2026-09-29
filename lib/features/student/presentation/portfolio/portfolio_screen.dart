@@ -86,11 +86,11 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                         child: _buildSection(context, section, index, isEditMode),
                       ),
                       if (index < _sections.length - 1)
-                        const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                        const SliverToBoxAdapter(child: AppSpacing.vGap16),
                     ];
                   }),
                   const SliverToBoxAdapter(child: AppSpacing.vGap24),
-                  const SliverToBoxAdapter(child: SizedBox(height: 120)),
+                  const SliverToBoxAdapter(child: SizedBox(height: 120)), // ponytail: no token for 120, keep as-is
                 ],
               ),
             ),
@@ -115,7 +115,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       leading: IconButton(
         onPressed: () => Navigator.pop(context),
         icon: Container(
-          padding: const EdgeInsets.all(8),
+          padding: AppSpacing.paddingSm,
           decoration: BoxDecoration(
             color: cs.surface,
             borderRadius: AppRadius.borderSm,

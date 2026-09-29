@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/theme/theme.dart';
 
 /// Empty state khi search khong co ket qua
 class EmptyResult extends StatelessWidget {
@@ -13,7 +14,7 @@ class EmptyResult extends StatelessWidget {
 
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: AppSpacing.paddingXxl,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
