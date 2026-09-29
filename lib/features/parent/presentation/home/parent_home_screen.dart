@@ -7,6 +7,7 @@ import 'package:study/features/parent/bloc/home/parent_home_state.dart';
 import 'package:study/features/parent/presentation/children/manage_children_screen.dart';
 import 'package:study/features/parent/presentation/home/widgets/widgets.dart';
 import 'package:study/features/parent/presentation/insights_inbox/family_insights_inbox_screen.dart';
+import 'package:study/features/parent/presentation/widgets/widgets.dart';
 import 'package:study/features/parent/repository/parent_home_repository.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
 import 'package:study/theme/theme.dart';
@@ -181,84 +182,93 @@ class _HomeSuccess extends StatelessWidget {
 
     return RefreshIndicator(
       onRefresh: onRefresh,
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          // Header trên nền trắng tinh khiết
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-            child: ParentHomeHeader(
-              onNotificationTap: () => _openNotifications(context),
-              onAvatarTap: onNavigateToProfile,
+      child: CustomScrollView(
+        slivers: [
+          // 1. Header trên nền trắng tinh khiết (cuộn trôi theo trang)
+          SliverToBoxAdapter(
+            child: Container(
+              color: Colors.white,
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: ParentHomeHeader(
+                onNotificationTap: () => _openNotifications(context),
+                onAvatarTap: onNavigateToProfile,
+              ),
             ),
           ),
-          // Khối Body phân tầng màu nền như Student UI,
-          // làm nổi bật thanh chọn con và các Card trắng
-          Container(
-            decoration: BoxDecoration(
-              color: surfaceBg,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
-              ),
-              border: Border(
-                top: BorderSide(
-                  color: cs.primary.withValues(alpha: 0.08),
-                ),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: cs.shadow.withValues(alpha: 0.04),
-                  blurRadius: 24,
-                  offset: const Offset(0, -6),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.only(
-              top: 20,
-              bottom: AppSpacing.xxl,
-            ),
-            child: Column(
-              children: [
-                FamilyScopeSelector(
+
+          // 2. GHIM THANH CHỌN CON (Sticky Header đồng bộ)
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: PinnedFamilyScopeHeaderDelegate(
+              backgroundColor: surfaceBg,
+              height: 64,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: FamilyScopeSelector(
                   children: state.children,
                   selectedChildId: state.selectedChildId,
                   onSelected: onChildSelected,
                   onLinkChild: () => _openManageChildren(context),
                 ),
-                const SizedBox(height: 20),
-                ActionRequiredSection(
-                  alerts: state.alerts,
-                  status: state.alertsStatus,
-                  errorMessage: state.alertsErrorMessage,
-                  onRetry: onRetryAlerts,
-                  childrenNames: _childrenNamesText(),
-                ),
-                const SizedBox(height: 20),
-                UpcomingScheduleSection(
-                  schedules: state.schedules,
-                  status: state.schedulesStatus,
-                  errorMessage: state.schedulesErrorMessage,
-                  onRetry: onRetrySchedules,
-                  onViewFullSchedule: onNavigateToSchedule,
-                ),
-                const SizedBox(height: 20),
-                LearningAnalyticsCard(
-                  analytics: state.analytics,
-                  status: state.analyticsStatus,
-                  errorMessage: state.analyticsErrorMessage,
-                  onRetry: onRetryAnalytics,
-                  onViewLearning: onNavigateToLearning,
-                  onViewAllReports: () =>
-                      FamilyInsightsInboxScreen.open(context),
-                ),
-              ],
+              ),
+            ),
+          ),
+
+          // 3. Khối nội dung chính
+          SliverToBoxAdapter(
+            child: Container(
+              color: surfaceBg,
+              padding: const EdgeInsets.only(
+                top: 8,
+                bottom: AppSpacing.xxl,
+              ),
+              child: Column(
+                children: [
+                  ActionRequiredSection(
+                    alerts: state.alerts,
+                    children: state.children,
+                    selectedChildId: state.selectedChildId,
+                    status: state.alertsStatus,
+                    errorMessage: state.alertsErrorMessage,
+                    onRetry: onRetryAlerts,
+                    childrenNames: _childrenNamesText(),
+                  ),
+                  const SizedBox(height: 20),
+                  UpcomingScheduleSection(
+                    schedules: state.schedules,
+                    children: state.children,
+                    selectedChildId: state.selectedChildId,
+                    status: state.schedulesStatus,
+                    errorMessage: state.schedulesErrorMessage,
+                    onRetry: onRetrySchedules,
+                    onViewFullSchedule: onNavigateToSchedule,
+                  ),
+                  const SizedBox(height: 20),
+                  LearningAnalyticsCard(
+                    analytics: state.analytics,
+                    analyticsList: state.analyticsList,
+                    selectedChildId: state.selectedChildId,
+                    status: state.analyticsStatus,
+                    errorMessage: state.analyticsErrorMessage,
+                    onRetry: onRetryAnalytics,
+                    onViewLearning: onNavigateToLearning,
+                    onViewDetailForChild: (childId) =>
+                        FamilyInsightsInboxScreen.open(
+                      context,
+                      initialChildId: childId,
+                    ),
+                    onViewAllReports: () =>
+                        FamilyInsightsInboxScreen.open(context),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
       ),
     );
   }
+
 
   void _openNotifications(BuildContext context) {
     Navigator.push(

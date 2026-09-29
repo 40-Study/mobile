@@ -34,6 +34,7 @@ class ParentHomeSuccess extends ParentHomeState {
     this.schedulesStatus = HomeSectionStatus.initial,
     this.schedulesErrorMessage,
     this.analytics,
+    this.analyticsList = const [],
     this.analyticsStatus = HomeSectionStatus.initial,
     this.analyticsErrorMessage,
   });
@@ -53,6 +54,7 @@ class ParentHomeSuccess extends ParentHomeState {
 
   // Khối 3: Phân tích học tập (Analytics)
   final ParentAnalyticsData? analytics;
+  final List<ParentAnalyticsData> analyticsList;
   final HomeSectionStatus analyticsStatus;
   final String? analyticsErrorMessage;
 
@@ -75,6 +77,7 @@ class ParentHomeSuccess extends ParentHomeState {
     HomeSectionStatus? schedulesStatus,
     String? schedulesErrorMessage,
     ParentAnalyticsData? analytics,
+    List<ParentAnalyticsData>? analyticsList,
     HomeSectionStatus? analyticsStatus,
     String? analyticsErrorMessage,
   }) {
@@ -91,6 +94,7 @@ class ParentHomeSuccess extends ParentHomeState {
       schedulesErrorMessage:
           schedulesErrorMessage ?? this.schedulesErrorMessage,
       analytics: analytics ?? this.analytics,
+      analyticsList: analyticsList ?? this.analyticsList,
       analyticsStatus: analyticsStatus ?? this.analyticsStatus,
       analyticsErrorMessage:
           analyticsErrorMessage ?? this.analyticsErrorMessage,
@@ -108,10 +112,12 @@ class ParentHomeSuccess extends ParentHomeState {
         schedulesStatus,
         schedulesErrorMessage,
         analytics,
+        analyticsList,
         analyticsStatus,
         analyticsErrorMessage,
       ];
 }
+
 
 /// Lỗi toàn màn hình (chỉ xảy ra khi không thể tải danh sách con ban đầu)
 class ParentHomeFailure extends ParentHomeState {

@@ -9,23 +9,32 @@ import 'package:study/theme/theme.dart';
 /// Khi chưa có dữ liệu hiển thị Empty State.
 /// Tiêu đề nằm ngoài card, hỗ trợ thu gọn/mở rộng (mặc định: mở toàn bộ).
 /// Hỗ trợ Partial Failure và Skeleton loading riêng biệt.
+/// Khi ở chế độ "Tất cả các con": hiển thị tổng quan của cả Minh và Lan
+/// song song.
 class LearningAnalyticsCard extends StatefulWidget {
+
   const LearningAnalyticsCard({
     super.key,
     required this.analytics,
+    this.analyticsList = const [],
+    this.selectedChildId,
     this.status = HomeSectionStatus.success,
     this.errorMessage,
     this.onRetry,
     this.onViewDetail,
+    this.onViewDetailForChild,
     this.onViewAllReports,
     this.onViewLearning,
   });
 
   final ParentAnalyticsData? analytics;
+  final List<ParentAnalyticsData> analyticsList;
+  final String? selectedChildId;
   final HomeSectionStatus status;
   final String? errorMessage;
   final VoidCallback? onRetry;
   final VoidCallback? onViewDetail;
+  final ValueChanged<String?>? onViewDetailForChild;
   final VoidCallback? onViewAllReports;
   final VoidCallback? onViewLearning;
 
@@ -38,25 +47,27 @@ class _LearningAnalyticsCardState extends State<LearningAnalyticsCard> {
 
   @override
   Widget build(BuildContext context) {
-    final data = widget.analytics;
+    final hasData = widget.selectedChildId == null
+        ? widget.analyticsList.isNotEmpty
+        : widget.analytics != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(context, data != null),
+        _buildHeader(context, hasData),
         AnimatedCrossFade(
           duration: const Duration(milliseconds: 250),
           crossFadeState: _isExpanded
               ? CrossFadeState.showFirst
               : CrossFadeState.showSecond,
-          firstChild: _buildContent(context, data),
+          firstChild: _buildContent(context),
           secondChild: const SizedBox.shrink(),
         ),
       ],
     );
   }
 
-  Widget _buildContent(BuildContext context, ParentAnalyticsData? data) {
+  Widget _buildContent(BuildContext context) {
     if (widget.status == HomeSectionStatus.loading) {
       return const LearningAnalyticsSkeleton();
     }
@@ -67,6 +78,28 @@ class _LearningAnalyticsCardState extends State<LearningAnalyticsCard> {
         onRetry: widget.onRetry ?? () {},
       );
     }
+
+    final isMultiChild =
+        widget.selectedChildId == null && widget.analyticsList.length > 1;
+
+    if (isMultiChild) {
+      return Container(
+        margin: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.sm,
+          AppSpacing.lg,
+          0,
+        ),
+        child: _MultiChildAnalyticsContent(
+          analyticsList: widget.analyticsList,
+          onViewDetailForChild: widget.onViewDetailForChild,
+          onViewDetail: widget.onViewDetail,
+          onViewAllReports: widget.onViewAllReports,
+        ),
+      );
+    }
+
+    final data = widget.analytics ?? widget.analyticsList.firstOrNull;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(
@@ -79,11 +112,18 @@ class _LearningAnalyticsCardState extends State<LearningAnalyticsCard> {
           ? _EmptyAnalyticsCard(onViewLearning: widget.onViewLearning)
           : _AnalyticsContent(
               analytics: data,
-              onViewDetail: widget.onViewDetail,
+              onViewDetail: () {
+                if (widget.onViewDetailForChild != null) {
+                  widget.onViewDetailForChild!(data.childId);
+                } else if (widget.onViewDetail != null) {
+                  widget.onViewDetail!();
+                }
+              },
               onViewAllReports: widget.onViewAllReports,
             ),
     );
   }
+
 
   Widget _buildHeader(BuildContext context, bool hasData) {
     final cs = Theme.of(context).colorScheme;
@@ -492,3 +532,292 @@ class _AnalyticsContent extends StatelessWidget {
     );
   }
 }
+
+class _MultiChildAnalyticsContent extends StatelessWidget {
+  const _MultiChildAnalyticsContent({
+    required this.analyticsList,
+    this.onViewDetailForChild,
+    this.onViewDetail,
+    this.onViewAllReports,
+  });
+
+  final List<ParentAnalyticsData> analyticsList;
+  final ValueChanged<String?>? onViewDetailForChild;
+  final VoidCallback? onViewDetail;
+  final VoidCallback? onViewAllReports;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.5),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < analyticsList.length; i++) ...[
+            if (i > 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                child: Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: cs.outlineVariant.withValues(alpha: 0.35),
+                ),
+              ),
+            _SingleChildSection(
+              analytics: analyticsList[i],
+              onViewDetail: () {
+                if (onViewDetailForChild != null) {
+                  onViewDetailForChild!(analyticsList[i].childId);
+                } else if (onViewDetail != null) {
+                  onViewDetail!();
+                }
+              },
+            ),
+          ],
+          AppSpacing.vGap16,
+          Container(
+            padding: const EdgeInsets.only(top: 10),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: cs.outlineVariant.withValues(alpha: 0.35),
+                ),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Tổng hợp toàn bộ con',
+                  style: tt.bodySmall?.copyWith(
+                    color: cs.slate500,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                InkWell(
+                  onTap: onViewAllReports,
+                  borderRadius: AppRadius.borderSm,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 4,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Hộp thư phân tích >',
+                          style: tt.labelMedium?.copyWith(
+                            color: cs.blue600,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SingleChildSection extends StatelessWidget {
+  const _SingleChildSection({
+    required this.analytics,
+    required this.onViewDetail,
+  });
+
+  final ParentAnalyticsData analytics;
+  final VoidCallback onViewDetail;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final initial = analytics.childName.isNotEmpty
+        ? analytics.childName[0].toUpperCase()
+        : '?';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Dòng điểm số con
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: analytics.childBadgeColor ??
+                  (analytics.childName == 'Minh'
+                      ? const Color(0xFFEFF6FF)
+                      : const Color(0xFFFDF2F8)),
+              child: Text(
+                initial,
+                style: tt.titleMedium?.copyWith(
+                  color: analytics.childName == 'Minh'
+                      ? cs.blue600
+                      : const Color(0xFFDB2777),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+            AppSpacing.hGap12,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${analytics.childName} · ${analytics.className}',
+                    style: tt.titleSmall?.copyWith(
+                      color: cs.slate900,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14.5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    analytics.reportLabel,
+                    style: tt.bodySmall?.copyWith(
+                      color: cs.slate500,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Điểm TB: ',
+                      style: tt.bodySmall?.copyWith(
+                        color: cs.slate600,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                    Text(
+                      analytics.averageScore.toStringAsFixed(1),
+                      style: tt.titleMedium?.copyWith(
+                        color: cs.slate900,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '(+${analytics.progressPercent}%)',
+                  style: tt.labelSmall?.copyWith(
+                    color: AchievementColors.green,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11.5,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        AppSpacing.vGap12,
+
+        // Hộp AI Insight
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: AppRadius.borderMd,
+            border: Border.all(
+              color: cs.outlineVariant.withValues(alpha: 0.35),
+            ),
+          ),
+          child: Text.rich(
+            _buildInsightSpan(context),
+            style: tt.bodySmall?.copyWith(
+              color: cs.slate700,
+              height: 1.4,
+              fontSize: 12.5,
+            ),
+          ),
+        ),
+        AppSpacing.vGap8,
+        // Nút xem chi tiết con
+        InkWell(
+          onTap: onViewDetail,
+          borderRadius: AppRadius.borderSm,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Xem phân tích của ${analytics.childName} ->',
+                  style: tt.labelMedium?.copyWith(
+                    color: cs.blue600,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  TextSpan _buildInsightSpan(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final highlight = analytics.insightHighlight;
+    final text = analytics.insightText;
+
+    if (highlight == null || !text.contains(highlight)) {
+      return TextSpan(text: text);
+    }
+
+    final start = text.indexOf(highlight);
+    final end = start + highlight.length;
+    return TextSpan(
+      children: [
+        TextSpan(text: text.substring(0, start)),
+        TextSpan(
+          text: highlight,
+          style: TextStyle(
+            color: cs.slate900,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        TextSpan(text: text.substring(end)),
+      ],
+    );
+  }
+}
+

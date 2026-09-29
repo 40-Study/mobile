@@ -1,6 +1,9 @@
+import 'package:flutter/material.dart';
+
 /// Model phân tích học tập cho Learning Analytics card.
 class ParentAnalyticsData {
   const ParentAnalyticsData({
+    this.childId,
     required this.childName,
     required this.className,
     required this.reportLabel,
@@ -10,7 +13,11 @@ class ParentAnalyticsData {
     required this.weeklyTrend,
     required this.insightText,
     this.insightHighlight,
+    this.childBadgeColor,
   });
+
+  final String? childId;
+  final Color? childBadgeColor;
 
   final String childName;
   final String className;

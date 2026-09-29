@@ -5,17 +5,20 @@ import 'package:study/features/parent/data/models/models.dart';
 import 'package:study/features/parent/presentation/home/widgets/home_section_skeletons.dart';
 import 'package:study/features/parent/presentation/home/widgets/section_error_card.dart';
 import 'package:study/features/parent/presentation/schedule/parent_session_detail_screen.dart';
-import 'package:study/features/parent/presentation/widgets/parent_schedule_card.dart';
+import 'package:study/features/parent/presentation/widgets/widgets.dart';
 import 'package:study/theme/theme.dart';
 
 /// Mục "Hôm nay / Tiếp theo": lịch học sắp tới.
 /// Khi rỗng hiển thị Empty State "Hôm nay không có ca học nào".
 /// Tiêu đề nằm ngoài card, mỗi ca học là một thẻ card độc lập, hỗ trợ thu gọn/mở rộng.
 /// Hỗ trợ Partial Failure và Skeleton loading riêng biệt.
+/// Khi chọn "Tất cả các con": nhóm theo từng con với ChildGroupSubHeader.
 class UpcomingScheduleSection extends StatefulWidget {
   const UpcomingScheduleSection({
     super.key,
     required this.schedules,
+    this.children = const [],
+    this.selectedChildId,
     this.status = HomeSectionStatus.success,
     this.errorMessage,
     this.onRetry,
@@ -24,6 +27,8 @@ class UpcomingScheduleSection extends StatefulWidget {
   });
 
   final List<ParentScheduleItem> schedules;
+  final List<FamilyScopeChild> children;
+  final String? selectedChildId;
   final HomeSectionStatus status;
   final String? errorMessage;
   final VoidCallback? onRetry;
@@ -114,6 +119,98 @@ class _UpcomingScheduleSectionState extends State<UpcomingScheduleSection> {
       );
     }
 
+    // Nếu chọn "Tất cả các con" (selectedChildId == null)
+    // -> nhóm ca học theo từng con
+    if (widget.selectedChildId == null && widget.children.isNotEmpty) {
+
+      final childrenWithSchedules = <Widget>[];
+      final renderedSchedules = <ParentScheduleItem>{};
+
+      for (final child in widget.children) {
+        final childSchedules = widget.schedules.where((s) {
+          if (s.childId != null && s.childId == child.id) return true;
+          return s.childName == child.name;
+        }).toList();
+
+        if (childSchedules.isNotEmpty) {
+          renderedSchedules.addAll(childSchedules);
+          childrenWithSchedules.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                    ),
+                    child: ChildGroupSubHeader(
+                      child: child,
+                      countLabel: '${childSchedules.length} ca học',
+                    ),
+                  ),
+                  for (final item in childSchedules)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        AppSpacing.xs,
+                        AppSpacing.lg,
+                        0,
+                      ),
+                      child: ParentScheduleCard(
+                        session: item.toSession(),
+                        onTap: widget.onScheduleTap != null
+                            ? () => widget.onScheduleTap!(item)
+                            : () => ParentSessionDetailScreen.open(
+                                  context,
+                                  session: item.toSession(),
+                                  child: child,
+                                ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        }
+      }
+
+      final remainingSchedules = widget.schedules
+          .where((s) => !renderedSchedules.contains(s))
+          .toList();
+      if (remainingSchedules.isNotEmpty) {
+        childrenWithSchedules.add(
+          Column(
+            children: [
+              for (final item in remainingSchedules)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.sm,
+                    AppSpacing.lg,
+                    0,
+                  ),
+                  child: ParentScheduleCard(
+                    session: item.toSession(),
+                    onTap: widget.onScheduleTap != null
+                        ? () => widget.onScheduleTap!(item)
+                        : () => ParentSessionDetailScreen.open(
+                              context,
+                              session: item.toSession(),
+                            ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: childrenWithSchedules,
+      );
+    }
+
     return Column(
       children: [
         for (var i = 0; i < widget.schedules.length; i++)
@@ -137,6 +234,7 @@ class _UpcomingScheduleSectionState extends State<UpcomingScheduleSection> {
       ],
     );
   }
+
 
   Widget _buildHeader(BuildContext context) {
     final cs = Theme.of(context).colorScheme;

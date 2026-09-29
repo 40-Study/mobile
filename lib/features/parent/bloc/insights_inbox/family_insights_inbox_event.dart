@@ -8,8 +8,14 @@ sealed class FamilyInsightsInboxEvent extends Equatable {
 }
 
 class FamilyInsightsInboxStarted extends FamilyInsightsInboxEvent {
-  const FamilyInsightsInboxStarted();
+  const FamilyInsightsInboxStarted({this.initialChildId});
+
+  final String? initialChildId;
+
+  @override
+  List<Object?> get props => [initialChildId];
 }
+
 
 class FamilyInsightsInboxChildFilterChanged extends FamilyInsightsInboxEvent {
   const FamilyInsightsInboxChildFilterChanged(this.childId);

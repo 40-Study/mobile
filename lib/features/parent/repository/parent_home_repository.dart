@@ -15,6 +15,10 @@ abstract class ParentHomeRepository {
   /// Lấy lịch học sắp tới
   Future<List<ParentScheduleItem>> getSchedules({String? childId});
 
-  /// Lấy dữ liệu phân tích học tập
+  /// Lấy dữ liệu phân tích học tập (đơn lẻ theo [childId])
   Future<ParentAnalyticsData?> getAnalytics({String? childId});
+
+  /// Lấy danh sách phân tích học tập (nhiều con nếu [childId] là null)
+  Future<List<ParentAnalyticsData>> getAnalyticsList({String? childId});
 }
+

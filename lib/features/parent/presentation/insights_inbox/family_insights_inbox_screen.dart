@@ -5,6 +5,7 @@ import 'package:study/features/parent/bloc/insights_inbox/family_insights_inbox_
 import 'package:study/features/parent/bloc/insights_inbox/family_insights_inbox_event.dart';
 import 'package:study/features/parent/bloc/insights_inbox/family_insights_inbox_state.dart';
 import 'package:study/features/parent/presentation/insights_inbox/widgets/widgets.dart';
+import 'package:study/features/parent/presentation/widgets/widgets.dart';
 import 'package:study/features/parent/repository/family_insights_repository.dart';
 import 'package:study/features/parent/repository/family_insights_repository_impl.dart';
 import 'package:study/features/parent/repository/parent_home_repository.dart';
@@ -12,15 +13,20 @@ import 'package:study/theme/theme.dart';
 
 /// Màn hình Family Insights Inbox - Hộp thư phân tích học tập định kỳ
 /// cho mọi con trong gia đình (Family Scope).
+/// Hỗ trợ ghim thanh chọn con đồng bộ (Sticky Header) khi cuộn.
 class FamilyInsightsInboxScreen extends StatelessWidget {
-  const FamilyInsightsInboxScreen({super.key});
+  const FamilyInsightsInboxScreen({super.key, this.initialChildId});
+
+  final String? initialChildId;
 
   /// Phương thức mở màn hình thuận tiện
-  static Future<void> open(BuildContext context) {
+  static Future<void> open(BuildContext context, {String? initialChildId}) {
     return Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
-        builder: (_) => const FamilyInsightsInboxScreen(),
+        builder: (_) => FamilyInsightsInboxScreen(
+          initialChildId: initialChildId,
+        ),
       ),
     );
   }
@@ -38,12 +44,13 @@ class FamilyInsightsInboxScreen extends StatelessWidget {
         return FamilyInsightsInboxBloc(
           insightsRepository: insightsRepo,
           homeRepository: homeRepo,
-        )..add(const FamilyInsightsInboxStarted());
+        )..add(FamilyInsightsInboxStarted(initialChildId: initialChildId));
       },
       child: const _FamilyInsightsInboxContent(),
     );
   }
 }
+
 
 class _FamilyInsightsInboxContent extends StatelessWidget {
   const _FamilyInsightsInboxContent();
@@ -147,96 +154,114 @@ class _FamilyInsightsInboxContent extends StatelessWidget {
               s is FamilyInsightsInboxFailure,
         );
       },
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          // Header trên nền trắng
-          InsightsInboxAppBar(
-            totalChildrenCount: state.children.length,
-            unreadCount: state.unreadCount,
-            onBack: () => Navigator.pop(context),
-            onMarkAllAsRead: () {
-              bloc.add(const FamilyInsightsInboxMarkAllAsRead());
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Đã đánh dấu tất cả là đã đọc'),
-                  duration: Duration(seconds: 2),
+      child: CustomScrollView(
+        slivers: [
+          // 1. Header trên nền trắng (cuộn trôi theo trang)
+          SliverToBoxAdapter(
+            child: InsightsInboxAppBar(
+              totalChildrenCount: state.children.length,
+              unreadCount: state.unreadCount,
+              onBack: () => Navigator.pop(context),
+              onMarkAllAsRead: () {
+                bloc.add(const FamilyInsightsInboxMarkAllAsRead());
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Đã đánh dấu tất cả là đã đọc'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // 2. GHIM THANH CHỌN CON (Sticky Header đồng bộ FamilyScopeSelector)
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: PinnedFamilyScopeHeaderDelegate(
+              backgroundColor: surfaceBg,
+              height: 64,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: FamilyScopeSelector(
+                  children: state.children,
+                  selectedChildId: state.selectedChildId,
+                  onSelected: (childId) {
+                    bloc.add(FamilyInsightsInboxChildFilterChanged(childId));
+                  },
                 ),
-              );
-            },
-          ),
-
-          // Body trên nền surfaceBg
-          const SizedBox(height: 14),
-
-          // Thanh lọc con
-          InsightsChildFilterBar(
-            children: state.children,
-            selectedChildId: state.selectedChildId,
-            onChildSelected: (childId) {
-              bloc.add(FamilyInsightsInboxChildFilterChanged(childId));
-            },
-            countGetter: state.countForChild,
-          ),
-
-          const SizedBox(height: 14),
-
-          // Weekly summary banner
-          InsightsWeeklySummaryCard(
-            weekNumber: 42,
-            needAttentionCount: 2,
-            positiveMilestoneCount: 1,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Đang mở chi tiết báo cáo tuần 42...'),
-                  duration: Duration(seconds: 1),
-                ),
-              );
-            },
-          ),
-
-          const SizedBox(height: 14),
-
-          // Danh sách các thẻ Insight
-          if (state.insights.isEmpty)
-            _buildEmptyState(context)
-          else
-            for (var i = 0; i < state.insights.length; i++) ...[
-              if (i > 0) const SizedBox(height: 14),
-              InsightCardItem(
-                item: state.insights[i],
-                onActionTap: () {
-                  final item = state.insights[i];
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Mở: ${item.actionLabel ?? item.title}'),
-                      duration: const Duration(seconds: 1),
-                    ),
-                  );
-                },
-                onEncourageTap: () {
-                  final item = state.insights[i];
-                  bloc.add(FamilyInsightsInboxSendEncouraged(item.id));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      backgroundColor: const Color(0xFF16A34A),
-                      content: Text(
-                        'Đã gửi lời khen & khích lệ đến ${item.childName}! 🎉',
-                      ),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                },
               ),
-            ],
+            ),
+          ),
 
-          const SizedBox(height: 16),
+          // 3. Nội dung danh sách các thẻ Insight
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 10),
 
-          // Thẻ gợi ý phương pháp giáo dục ở cuối danh sách
-          const InsightsCoachTipCard(),
+                // Weekly summary banner
+                InsightsWeeklySummaryCard(
+                  weekNumber: 42,
+                  needAttentionCount: 2,
+                  positiveMilestoneCount: 1,
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Đang mở chi tiết báo cáo tuần 42...'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                  },
+                ),
 
-          const SizedBox(height: 32),
+                const SizedBox(height: 14),
+
+                if (state.insights.isEmpty)
+                  _buildEmptyState(context)
+                else
+                  for (var i = 0; i < state.insights.length; i++) ...[
+                    if (i > 0) const SizedBox(height: 14),
+                    InsightCardItem(
+                      item: state.insights[i],
+                      onActionTap: () {
+                        final item = state.insights[i];
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Mở: ${item.actionLabel ?? item.title}',
+                            ),
+                            duration: const Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                      onEncourageTap: () {
+                        final item = state.insights[i];
+                        bloc.add(FamilyInsightsInboxSendEncouraged(item.id));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: const Color(0xFF16A34A),
+                            content: Text(
+                              'Đã gửi lời khen & khích lệ đến '
+                              '${item.childName}! 🎉',
+                            ),
+
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+
+                const SizedBox(height: 16),
+
+                // Thẻ gợi ý phương pháp giáo dục ở cuối danh sách
+                const InsightsCoachTipCard(),
+
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
         ],
       ),
     );

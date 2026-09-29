@@ -3,15 +3,19 @@ import 'package:study/features/parent/bloc/home/parent_home_state.dart';
 import 'package:study/features/parent/data/models/models.dart';
 import 'package:study/features/parent/presentation/home/widgets/home_section_skeletons.dart';
 import 'package:study/features/parent/presentation/home/widgets/section_error_card.dart';
+import 'package:study/features/parent/presentation/widgets/widgets.dart';
 import 'package:study/theme/theme.dart';
 
 /// Mục "Cần xử lý": phân loại theo 4 mức ưu tiên (Tier 1 -> Tier 4).
 /// Hỗ trợ Partial Failure (tự có skeleton và error retry riêng) và Collapse.
+/// Khi chọn "Tất cả các con": nhóm theo từng con với ChildGroupSubHeader.
 class ActionRequiredSection extends StatefulWidget {
   const ActionRequiredSection({
     super.key,
     required this.alerts,
     required this.childrenNames,
+    this.children = const [],
+    this.selectedChildId,
     this.status = HomeSectionStatus.success,
     this.errorMessage,
     this.onRetry,
@@ -20,6 +24,8 @@ class ActionRequiredSection extends StatefulWidget {
 
   final List<ParentAlertItem> alerts;
   final String childrenNames;
+  final List<FamilyScopeChild> children;
+  final String? selectedChildId;
   final HomeSectionStatus status;
   final String? errorMessage;
   final VoidCallback? onRetry;
@@ -103,6 +109,89 @@ class _ActionRequiredSectionState extends State<ActionRequiredSection> {
     final sortedAlerts = List<ParentAlertItem>.from(widget.alerts)
       ..sort((a, b) => a.tier.index.compareTo(b.tier.index));
 
+    // Nếu chọn "Tất cả các con" (selectedChildId == null) -> nhóm theo từng con
+    if (widget.selectedChildId == null && widget.children.isNotEmpty) {
+      final childrenWithAlerts = <Widget>[];
+      final renderedAlerts = <ParentAlertItem>{};
+
+      for (final child in widget.children) {
+        final childAlerts = sortedAlerts.where((a) {
+          if (a.childId != null && a.childId == child.id) return true;
+          return a.childName == child.name;
+        }).toList();
+
+        if (childAlerts.isNotEmpty) {
+          renderedAlerts.addAll(childAlerts);
+          childrenWithAlerts.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                    ),
+                    child: ChildGroupSubHeader(
+                      child: child,
+                      countLabel: '${childAlerts.length} cần xử lý',
+                    ),
+                  ),
+                  for (final alert in childAlerts)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        AppSpacing.xs,
+                        AppSpacing.lg,
+                        0,
+                      ),
+                      child: _AlertItemCard(
+                        alert: alert,
+                        onTap: widget.onAlertTap != null
+                            ? () => widget.onAlertTap!(alert)
+                            : null,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        }
+      }
+
+      final remainingAlerts = sortedAlerts
+          .where((a) => !renderedAlerts.contains(a))
+          .toList();
+      if (remainingAlerts.isNotEmpty) {
+        childrenWithAlerts.add(
+          Column(
+            children: [
+              for (final alert in remainingAlerts)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.sm,
+                    AppSpacing.lg,
+                    0,
+                  ),
+                  child: _AlertItemCard(
+                    alert: alert,
+                    onTap: widget.onAlertTap != null
+                        ? () => widget.onAlertTap!(alert)
+                        : null,
+                  ),
+                ),
+            ],
+          ),
+        );
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: childrenWithAlerts,
+      );
+    }
+
     return Column(
       children: [
         for (var i = 0; i < sortedAlerts.length; i++)
@@ -123,6 +212,7 @@ class _ActionRequiredSectionState extends State<ActionRequiredSection> {
       ],
     );
   }
+
 
   Widget _buildHeader(BuildContext context, bool isEmpty, bool hasEmergency) {
     final cs = Theme.of(context).colorScheme;

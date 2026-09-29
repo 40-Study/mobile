@@ -138,6 +138,39 @@ class _ScheduleContent extends StatelessWidget {
       builder: (context, state) {
         final hasChildren = state.children.isNotEmpty;
 
+        if (!hasChildren) {
+          return RefreshIndicator(
+            onRefresh: () async {
+              final bloc = context.read<ParentScheduleBloc>()
+                ..add(const ParentScheduleRefreshed());
+              await bloc.stream.firstWhere(
+                (s) => s.isSuccess || s.isFailure,
+              );
+            },
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                ParentAppHeader(
+                  icon: Icons.calendar_month_rounded,
+                  categoryLabel: 'THỜI KHÓA BIỂU',
+                  title: 'Lịch học của con',
+                  onNotificationTap: () => _openNotifications(context),
+                  onAvatarTap: onNavigateToProfile,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: 24,
+                  ),
+                  child: ParentNoChildView(
+                    onLinkChild: () => _openManageChildren(context),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
         return RefreshIndicator(
           onRefresh: () async {
             final bloc = context.read<ParentScheduleBloc>()
@@ -146,97 +179,82 @@ class _ScheduleContent extends StatelessWidget {
               (s) => s.isSuccess || s.isFailure,
             );
           },
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              // 1. Header chuẩn đồng bộ với Trang chủ
-              ParentAppHeader(
-                icon: Icons.calendar_month_rounded,
-                categoryLabel: 'THỜI KHÓA BIỂU',
-                title: 'Lịch học của con',
-                onNotificationTap: () => _openNotifications(context),
-                onAvatarTap: onNavigateToProfile,
+          child: CustomScrollView(
+            slivers: [
+              // 1. Header chuẩn đồng bộ với Trang chủ (cuộn trôi theo trang)
+              SliverToBoxAdapter(
+                child: ParentAppHeader(
+                  icon: Icons.calendar_month_rounded,
+                  categoryLabel: 'THỜI KHÓA BIỂU',
+                  title: 'Lịch học của con',
+                  onNotificationTap: () => _openNotifications(context),
+                  onAvatarTap: onNavigateToProfile,
+                ),
               ),
 
-              // 2. Khối Body bo cong 24px trên nền surfaceBg
-              Container(
-                decoration: BoxDecoration(
-                  color: surfaceBg,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(24),
-                  ),
-                  border: Border(
-                    top: BorderSide(
-                      color: cs.primary.withValues(alpha: 0.08),
+              // 2. GHIM THANH CHỌN CON (Sticky Header đồng bộ)
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: PinnedFamilyScopeHeaderDelegate(
+                  backgroundColor: surfaceBg,
+                  height: 64,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: FamilyScopeSelector(
+                      children: state.children,
+                      selectedChildId: state.selectedChildId,
+                      onSelected: (id) => context
+                          .read<ParentScheduleBloc>()
+                          .add(ParentScheduleChildChanged(id)),
+                      onLinkChild: () => _openManageChildren(context),
                     ),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: cs.shadow.withValues(alpha: 0.04),
-                      blurRadius: 24,
-                      offset: const Offset(0, -6),
-                    ),
-                  ],
                 ),
-                padding: const EdgeInsets.only(
-                  top: 20,
-                  bottom: 100,
-                ),
-                child: !hasChildren
-                    ? Padding(
+              ),
+
+              // 3. Khối Lịch & Ca học
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    top: 10,
+                    bottom: 100,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 3.1. Quyển lịch thông minh (Thu gọn 1 tuần / Mở rộng full tháng)
+                      Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.lg,
                         ),
-                        child: ParentNoChildView(
-                          onLinkChild: () => _openManageChildren(context),
+                        child: ParentExpandableCalendar(
+                          selectedDate: state.selectedDate,
+                          currentMonth: state.currentMonth,
+                          isExpanded: state.isCalendarExpanded,
+                          eventsMap: state.eventsMap,
+                          children: state.children,
+                          selectedChildId: state.selectedChildId,
+                          totalSessionsInWeek: state.totalSessionsInWeek,
+                          onDateSelected: (date) => context
+                              .read<ParentScheduleBloc>()
+                              .add(ParentScheduleDateSelected(date)),
+                          onMonthChanged: (month) => context
+                              .read<ParentScheduleBloc>()
+                              .add(ParentScheduleMonthChanged(month)),
+                          onToggleExpand: () => context
+                              .read<ParentScheduleBloc>()
+                              .add(
+                                const ParentScheduleCalendarModeToggled(),
+                              ),
                         ),
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // 2.1. Thanh chọn phạm vi con dùng chung
-                          FamilyScopeSelector(
-                            children: state.children,
-                            selectedChildId: state.selectedChildId,
-                            onSelected: (id) => context
-                                .read<ParentScheduleBloc>()
-                                .add(ParentScheduleChildChanged(id)),
-                            onLinkChild: () => _openManageChildren(context),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // 2.2. Quyển lịch thông minh (Thu gọn 1 tuần / Mở rộng full tháng)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg,
-                            ),
-                            child: ParentExpandableCalendar(
-                              selectedDate: state.selectedDate,
-                              currentMonth: state.currentMonth,
-                              isExpanded: state.isCalendarExpanded,
-                              eventsMap: state.eventsMap,
-                              children: state.children,
-                              selectedChildId: state.selectedChildId,
-                              totalSessionsInWeek: state.totalSessionsInWeek,
-                              onDateSelected: (date) => context
-                                  .read<ParentScheduleBloc>()
-                                  .add(ParentScheduleDateSelected(date)),
-                              onMonthChanged: (month) => context
-                                  .read<ParentScheduleBloc>()
-                                  .add(ParentScheduleMonthChanged(month)),
-                              onToggleExpand: () => context
-                                  .read<ParentScheduleBloc>()
-                                  .add(
-                                    const ParentScheduleCalendarModeToggled(),
-                                  ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // 2.3. Danh sách các ca học của ngày được chọn
-                          _buildSelectedDateSessions(context, state, cs),
-                        ],
                       ),
+                      const SizedBox(height: 16),
+
+                      // 3.2. Danh sách các ca học của ngày được chọn
+                      _buildSelectedDateSessions(context, state, cs),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -244,6 +262,7 @@ class _ScheduleContent extends StatelessWidget {
       },
     );
   }
+
 
   Widget _buildSelectedDateSessions(
     BuildContext context,
@@ -369,52 +388,15 @@ class _ScheduleContent extends StatelessWidget {
     int sessionCount,
     ColorScheme cs,
   ) {
-    final tt = Theme.of(context).textTheme;
-    final className = child.className != null ? ' · ${child.className}' : '';
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: child.badgeColor.withValues(alpha: 0.35),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 11,
-            backgroundColor: child.badgeColor,
-            child: Text(
-              child.initialLetter,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-                fontSize: 10.5,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'CON: ${child.name.toUpperCase()}$className',
-            style: tt.labelSmall?.copyWith(
-              color: cs.slate800,
-              fontWeight: FontWeight.w800,
-              fontSize: 12,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const Spacer(),
-          Text(
-            '$sessionCount ca học',
-            style: tt.labelSmall?.copyWith(
-              color: cs.slate600,
-              fontWeight: FontWeight.w600,
-              fontSize: 11.5,
-            ),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: ChildGroupSubHeader(
+        child: child,
+        countLabel: '$sessionCount ca học',
       ),
     );
   }
+
 
   Widget _buildEmptySessionsCard(
     BuildContext context,

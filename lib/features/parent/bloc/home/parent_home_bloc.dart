@@ -183,13 +183,15 @@ class ParentHomeBloc extends Bloc<ParentHomeEvent, ParentHomeState> {
 
   Future<void> _fetchAnalytics(Emitter<ParentHomeState> emit) async {
     try {
-      final analytics =
-          await _repository.getAnalytics(childId: _selectedChildId);
+      final analyticsList =
+          await _repository.getAnalyticsList(childId: _selectedChildId);
+      final singleAnalytics = analyticsList.firstOrNull;
       final current = state;
       if (current is ParentHomeSuccess) {
         emit(
           current.copyWith(
-            analytics: analytics,
+            analytics: singleAnalytics,
+            analyticsList: analyticsList,
             analyticsStatus: HomeSectionStatus.success,
             analyticsErrorMessage: null,
           ),
@@ -207,6 +209,7 @@ class ParentHomeBloc extends Bloc<ParentHomeEvent, ParentHomeState> {
       }
     }
   }
+
 
   /// Chuyển đổi lỗi thành thông báo thân thiện bằng tiếng Việt trên giao diện
   String _formatErrorMessage(Object error) {

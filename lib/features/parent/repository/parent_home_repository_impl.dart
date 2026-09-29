@@ -125,6 +125,27 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     return _fetchAnalytics(target);
   }
 
+  @override
+  Future<List<ParentAnalyticsData>> getAnalyticsList({String? childId}) async {
+    final children = await getChildren();
+    if (childId != null) {
+      final target = _resolveChild(children, childId);
+      if (target == null) return const [];
+      final single = enablePreviewFallback
+          ? _fallbackAnalytics(target)
+          : await _fetchAnalytics(target);
+      return single != null ? [single] : const [];
+    }
+    if (enablePreviewFallback) {
+      return children.map(_fallbackAnalytics).toList();
+    }
+    final results = await Future.wait(
+      children.map(_fetchAnalytics),
+    );
+    return results.whereType<ParentAnalyticsData>().toList();
+
+  }
+
   // =========================================================================
   // FETCH HELPERS (BỌC TIMEOUT VÀ BÁO LỖI MINH BẠCH KHI GỌI API THẤT BẠI)
   // =========================================================================
@@ -468,6 +489,8 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   List<ParentScheduleItem> _filterFallbackSchedules(String? childId) {
     const allSchedules = [
       ParentScheduleItem(
+        id: 'home_sched_minh_1',
+        childId: studentMinhId,
         startTime: '09:00',
         endTime: '10:00',
         childName: 'Minh',
@@ -483,6 +506,8 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
         durationMinutes: 60,
       ),
       ParentScheduleItem(
+        id: 'home_sched_lan_1',
+        childId: studentLanId,
         startTime: '14:00',
         endTime: '15:30',
         childName: 'Lan',
@@ -498,6 +523,8 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
         durationMinutes: 90,
       ),
       ParentScheduleItem(
+        id: 'home_sched_minh_2',
+        childId: studentMinhId,
         startTime: '07:30',
         endTime: '08:45',
         childName: 'Minh',
@@ -524,8 +551,8 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
 
   ParentAnalyticsData _fallbackAnalytics(FamilyScopeChild? target) {
     final isLan = target?.id == studentLanId;
-    final name = isLan ? 'Lan' : 'Minh';
-    final className = isLan ? 'Lớp 7B' : 'Lớp 10A1';
+    final name = target?.name ?? (isLan ? 'Lan' : 'Minh');
+    final className = target?.className ?? (isLan ? 'Lớp 7B' : 'Lớp 10A1');
     final subject = isLan ? 'Tiếng Anh' : 'Toán';
     final reportLabel = 'Báo cáo tuần 42 • Môn $subject';
     final averageScore = isLan ? 8.8 : 8.4;
@@ -534,15 +561,21 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
         : const [0.35, 0.5, 0.65, 0.8, 0.95];
 
     return ParentAnalyticsData(
+      childId: target?.id ?? (isLan ? studentLanId : studentMinhId),
+      childBadgeColor: target?.badgeColor,
       childName: name,
       className: className,
       reportLabel: reportLabel,
       subjectName: subject,
-      progressPercent: 15,
+      progressPercent: isLan ? 18 : 15,
       averageScore: averageScore,
       weeklyTrend: weeklyTrend,
-      insightText: _fallbackInsightText,
-      insightHighlight: 'Đọc hiểu',
+      insightText: isLan
+          ? 'Tiến bộ vượt bậc ở dạng Viết luận môn Tiếng Anh. '
+              'Hoàn thành 100% bài tập giao về nhà đúng hạn.'
+          : _fallbackInsightText,
+
+      insightHighlight: isLan ? 'Viết luận' : 'Đọc hiểu',
     );
   }
 

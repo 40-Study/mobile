@@ -31,8 +31,10 @@ class FamilyInsightsInboxBloc
     FamilyInsightsInboxStarted event,
     Emitter<FamilyInsightsInboxState> emit,
   ) async {
+    _currentChildId = event.initialChildId;
     await _loadData(emit);
   }
+
 
   Future<void> _onRefreshed(
     FamilyInsightsInboxRefreshed event,
