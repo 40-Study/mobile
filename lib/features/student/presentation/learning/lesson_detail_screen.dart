@@ -676,9 +676,6 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
     final tt = Theme.of(context).textTheme;
     final hasPrev = widget.currentIndex > 0;
     final hasNext = widget.currentIndex < widget.totalLessons - 1;
-    final lesson = state.lesson;
-    final contents = lesson.contents ?? [];
-    final currentIdx = contents.length > 1 ? 1 : 0;
 
     return Container(
       padding: EdgeInsets.fromLTRB(
