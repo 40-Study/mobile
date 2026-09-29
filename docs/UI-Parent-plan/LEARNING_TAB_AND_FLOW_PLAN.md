@@ -420,38 +420,38 @@ ParentLearningScreen (Root Hub)
 - [x] **Bước 2.5:** Thêm sticky button `[ Xem bài tập của lớp này → ]` điều hướng sang Homework.
 
 ### Giai đoạn 3: Xây dựng Báo cáo Phân tích Sư phạm (`ParentLearningInsightsScreen`)
-- [ ] **Bước 3.1:** Header Locked Child Context + Subheader tên con & tuần học.
-- [ ] **Bước 3.2:** Khối chỉ số học tập trọng yếu (Tham dự, Hoàn thành, Điểm TB, Mức độ tập trung).
-- [ ] **Bước 3.3:** Biểu đồ xu hướng mức độ tập trung theo thời gian (`FocusTrendChartWidget`) kèm nhận xét định tính.
-- [ ] **Bước 3.4:** Khối phân tích sư phạm 3 bước (`PedagogicalAnalysisCard`):
+- [x] **Bước 3.1:** Header Locked Child Context + Subheader tên con & tuần học.
+- [x] **Bước 3.2:** Khối chỉ số học tập trọng yếu (Tham dự, Hoàn thành, Điểm TB, Mức độ tập trung).
+- [x] **Bước 3.3:** Biểu đồ xu hướng mức độ tập trung theo thời gian (`FocusTrendChartWidget`) kèm nhận xét định tính.
+- [x] **Bước 3.4:** Khối phân tích sư phạm 3 bước (`PedagogicalAnalysisCard`):
   - 1. QUAN SÁT THỰC TẾ (Observation)
   - 2. ĐÁNH GIÁ NGUYÊN NHÂN (Interpretation)
   - 3. KHUYẾN NGHỊ HÀNH ĐỘNG (Action)
   - Liên kết bằng chứng `Evidence Link →`.
-- [ ] **Bước 3.5:** Khối thế mạnh nổi bật (`StrengthHighlightCard`) viền xanh lá.
-- [ ] **Bước 3.6:** Bottom actions: `[ Nhắn GVCN ]` và `[ Xem lộ trình cải thiện → ]`.
+- [x] **Bước 3.5:** Khối thế mạnh nổi bật (`StrengthHighlightCard`) viền xanh lá.
+- [x] **Bước 3.6:** Bottom actions: `[ Nhắn GVCN ]` và `[ Xem lộ trình cải thiện → ]`.
 
 ### Giai đoạn 4: Xây dựng Gợi ý Khóa học (`ParentRecommendedCoursesScreen`)
-- [ ] **Bước 4.1:** Header kèm subtitle *"Dựa trên phân tích năng lực học tập"*.
-- [ ] **Bước 4.2:** Banner Cố vấn AI & Giáo viên giải thích căn cứ phân tích.
-- [ ] **Bước 4.3:** Thanh filter chips ngang (Tất cả, Phù hợp nhất, Bổ trợ Toán...).
-- [ ] **Bước 4.4:** Danh sách thẻ khóa học đề xuất (`RecommendedCourseCardItem`) hiển thị lý do cá nhân hóa, tỷ lệ phù hợp (98%), học phí và thông tin GV.
-- [ ] **Bước 4.5:** Khối chốt cuối trang: Đặt lịch tư vấn 1-1 + Hotline trực tiếp.
+- [x] **Bước 4.1:** Header kèm subtitle *"Dựa trên phân tích năng lực học tập"*.
+- [x] **Bước 4.2:** Banner Cố vấn AI & Giáo viên giải thích căn cứ phân tích.
+- [x] **Bước 4.3:** Thanh filter chips ngang (Tất cả, Phù hợp nhất, Bổ trợ Toán...).
+- [x] **Bước 4.4:** Danh sách thẻ khóa học đề xuất (`RecommendedCourseCardItem`) hiển thị lý do cá nhân hóa, tỷ lệ phù hợp (98%), học phí và thông tin GV.
+- [x] **Bước 4.5:** Khối chốt cuối trang: Đặt lịch tư vấn 1-1 + Hotline trực tiếp.
 
 ### Giai đoạn 5: Xây dựng Chi tiết Khóa học Gợi ý (`ParentCourseDetailScreen`)
-- [ ] **Bước 5.1:** Header có Share và Bookmark.
-- [ ] **Bước 5.2:** Callout *"VÌ SAO GỢI Ý CHO MINH?"* (AI Sư phạm) làm rõ căn cứ dựa trên lịch sử làm bài.
-- [ ] **Bước 5.3:** Khối Học phí, ưu đãi tiết kiệm 27% và chính sách hỗ trợ đóng linh hoạt.
-- [ ] **Bước 5.4:** Khối Thông số lớp học (Độ tuổi, Thời lượng, Sĩ số, Giáo trình, GV phụ trách).
-- [ ] **Bước 5.5:** Đề cương 4 chuyên đề cốt lõi (8 buổi học).
-- [ ] **Bước 5.6:** Cam kết hoàn tiền 100% của 40Study sau 2 buổi đầu.
-- [ ] **Bước 5.7:** Sticky CTA bar `[ Đăng ký khóa học ngay → ]` kèm bảo hiểm quyền lợi phụ huynh.
+- [x] **Bước 5.1:** Header có Share và Bookmark.
+- [x] **Bước 5.2:** Callout *"VÌ SAO GỢI Ý CHO MINH?"* (AI Sư phạm) làm rõ căn cứ dựa trên lịch sử làm bài.
+- [x] **Bước 5.3:** Khối Học phí, ưu đãi tiết kiệm 27% và chính sách hỗ trợ đóng linh hoạt.
+- [x] **Bước 5.4:** Khối Thông số lớp học (Độ tuổi, Thời lượng, Sĩ số, Giáo trình, GV phụ trách).
+- [x] **Bước 5.5:** Đề cương 4 chuyên đề cốt lõi (8 buổi học).
+- [x] **Bước 5.6:** Cam kết hoàn tiền 100% của 40Study sau 2 buổi đầu.
+- [x] **Bước 5.7:** Sticky CTA bar `[ Đăng ký khóa học ngay → ]` kèm bảo hiểm quyền lợi phụ huynh.
 
 ### Giai đoạn 6: Kiểm thử, Tối ưu & Tích hợp Hoàn chỉnh
-- [ ] **Bước 6.1:** Kiểm tra responsive, không tràn chữ (overflow) trên mọi kích thước màn hình.
-- [ ] **Bước 6.2:** Kiểm thử chuyển đổi con mượt mà qua `FamilyScopeSelector`.
-- [ ] **Bước 6.3:** Chạy `flutter analyze` đảm bảo 0 lỗi linting.
-- [ ] **Bước 6.4:** Cập nhật tài liệu tiến độ và commit bằng tiếng Việt.
+- [x] **Bước 6.1:** Kiểm tra responsive, không tràn chữ (overflow) trên mọi kích thước màn hình.
+- [x] **Bước 6.2:** Kiểm thử chuyển đổi con mượt mà qua `FamilyScopeSelector` loại bỏ tùy chọn "Tất cả các con".
+- [x] **Bước 6.3:** Chạy `flutter analyze` đảm bảo 0 lỗi linting.
+- [x] **Bước 6.4:** Cập nhật tài liệu tiến độ và commit bằng tiếng Việt có dấu.
 
 ---
 
