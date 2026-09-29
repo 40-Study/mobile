@@ -459,6 +459,15 @@ Thư mục: `mobile/lib/features/parent/presentation/insights_inbox/`
 - [x] **Bước 4.2:** Chạy `flutter analyze` bảo đảm 0 lỗi trong module tính năng.
 - [x] **Bước 4.3:** Commit bằng tiếng Việt theo từng bước hoàn thành.
 
+### Giai đoạn 5: Ghim thanh chọn con (Pinned Header) & Chia nhóm thông tin từng con ở Home & Inbox
+- [x] **Bước 5.1:** Xây dựng `PinnedFamilyScopeHeaderDelegate` và ghim `FamilyScopeSelector` (`SliverPersistentHeader(pinned: true)`) trên Tab Home, Tab Lịch học và Family Insights Inbox giúp phụ huynh đổi con tức thì khi cuộn trang.
+- [x] **Bước 5.2:** Đồng bộ thanh chọn con ở Family Insights Inbox từ chip đen trắng sang `FamilyScopeSelector` chuẩn dùng chung.
+- [x] **Bước 5.3:** Xây dựng component `ChildGroupSubHeader` (Avatar tròn + Tên con + Lớp + Badge số lượng item) dùng chung cho các màn hình.
+- [x] **Bước 5.4:** Cập nhật khối "Cần xử lý" (`ActionRequiredSection`) ở Tab Home: chia nhóm theo từng con khi ở chế độ "Tất cả các con", duy trì 4 Tiers ưu tiên trong từng con.
+- [x] **Bước 5.5:** Cập nhật khối "Hôm nay / Tiếp theo" (`UpcomingScheduleSection`) ở Tab Home: chia nhóm các ca học theo từng con khi ở chế độ "Tất cả các con".
+- [x] **Bước 5.6:** Nâng cấp thẻ "Phân tích học tập" (`LearningAnalyticsCard`): hiển thị tổng quan của cả Minh & Lan song song khi chọn "Tất cả các con", kích hoạt nút *"Xem phân tích của [Tên con] ->"* mở trực tiếp Family Insights Inbox tương ứng của con đó.
+- [x] **Bước 5.7:** Kiểm thử linter (`flutter analyze`), hoàn thành và commit code: `feat(parent): ghim thanh chon con va chia nhom thong tin tung con o Home va Inbox`.
+
 ---
 
 ## 5. Kế hoạch Kiểm thử & Tiêu chuẩn Nghiệm thu (Acceptance Criteria)
@@ -467,6 +476,9 @@ Thư mục: `mobile/lib/features/parent/presentation/insights_inbox/`
 |---|---|
 | **Tab Home - 4 Tiers** | - Các mục khẩn cấp/quá hạn (Tier 1) luôn hiển thị đầu tiên.<br>- Mục đến hạn hôm nay (Tier 2) hiển thị kế tiếp với tag màu cam.<br>- Các mục sắp tới (Tier 3) và thông tin (Tier 4) xếp phía sau.<br>- Thanh chọn con `FamilyScopeSelector` vẫn hoạt động ổn định. |
 | **Tab Home - Partial Failure** | - Giả lập lỗi API lịch học: Khối lịch hiển thị thẻ lỗi kèm nút "Thử lại", khối "Cần xử lý" và "Phân tích học tập" vẫn tải và hiển thị bình thường.<br>- Ấn "Thử lại" ở khối lịch: Chỉ reload lịch học, không giật màn hình. |
-| **Family Insights Inbox - Filter** | - Chọn "Tất cả": Hiển thị cả 3 thông báo (Minh & Lan).<br>- Chọn "Minh": Chỉ hiển thị 2 thông báo của Minh, số đếm trên chip khớp thực tế.<br>- Chọn "Lan": Chỉ hiển thị 1 thông báo của Lan. |
+| **Tab Home - Chia nhóm con** | - Chọn "Tất cả các con": Khối Cần xử lý, Lịch học và Phân tích học tập đều tự động nhóm thông tin dưới subheader của từng con.<br>- Chọn 1 con cụ thể: Ẩn subheader, hiển thị trực diện danh sách của con đó.<br>- Nút "Xem phân tích của con" mở Inbox đã lọc đúng con được chọn. |
+| **Thanh chọn con Ghim (Pinned)** | - Khi cuộn xuống ở Home, Lịch học hoặc Inbox: Header chính cuộn trôi đi, chỉ ghim duy nhất thanh chọn con ở mép trên cùng kèm shadow nhẹ.<br>- Chuyển đổi con tức thì mà không cần cuộn ngược lên đỉnh. |
+| **Family Insights Inbox - Filter** | - Dùng thanh chọn con đồng bộ `FamilyScopeSelector`.<br>- Chọn "Tất cả": Hiển thị cả 3 thông báo (Minh & Lan).<br>- Chọn "Minh": Chỉ hiển thị 2 thông báo của Minh.<br>- Chọn "Lan": Chỉ hiển thị 1 thông báo của Lan. |
 | **Family Insights Inbox - Thẻ Card** | - Thẻ Tiến bộ: Hiển thị 2 pill số liệu 90% (+15%) và 14 phút (-3.5m).<br>- Thẻ Cần chú ý: Hiển thị quote lời dặn giáo viên có viền cam nổi bật.<br>- Thẻ Khen thưởng: Hiển thị dãy T2-T6 và badge chuỗi 5 ngày.<br>- Bấm "Gửi lời khen": SnackBar xuất hiện, nút đổi trạng thái thành "Đã gửi". |
 | **Giao diện & Thẩm mỹ** | - Nền màn hình sử dụng `surfaceBg` đồng bộ, các card màu trắng nổi bật rõ ràng, không bị chìm như nền trắng tuyền.<br>- Không có lỗi tràn màn hình (overflow) trên mọi kích thước. |
+
