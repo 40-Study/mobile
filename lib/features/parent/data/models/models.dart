@@ -2,6 +2,7 @@ export 'family_insight_item.dart';
 export 'family_scope_child.dart';
 export 'parent_alert_item.dart';
 export 'parent_analytics_data.dart';
+export 'parent_class_detail_model.dart';
 export 'parent_home_data.dart';
 export 'parent_learning_hub_data.dart';
 export 'parent_schedule_item.dart';

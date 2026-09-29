@@ -413,11 +413,11 @@ ParentLearningScreen (Root Hub)
 - [x] **Bước 1.4:** Tạo `ParentLearningBloc`, data models và repository quản lý trạng thái tải tóm tắt micro-data của con đang chọn.
 
 ### Giai đoạn 2: Xây dựng Màn hình Chi tiết Lớp học (`ParentClassDetailScreen`)
-- [ ] **Bước 2.1:** Header chuẩn Locked Child Context (`Toán nâng cao 10 · Minh`, không có selector, nút Back).
-- [ ] **Bước 2.2:** Xây dựng khối Giáo viên (`TeacherInfoCard`) với nút "Nhắn tin", thông tin ca học cố định và hình thức học.
-- [ ] **Bước 2.3:** Xây dựng khối 3 chỉ số lớn `TIẾN ĐỘ & KẾT QUẢ HỌC TẬP` (Buổi, Chuyên cần, Điểm TB) kèm progress bar.
-- [ ] **Bước 2.4:** Xây dựng danh sách Timeline dọc `ClassLessonTimelineWidget` phân biệt rõ trạng thái (vừa hoàn thành hôm nay, đã học kèm điểm quiz/video xem lại, sắp diễn ra).
-- [ ] **Bước 2.5:** Thêm sticky button `[ Xem bài tập của lớp này → ]` điều hướng sang Homework.
+- [x] **Bước 2.1:** Header chuẩn Locked Child Context (`Toán nâng cao 10 · Minh`, không có selector, nút Back).
+- [x] **Bước 2.2:** Xây dựng khối Giáo viên (`TeacherInfoCard`) với nút "Nhắn tin", thông tin ca học cố định và hình thức học.
+- [x] **Bước 2.3:** Xây dựng khối 3 chỉ số lớn `TIẾN ĐỘ & KẾT QUẢ HỌC TẬP` (Buổi, Chuyên cần, Điểm TB) kèm progress bar.
+- [x] **Bước 2.4:** Xây dựng danh sách Timeline dọc `ClassLessonTimelineWidget` phân biệt rõ trạng thái (vừa hoàn thành hôm nay, đã học kèm điểm quiz/video xem lại, sắp diễn ra).
+- [x] **Bước 2.5:** Thêm sticky button `[ Xem bài tập của lớp này → ]` điều hướng sang Homework.
 
 ### Giai đoạn 3: Xây dựng Báo cáo Phân tích Sư phạm (`ParentLearningInsightsScreen`)
 - [ ] **Bước 3.1:** Header Locked Child Context + Subheader tên con & tuần học.

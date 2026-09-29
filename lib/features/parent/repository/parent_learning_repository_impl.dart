@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:study/features/parent/data/models/family_scope_child.dart';
+import 'package:study/features/parent/data/models/parent_class_detail_model.dart';
 import 'package:study/features/parent/data/models/parent_learning_hub_data.dart';
 import 'package:study/features/parent/repository/parent_learning_repository.dart';
 
@@ -46,6 +47,69 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
     await Future<void>.delayed(const Duration(milliseconds: 250));
 
     return _getSampleHubDataMap();
+  }
+
+  @override
+  Future<ParentClassDetailModel?> getClassDetail(
+    String classId, {
+    String? childId,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+
+    return const ParentClassDetailModel(
+      classId: 'class-toan-10',
+      className: 'Toán nâng cao 10',
+      childName: 'Minh',
+      childId: studentMinhId,
+      semester: 'Lớp 10A1 — Học kỳ I (2024–2025)',
+      teacherName: 'Cô Lan',
+      teacherTitle: 'ThS. Toán học - THPT Hà Nội Amsterdam',
+      teacherInitials: 'CL',
+      scheduleFixed: 'T2 · T4 · T6 (09:00 - 10:00)',
+      roomOrPlatform: 'Google Meet / Phòng 302',
+      completedSessions: 8,
+      totalSessions: 12,
+      attendanceRatePercent: 100,
+      averageGrade: 8.6,
+      lessons: [
+        ClassLessonItem(
+          sessionNumber: 8,
+          title: 'Buổi 8: Phân số cơ bản & Rút gọn',
+          timeSubtitle: 'Hôm nay, 09:00',
+          quizScoreText: '3/5',
+          status: ClassLessonStatus.completedToday,
+          statusLabel: 'Vừa hoàn thành',
+          canViewLesson: true,
+        ),
+        ClassLessonItem(
+          sessionNumber: 7,
+          title: 'Buổi 7: Số thập phân & Định lý Vi-ét',
+          timeSubtitle: 'Hôm qua',
+          quizScoreText: '5/5',
+          hasVideoRecording: true,
+          status: ClassLessonStatus.completed,
+          statusLabel: 'Đã học',
+          canViewLesson: true,
+        ),
+        ClassLessonItem(
+          sessionNumber: 6,
+          title: 'Buổi 6: Phương trình bậc hai',
+          timeSubtitle: 'Tuần trước',
+          noteText: 'Hoàn thành bài tập về nhà',
+          status: ClassLessonStatus.completed,
+          statusLabel: 'Đã học',
+          canViewLesson: true,
+        ),
+        ClassLessonItem(
+          sessionNumber: 9,
+          title: 'Buổi 9: Hệ phương trình bậc nhất hai ẩn',
+          timeSubtitle: 'Thứ 2 tuần tới, 09:00',
+          status: ClassLessonStatus.upcoming,
+          statusLabel: 'Sắp diễn ra',
+          canViewLesson: false,
+        ),
+      ],
+    );
   }
 
   Map<String, ParentLearningHubData> _getSampleHubDataMap() {
