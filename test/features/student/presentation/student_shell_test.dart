@@ -12,6 +12,7 @@ import 'package:study/features/course/data/models/certificate_model.dart';
 import 'package:study/features/course/data/models/course_model.dart';
 import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/student/data/models/models.dart';
+import 'package:study/features/student/presentation/learning/learning_screen.dart';
 import 'package:study/features/student/presentation/student_shell.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 
@@ -118,7 +119,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 600));
 
-      expect(find.text('Learning'), findsOneWidget);
+      expect(find.byType(LearningScreen), findsOneWidget);
       expect(find.text('40Study'), findsNothing);
     });
 
