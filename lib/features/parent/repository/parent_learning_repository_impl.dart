@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:study/features/parent/data/models/family_scope_child.dart';
 import 'package:study/features/parent/data/models/parent_class_detail_model.dart';
+import 'package:study/features/parent/data/models/parent_course_recommendation_models.dart';
 import 'package:study/features/parent/data/models/parent_learning_hub_data.dart';
 import 'package:study/features/parent/data/models/parent_learning_insights_model.dart';
 import 'package:study/features/parent/repository/parent_learning_repository.dart';
@@ -236,6 +238,140 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
         teacherSubject: 'GV Ngữ văn',
       ),
     };
+  }
+
+  @override
+  Future<List<ParentRecommendedCourseItem>> getRecommendedCourses(
+    String childId,
+  ) async {
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+
+    return const [
+      ParentRecommendedCourseItem(
+        id: 'course-algebra-10',
+        title: 'Algebra & Hàm số cơ bản đến nâng cao',
+        reasonDescription:
+            'Phù hợp vì Minh đã hoàn thành Đại số căn bản và cần bổ trợ tư '
+            'duy phương trình bậc hai & định lý Vi-ét nâng cao.',
+        tagLabel: '★ Gợi ý cho Minh · Bổ trợ phương trình',
+        tagTextColor: Color(0xFF2563EB),
+        tagBgColor: Color(0xFFEFF6FF),
+        matchPercent: 98,
+        sessionInfo: '8 buổi · T3 & T5 (15:00)',
+        teacherName: 'ThS. Hoàng Minh Tuấn',
+        tuitionFee: 1600000,
+        originalFee: 2200000,
+        categoryFilter: 'toan',
+        isPersonalized: true,
+      ),
+      ParentRecommendedCourseItem(
+        id: 'course-ielts-junior',
+        title: 'Tiếng Anh giao tiếp & IELTS Junior Foundation',
+        reasonDescription:
+            'Được nhiều phụ huynh và học sinh lựa chọn chuẩn bị nền tảng IELTS '
+            'và tăng cường phản xạ thuyết trình tự tin.',
+        tagLabel: '🔥 Phổ biến cho học sinh Lớp 10',
+        tagTextColor: Color(0xFFEA580C),
+        tagBgColor: Color(0xFFFFF7ED),
+        matchPercent: 92,
+        sessionInfo: '10 buổi · T4 & T7 (18:00)',
+        teacherName: 'Thầy David Nam (IELTS 8.5)',
+        tuitionFee: 2200000,
+        originalFee: 2800000,
+        categoryFilter: 'tieng_anh',
+        isPersonalized: false,
+      ),
+      ParentRecommendedCourseItem(
+        id: 'course-hinh-hoc-10',
+        title: 'Hình học không gian & Ứng dụng thực tế',
+        reasonDescription:
+            'Phát huy điểm mạnh tư duy trực quan không gian của Minh đã thể '
+            'hiện rất xuất sắc trong kỳ kiểm tra giữa kỳ (9.5/10).',
+        tagLabel: '⚡ Bổ trợ thế mạnh tư duy không gian',
+        tagTextColor: Color(0xFF0D9488),
+        tagBgColor: Color(0xFFF0FDFA),
+        matchPercent: 88,
+        sessionInfo: '6 buổi · Thứ 7 (09:00 – 11:00)',
+        teacherName: 'Cô Nguyễn Phương Thảo',
+        tuitionFee: 1200000,
+        originalFee: 1500000,
+        categoryFilter: 'toan',
+        isPersonalized: true,
+      ),
+    ];
+  }
+
+  @override
+  Future<ParentRecommendedCourseDetailModel?> getRecommendedCourseDetail(
+    String courseId, {
+    String? childId,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+
+    return const ParentRecommendedCourseDetailModel(
+      courseId: 'course-algebra-10',
+      courseName: 'Algebra & Đại số nâng cao',
+      subtitle: 'Chuyên đề Vi-ét, Biến đổi đa thức & Phân số thức mở rộng',
+      childName: 'Minh',
+      subjectTag: 'TOÁN HỌC NÂNG CAO',
+      personalizedTag: 'Gợi ý riêng cho Minh',
+      rating: 4.9,
+      reviewCount: 128,
+      studentCount: 340,
+      whyRecommendedReason:
+          'Khóa học này tập trung vào dạng bài mà Minh đang có tỷ lệ làm '
+          'đúng 60% ở 2 buổi học gần nhất. Giúp củng cố phương pháp giải và '
+          'tăng tốc độ làm bài thi.',
+      tuitionFee: 1600000,
+      originalFee: 2200000,
+      discountLabel: 'Tiết kiệm 27%',
+      feeSupportText:
+          'Hỗ trợ chia kỳ đóng phí linh hoạt · Hoàn 100% nếu không hài lòng',
+      targetGrade: 'Lớp 10 (Nâng cao & Chuyên Toán)',
+      durationText: '8 buổi (90 phút/buổi)',
+      scheduleFixed: 'Thứ 3 & Thứ 5 · 15:00 - 16:30',
+      formatText: 'Online trực tiếp tương tác (Sĩ số ≤ 12 HS)',
+      materialsText: 'Tập sách bản cứng + Trợ giảng 1-1',
+      teacherName: 'ThS. Hoàng Minh Tuấn',
+      isTeacherVerified: true,
+      syllabusModules: [
+        CourseSyllabusModule(
+          order: 1,
+          title: 'Ôn tập & Rút gọn mẫu thức phân số phức hợp',
+          description:
+              'Phân tích đa thức thành nhân tử, quy đồng và khử căn bậc 2 '
+              'phức tạp.',
+          sessionCountLabel: '2 buổi',
+        ),
+        CourseSyllabusModule(
+          order: 2,
+          title: 'Ứng dụng định lý Vi-ét cho phương trình bậc cao',
+          description:
+              'Kỹ thuật giải hệ đối xứng loại 1, loại 2 và phân tích nghiệm '
+              'nguyên.',
+          sessionCountLabel: '2 buổi',
+        ),
+        CourseSyllabusModule(
+          order: 3,
+          title: 'Bất đẳng thức Cauchy & Schwarz ứng dụng',
+          description:
+              'Kỹ thuật chọn điểm rơi, dồn biến và cân bằng hệ số trong đề '
+              'thi HSG.',
+          sessionCountLabel: '2 buổi',
+        ),
+        CourseSyllabusModule(
+          order: 4,
+          title: 'Kiểm tra sát hạch & Báo cáo phân tích năng lực',
+          description:
+              'Làm bài thi thử chuẩn cấu trúc và gửi hồ sơ đánh giá chi tiết '
+              'cho phụ huynh.',
+          sessionCountLabel: '2 buổi',
+        ),
+      ],
+      guaranteeNote:
+          'Đảm bảo quyền lợi hoàn 100% học phí nếu phụ huynh và con cảm thấy '
+          'không phù hợp sau 2 buổi đầu.',
+    );
   }
 
   Map<String, ParentLearningHubData> _getSampleHubDataMap() {

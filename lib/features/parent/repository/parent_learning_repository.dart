@@ -1,5 +1,6 @@
 import 'package:study/features/parent/data/models/family_scope_child.dart';
 import 'package:study/features/parent/data/models/parent_class_detail_model.dart';
+import 'package:study/features/parent/data/models/parent_course_recommendation_models.dart';
 import 'package:study/features/parent/data/models/parent_learning_hub_data.dart';
 import 'package:study/features/parent/data/models/parent_learning_insights_model.dart';
 
@@ -23,4 +24,15 @@ abstract class ParentLearningRepository {
 
   /// Lấy báo cáo phân tích sư phạm chuyên sâu của con (Learning Insights)
   Future<ParentLearningInsightsModel?> getLearningInsights(String childId);
+
+  /// Lấy danh sách khóa học đề xuất cá nhân hoá cho con
+  Future<List<ParentRecommendedCourseItem>> getRecommendedCourses(
+    String childId,
+  );
+
+  /// Lấy thông tin chi tiết khóa học được gợi ý
+  Future<ParentRecommendedCourseDetailModel?> getRecommendedCourseDetail(
+    String courseId, {
+    String? childId,
+  });
 }

@@ -5,6 +5,7 @@ import 'package:study/features/parent/presentation/learning/insights/widgets/foc
 import 'package:study/features/parent/presentation/learning/insights/widgets/insights_kpi_row_widget.dart';
 import 'package:study/features/parent/presentation/learning/insights/widgets/pedagogical_analysis_card.dart';
 import 'package:study/features/parent/presentation/learning/insights/widgets/strength_highlight_card.dart';
+import 'package:study/features/parent/presentation/learning/recommended_courses/parent_recommended_courses_screen.dart';
 import 'package:study/features/parent/repository/parent_learning_repository.dart';
 import 'package:study/features/parent/repository/parent_learning_repository_impl.dart';
 import 'package:study/theme/theme.dart';
@@ -592,10 +593,13 @@ class _ParentLearningInsightsScreenState
   }
 
   void _openRecommendedCourses(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Mở Lộ trình cải thiện / Khóa học đề xuất cho ${widget.childName}',
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => ParentRecommendedCoursesScreen(
+          childId: widget.childId,
+          childName: widget.childName,
+          className: _insights?.className ?? '10A1',
         ),
       ),
     );
