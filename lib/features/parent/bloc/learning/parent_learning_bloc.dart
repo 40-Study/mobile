@@ -51,11 +51,6 @@ class ParentLearningBloc
     final selectedId = event.childId;
 
     if (selectedId == null) {
-      // Chế độ "Tất cả các con"
-      emit(state.copyWith(
-        selectedChildId: () => null,
-        hubData: () => null,
-      ));
       return;
     }
 

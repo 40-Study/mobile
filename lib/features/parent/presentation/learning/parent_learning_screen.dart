@@ -94,10 +94,13 @@ class _LearningView extends StatelessWidget {
                         child: FamilyScopeSelector(
                           children: state.children,
                           selectedChildId: state.selectedChildId,
+                          showAllOption: false,
                           onSelected: (childId) {
-                            context.read<ParentLearningBloc>().add(
-                                  ParentLearningChildSelected(childId),
-                                );
+                            if (childId != null) {
+                              context.read<ParentLearningBloc>().add(
+                                    ParentLearningChildSelected(childId),
+                                  );
+                            }
                           },
                           onLinkChild: () {
                             Navigator.push(
@@ -112,21 +115,19 @@ class _LearningView extends StatelessWidget {
                     ),
                   ),
 
-                  // 3. Nội dung 5 Navigation Cards
+                  // 3. Nội dung 5 Navigation Cards (cho con đang chọn)
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
-                      child: state.isAllChildrenSelected
-                          ? _buildAllChildrenSections(context, state)
-                          : _buildSingleChildSections(
-                              context,
-                              state.hubData ??
-                                  ParentLearningHubData(
-                                    childId: state.selectedChildId ?? '',
-                                    childName:
-                                        state.activeChild?.name ?? 'Con',
-                                  ),
+                      child: _buildSingleChildSections(
+                        context,
+                        state.hubData ??
+                            ParentLearningHubData(
+                              childId: state.selectedChildId ?? '',
+                              childName:
+                                  state.activeChild?.name ?? 'Con',
                             ),
+                      ),
                     ),
                   ),
                 ],
@@ -322,48 +323,6 @@ class _LearningView extends StatelessWidget {
           onTap: () => _openRecommendedCourses(context, data),
         ),
       ],
-    );
-  }
-
-  /// Hiển thị dạng nhóm từng con khi ở chế độ "Tất cả các con"
-  Widget _buildAllChildrenSections(
-    BuildContext context,
-    ParentLearningState state,
-  ) {
-    if (state.children.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32),
-          child: Text('Chưa có học sinh nào được liên kết.'),
-        ),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: state.children.map((child) {
-        final childData = state.allHubData[child.id] ??
-            ParentLearningHubData(
-              childId: child.id,
-              childName: child.name,
-              className: child.className,
-            );
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ChildGroupSubHeader(
-                child: child,
-                countLabel: '${childData.activeClassCount} lớp đang học',
-              ),
-              const SizedBox(height: 8),
-              _buildSingleChildSections(context, childData),
-            ],
-          ),
-        );
-      }).toList(),
     );
   }
 

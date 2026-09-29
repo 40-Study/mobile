@@ -13,12 +13,14 @@ class FamilyScopeSelector extends StatelessWidget {
     required this.selectedChildId,
     required this.onSelected,
     this.onLinkChild,
+    this.showAllOption = true,
   });
 
   final List<FamilyScopeChild> children;
   final String? selectedChildId;
   final ValueChanged<String?> onSelected;
   final VoidCallback? onLinkChild;
+  final bool showAllOption;
 
   @override
   Widget build(BuildContext context) {
@@ -26,28 +28,30 @@ class FamilyScopeSelector extends StatelessWidget {
       return _buildEmptyState(context);
     }
 
-    final showAllChildren = children.length > 1;
+    final showAllChip = showAllOption && children.length > 1;
 
     return SizedBox(
       height: 44,
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         scrollDirection: Axis.horizontal,
-        itemCount: showAllChildren ? children.length + 1 : children.length,
+        itemCount: showAllChip ? children.length + 1 : children.length,
         separatorBuilder: (_, _) => AppSpacing.hGap8,
         itemBuilder: (context, index) {
-          if (showAllChildren && index == 0) {
+          if (showAllChip && index == 0) {
             return _AllChildrenChip(
               count: children.length,
               selected: selectedChildId == null,
               onTap: () => onSelected(null),
             );
           }
-          final child =
-              showAllChildren ? children[index - 1] : children[index];
+          final child = showAllChip ? children[index - 1] : children[index];
+          final isSelected = selectedChildId != null
+              ? selectedChildId == child.id
+              : (!showAllOption && index == 0);
           return _ChildChip(
             child: child,
-            selected: showAllChildren ? selectedChildId == child.id : true,
+            selected: isSelected,
             onTap: () => onSelected(child.id),
           );
         },

@@ -99,9 +99,9 @@ Theo quy định tại **Dòng 349–450 của `deliverable.md`**, tab **Học t
   - Thanh chọn con trên ảnh đang dùng chip dạng dropdown `[ M ] Minh (10A1) ∨` riêng lẻ, **chưa đồng bộ với `FamilyScopeSelector`** (dạng chip ngang có avatar, chấm màu và đã được ghim `pinned: true` trên Home, Lịch học và Family Insights Inbox).
   - Nếu phụ huynh chọn *"Tất cả các con"*, thiết kế hiện tại chưa mô tả cách hiển thị (do mỗi con có số lớp, tiến độ và bài tập khác nhau).
 - **Đề xuất giải pháp cải tiến:**
-  1. Thay thế dropdown bằng component **`FamilyScopeSelector` chuẩn dùng chung** và bọc trong `SliverPersistentHeader(pinned: true)` để khi cuộn trang, thanh chọn con luôn ghim ở mép trên.
-  2. Khi chọn con cụ thể (`Minh` hoặc `Lan`): Hiển thị đúng 5 card với dữ liệu riêng của con đó như trong ảnh.
-  3. Khi chọn *"Tất cả các con"*: Hiển thị danh sách chia nhóm theo từng con (với component `ChildGroupSubHeader`), mỗi con gồm các card tóm tắt ngắn gọn để phụ huynh so sánh nhanh giữa các con.
+  1. Kế thừa thanh chọn con `FamilyScopeSelector` chuẩn dùng chung nhưng **loại bỏ tùy chọn "Tất cả các con"** (`showAllOption = false`) do tab Học tập là không gian đào sâu (Child Scope thuần túy). Với phụ huynh có nhiều con, việc hiển thị "Tất cả" sẽ làm các khối chức năng bị lặp lại dày đặc gây rối mắt.
+  2. Mặc định luôn chọn con đầu tiên khi vào tab Học tập, thanh chọn con được bọc trong `SliverPersistentHeader(pinned: true)` để ghim cố định khi cuộn.
+  3. Khi chuyển đổi giữa các con, toàn bộ 5 thẻ điều hướng sẽ cập nhật tức thời theo dữ liệu học tập riêng của con đó mà không bị trùng lặp giao diện.
 
 ---
 
