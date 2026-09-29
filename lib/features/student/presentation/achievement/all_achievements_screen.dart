@@ -320,7 +320,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
   }
 
   void _showFilterSheet(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -330,7 +330,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
   }
 
   void _showBadgeDetail(BuildContext context, AchievementBadgeData badge) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(

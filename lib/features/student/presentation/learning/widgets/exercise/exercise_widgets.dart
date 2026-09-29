@@ -414,7 +414,7 @@ class _QuizCardState extends State<QuizCard> {
               ? FilledButton(
                   onPressed: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(
+                      MaterialPageRoute<void>(
                         builder: (_) => QuizResultScreen(
                           title: widget.title,
                           correct: _result!.correctCount,
@@ -438,7 +438,7 @@ class _QuizCardState extends State<QuizCard> {
               : OutlinedButton(
                   onPressed: () async {
                     await Navigator.of(context).push(
-                      MaterialPageRoute(
+                      MaterialPageRoute<void>(
                         builder: (_) => QuizScreen(
                           quizId: widget.quizId,
                           title: widget.title,

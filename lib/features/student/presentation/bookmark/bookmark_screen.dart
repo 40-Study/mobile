@@ -27,7 +27,6 @@ class _BookmarkView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
 
     return Scaffold(
       backgroundColor: cs.surface,
@@ -199,7 +198,6 @@ class _FilterChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
 
     return BlocBuilder<BookmarkBloc, BookmarkState>(
       builder: (context, state) {

@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/student/bloc/quiz/quiz_bloc.dart';
 import 'package:study/features/student/bloc/quiz/quiz_event.dart';
 import 'package:study/features/student/bloc/quiz/quiz_state.dart';
-import 'package:study/features/student/data/models/models.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/theme/theme.dart';
@@ -54,7 +53,7 @@ class _QuizView extends StatelessWidget {
           listener: (context, state) {
             if (state is QuizCompleted) {
               Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                   builder: (_) => QuizResultScreen(
                     title: title,
                     correct: state.correctCount,
@@ -407,7 +406,7 @@ class _QuizHeaderState extends State<_QuizHeader> {
   void _showExitDialog(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.lg)),
@@ -1155,29 +1154,3 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _ResultStat extends StatelessWidget {
-  const _ResultStat({required this.label, required this.value});
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final tt = Theme.of(context).textTheme;
-
-    return Column(
-      children: [
-        Text(
-          value,
-          style: tt.titleLarge?.copyWith(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        Text(
-          label,
-          style: tt.bodySmall?.copyWith(color: Colors.white70),
-        ),
-      ],
-    );
-  }
-}

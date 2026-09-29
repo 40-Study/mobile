@@ -110,7 +110,7 @@ class _RecentBadges extends StatelessWidget {
             GestureDetector(
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                     builder: (_) => AllAchievementsScreen(badges: badges)),
               ),
               child: Text(l10n.viewAll,
@@ -247,7 +247,7 @@ class _BadgeItem extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(
@@ -358,7 +358,7 @@ class _CertificateCarouselState extends State<_CertificateCarousel> {
             GestureDetector(
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                     builder: (_) => AllCertificatesScreen(certificates: widget.certificates)),
               ),
               child: Text(l10n.viewAll,
@@ -427,7 +427,7 @@ class _CertificateCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(
+        MaterialPageRoute<void>(
           builder: (_) => CertificateDetailScreen(certificate: certificate),
         ),
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:study/data/motivational_quotes.dart';
 import 'package:study/features/student/presentation/home/widgets/schedule_timeline.dart';
 
 void main() {
@@ -42,7 +43,10 @@ void main() {
         ),
       );
 
-      expect(find.text('Không có lịch học hôm nay'), findsOneWidget);
+      // Empty state hiển thị quote động lực theo ngày thay vì dòng chữ cố định
+      final quote = MotivationalQuote.scheduleForDate(DateTime.now());
+      expect(find.text('Quote hôm nay'), findsOneWidget);
+      expect(find.text('"${quote.quote}"'), findsOneWidget);
     });
   });
 }

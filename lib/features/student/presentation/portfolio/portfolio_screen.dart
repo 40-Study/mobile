@@ -236,7 +236,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -309,7 +309,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final descController = TextEditingController();
     var category = 'UI/UX DESIGN';
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => Dialog(
@@ -419,7 +419,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final nameController = TextEditingController();
     var level = 3;
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
@@ -527,7 +527,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final companyController = TextEditingController();
     final descController = TextEditingController();
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: AppRadius.borderXl),
@@ -630,7 +630,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final websiteController = TextEditingController(text: _profile.website);
     final bioController = TextEditingController(text: _profile.bio);
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: AppRadius.borderXl),
@@ -805,7 +805,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   void _showLayoutEditor(BuildContext context) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (ctx) => _LayoutEditorDialog(
         sections: _sections,
@@ -827,10 +827,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
 
   void _showMoreMenu(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -928,7 +927,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   void _openPreview(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => _PortfolioPreviewScreen(
           profile: _profile,
           stats: _stats,
@@ -987,7 +986,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -1275,7 +1274,6 @@ class _PortfolioPreviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -1654,7 +1652,6 @@ class _IntroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
     return AnimatedOpacity(

@@ -40,7 +40,7 @@ class _ExploreCoursesScreenState extends State<ExploreCoursesScreen> {
     result.when(
       success: (courses) {
         setState(() {
-          _courses = courses ?? [];
+          _courses = courses;
           _isLoading = false;
         });
       },

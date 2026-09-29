@@ -5,11 +5,9 @@ import 'package:study/di/di_container.dart';
 import 'package:study/features/course/data/models/course_model.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/features/student/bloc/lesson/lesson_bloc.dart';
-import 'package:study/features/student/bloc/lesson/lesson_event.dart';
 import 'package:study/features/student/bloc/lesson/lesson_state.dart';
 import 'package:study/features/student/data/models/models.dart';
 import 'package:study/features/student/data/quiz_result_storage.dart';
-import 'package:study/features/student/presentation/learning/quiz_screen.dart';
 import 'package:study/features/student/presentation/learning/widgets/exercise/exercise_widgets.dart';
 import 'package:study/features/student/presentation/learning/widgets/lesson_video_player.dart';
 import 'package:study/theme/theme.dart';
@@ -72,7 +70,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
   }
 
   void _showCourseCompletedDialog() {
-    showDialog(
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
@@ -157,8 +155,6 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
   }
 
   Widget _buildContent(BuildContext context, LessonSuccess state) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
     final lesson = state.lesson;
 
     return Column(
@@ -680,10 +676,6 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
     final tt = Theme.of(context).textTheme;
     final hasPrev = widget.currentIndex > 0;
     final hasNext = widget.currentIndex < widget.totalLessons - 1;
-    final lesson = state.lesson;
-    final contents = lesson.contents ?? [];
-    final currentIdx = contents.length > 1 ? 1 : 0;
-    final currentContent = contents.isNotEmpty ? contents[currentIdx] : null;
 
     return Container(
       padding: EdgeInsets.fromLTRB(
@@ -1400,7 +1392,7 @@ class _QuizCardFromModel extends StatelessWidget {
       index: index,
       title: quiz.title,
       difficulty: 'Dễ',
-      questions: quiz.questionCount ?? 0,
+      questions: quiz.questionCount,
       duration: quiz.timeLimitMinutes ?? 10,
       points: 10,
       onComplete: onComplete,
