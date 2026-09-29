@@ -435,29 +435,29 @@ Thư mục: `mobile/lib/features/parent/presentation/insights_inbox/`
 ## 4. Lộ trình Triển khai Chi tiết (Phased Execution Plan)
 
 ### Giai đoạn 1: Nâng cấp Tab Home (4 Tiers Priority & Partial Failure)
-- [ ] **Bước 1.1:** Cập nhật `ParentAlertItem` bổ sung `ParentAlertTier` và mở rộng `ParentAlertType` (dueToday, upcomingExam, announcement). Cập nhật mapper và mock fallback trong `ParentHomeRepositoryImpl`.
-- [ ] **Bước 1.2:** Cải tiến `ParentHomeState` và `ParentHomeBloc` sang kiến trúc Partial Failure (quản lý riêng `alertsStatus`, `schedulesStatus`, `analyticsStatus`) và hỗ trợ `ParentHomeSectionRetried`.
-- [ ] **Bước 1.3:** Xây dựng Skeleton loading và Inline Error Card cho từng section (`ActionRequiredSection`, `UpcomingScheduleSection`, `LearningAnalyticsCard`).
-- [ ] **Bước 1.4:** Cập nhật UI `ActionRequiredSection` hiển thị chính xác 4 Tiers với màu sắc và tag tương ứng. Đảm bảo giữ nguyên `FamilyScopeSelector`.
-- [ ] **Bước 1.5:** Chạy kiểm thử linter (`flutter analyze`) và commit: `feat(parent-home): implement 4-tier alert priorities and partial failure architecture`.
+- [x] **Bước 1.1:** Cập nhật `ParentAlertItem` bổ sung `ParentAlertTier` và mở rộng `ParentAlertType` (dueToday, upcomingExam, announcement). Cập nhật mapper và mock fallback trong `ParentHomeRepositoryImpl`.
+- [x] **Bước 1.2:** Cải tiến `ParentHomeState` và `ParentHomeBloc` sang kiến trúc Partial Failure (quản lý riêng `alertsStatus`, `schedulesStatus`, `analyticsStatus`) và hỗ trợ `ParentHomeSectionRetried`.
+- [x] **Bước 1.3:** Xây dựng Skeleton loading và Inline Error Card cho từng section (`ActionRequiredSection`, `UpcomingScheduleSection`, `LearningAnalyticsCard`).
+- [x] **Bước 1.4:** Cập nhật UI `ActionRequiredSection` hiển thị chính xác 4 Tiers với màu sắc và tag tương ứng. Đảm bảo giữ nguyên `FamilyScopeSelector`.
+- [x] **Bước 1.5:** Chạy kiểm thử linter (`flutter analyze`) và commit: `feat(parent-home): nang cap 4 muc uu tien can xu ly va partial failure per-section`.
 
 ### Giai đoạn 2: Xây dựng Core & Data cho Family Insights Inbox
-- [ ] **Bước 2.1:** Tạo các Data Models (`FamilyInsightItem`, `FamilyInsightCategory`, `InsightMetric`, `InsightStreakInfo`).
-- [ ] **Bước 2.2:** Xây dựng `FamilyInsightsRepository` & `FamilyInsightsRepositoryImpl` (hỗ trợ preview fallback theo đúng dữ liệu trong ảnh thiết kế: Minh đọc hiểu, Lan viết luận, Minh chuyên cần).
-- [ ] **Bước 2.3:** Xây dựng `FamilyInsightsInboxBloc`, Events và States.
-- [ ] **Bước 2.4:** Đăng ký Repository & BLoC vào `di_container.dart`.
+- [x] **Bước 2.1:** Tạo các Data Models (`FamilyInsightItem`, `FamilyInsightCategory`, `InsightMetric`, `InsightStreakInfo`).
+- [x] **Bước 2.2:** Xây dựng `FamilyInsightsRepository` & `FamilyInsightsRepositoryImpl` (hỗ trợ preview fallback theo đúng dữ liệu trong ảnh thiết kế: Minh đọc hiểu, Lan viết luận, Minh chuyên cần).
+- [x] **Bước 2.3:** Xây dựng `FamilyInsightsInboxBloc`, Events và States.
+- [x] **Bước 2.4:** Đăng ký Repository & BLoC vào `di_container.dart` / `di_repository_module.dart`.
 
 ### Giai đoạn 3: Xây dựng Giao diện Family Insights Inbox (UI/UX)
-- [ ] **Bước 3.1:** Xây dựng Header (`insights_inbox_app_bar.dart`) và Thanh Filter con (`insights_child_filter_bar.dart`).
-- [ ] **Bước 3.2:** Xây dựng `insights_weekly_summary_card.dart` và `insights_coach_tip_card.dart`.
-- [ ] **Bước 3.3:** Xây dựng `insight_card_item.dart` với đầy đủ 3 phong cách (Tiến bộ vượt bậc, Cần chú ý với quote giáo viên, Khen thưởng với streak & nút tương tác).
-- [ ] **Bước 3.4:** Hoàn thiện màn hình chính `FamilyInsightsInboxScreen`, tích hợp Pull-to-refresh, Skeleton loading và Empty state. Áp dụng nền `surfaceBg` cao cấp.
-- [ ] **Bước 3.5:** Kết nối nút mở màn hình từ `LearningAnalyticsCard` trên Tab Home.
+- [x] **Bước 3.1:** Xây dựng Header (`insights_inbox_app_bar.dart`) và Thanh Filter con (`insights_child_filter_bar.dart`).
+- [x] **Bước 3.2:** Xây dựng `insights_weekly_summary_card.dart` và `insights_coach_tip_card.dart`.
+- [x] **Bước 3.3:** Xây dựng `insight_card_item.dart` với đầy đủ 3 phong cách (Tiến bộ vượt bậc, Cần chú ý với quote giáo viên, Khen thưởng với streak & nút tương tác).
+- [x] **Bước 3.4:** Hoàn thiện màn hình chính `FamilyInsightsInboxScreen`, tích hợp Pull-to-refresh, Skeleton loading và Empty state. Áp dụng nền `surfaceBg` cao cấp.
+- [x] **Bước 3.5:** Kết nối nút mở màn hình từ `LearningAnalyticsCard` trên Tab Home.
 
 ### Giai đoạn 4: Kiểm thử, Tối ưu & Hoàn thiện
-- [ ] **Bước 4.1:** Kiểm tra toàn diện trên thiết bị di động / simulator: Responsive kích thước chữ, khoảng cách padding, độ mượt khi filter theo con.
-- [ ] **Bước 4.2:** Chạy `flutter analyze` bảo đảm 0 lỗi, 0 cảnh báo.
-- [ ] **Bước 4.3:** Commit bằng tiếng Việt và sẵn sàng push theo yêu cầu của người dùng.
+- [x] **Bước 4.1:** Kiểm tra responsive kích thước chữ, khoảng cách padding, độ mượt khi filter theo con.
+- [x] **Bước 4.2:** Chạy `flutter analyze` bảo đảm 0 lỗi trong module tính năng.
+- [x] **Bước 4.3:** Commit bằng tiếng Việt theo từng bước hoàn thành.
 
 ---
 
