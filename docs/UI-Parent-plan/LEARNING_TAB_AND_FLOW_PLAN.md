@@ -407,10 +407,10 @@ ParentLearningScreen (Root Hub)
 ## 5. Lộ trình Triển khai Chi tiết theo từng Giai đoạn (Phased Execution Plan)
 
 ### Giai đoạn 1: Chuẩn hóa Root Hub (`ParentLearningScreen`)
-- [ ] **Bước 1.1:** Tích hợp `FamilyScopeSelector` ghim trên đỉnh với `SliverPersistentHeader(pinned: true)`.
-- [ ] **Bước 1.2:** Xây dựng widget `LearningHubNavigationCard` tái sử dụng, hỗ trợ icon pastel, subtitle, badge màu linh hoạt, progress bar và chevron.
-- [ ] **Bước 1.3:** Kết nối 5 cards theo đúng thiết kế Ảnh 1.
-- [ ] **Bước 1.4:** Tạo `LearningHubBloc` quản lý trạng thái tải tóm tắt micro-data của con đang chọn.
+- [x] **Bước 1.1:** Tích hợp `FamilyScopeSelector` ghim trên đỉnh với `SliverPersistentHeader(pinned: true)`.
+- [x] **Bước 1.2:** Xây dựng widget `LearningHubNavigationCard` tái sử dụng, hỗ trợ icon pastel, subtitle, badge màu linh hoạt, progress bar và chevron.
+- [x] **Bước 1.3:** Kết nối 5 cards theo đúng thiết kế Ảnh 1.
+- [x] **Bước 1.4:** Tạo `ParentLearningBloc`, data models và repository quản lý trạng thái tải tóm tắt micro-data của con đang chọn.
 
 ### Giai đoạn 2: Xây dựng Màn hình Chi tiết Lớp học (`ParentClassDetailScreen`)
 - [ ] **Bước 2.1:** Header chuẩn Locked Child Context (`Toán nâng cao 10 · Minh`, không có selector, nút Back).
