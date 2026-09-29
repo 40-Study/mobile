@@ -477,9 +477,9 @@ class _AnalyticsContent extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Tất cả báo cáo >',
+                  'Hộp thư phân tích >',
                   style: tt.labelMedium?.copyWith(
-                    color: cs.slate500,
+                    color: cs.blue600,
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                   ),

@@ -12,6 +12,8 @@ import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/auth/repository/auth_repository_impl.dart';
 import 'package:study/features/course/data/course_api_client.dart';
 import 'package:study/features/parent/data/parent_home_api_client.dart';
+import 'package:study/features/parent/repository/family_insights_repository.dart';
+import 'package:study/features/parent/repository/family_insights_repository_impl.dart';
 import 'package:study/features/parent/repository/parent_home_repository.dart';
 import 'package:study/features/parent/repository/parent_home_repository_impl.dart';
 import 'package:study/features/parent/repository/parent_schedule_repository.dart';
@@ -84,6 +86,12 @@ abstract class RepositoryModule {
   ) =>
       ParentScheduleRepositoryImpl(
         apiClient: apiClient,
+        enablePreviewFallback: true,
+      );
+
+  @lazySingleton
+  FamilyInsightsRepository provideFamilyInsightsRepository() =>
+      FamilyInsightsRepositoryImpl(
         enablePreviewFallback: true,
       );
 }

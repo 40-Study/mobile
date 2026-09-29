@@ -6,6 +6,7 @@ import 'package:study/features/parent/bloc/home/parent_home_event.dart';
 import 'package:study/features/parent/bloc/home/parent_home_state.dart';
 import 'package:study/features/parent/presentation/children/manage_children_screen.dart';
 import 'package:study/features/parent/presentation/home/widgets/widgets.dart';
+import 'package:study/features/parent/presentation/insights_inbox/family_insights_inbox_screen.dart';
 import 'package:study/features/parent/repository/parent_home_repository.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
 import 'package:study/theme/theme.dart';
@@ -248,6 +249,8 @@ class _HomeSuccess extends StatelessWidget {
                   errorMessage: state.analyticsErrorMessage,
                   onRetry: onRetryAnalytics,
                   onViewLearning: onNavigateToLearning,
+                  onViewAllReports: () =>
+                      FamilyInsightsInboxScreen.open(context),
                 ),
               ],
             ),
