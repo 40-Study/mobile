@@ -7,7 +7,6 @@ abstract final class DioErrorMapper {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-      case DioExceptionType.transformTimeout:
         return const NetworkFailure('Kết nối quá chậm, vui lòng thử lại');
       case DioExceptionType.connectionError:
         return const NetworkFailure('Không thể kết nối đến server');
