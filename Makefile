@@ -1,6 +1,6 @@
 .PHONY: gen genAll rebuild check get localize runDev runQa runProd \
         release apk debug_apk lines force_upgrade integration_test \
-        performance_smoke performance_test
+        test test_coverage performance_smoke performance_test
 
 # Clean project, install dependencies & generate sources
 rebuild:
@@ -27,6 +27,14 @@ localize:
 check:
 	dart analyze . && flutter analyze
 	# flutter pub run dart_code_metrics:metrics analyze lib
+
+# Fast mobile unit and widget tests
+test:
+	flutter test
+
+# Unit/widget tests with lcov output for local coverage inspection
+test_coverage:
+	flutter test --coverage
 
 # Run with flavors — all use single main.dart + --dart-define=ENV
 runDev:

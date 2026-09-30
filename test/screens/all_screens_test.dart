@@ -34,15 +34,29 @@ import 'package:study/features/course/data/models/models.dart';
 import 'package:study/features/course/repository/course_repository.dart';
 import 'package:study/features/main_screen.dart';
 import 'package:study/features/onboarding/onboarding_screen.dart';
+import 'package:study/features/parent/bloc/home/parent_home_bloc.dart';
+import 'package:study/features/parent/bloc/learning/parent_learning_bloc.dart';
+import 'package:study/features/parent/bloc/schedule/parent_schedule_bloc.dart';
 import 'package:study/features/parent/presentation/children/add_child_screen.dart';
 import 'package:study/features/parent/presentation/children/child_detail_screen.dart';
 import 'package:study/features/parent/presentation/children/manage_children_screen.dart';
 import 'package:study/features/parent/presentation/home/parent_home_screen.dart';
+import 'package:study/features/parent/presentation/insights_inbox/family_insights_inbox_screen.dart';
+import 'package:study/features/parent/presentation/learning/class_detail/parent_class_detail_screen.dart';
+import 'package:study/features/parent/presentation/learning/course_detail/parent_course_detail_screen.dart';
+import 'package:study/features/parent/presentation/learning/insights/parent_learning_insights_screen.dart';
 import 'package:study/features/parent/presentation/learning/parent_learning_screen.dart';
+import 'package:study/features/parent/presentation/learning/recommended_courses/parent_recommended_courses_screen.dart';
 import 'package:study/features/parent/presentation/parent_shell.dart';
 import 'package:study/features/parent/presentation/payment/parent_payment_screen.dart';
 import 'package:study/features/parent/presentation/profile/parent_profile_screen.dart';
 import 'package:study/features/parent/presentation/schedule/parent_schedule_screen.dart';
+import 'package:study/features/parent/presentation/schedule/parent_session_detail_screen.dart';
+import 'package:study/features/parent/data/models/parent_schedule_session.dart';
+import 'package:study/features/parent/repository/family_insights_repository.dart';
+import 'package:study/features/parent/repository/parent_home_repository.dart';
+import 'package:study/features/parent/repository/parent_learning_repository.dart';
+import 'package:study/features/parent/repository/parent_schedule_repository.dart';
 import 'package:study/features/splash_view.dart';
 import 'package:study/features/student/bloc/achievement/achievement_bloc.dart';
 import 'package:study/features/student/bloc/bookmark/bookmark_bloc.dart';
@@ -91,6 +105,10 @@ import 'package:study/theme/util.dart';
 class _AuthRepository extends Mock implements AuthRepository {}
 class _StudentRepository extends Mock implements StudentRepository {}
 class _CourseRepository extends Mock implements CourseRepository {}
+class _ParentLearningRepository extends Mock implements ParentLearningRepository {}
+class _FamilyInsightsRepository extends Mock implements FamilyInsightsRepository {}
+class _ParentHomeRepository extends Mock implements ParentHomeRepository {}
+class _ParentScheduleRepository extends Mock implements ParentScheduleRepository {}
 
 const _user = UserModel(id: 'user', email: 'student@example.com', fullName: 'Test Student');
 const _role = RoleModel(id: 'student', name: 'STUDENT', type: 'system');
@@ -98,6 +116,12 @@ const _course = CourseModel(id: 'course', title: 'Test Course', instructorName: 
 const _lesson = LessonModel(id: 'lesson', title: 'Test Lesson');
 const _enrollment = EnrollmentModel(id: 'enrollment', courseId: 'course', course: _course);
 const _certificate = CertificateModel(id: 'certificate', courseTitle: 'Test Course', userName: 'Test Student');
+final _parentSession = ParentScheduleSession(
+  id: 'session', childId: 'child', childName: 'Minh', childInitial: 'M',
+  childBadgeColor: Colors.blue, subjectName: 'Toán', lessonTopic: 'Hàm số',
+  startTime: DateTime.utc(2026, 9, 27, 9), endTime: DateTime.utc(2026, 9, 27, 10),
+  instructorName: 'Cô Lan', status: ParentSessionStatus.upcoming,
+);
 
 // Each concrete screen has an explicit fixture. The inventory test below makes
 // adding a screen without adding its fixture a test failure.
@@ -109,6 +133,12 @@ final _screens = <Widget>[
   const AddProfileScreen(), const ChangePasswordScreen(), const EditProfileScreen(), const SecurityScreen(),
   const ParentShell(), const ParentHomeScreen(), const ParentLearningScreen(),
   const ParentScheduleScreen(), const ParentPaymentScreen(), const ParentProfileScreen(),
+  const ParentClassDetailScreen(),
+  const ParentCourseDetailScreen(courseId: 'course', childName: 'Minh'),
+  const ParentLearningInsightsScreen(childId: 'child', childName: 'Minh'),
+  const ParentRecommendedCoursesScreen(childId: 'child', childName: 'Minh'),
+  ParentSessionDetailScreen(session: _parentSession),
+  const FamilyInsightsInboxScreen(),
   const ManageChildrenScreen(), const AddChildScreen(), const ChildDetailScreen(child: _user),
   const StudentShell(), const HomeScreen(), const LearningScreen(), const ScheduleScreen(),
   const AchievementScreen(), const ProfileScreen(), const BookmarkScreen(), const SearchScreen(),
@@ -166,6 +196,37 @@ Future<void> _setUp() async {
     ])],
   )));
   final di = GetIt.instance;
+  final parentLearning = _ParentLearningRepository();
+  final familyInsights = _FamilyInsightsRepository();
+  final parentHome = _ParentHomeRepository();
+  final parentSchedule = _ParentScheduleRepository();
+  when(() => parentLearning.getClassDetail(any(), childId: any(named: 'childId')))
+      .thenAnswer((_) async => null);
+  when(() => parentLearning.getLearningInsights(any())).thenAnswer((_) async => null);
+  when(() => parentLearning.getChildren()).thenAnswer((_) async => []);
+  when(() => parentLearning.getAllLearningHubData()).thenAnswer((_) async => {});
+  when(() => parentLearning.getRecommendedCourses(any())).thenAnswer((_) async => []);
+  when(() => parentLearning.getRecommendedCourseDetail(any(), childId: any(named: 'childId')))
+      .thenAnswer((_) async => null);
+  when(() => familyInsights.getInsights()).thenAnswer((_) async => []);
+  when(() => parentHome.getChildren()).thenAnswer((_) async => []);
+  when(() => parentHome.getAlerts()).thenAnswer((_) async => []);
+  when(() => parentHome.getSchedules()).thenAnswer((_) async => []);
+  when(() => parentHome.getAnalyticsList()).thenAnswer((_) async => []);
+  when(() => parentSchedule.getChildren()).thenAnswer((_) async => []);
+  when(() => parentSchedule.getSessionsForDate(date: any(named: 'date')))
+      .thenAnswer((_) async => []);
+  when(() => parentSchedule.getEventsMapByMonth(month: any(named: 'month')))
+      .thenAnswer((_) async => {});
+  when(() => parentSchedule.getSessionCountForWeek(anchorDate: any(named: 'anchorDate')))
+      .thenAnswer((_) async => 0);
+  when(() => parentSchedule.getScheduleSessions()).thenAnswer((_) async => []);
+  when(() => parentSchedule.getEventDates(anchorDate: any(named: 'anchorDate')))
+      .thenAnswer((_) async => []);
+  di.registerSingleton<ParentLearningRepository>(parentLearning);
+  di.registerSingleton<FamilyInsightsRepository>(familyInsights);
+  di.registerSingleton<ParentHomeRepository>(parentHome);
+  di.registerSingleton<ParentScheduleRepository>(parentSchedule);
   final bookmarks = SharedPreferencesBookmarkStorage(prefs);
   di.registerFactory<HomeBloc>(() => HomeBloc(student));
   di.registerFactory<LearningBloc>(() => LearningBloc(student));
@@ -176,6 +237,9 @@ Future<void> _setUp() async {
   di.registerFactory<NotificationBloc>(() => NotificationBloc(student));
   di.registerFactory<QuizBloc>(() => QuizBloc(student));
   di.registerFactory<LessonBloc>(() => LessonBloc(student));
+  di.registerFactory<ParentHomeBloc>(() => ParentHomeBloc(parentHome));
+  di.registerFactory<ParentLearningBloc>(() => ParentLearningBloc(parentLearning));
+  di.registerFactory<ParentScheduleBloc>(() => ParentScheduleBloc(parentSchedule));
   di.registerFactory<CourseDetailBloc>(() => CourseDetailBloc(student, _CourseRepository(), bookmarks));
 }
 
@@ -206,8 +270,14 @@ Future<void> _pump(WidgetTester tester, Widget screen, {Size size = const Size(3
       theme: MaterialTheme(createTextTheme(context: context)).light(),
       navigatorKey: key, locale: const Locale('vi'),
       supportedLocales: appSupportedLocales, localizationsDelegates: appLocalizationsDelegates,
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(disableAnimations: true),
+        child: child!,
+      ),
       onGenerateRoute: (settings) => settings.name == '/'
-        ? MaterialPageRoute<void>(settings: const RouteSettings(arguments: {'email': 'student@example.com', 'otp': '123456'}), builder: (_) => screen)
+        ? MaterialPageRoute<void>(settings: RouteSettings(arguments:
+            screen is ForgotPasswordOtpScreen ? 'student@example.com' :
+            screen is ResetPasswordScreen ? {'email': 'student@example.com', 'otp': '123456'} : null), builder: (_) => screen)
         : navigation.onGenerateRoute(settings),
     ))),
   ));
@@ -247,7 +317,14 @@ void main() {
           await _pump(tester, screen, size: size);
           expect(find.byType(screen.runtimeType), findsOneWidget);
           expect(find.byType(Scaffold), findsWidgets);
-          expect(tester.takeException(), isNull);
+          final exception = tester.takeException();
+          expect(
+            exception,
+            isNull,
+            reason: exception is FlutterError
+                ? exception.diagnostics.map((node) => node.toString()).join('\n')
+                : exception?.toString(),
+          );
           await _dispose(tester);
         });
       });

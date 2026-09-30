@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/features/parent/bloc/home/parent_home_bloc.dart';
+import 'package:study/features/parent/bloc/learning/parent_learning_bloc.dart';
+import 'package:study/features/parent/bloc/schedule/parent_schedule_bloc.dart';
 import 'package:study/features/parent/presentation/home/parent_home_screen.dart';
 import 'package:study/features/parent/presentation/learning/parent_learning_screen.dart';
 import 'package:study/features/parent/presentation/payment/parent_payment_screen.dart';
@@ -53,42 +58,49 @@ class _ParentShellState extends State<ParentShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: _onPageChanged,
-        children: _screens,
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: _onNavTap,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Trang chủ',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.calendar_today_outlined),
-            selectedIcon: Icon(Icons.calendar_today_rounded),
-            label: 'Lịch',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.school_outlined),
-            selectedIcon: Icon(Icons.school_rounded),
-            label: 'Học tập',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.credit_card_outlined),
-            selectedIcon: Icon(Icons.credit_card_rounded),
-            label: 'Học phí',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person_rounded),
-            label: 'Hồ sơ',
-          ),
-        ],
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => diContainer<ParentHomeBloc>()),
+        BlocProvider(create: (_) => diContainer<ParentScheduleBloc>()),
+        BlocProvider(create: (_) => diContainer<ParentLearningBloc>()),
+      ],
+      child: Scaffold(
+        body: PageView(
+          controller: _pageController,
+          onPageChanged: _onPageChanged,
+          children: _screens,
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _currentIndex,
+          onDestinationSelected: _onNavTap,
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.home_outlined),
+              selectedIcon: Icon(Icons.home_rounded),
+              label: 'Trang chủ',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.calendar_today_outlined),
+              selectedIcon: Icon(Icons.calendar_today_rounded),
+              label: 'Lịch',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.school_outlined),
+              selectedIcon: Icon(Icons.school_rounded),
+              label: 'Học tập',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.credit_card_outlined),
+              selectedIcon: Icon(Icons.credit_card_rounded),
+              label: 'Học phí',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person_rounded),
+              label: 'Hồ sơ',
+            ),
+          ],
+        ),
       ),
     );
   }
