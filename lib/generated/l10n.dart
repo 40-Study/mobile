@@ -1448,6 +1448,2221 @@ class S {
   String get coresLabel {
     return Intl.message('Cores', name: 'coresLabel', desc: '', args: []);
   }
+
+  /// `Select Role`
+  String get selectRoleTitle {
+    return Intl.message(
+      'Select Role',
+      name: 'selectRoleTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Swipe to explore`
+  String get selectRoleSubtitle {
+    return Intl.message(
+      'Swipe to explore',
+      name: 'selectRoleSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Continue with {role}`
+  String continueWithRole(Object role) {
+    return Intl.message(
+      'Continue with $role',
+      name: 'continueWithRole',
+      desc: '',
+      args: [role],
+    );
+  }
+
+  /// `Tap to select`
+  String get tapToSelect {
+    return Intl.message(
+      'Tap to select',
+      name: 'tapToSelect',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Already have an account?`
+  String get alreadyHaveAccount {
+    return Intl.message(
+      'Already have an account?',
+      name: 'alreadyHaveAccount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Login`
+  String get login {
+    return Intl.message('Login', name: 'login', desc: '', args: []);
+  }
+
+  /// `Register`
+  String get register {
+    return Intl.message('Register', name: 'register', desc: '', args: []);
+  }
+
+  /// `Student`
+  String get roleStudent {
+    return Intl.message('Student', name: 'roleStudent', desc: '', args: []);
+  }
+
+  /// `Teacher`
+  String get roleTeacher {
+    return Intl.message('Teacher', name: 'roleTeacher', desc: '', args: []);
+  }
+
+  /// `Parent`
+  String get roleParent {
+    return Intl.message('Parent', name: 'roleParent', desc: '', args: []);
+  }
+
+  /// `Organization`
+  String get roleOrganization {
+    return Intl.message(
+      'Organization',
+      name: 'roleOrganization',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Login`
+  String get loginTitle {
+    return Intl.message('Login', name: 'loginTitle', desc: '', args: []);
+  }
+
+  /// `Welcome back`
+  String get loginSubtitle {
+    return Intl.message(
+      'Welcome back',
+      name: 'loginSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Email`
+  String get emailLabel {
+    return Intl.message('Email', name: 'emailLabel', desc: '', args: []);
+  }
+
+  /// `Enter your email`
+  String get emailHint {
+    return Intl.message(
+      'Enter your email',
+      name: 'emailHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password`
+  String get passwordLabel {
+    return Intl.message('Password', name: 'passwordLabel', desc: '', args: []);
+  }
+
+  /// `Enter password`
+  String get passwordHint {
+    return Intl.message(
+      'Enter password',
+      name: 'passwordHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Forgot password?`
+  String get forgotPassword {
+    return Intl.message(
+      'Forgot password?',
+      name: 'forgotPassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Login`
+  String get loginButton {
+    return Intl.message('Login', name: 'loginButton', desc: '', args: []);
+  }
+
+  /// `Or continue with`
+  String get orContinueWith {
+    return Intl.message(
+      'Or continue with',
+      name: 'orContinueWith',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Don't have an account?`
+  String get dontHaveAccount {
+    return Intl.message(
+      'Don\'t have an account?',
+      name: 'dontHaveAccount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create Account`
+  String get registerTitle {
+    return Intl.message(
+      'Create Account',
+      name: 'registerTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Start your learning journey`
+  String get registerSubtitle {
+    return Intl.message(
+      'Start your learning journey',
+      name: 'registerSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Full Name`
+  String get fullNameLabel {
+    return Intl.message('Full Name', name: 'fullNameLabel', desc: '', args: []);
+  }
+
+  /// `Enter your full name`
+  String get fullNameHint {
+    return Intl.message(
+      'Enter your full name',
+      name: 'fullNameHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Username`
+  String get usernameLabel {
+    return Intl.message('Username', name: 'usernameLabel', desc: '', args: []);
+  }
+
+  /// `Enter username`
+  String get usernameHint {
+    return Intl.message(
+      'Enter username',
+      name: 'usernameHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Confirm Password`
+  String get confirmPasswordLabel {
+    return Intl.message(
+      'Confirm Password',
+      name: 'confirmPasswordLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Re-enter password`
+  String get confirmPasswordHint {
+    return Intl.message(
+      'Re-enter password',
+      name: 'confirmPasswordHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Register`
+  String get registerButton {
+    return Intl.message('Register', name: 'registerButton', desc: '', args: []);
+  }
+
+  /// `I agree to the`
+  String get agreeToTerms {
+    return Intl.message(
+      'I agree to the',
+      name: 'agreeToTerms',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Terms of Service`
+  String get termsOfService {
+    return Intl.message(
+      'Terms of Service',
+      name: 'termsOfService',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `and`
+  String get and {
+    return Intl.message('and', name: 'and', desc: '', args: []);
+  }
+
+  /// `Privacy Policy`
+  String get privacyPolicy {
+    return Intl.message(
+      'Privacy Policy',
+      name: 'privacyPolicy',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `OTP Verification`
+  String get otpTitle {
+    return Intl.message(
+      'OTP Verification',
+      name: 'otpTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter the OTP sent to {email}`
+  String otpSubtitle(Object email) {
+    return Intl.message(
+      'Enter the OTP sent to $email',
+      name: 'otpSubtitle',
+      desc: '',
+      args: [email],
+    );
+  }
+
+  /// `Resend code`
+  String get resendOtp {
+    return Intl.message('Resend code', name: 'resendOtp', desc: '', args: []);
+  }
+
+  /// `Resend in {seconds}s`
+  String resendOtpIn(Object seconds) {
+    return Intl.message(
+      'Resend in ${seconds}s',
+      name: 'resendOtpIn',
+      desc: '',
+      args: [seconds],
+    );
+  }
+
+  /// `Verify`
+  String get verifyButton {
+    return Intl.message('Verify', name: 'verifyButton', desc: '', args: []);
+  }
+
+  /// `Forgot Password`
+  String get forgotPasswordTitle {
+    return Intl.message(
+      'Forgot Password',
+      name: 'forgotPasswordTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter email to receive recovery code`
+  String get forgotPasswordSubtitle {
+    return Intl.message(
+      'Enter email to receive recovery code',
+      name: 'forgotPasswordSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send Recovery Code`
+  String get sendResetCode {
+    return Intl.message(
+      'Send Recovery Code',
+      name: 'sendResetCode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reset Password`
+  String get resetPasswordTitle {
+    return Intl.message(
+      'Reset Password',
+      name: 'resetPasswordTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New Password`
+  String get newPasswordLabel {
+    return Intl.message(
+      'New Password',
+      name: 'newPasswordLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Enter new password`
+  String get newPasswordHint {
+    return Intl.message(
+      'Enter new password',
+      name: 'newPasswordHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reset Password`
+  String get resetPasswordButton {
+    return Intl.message(
+      'Reset Password',
+      name: 'resetPasswordButton',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Profile`
+  String get profileTitle {
+    return Intl.message('Profile', name: 'profileTitle', desc: '', args: []);
+  }
+
+  /// `Edit Profile`
+  String get editProfile {
+    return Intl.message(
+      'Edit Profile',
+      name: 'editProfile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Phone Number`
+  String get phoneLabel {
+    return Intl.message('Phone Number', name: 'phoneLabel', desc: '', args: []);
+  }
+
+  /// `Date of Birth`
+  String get dateOfBirthLabel {
+    return Intl.message(
+      'Date of Birth',
+      name: 'dateOfBirthLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Bio`
+  String get bioLabel {
+    return Intl.message('Bio', name: 'bioLabel', desc: '', args: []);
+  }
+
+  /// `Save Changes`
+  String get saveChanges {
+    return Intl.message(
+      'Save Changes',
+      name: 'saveChanges',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change Password`
+  String get changePasswordTitle {
+    return Intl.message(
+      'Change Password',
+      name: 'changePasswordTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current Password`
+  String get currentPasswordLabel {
+    return Intl.message(
+      'Current Password',
+      name: 'currentPasswordLabel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Change Password`
+  String get changePasswordButton {
+    return Intl.message(
+      'Change Password',
+      name: 'changePasswordButton',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Security`
+  String get securityTitle {
+    return Intl.message('Security', name: 'securityTitle', desc: '', args: []);
+  }
+
+  /// `Linked Accounts`
+  String get linkedAccounts {
+    return Intl.message(
+      'Linked Accounts',
+      name: 'linkedAccounts',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Logged In Devices`
+  String get devices {
+    return Intl.message(
+      'Logged In Devices',
+      name: 'devices',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Logout All Devices`
+  String get logoutAllDevices {
+    return Intl.message(
+      'Logout All Devices',
+      name: 'logoutAllDevices',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete Account`
+  String get deleteAccount {
+    return Intl.message(
+      'Delete Account',
+      name: 'deleteAccount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Logout`
+  String get logout {
+    return Intl.message('Logout', name: 'logout', desc: '', args: []);
+  }
+
+  /// `Are you sure you want to logout?`
+  String get logoutConfirm {
+    return Intl.message(
+      'Are you sure you want to logout?',
+      name: 'logoutConfirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cancel`
+  String get cancel {
+    return Intl.message('Cancel', name: 'cancel', desc: '', args: []);
+  }
+
+  /// `Confirm`
+  String get confirm {
+    return Intl.message('Confirm', name: 'confirm', desc: '', args: []);
+  }
+
+  /// `This field is required`
+  String get errorRequired {
+    return Intl.message(
+      'This field is required',
+      name: 'errorRequired',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invalid email address`
+  String get errorInvalidEmail {
+    return Intl.message(
+      'Invalid email address',
+      name: 'errorInvalidEmail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password must be at least 8 characters`
+  String get errorPasswordTooShort {
+    return Intl.message(
+      'Password must be at least 8 characters',
+      name: 'errorPasswordTooShort',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Passwords do not match`
+  String get errorPasswordMismatch {
+    return Intl.message(
+      'Passwords do not match',
+      name: 'errorPasswordMismatch',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invalid OTP code`
+  String get errorInvalidOtp {
+    return Intl.message(
+      'Invalid OTP code',
+      name: 'errorInvalidOtp',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Network connection error`
+  String get errorNetworkError {
+    return Intl.message(
+      'Network connection error',
+      name: 'errorNetworkError',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `An error occurred`
+  String get errorUnknown {
+    return Intl.message(
+      'An error occurred',
+      name: 'errorUnknown',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Language`
+  String get languageTitle {
+    return Intl.message('Language', name: 'languageTitle', desc: '', args: []);
+  }
+
+  /// `Students`
+  String get students {
+    return Intl.message('Students', name: 'students', desc: '', args: []);
+  }
+
+  /// `Courses`
+  String get courses {
+    return Intl.message('Courses', name: 'courses', desc: '', args: []);
+  }
+
+  /// `Rating`
+  String get rating {
+    return Intl.message('Rating', name: 'rating', desc: '', args: []);
+  }
+
+  /// `View All`
+  String get viewAll {
+    return Intl.message('View All', name: 'viewAll', desc: '', args: []);
+  }
+
+  /// `Featured Courses`
+  String get featuredCourses {
+    return Intl.message(
+      'Featured Courses',
+      name: 'featuredCourses',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit Cover`
+  String get editCover {
+    return Intl.message('Edit Cover', name: 'editCover', desc: '', args: []);
+  }
+
+  /// `XP Points`
+  String get xpPoints {
+    return Intl.message('XP Points', name: 'xpPoints', desc: '', args: []);
+  }
+
+  /// `Streak`
+  String get streak {
+    return Intl.message('Streak', name: 'streak', desc: '', args: []);
+  }
+
+  /// `Overview`
+  String get tabOverview {
+    return Intl.message('Overview', name: 'tabOverview', desc: '', args: []);
+  }
+
+  /// `Achievements`
+  String get tabAchievements {
+    return Intl.message(
+      'Achievements',
+      name: 'tabAchievements',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Children`
+  String get tabChildren {
+    return Intl.message('Children', name: 'tabChildren', desc: '', args: []);
+  }
+
+  /// `Notifications`
+  String get tabNotifications {
+    return Intl.message(
+      'Notifications',
+      name: 'tabNotifications',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Joined {date}`
+  String joinedOn(Object date) {
+    return Intl.message(
+      'Joined $date',
+      name: 'joinedOn',
+      desc: '',
+      args: [date],
+    );
+  }
+
+  /// `Account Information`
+  String get accountInfo {
+    return Intl.message(
+      'Account Information',
+      name: 'accountInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Not updated`
+  String get notUpdated {
+    return Intl.message('Not updated', name: 'notUpdated', desc: '', args: []);
+  }
+
+  /// `Joined Date`
+  String get joinedDate {
+    return Intl.message('Joined Date', name: 'joinedDate', desc: '', args: []);
+  }
+
+  /// `Options`
+  String get options {
+    return Intl.message('Options', name: 'options', desc: '', args: []);
+  }
+
+  /// `Switch Role`
+  String get switchRole {
+    return Intl.message('Switch Role', name: 'switchRole', desc: '', args: []);
+  }
+
+  /// `Skills`
+  String get skills {
+    return Intl.message('Skills', name: 'skills', desc: '', args: []);
+  }
+
+  /// `Interests`
+  String get interests {
+    return Intl.message('Interests', name: 'interests', desc: '', args: []);
+  }
+
+  /// `Achievements`
+  String get achievements {
+    return Intl.message(
+      'Achievements',
+      name: 'achievements',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Contact`
+  String get contact {
+    return Intl.message('Contact', name: 'contact', desc: '', args: []);
+  }
+
+  /// `Total Earnings`
+  String get totalEarnings {
+    return Intl.message(
+      'Total Earnings',
+      name: 'totalEarnings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `this month`
+  String get thisMonth {
+    return Intl.message('this month', name: 'thisMonth', desc: '', args: []);
+  }
+
+  /// `Parent Overview`
+  String get parentOverview {
+    return Intl.message(
+      'Parent Overview',
+      name: 'parentOverview',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Children`
+  String get children {
+    return Intl.message('Children', name: 'children', desc: '', args: []);
+  }
+
+  /// `Notifications`
+  String get notifications {
+    return Intl.message(
+      'Notifications',
+      name: 'notifications',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Classes`
+  String get classes {
+    return Intl.message('Classes', name: 'classes', desc: '', args: []);
+  }
+
+  /// `Password & Security`
+  String get passwordAndSecurity {
+    return Intl.message(
+      'Password & Security',
+      name: 'passwordAndSecurity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Login`
+  String get loginSection {
+    return Intl.message('Login', name: 'loginSection', desc: '', args: []);
+  }
+
+  /// `Change Password`
+  String get changePassword {
+    return Intl.message(
+      'Change Password',
+      name: 'changePassword',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Use a strong password you don't use elsewhere`
+  String get changePasswordHint {
+    return Intl.message(
+      'Use a strong password you don\'t use elsewhere',
+      name: 'changePasswordHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password changed successfully`
+  String get passwordChangedSuccess {
+    return Intl.message(
+      'Password changed successfully',
+      name: 'passwordChangedSuccess',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Logged out all devices`
+  String get loggedOutAllDevices {
+    return Intl.message(
+      'Logged out all devices',
+      name: 'loggedOutAllDevices',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unlinked {provider}`
+  String unlinkedAccount(Object provider) {
+    return Intl.message(
+      'Unlinked $provider',
+      name: 'unlinkedAccount',
+      desc: '',
+      args: [provider],
+    );
+  }
+
+  /// `Where you're logged in`
+  String get whereYouLoggedIn {
+    return Intl.message(
+      'Where you\'re logged in',
+      name: 'whereYouLoggedIn',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Logout All`
+  String get logoutAll {
+    return Intl.message('Logout All', name: 'logoutAll', desc: '', args: []);
+  }
+
+  /// `Advanced`
+  String get advanced {
+    return Intl.message('Advanced', name: 'advanced', desc: '', args: []);
+  }
+
+  /// `Security notification emails`
+  String get securityEmails {
+    return Intl.message(
+      'Security notification emails',
+      name: 'securityEmails',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `View official emails from us`
+  String get securityEmailsHint {
+    return Intl.message(
+      'View official emails from us',
+      name: 'securityEmailsHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Activity history`
+  String get activityHistory {
+    return Intl.message(
+      'Activity history',
+      name: 'activityHistory',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `View all account-related actions`
+  String get activityHistoryHint {
+    return Intl.message(
+      'View all account-related actions',
+      name: 'activityHistoryHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Account ID: {id}`
+  String accountId(Object id) {
+    return Intl.message(
+      'Account ID: $id',
+      name: 'accountId',
+      desc: '',
+      args: [id],
+    );
+  }
+
+  /// `Logout all devices`
+  String get logoutAllDevicesTitle {
+    return Intl.message(
+      'Logout all devices',
+      name: 'logoutAllDevicesTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You will be logged out of all devices, including this one. You will need to log in again.`
+  String get logoutAllDevicesContent {
+    return Intl.message(
+      'You will be logged out of all devices, including this one. You will need to log in again.',
+      name: 'logoutAllDevicesContent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unlink {provider}`
+  String unlinkAccount(Object provider) {
+    return Intl.message(
+      'Unlink $provider',
+      name: 'unlinkAccount',
+      desc: '',
+      args: [provider],
+    );
+  }
+
+  /// `You will not be able to log in with {provider} after unlinking. Are you sure?`
+  String unlinkAccountContent(Object provider) {
+    return Intl.message(
+      'You will not be able to log in with $provider after unlinking. Are you sure?',
+      name: 'unlinkAccountContent',
+      desc: '',
+      args: [provider],
+    );
+  }
+
+  /// `Unlink`
+  String get unlink {
+    return Intl.message('Unlink', name: 'unlink', desc: '', args: []);
+  }
+
+  /// `Linking {provider} is only available in production`
+  String linkOnlyProduction(Object provider) {
+    return Intl.message(
+      'Linking $provider is only available in production',
+      name: 'linkOnlyProduction',
+      desc: '',
+      args: [provider],
+    );
+  }
+
+  /// `Server not configured`
+  String get serverNotConfigured {
+    return Intl.message(
+      'Server not configured',
+      name: 'serverNotConfigured',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cannot open browser`
+  String get cannotOpenBrowser {
+    return Intl.message(
+      'Cannot open browser',
+      name: 'cannotOpenBrowser',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cannot link with {provider}`
+  String cannotLink(Object provider) {
+    return Intl.message(
+      'Cannot link with $provider',
+      name: 'cannotLink',
+      desc: '',
+      args: [provider],
+    );
+  }
+
+  /// `No devices found`
+  String get noDevices {
+    return Intl.message(
+      'No devices found',
+      name: 'noDevices',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reload`
+  String get reload {
+    return Intl.message('Reload', name: 'reload', desc: '', args: []);
+  }
+
+  /// `This device`
+  String get thisDevice {
+    return Intl.message('This device', name: 'thisDevice', desc: '', args: []);
+  }
+
+  /// `Unknown device`
+  String get unknownDevice {
+    return Intl.message(
+      'Unknown device',
+      name: 'unknownDevice',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Link with {provider}`
+  String linkWith(Object provider) {
+    return Intl.message(
+      'Link with $provider',
+      name: 'linkWith',
+      desc: '',
+      args: [provider],
+    );
+  }
+
+  /// `Login with this profile`
+  String get loginWithThisProfile {
+    return Intl.message(
+      'Login with this profile',
+      name: 'loginWithThisProfile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Swipe to change profile`
+  String get swipeToChangeProfile {
+    return Intl.message(
+      'Swipe to change profile',
+      name: 'swipeToChangeProfile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Organization profile`
+  String get organizationProfile {
+    return Intl.message(
+      'Organization profile',
+      name: 'organizationProfile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `System profile`
+  String get systemProfile {
+    return Intl.message(
+      'System profile',
+      name: 'systemProfile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Choose profile`
+  String get chooseProfileTitle {
+    return Intl.message(
+      'Choose profile',
+      name: 'chooseProfileTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You have multiple profiles. Choose one to continue.`
+  String get chooseProfileSubtitle {
+    return Intl.message(
+      'You have multiple profiles. Choose one to continue.',
+      name: 'chooseProfileSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Achievement`
+  String get achievementTitle {
+    return Intl.message(
+      'Achievement',
+      name: 'achievementTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `All Badges`
+  String get allBadges {
+    return Intl.message('All Badges', name: 'allBadges', desc: '', args: []);
+  }
+
+  /// `{earned} / {total} badges earned`
+  String badgesEarned(Object earned, Object total) {
+    return Intl.message(
+      '$earned / $total badges earned',
+      name: 'badgesEarned',
+      desc: '',
+      args: [earned, total],
+    );
+  }
+
+  /// `Overall Progress`
+  String get overallProgress {
+    return Intl.message(
+      'Overall Progress',
+      name: 'overallProgress',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Earned`
+  String get earned {
+    return Intl.message('Earned', name: 'earned', desc: '', args: []);
+  }
+
+  /// `In Progress`
+  String get inProgress {
+    return Intl.message('In Progress', name: 'inProgress', desc: '', args: []);
+  }
+
+  /// `Not Earned`
+  String get notEarned {
+    return Intl.message('Not Earned', name: 'notEarned', desc: '', args: []);
+  }
+
+  /// `Filter`
+  String get filter {
+    return Intl.message('Filter', name: 'filter', desc: '', args: []);
+  }
+
+  /// `All`
+  String get all {
+    return Intl.message('All', name: 'all', desc: '', args: []);
+  }
+
+  /// `Learning`
+  String get learning {
+    return Intl.message('Learning', name: 'learning', desc: '', args: []);
+  }
+
+  /// `Habit`
+  String get habit {
+    return Intl.message('Habit', name: 'habit', desc: '', args: []);
+  }
+
+  /// `Achievement`
+  String get achievement {
+    return Intl.message('Achievement', name: 'achievement', desc: '', args: []);
+  }
+
+  /// `Status`
+  String get status {
+    return Intl.message('Status', name: 'status', desc: '', args: []);
+  }
+
+  /// `Category`
+  String get category {
+    return Intl.message('Category', name: 'category', desc: '', args: []);
+  }
+
+  /// `Apply`
+  String get apply {
+    return Intl.message('Apply', name: 'apply', desc: '', args: []);
+  }
+
+  /// `Close`
+  String get close {
+    return Intl.message('Close', name: 'close', desc: '', args: []);
+  }
+
+  /// `NEW`
+  String get newBadge {
+    return Intl.message('NEW', name: 'newBadge', desc: '', args: []);
+  }
+
+  /// `Certificate`
+  String get certificate {
+    return Intl.message('Certificate', name: 'certificate', desc: '', args: []);
+  }
+
+  /// `Your Certificates`
+  String get yourCertificates {
+    return Intl.message(
+      'Your Certificates',
+      name: 'yourCertificates',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} certificates earned`
+  String certificatesEarned(Object count) {
+    return Intl.message(
+      '$count certificates earned',
+      name: 'certificatesEarned',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Completed`
+  String get completed {
+    return Intl.message('Completed', name: 'completed', desc: '', args: []);
+  }
+
+  /// `Studying`
+  String get studying {
+    return Intl.message('Studying', name: 'studying', desc: '', args: []);
+  }
+
+  /// `Design`
+  String get design {
+    return Intl.message('Design', name: 'design', desc: '', args: []);
+  }
+
+  /// `Programming`
+  String get programming {
+    return Intl.message('Programming', name: 'programming', desc: '', args: []);
+  }
+
+  /// `Business`
+  String get business {
+    return Intl.message('Business', name: 'business', desc: '', args: []);
+  }
+
+  /// `Language`
+  String get language {
+    return Intl.message('Language', name: 'language', desc: '', args: []);
+  }
+
+  /// `lessons`
+  String get lessons {
+    return Intl.message('lessons', name: 'lessons', desc: '', args: []);
+  }
+
+  /// `Certificate Detail`
+  String get certificateDetail {
+    return Intl.message(
+      'Certificate Detail',
+      name: 'certificateDetail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `This certificate confirms you have completed the course and mastered the fundamentals.`
+  String get certificateConfirm {
+    return Intl.message(
+      'This certificate confirms you have completed the course and mastered the fundamentals.',
+      name: 'certificateConfirm',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Download`
+  String get download {
+    return Intl.message('Download', name: 'download', desc: '', args: []);
+  }
+
+  /// `Share`
+  String get share {
+    return Intl.message('Share', name: 'share', desc: '', args: []);
+  }
+
+  /// `Add to\nLinkedIn`
+  String get addToLinkedIn {
+    return Intl.message(
+      'Add to\nLinkedIn',
+      name: 'addToLinkedIn',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Print`
+  String get printCertificate {
+    return Intl.message('Print', name: 'printCertificate', desc: '', args: []);
+  }
+
+  /// `Course Information`
+  String get courseInfo {
+    return Intl.message(
+      'Course Information',
+      name: 'courseInfo',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Course`
+  String get course {
+    return Intl.message('Course', name: 'course', desc: '', args: []);
+  }
+
+  /// `Completion Date`
+  String get completionDate {
+    return Intl.message(
+      'Completion Date',
+      name: 'completionDate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Duration`
+  String get duration {
+    return Intl.message('Duration', name: 'duration', desc: '', args: []);
+  }
+
+  /// `Instructor`
+  String get instructor {
+    return Intl.message('Instructor', name: 'instructor', desc: '', args: []);
+  }
+
+  /// `Level`
+  String get level {
+    return Intl.message('Level', name: 'level', desc: '', args: []);
+  }
+
+  /// `Basic`
+  String get basic {
+    return Intl.message('Basic', name: 'basic', desc: '', args: []);
+  }
+
+  /// `Skills Earned`
+  String get skillsEarned {
+    return Intl.message(
+      'Skills Earned',
+      name: 'skillsEarned',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Download PDF`
+  String get downloadPdf {
+    return Intl.message(
+      'Download PDF',
+      name: 'downloadPdf',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy Link`
+  String get copyLink {
+    return Intl.message('Copy Link', name: 'copyLink', desc: '', args: []);
+  }
+
+  /// `Show QR Code`
+  String get showQrCode {
+    return Intl.message('Show QR Code', name: 'showQrCode', desc: '', args: []);
+  }
+
+  /// `Report Issue`
+  String get reportIssue {
+    return Intl.message(
+      'Report Issue',
+      name: 'reportIssue',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `View Certificate`
+  String get viewCertificate {
+    return Intl.message(
+      'View Certificate',
+      name: 'viewCertificate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Continue Learning`
+  String get continueLearning {
+    return Intl.message(
+      'Continue Learning',
+      name: 'continueLearning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Recent Badges`
+  String get recentBadges {
+    return Intl.message(
+      'Recent Badges',
+      name: 'recentBadges',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Learning Activity`
+  String get learningActivity {
+    return Intl.message(
+      'Learning Activity',
+      name: 'learningActivity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} days learned`
+  String daysLearned(Object count) {
+    return Intl.message(
+      '$count days learned',
+      name: 'daysLearned',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Less`
+  String get less {
+    return Intl.message('Less', name: 'less', desc: '', args: []);
+  }
+
+  /// `More`
+  String get more {
+    return Intl.message('More', name: 'more', desc: '', args: []);
+  }
+
+  /// `Learning Trend`
+  String get learningTrend {
+    return Intl.message(
+      'Learning Trend',
+      name: 'learningTrend',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last 7 days`
+  String get last7Days {
+    return Intl.message('Last 7 days', name: 'last7Days', desc: '', args: []);
+  }
+
+  /// `min`
+  String get minutes {
+    return Intl.message('min', name: 'minutes', desc: '', args: []);
+  }
+
+  /// `Study Hours`
+  String get studyHours {
+    return Intl.message('Study Hours', name: 'studyHours', desc: '', args: []);
+  }
+
+  /// `Completed Lessons`
+  String get completedLessons {
+    return Intl.message(
+      'Completed Lessons',
+      name: 'completedLessons',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Badges`
+  String get badges {
+    return Intl.message('Badges', name: 'badges', desc: '', args: []);
+  }
+
+  /// `Good morning`
+  String get goodMorning {
+    return Intl.message(
+      'Good morning',
+      name: 'goodMorning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Good afternoon`
+  String get goodAfternoon {
+    return Intl.message(
+      'Good afternoon',
+      name: 'goodAfternoon',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Good evening`
+  String get goodEvening {
+    return Intl.message(
+      'Good evening',
+      name: 'goodEvening',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your account`
+  String get yourAccount {
+    return Intl.message(
+      'Your account',
+      name: 'yourAccount',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Switch profile`
+  String get switchProfile {
+    return Intl.message(
+      'Switch profile',
+      name: 'switchProfile',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add profile`
+  String get addProfile {
+    return Intl.message('Add profile', name: 'addProfile', desc: '', args: []);
+  }
+
+  /// `Update your personal details`
+  String get updatePersonalDetails {
+    return Intl.message(
+      'Update your personal details',
+      name: 'updatePersonalDetails',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Password, 2FA, login devices`
+  String get passwordSecurityHint {
+    return Intl.message(
+      'Password, 2FA, login devices',
+      name: 'passwordSecurityHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Subscription`
+  String get subscription {
+    return Intl.message(
+      'Subscription',
+      name: 'subscription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Manage your plan and billing`
+  String get managePlanBilling {
+    return Intl.message(
+      'Manage your plan and billing',
+      name: 'managePlanBilling',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Customize your notifications`
+  String get customizeNotifications {
+    return Intl.message(
+      'Customize your notifications',
+      name: 'customizeNotifications',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Privacy`
+  String get privacy {
+    return Intl.message('Privacy', name: 'privacy', desc: '', args: []);
+  }
+
+  /// `Manage your privacy settings`
+  String get managePrivacySettings {
+    return Intl.message(
+      'Manage your privacy settings',
+      name: 'managePrivacySettings',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `General`
+  String get general {
+    return Intl.message('General', name: 'general', desc: '', args: []);
+  }
+
+  /// `Help center`
+  String get helpCenter {
+    return Intl.message('Help center', name: 'helpCenter', desc: '', args: []);
+  }
+
+  /// `FAQ and support`
+  String get faqAndSupport {
+    return Intl.message(
+      'FAQ and support',
+      name: 'faqAndSupport',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Version {version}`
+  String version(Object version) {
+    return Intl.message(
+      'Version $version',
+      name: 'version',
+      desc: '',
+      args: [version],
+    );
+  }
+
+  /// `Sign out from your current account`
+  String get signOutHint {
+    return Intl.message(
+      'Sign out from your current account',
+      name: 'signOutHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Premium`
+  String get premium {
+    return Intl.message('Premium', name: 'premium', desc: '', args: []);
+  }
+
+  /// `Student`
+  String get student {
+    return Intl.message('Student', name: 'student', desc: '', args: []);
+  }
+
+  /// `Change photo`
+  String get changePhoto {
+    return Intl.message(
+      'Change photo',
+      name: 'changePhoto',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tell us about yourself...`
+  String get bioHint {
+    return Intl.message(
+      'Tell us about yourself...',
+      name: 'bioHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Verified`
+  String get verified {
+    return Intl.message('Verified', name: 'verified', desc: '', args: []);
+  }
+
+  /// `Portfolio`
+  String get portfolio {
+    return Intl.message('Portfolio', name: 'portfolio', desc: '', args: []);
+  }
+
+  /// `My Portfolio`
+  String get myPortfolio {
+    return Intl.message(
+      'My Portfolio',
+      name: 'myPortfolio',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit`
+  String get editPortfolio {
+    return Intl.message('Edit', name: 'editPortfolio', desc: '', args: []);
+  }
+
+  /// `Preview`
+  String get previewPortfolio {
+    return Intl.message(
+      'Preview',
+      name: 'previewPortfolio',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Introduction`
+  String get introduction {
+    return Intl.message(
+      'Introduction',
+      name: 'introduction',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Featured Projects`
+  String get featuredProjects {
+    return Intl.message(
+      'Featured Projects',
+      name: 'featuredProjects',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Experience`
+  String get experience {
+    return Intl.message('Experience', name: 'experience', desc: '', args: []);
+  }
+
+  /// `Education`
+  String get education {
+    return Intl.message('Education', name: 'education', desc: '', args: []);
+  }
+
+  /// `Years experience`
+  String get yearsExperience {
+    return Intl.message(
+      'Years experience',
+      name: 'yearsExperience',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Projects completed`
+  String get projectsCompleted {
+    return Intl.message(
+      'Projects completed',
+      name: 'projectsCompleted',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Followers`
+  String get followers {
+    return Intl.message('Followers', name: 'followers', desc: '', args: []);
+  }
+
+  /// `Add project`
+  String get addProject {
+    return Intl.message('Add project', name: 'addProject', desc: '', args: []);
+  }
+
+  /// `Add experience`
+  String get addExperience {
+    return Intl.message(
+      'Add experience',
+      name: 'addExperience',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add education`
+  String get addEducation {
+    return Intl.message(
+      'Add education',
+      name: 'addEducation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add skill`
+  String get addSkill {
+    return Intl.message('Add skill', name: 'addSkill', desc: '', args: []);
+  }
+
+  /// `Present`
+  String get present {
+    return Intl.message('Present', name: 'present', desc: '', args: []);
+  }
+
+  /// `Customize portfolio`
+  String get customizePortfolio {
+    return Intl.message(
+      'Customize portfolio',
+      name: 'customizePortfolio',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Manage layout`
+  String get manageLayout {
+    return Intl.message(
+      'Manage layout',
+      name: 'manageLayout',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Toggle section visibility`
+  String get toggleVisibility {
+    return Intl.message(
+      'Toggle section visibility',
+      name: 'toggleVisibility',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Public`
+  String get publicPortfolio {
+    return Intl.message('Public', name: 'publicPortfolio', desc: '', args: []);
+  }
+
+  /// `Only me`
+  String get privatePortfolio {
+    return Intl.message(
+      'Only me',
+      name: 'privatePortfolio',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `People with link`
+  String get linkOnlyPortfolio {
+    return Intl.message(
+      'People with link',
+      name: 'linkOnlyPortfolio',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Saved`
+  String get saved {
+    return Intl.message('Saved', name: 'saved', desc: '', args: []);
+  }
+
+  /// `Saving...`
+  String get saving {
+    return Intl.message('Saving...', name: 'saving', desc: '', args: []);
+  }
+
+  /// `View Portfolio`
+  String get viewPortfolio {
+    return Intl.message(
+      'View Portfolio',
+      name: 'viewPortfolio',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Project name`
+  String get projectName {
+    return Intl.message(
+      'Project name',
+      name: 'projectName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `E.g: EduFlow`
+  String get projectNameHint {
+    return Intl.message(
+      'E.g: EduFlow',
+      name: 'projectNameHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Short description`
+  String get shortDescription {
+    return Intl.message(
+      'Short description',
+      name: 'shortDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `E.g: Learning management system`
+  String get shortDescriptionHint {
+    return Intl.message(
+      'E.g: Learning management system',
+      name: 'shortDescriptionHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Details`
+  String get details {
+    return Intl.message('Details', name: 'details', desc: '', args: []);
+  }
+
+  /// `Category`
+  String get categoryLabel {
+    return Intl.message('Category', name: 'categoryLabel', desc: '', args: []);
+  }
+
+  /// `Add`
+  String get add {
+    return Intl.message('Add', name: 'add', desc: '', args: []);
+  }
+
+  /// `Save`
+  String get save {
+    return Intl.message('Save', name: 'save', desc: '', args: []);
+  }
+
+  /// `Done`
+  String get done {
+    return Intl.message('Done', name: 'done', desc: '', args: []);
+  }
+
+  /// `Skill name`
+  String get skillName {
+    return Intl.message('Skill name', name: 'skillName', desc: '', args: []);
+  }
+
+  /// `E.g: UI Design, Figma, React...`
+  String get skillNameHint {
+    return Intl.message(
+      'E.g: UI Design, Figma, React...',
+      name: 'skillNameHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Proficiency level`
+  String get proficiencyLevel {
+    return Intl.message(
+      'Proficiency level',
+      name: 'proficiencyLevel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Position`
+  String get position {
+    return Intl.message('Position', name: 'position', desc: '', args: []);
+  }
+
+  /// `E.g: UI/UX Designer`
+  String get positionHint {
+    return Intl.message(
+      'E.g: UI/UX Designer',
+      name: 'positionHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Company`
+  String get company {
+    return Intl.message('Company', name: 'company', desc: '', args: []);
+  }
+
+  /// `E.g: Google, Vela Studio...`
+  String get companyHint {
+    return Intl.message(
+      'E.g: Google, Vela Studio...',
+      name: 'companyHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Job description`
+  String get jobDescription {
+    return Intl.message(
+      'Job description',
+      name: 'jobDescription',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit introduction`
+  String get editIntroduction {
+    return Intl.message(
+      'Edit introduction',
+      name: 'editIntroduction',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Full name`
+  String get fullName {
+    return Intl.message('Full name', name: 'fullName', desc: '', args: []);
+  }
+
+  /// `Job title`
+  String get jobTitle {
+    return Intl.message('Job title', name: 'jobTitle', desc: '', args: []);
+  }
+
+  /// `E.g: UI/UX Designer`
+  String get jobTitleHint {
+    return Intl.message(
+      'E.g: UI/UX Designer',
+      name: 'jobTitleHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Location`
+  String get locationLabel {
+    return Intl.message('Location', name: 'locationLabel', desc: '', args: []);
+  }
+
+  /// `E.g: Hanoi, Vietnam`
+  String get locationHint {
+    return Intl.message(
+      'E.g: Hanoi, Vietnam',
+      name: 'locationHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Website`
+  String get websiteLabel {
+    return Intl.message('Website', name: 'websiteLabel', desc: '', args: []);
+  }
+
+  /// `E.g: yourname.design`
+  String get websiteHint {
+    return Intl.message(
+      'E.g: yourname.design',
+      name: 'websiteHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `About yourself`
+  String get aboutYourself {
+    return Intl.message(
+      'About yourself',
+      name: 'aboutYourself',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Write a few lines about you...`
+  String get aboutYourselfHint {
+    return Intl.message(
+      'Write a few lines about you...',
+      name: 'aboutYourselfHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Drag to reorder sections`
+  String get dragToReorder {
+    return Intl.message(
+      'Drag to reorder sections',
+      name: 'dragToReorder',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Privacy`
+  String get privacySettings {
+    return Intl.message('Privacy', name: 'privacySettings', desc: '', args: []);
+  }
+
+  /// `Everyone can view`
+  String get everyoneCanView {
+    return Intl.message(
+      'Everyone can view',
+      name: 'everyoneCanView',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only you can view`
+  String get onlyYouCanView {
+    return Intl.message(
+      'Only you can view',
+      name: 'onlyYouCanView',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only people with link can view`
+  String get onlyWithLink {
+    return Intl.message(
+      'Only people with link can view',
+      name: 'onlyWithLink',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Link copied for sharing`
+  String get linkCopiedToShare {
+    return Intl.message(
+      'Link copied for sharing',
+      name: 'linkCopiedToShare',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Link copied`
+  String get linkCopied {
+    return Intl.message('Link copied', name: 'linkCopied', desc: '', args: []);
+  }
+
+  /// `Creating PDF...`
+  String get creatingPdf {
+    return Intl.message(
+      'Creating PDF...',
+      name: 'creatingPdf',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `View portfolio as others see it`
+  String get viewAsOthers {
+    return Intl.message(
+      'View portfolio as others see it',
+      name: 'viewAsOthers',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Share portfolio on social media`
+  String get shareOnSocial {
+    return Intl.message(
+      'Share portfolio on social media',
+      name: 'shareOnSocial',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Copy portfolio link`
+  String get copyPortfolioLink {
+    return Intl.message(
+      'Copy portfolio link',
+      name: 'copyPortfolioLink',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Download portfolio as PDF`
+  String get downloadPortfolioPdf {
+    return Intl.message(
+      'Download portfolio as PDF',
+      name: 'downloadPortfolioPdf',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Add item`
+  String get addItem {
+    return Intl.message('Add item', name: 'addItem', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
@@ -1459,6 +3674,7 @@ class AppLocalizationDelegate extends LocalizationsDelegate<S> {
       Locale.fromSubtags(languageCode: 'de'),
       Locale.fromSubtags(languageCode: 'pt'),
       Locale.fromSubtags(languageCode: 'uk'),
+      Locale.fromSubtags(languageCode: 'vi'),
     ];
   }
 

@@ -32,6 +32,16 @@ import 'package:study/features/course/repository/course_repository.dart'
     as _i1065;
 import 'package:study/features/course/repository/course_repository_impl.dart'
     as _i38;
+import 'package:study/features/parent/data/parent_home_api_client.dart'
+    as _i933;
+import 'package:study/features/parent/repository/family_insights_repository.dart'
+    as _i235;
+import 'package:study/features/parent/repository/parent_home_repository.dart'
+    as _i90;
+import 'package:study/features/parent/repository/parent_learning_repository.dart'
+    as _i385;
+import 'package:study/features/parent/repository/parent_schedule_repository.dart'
+    as _i87;
 import 'package:study/features/student/bloc/achievement/achievement_bloc.dart'
     as _i885;
 import 'package:study/features/student/bloc/bookmark/bookmark_bloc.dart'
@@ -86,6 +96,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i830.BookmarkStorage>(
       () => repositoryModule.provideBookmarkStorage(),
     );
+    gh.lazySingleton<_i235.FamilyInsightsRepository>(
+      () => repositoryModule.provideFamilyInsightsRepository(),
+    );
+    gh.lazySingleton<_i385.ParentLearningRepository>(
+      () => repositoryModule.provideParentLearningRepository(),
+    );
     gh.factory<_i354.ThemeRepository>(
       () => repositoryModule.provideThemeRepository(gh<_i1013.ThemeStorage>()),
     );
@@ -97,6 +113,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i583.StudentApiClient>(
       () => repositoryModule.provideStudentApiClient(gh<_i361.Dio>()),
+    );
+    gh.factory<_i933.ParentHomeApiClient>(
+      () => repositoryModule.provideParentHomeApiClient(gh<_i361.Dio>()),
     );
     gh.lazySingleton<_i1065.CourseRepository>(
       () => _i38.CourseRepositoryImpl(gh<_i511.CourseApiClient>()),
@@ -114,6 +133,16 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i511.CourseApiClient>(),
         gh<_i584.AuthRepository>(),
         gh<_i340.LastAccessedCourseStorage>(),
+      ),
+    );
+    gh.lazySingleton<_i90.ParentHomeRepository>(
+      () => repositoryModule.provideParentHomeRepository(
+        gh<_i933.ParentHomeApiClient>(),
+      ),
+    );
+    gh.lazySingleton<_i87.ParentScheduleRepository>(
+      () => repositoryModule.provideParentScheduleRepository(
+        gh<_i933.ParentHomeApiClient>(),
       ),
     );
     gh.factory<_i885.AchievementBloc>(

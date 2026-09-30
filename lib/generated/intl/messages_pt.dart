@@ -20,7 +20,7 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'pt';
 
-  static String m9(blockNumber) => "Bloco ${blockNumber}";
+  static String m11(blockNumber) => "Bloco ${blockNumber}";
 
   static String m0(days) => "Em ${days} dias";
 
@@ -36,11 +36,11 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m6(mission) => "Missão: ${mission}";
 
-  static String m10(count) => "${count} missões";
+  static String m19(count) => "${count} missões";
 
-  static String m11(query) => "Nenhum núcleo encontrado para \"${query}\"";
+  static String m20(query) => "Nenhum núcleo encontrado para \"${query}\"";
 
-  static String m12(count) => "${count} reutilizações";
+  static String m23(count) => "${count} reutilizações";
 
   static String m7(rocketName, rocketType) =>
       "Foguete: ${rocketName} (${rocketType})";
@@ -67,7 +67,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "appearanceTitle": MessageLookupByLibrary.simpleMessage("Aparência"),
     "article": MessageLookupByLibrary.simpleMessage("Artigo"),
-    "blockLabel": m9,
+    "blockLabel": m11,
     "borderRadiusButtonTitle": MessageLookupByLibrary.simpleMessage(
       "Raio da Borda",
     ),
@@ -204,11 +204,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "Cronograma da Missão",
     ),
     "missionTitle": m6,
-    "missions": m10,
+    "missions": m19,
     "na": MessageLookupByLibrary.simpleMessage("N/D"),
     "nationality": MessageLookupByLibrary.simpleMessage("Nacionalidade"),
     "newsScreen": MessageLookupByLibrary.simpleMessage("Notícias"),
-    "noCoresFound": m11,
+    "noCoresFound": m20,
     "noDetails": MessageLookupByLibrary.simpleMessage(
       "Nenhum detalhe disponível",
     ),
@@ -242,7 +242,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "retiredStatus": MessageLookupByLibrary.simpleMessage("Aposentada"),
     "retry": MessageLookupByLibrary.simpleMessage("Tentar novamente"),
     "reused": MessageLookupByLibrary.simpleMessage("Reutilizado"),
-    "reuses": m12,
+    "reuses": m23,
     "roadsterDescription": MessageLookupByLibrary.simpleMessage(
       "Tesla Roadster de Elon Musk",
     ),
