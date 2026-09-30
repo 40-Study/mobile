@@ -9,6 +9,9 @@ import 'package:study/features/parent/presentation/learning/parent_learning_scre
 import 'package:study/features/parent/presentation/payment/parent_payment_screen.dart';
 import 'package:study/features/parent/presentation/profile/parent_profile_screen.dart';
 import 'package:study/features/parent/presentation/schedule/parent_schedule_screen.dart';
+
+enum ParentTab { home, schedule, learning, payment, profile }
+
 class ParentShell extends StatefulWidget {
   const ParentShell({super.key});
 
@@ -18,7 +21,7 @@ class ParentShell extends StatefulWidget {
 
 class _ParentShellState extends State<ParentShell> {
   late final PageController _pageController;
-  int _currentIndex = 0;
+  ParentTab _currentTab = ParentTab.home;
 
   late final List<Widget> _screens = [
     ParentHomeScreen(
@@ -45,13 +48,13 @@ class _ParentShellState extends State<ParentShell> {
   }
 
   void _onPageChanged(int index) {
-    setState(() => _currentIndex = index);
+    setState(() => _currentTab = ParentTab.values[index]);
   }
 
   void _onNavTap(int index) {
     _pageController.animateToPage(
       index,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 250),
       curve: Curves.easeInOut,
     );
   }
@@ -71,7 +74,7 @@ class _ParentShellState extends State<ParentShell> {
           children: _screens,
         ),
         bottomNavigationBar: NavigationBar(
-          selectedIndex: _currentIndex,
+          selectedIndex: _currentTab.index,
           onDestinationSelected: _onNavTap,
           destinations: const [
             NavigationDestination(

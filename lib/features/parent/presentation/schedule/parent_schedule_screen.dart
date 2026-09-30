@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:study/di/di_container.dart';
 import 'package:study/features/parent/bloc/schedule/parent_schedule_bloc.dart';
 import 'package:study/features/parent/bloc/schedule/parent_schedule_event.dart';
 import 'package:study/features/parent/bloc/schedule/parent_schedule_state.dart';
@@ -13,8 +12,6 @@ import 'package:study/features/parent/presentation/schedule/parent_session_detai
 import 'package:study/features/parent/presentation/schedule/widgets/date_group_header.dart';
 import 'package:study/features/parent/presentation/schedule/widgets/parent_expandable_calendar.dart';
 import 'package:study/features/parent/presentation/widgets/widgets.dart';
-import 'package:study/features/parent/repository/parent_schedule_repository.dart';
-import 'package:study/features/parent/repository/parent_schedule_repository_impl.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
 import 'package:study/theme/theme.dart';
 
@@ -28,7 +25,7 @@ import 'package:study/theme/theme.dart';
 /// - Body chỉ hiển thị các ca học của ngày được chọn trên lịch
 /// - Khi chọn "Tất cả con": Tự động phân chia thành các Section theo từng con
 /// - Xem chi tiết buổi học (ParentSessionDetailSheet) - chỉ xem, không vào học
-class ParentScheduleScreen extends StatelessWidget {
+class ParentScheduleScreen extends StatefulWidget {
   const ParentScheduleScreen({
     super.key,
     this.onNavigateToProfile,
@@ -37,15 +34,19 @@ class ParentScheduleScreen extends StatelessWidget {
   final VoidCallback? onNavigateToProfile;
 
   @override
+  State<ParentScheduleScreen> createState() => _ParentScheduleScreenState();
+}
+
+class _ParentScheduleScreenState extends State<ParentScheduleScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ParentScheduleBloc>().add(const ParentScheduleStarted());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ParentScheduleBloc(
-        diContainer.isRegistered<ParentScheduleRepository>()
-            ? diContainer<ParentScheduleRepository>()
-            : ParentScheduleRepositoryImpl(),
-      )..add(const ParentScheduleStarted()),
-      child: _ScheduleView(onNavigateToProfile: onNavigateToProfile),
-    );
+    return _ScheduleView(onNavigateToProfile: widget.onNavigateToProfile);
   }
 }
 

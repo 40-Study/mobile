@@ -31,7 +31,7 @@ class QuizView extends StatelessWidget {
           listener: (context, state) {
             if (state is QuizCompleted) {
               Navigator.of(context).pushReplacement(
-                MaterialPageRoute<Widget>(
+                MaterialPageRoute<void>(
                   builder: (_) => QuizResultScreen(
                     title: title,
                     correct: state.correctCount,

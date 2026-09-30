@@ -140,7 +140,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
           if (cert != null) {
             Navigator.push(
               context,
-              MaterialPageRoute<Widget>(
+              MaterialPageRoute<void>(
                 builder: (_) => CertificateDetailScreen(certificate: cert),
               ),
             );

@@ -316,12 +316,16 @@ class _HeroLinkChildCard extends StatelessWidget {
                     color: cs.slate400,
                   ),
                   const SizedBox(width: 6),
-                  Text(
-                    'Chưa có mã học viên? Liên hệ Giáo vụ hỗ trợ',
-                    style: tt.bodySmall?.copyWith(
-                      color: cs.slate600,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 12.5,
+                  Flexible(
+                    child: Text(
+                      'Chưa có mã học viên? Liên hệ Giáo vụ hỗ trợ',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: tt.bodySmall?.copyWith(
+                        color: cs.slate600,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12.5,
+                      ),
                     ),
                   ),
                 ],

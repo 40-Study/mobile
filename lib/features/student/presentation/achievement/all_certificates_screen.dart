@@ -298,7 +298,7 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
     if (cert.isCompleted) {
       Navigator.push(
         context,
-        MaterialPageRoute<Widget>(
+        MaterialPageRoute<void>(
           builder: (_) => CertificateDetailScreen(
             certificate: CertificateModel(
               id: cert.id,

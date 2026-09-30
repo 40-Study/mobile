@@ -23,7 +23,7 @@ class ParentSessionDetailScreen extends StatefulWidget {
     FamilyScopeChild? child,
   }) {
     return Navigator.of(context).push<void>(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => ParentSessionDetailScreen(session: session, child: child),
       ),
     );

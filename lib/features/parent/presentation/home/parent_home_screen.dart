@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:study/di/di_container.dart';
 import 'package:study/features/parent/bloc/home/parent_home_bloc.dart';
 import 'package:study/features/parent/bloc/home/parent_home_event.dart';
 import 'package:study/features/parent/bloc/home/parent_home_state.dart';
@@ -8,12 +7,11 @@ import 'package:study/features/parent/presentation/children/manage_children_scre
 import 'package:study/features/parent/presentation/home/widgets/widgets.dart';
 import 'package:study/features/parent/presentation/insights_inbox/family_insights_inbox_screen.dart';
 import 'package:study/features/parent/presentation/widgets/widgets.dart';
-import 'package:study/features/parent/repository/parent_home_repository.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
 import 'package:study/theme/theme.dart';
 
 /// Trang chủ Phụ huynh - dashboard giám sát học tập của con.
-class ParentHomeScreen extends StatelessWidget {
+class ParentHomeScreen extends StatefulWidget {
   const ParentHomeScreen({
     super.key,
     this.onNavigateToProfile,
@@ -26,16 +24,22 @@ class ParentHomeScreen extends StatelessWidget {
   final VoidCallback? onNavigateToLearning;
 
   @override
+  State<ParentHomeScreen> createState() => _ParentHomeScreenState();
+}
+
+class _ParentHomeScreenState extends State<ParentHomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ParentHomeBloc>().add(const ParentHomeStarted());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) =>
-          ParentHomeBloc(diContainer<ParentHomeRepository>())
-            ..add(const ParentHomeStarted()),
-      child: _HomeContent(
-        onNavigateToProfile: onNavigateToProfile,
-        onNavigateToSchedule: onNavigateToSchedule,
-        onNavigateToLearning: onNavigateToLearning,
-      ),
+    return _HomeContent(
+      onNavigateToProfile: widget.onNavigateToProfile,
+      onNavigateToSchedule: widget.onNavigateToSchedule,
+      onNavigateToLearning: widget.onNavigateToLearning,
     );
   }
 }

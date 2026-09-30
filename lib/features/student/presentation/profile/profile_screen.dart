@@ -51,32 +51,74 @@ class _ProfileContent extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: cs.surface,
-      body: SafeArea(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            // Profile Card
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,
-                AppSpacing.sm,
-                AppSpacing.xl,
-                AppSpacing.lg,
-              ),
-              child: ProfileCard(
-                user: user,
-                activeProfile: activeProfile,
-                onEditProfile: () => _navigateToEditProfile(context),
+      body: BlocBuilder<ProfileCubit, ProfileState>(
+        buildWhen: (prev, curr) => curr is ProfileFailure || curr is ProfileLoading || prev is ProfileFailure,
+        builder: (context, state) {
+          if (state is ProfileFailure) {
+            return SafeArea(child: _buildError(context, state.message));
+          }
+          return SafeArea(
+            child: RefreshIndicator(
+              onRefresh: () => context.read<ProfileCubit>().loadProfiles(),
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  // Profile Card
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.xl,
+                      AppSpacing.sm,
+                      AppSpacing.xl,
+                      AppSpacing.lg,
+                    ),
+                    child: ProfileCard(
+                      user: user,
+                      activeProfile: activeProfile,
+                      onEditProfile: () => _navigateToEditProfile(context),
+                    ),
+                  ),
+                  AppSpacing.vGap8,
+
+                  // Switch Profile
+                  _buildSwitchProfileSection(context),
+                  AppSpacing.vGap16,
+
+                  // Settings Container
+                  _buildSettingsContainer(context, cs, l10n),
+                ],
               ),
             ),
-            AppSpacing.vGap8,
+          );
+        },
+      ),
+    );
+  }
 
-            // Switch Profile
-            _buildSwitchProfileSection(context),
+  Widget _buildError(BuildContext context, String message) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    return Center(
+      child: Padding(
+        padding: AppSpacing.paddingScreenAll,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(color: cs.errorContainer, shape: BoxShape.circle),
+              child: Icon(Icons.sync_problem, color: cs.onErrorContainer),
+            ),
             AppSpacing.vGap16,
-
-            // Settings Container
-            _buildSettingsContainer(context, cs, l10n),
+            Text('Không thể tải thông tin', style: tt.titleMedium, textAlign: TextAlign.center),
+            AppSpacing.vGap4,
+            Text(message, style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant), textAlign: TextAlign.center),
+            AppSpacing.vGap16,
+            FilledButton.icon(
+              onPressed: () => context.read<ProfileCubit>().loadProfiles(),
+              icon: const Icon(Icons.refresh),
+              label: const Text('Thử lại'),
+            ),
           ],
         ),
       ),
@@ -202,7 +244,7 @@ class _ProfileContent extends StatelessWidget {
   void _navigateToEditProfile(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute<Widget>(
+      MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
           create: (_) => AccountCubit(
             authRepository: context.read<AuthRepository>(),
@@ -216,28 +258,28 @@ class _ProfileContent extends StatelessWidget {
   void _navigateToSecurity(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute<Widget>(builder: (_) => const SecurityScreen()),
+      MaterialPageRoute<void>(builder: (_) => const SecurityScreen()),
     );
   }
 
   void _navigateToSettings(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute<Widget>(builder: (_) => const SettingsScreen()),
+      MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
     );
   }
 
   void _navigateToHelpCenter(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute<Widget>(builder: (_) => const HelpCenterScreen()),
+      MaterialPageRoute<void>(builder: (_) => const HelpCenterScreen()),
     );
   }
 
   void _navigateToPortfolio(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute<Widget>(builder: (_) => const PortfolioScreen()),
+      MaterialPageRoute<void>(builder: (_) => const PortfolioScreen()),
     );
   }
 }

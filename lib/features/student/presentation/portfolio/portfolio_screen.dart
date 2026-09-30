@@ -501,7 +501,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   void _openPreview(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute<Widget>(
+      MaterialPageRoute<void>(
         builder: (_) => PortfolioPreviewScreen(
           profile: _profile,
           stats: _stats,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:study/di/di_container.dart';
 import 'package:study/features/parent/bloc/learning/parent_learning_bloc.dart';
 import 'package:study/features/parent/bloc/learning/parent_learning_event.dart';
 import 'package:study/features/parent/bloc/learning/parent_learning_state.dart';
@@ -12,8 +11,6 @@ import 'package:study/features/parent/presentation/learning/recommended_courses/
 import 'package:study/features/parent/presentation/learning/widgets/learning_hub_header.dart';
 import 'package:study/features/parent/presentation/learning/widgets/learning_hub_navigation_card.dart';
 import 'package:study/features/parent/presentation/widgets/widgets.dart';
-import 'package:study/features/parent/repository/parent_learning_repository.dart';
-import 'package:study/features/parent/repository/parent_learning_repository_impl.dart';
 import 'package:study/theme/theme.dart';
 
 /// Màn hình chính của Tab Học tập dành cho Phụ huynh (Learning Root Hub).
@@ -24,19 +21,23 @@ import 'package:study/theme/theme.dart';
 /// 3. Bài tập về nhà (Danh sách bài tập nộp đúng hạn, cảnh báo quá hạn)
 /// 4. Tiến độ khóa học (% hoàn thành học phần theo thời gian)
 /// 5. Gợi ý cho con (Khóa học và chuyên đề bổ trợ cá nhân hoá do AI đề xuất)
-class ParentLearningScreen extends StatelessWidget {
+class ParentLearningScreen extends StatefulWidget {
   const ParentLearningScreen({super.key});
 
   @override
+  State<ParentLearningScreen> createState() => _ParentLearningScreenState();
+}
+
+class _ParentLearningScreenState extends State<ParentLearningScreen> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<ParentLearningBloc>().add(const ParentLearningStarted());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ParentLearningBloc(
-        diContainer.isRegistered<ParentLearningRepository>()
-            ? diContainer<ParentLearningRepository>()
-            : ParentLearningRepositoryImpl(),
-      )..add(const ParentLearningStarted()),
-      child: const _LearningView(),
-    );
+    return const _LearningView();
   }
 }
 

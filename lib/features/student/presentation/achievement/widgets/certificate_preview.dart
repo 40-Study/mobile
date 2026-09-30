@@ -145,7 +145,7 @@ class CertificatePreview extends StatelessWidget {
   void _showFullScreen(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute<Widget>(
+      MaterialPageRoute<void>(
         builder: (_) => FullScreenCertificate(certificate: certificate),
       ),
     );
