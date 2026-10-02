@@ -4,6 +4,7 @@ import 'package:study/features/parent/data/models/parent_class_detail_model.dart
 import 'package:study/features/parent/presentation/learning/class_detail/widgets/class_lesson_timeline_widget.dart';
 import 'package:study/features/parent/presentation/learning/class_detail/widgets/class_progress_result_card.dart';
 import 'package:study/features/parent/presentation/learning/class_detail/widgets/class_teacher_card.dart';
+import 'package:study/features/parent/presentation/learning/homework/parent_homework_screen.dart';
 import 'package:study/features/parent/repository/parent_learning_repository.dart';
 import 'package:study/features/parent/repository/parent_learning_repository_impl.dart';
 
@@ -252,10 +253,10 @@ class _ParentClassDetailScreenState extends State<ParentClassDetailScreen> {
               elevation: 0,
             ),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Xem danh sách bài tập của môn ${_classDetail?.className}',
+              Navigator.of(context).push<void>(
+                MaterialPageRoute<void>(
+                  builder: (_) => ParentHomeworkScreen(
+                    initialChildId: widget.childId,
                   ),
                 ),
               );

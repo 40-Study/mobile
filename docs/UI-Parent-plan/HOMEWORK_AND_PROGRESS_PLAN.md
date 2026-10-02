@@ -236,52 +236,52 @@ lib/features/parent/
 ## 5. Lộ trình Triển khai Chi tiết theo từng Giai đoạn (Phased Plan)
 
 ### Giai đoạn 1: Xây dựng Data Models & Mở rộng Repository
-- [ ] **Bước 1.1:** Tạo `parent_homework_model.dart` chứa:
+- [x] **Bước 1.1:** Tạo `parent_homework_model.dart` chứa:
   - `ParentHomeworkItem` (id, title, subjectCode, subjectName, teacherName, dueDate, dueStatus, timeRemainingText, score, gradeLabel).
   - `ParentHomeworkDetailModel` (id, description, attachments, submittedFiles, teacherFeedback, rubrics).
   - `ParentGradedSummaryModel` (submissionRatio, averageScore, recentGradedItems).
-- [ ] **Bước 1.2:** Tạo `parent_course_progress_model.dart` chứa:
+- [x] **Bước 1.2:** Tạo `parent_course_progress_model.dart` chứa:
   - `ParentProgressOverviewModel` (activeCourseCount, averageProgressPercent, statusSummaryText).
   - `ParentCourseProgressItem` (courseId, courseName, teacherName, roomOrPlatform, completedSessions, totalSessions, progressPercent, warningNote, nextSessionText).
   - `TeacherHomeroomNote` (teacherName, noteContent).
-- [ ] **Bước 1.3:** Cập nhật `ParentLearningRepository` và triển khai trong `ParentLearningRepositoryImpl` với dữ liệu bám sát 100% Ảnh 0, 2, 4.
+- [x] **Bước 1.3:** Cập nhật `ParentLearningRepository` và triển khai trong `ParentLearningRepositoryImpl` với dữ liệu bám sát 100% Ảnh 0, 2, 4.
 
 ### Giai đoạn 2: Xây dựng Giao diện Bài tập về nhà (`ParentHomeworkScreen`)
-- [ ] **Bước 2.1:** Header chuẩn Locked Child Context (`Bài tập về nhà · Minh` + `Lớp 10A1`).
-- [ ] **Bước 2.2:** Thanh filter chips cuộn ngang: `Tất cả`, `Cần nộp gấp`, `Đang làm`, `Quá hạn`, `Đã nộp`.
-- [ ] **Bước 2.3:** Banner nhắc nhở khẩn cấp khi có bài sắp hết hạn trong ngày (`UrgentHomeworkBanner`).
-- [ ] **Bước 2.4:** Danh sách `HomeworkItemCard` với icon môn chuyên biệt (`Σ`, `En`, `Sc`), nhãn hạn nộp, và nút hành động chuẩn phụ huynh `Chi tiết bài tập >` (loại bỏ nhãn sai `Làm tiếp >`).
-- [ ] **Bước 2.5:** Trạng thái Empty State tích cực khi chọn filter Quá hạn:
+- [x] **Bước 2.1:** Header chuẩn Locked Child Context (`Bài tập về nhà · Minh` + `Lớp 10A1`).
+- [x] **Bước 2.2:** Thanh filter chips cuộn ngang: `Tất cả`, `Cần nộp gấp`, `Đang làm`, `Quá hạn`, `Đã nộp`.
+- [x] **Bước 2.3:** Banner nhắc nhở khẩn cấp khi có bài sắp hết hạn trong ngày (`UrgentHomeworkBanner`).
+- [x] **Bước 2.4:** Danh sách `HomeworkItemCard` với icon môn chuyên biệt (`Σ`, `En`, `Sc`), nhãn hạn nộp, và nút hành động chuẩn phụ huynh `Chi tiết bài tập >` (loại bỏ nhãn sai `Làm tiếp >`).
+- [x] **Bước 2.5:** Trạng thái Empty State tích cực khi chọn filter Quá hạn:
   - Khối All-clear `Không có bài tập nào quá hạn` kèm nút `Xem tất cả bài tập`.
   - Khối `Kết quả tuần gần nhất` hiển thị điểm TB 8.8/10 và danh sách điểm từng môn đã chấm.
 
 ### Giai đoạn 3: Xây dựng Chi tiết Bài tập (`ParentHomeworkDetailScreen` — View-only)
-- [ ] **Bước 3.1:** Header `Bài tập · [Tên con]` + Nút Back.
-- [ ] **Bước 3.2:** Khối thông tin hạn nộp, đếm ngược thời gian và trạng thái bài làm của con.
-- [ ] **Bước 3.3:** Khối nội dung đề bài và tài liệu học tập do giáo viên giao.
-- [ ] **Bước 3.4:** Khối bài làm của con (file đính kèm, câu trả lời, thời gian con nộp bài).
-- [ ] **Bước 3.5:** Khối điểm số và lời phê sư phạm của giáo viên (nếu đã chấm).
-- [ ] **Bước 3.6:** Nút hành động phụ huynh: `[ 🔔 Nhắc con nộp bài ]` và `[ 💬 Nhắn giáo viên bộ môn ]`.
+- [x] **Bước 3.1:** Header `Bài tập · [Tên con]` + Nút Back.
+- [x] **Bước 3.2:** Khối thông tin hạn nộp, đếm ngược thời gian và trạng thái bài làm của con.
+- [x] **Bước 3.3:** Khối nội dung đề bài và tài liệu học tập do giáo viên giao.
+- [x] **Bước 3.4:** Khối bài làm của con (file đính kèm, câu trả lời, thời gian con nộp bài).
+- [x] **Bước 3.5:** Khối điểm số và lời phê sư phạm của giáo viên (nếu đã chấm).
+- [x] **Bước 3.6:** Nút hành động phụ huynh: `[ 🔔 Nhắc con nộp bài ]` và `[ 💬 Nhắn giáo viên bộ môn ]`.
 
 ### Giai đoạn 4: Xây dựng Giao diện Tiến độ học tập (`ParentProgressScreen`)
-- [ ] **Bước 4.1:** Header `Tiến độ học tập · Minh` + Pill `10A1` + Action icons (Tải PDF, Share).
-- [ ] **Bước 4.2:** 2 Card KPI trên cùng: `KHÓA ĐANG HỌC (3)` và `TIẾN ĐỘ TRUNG BÌNH (65%)` kèm chỉ số lộ trình.
-- [ ] **Bước 4.3:** Danh sách `CourseProgressCard`:
+- [x] **Bước 4.1:** Header `Tiến độ học tập · Minh` + Pill `10A1` + Action icons (Tải PDF, Share).
+- [x] **Bước 4.2:** 2 Card KPI trên cùng: `KHÓA ĐANG HỌC (3)` và `TIẾN ĐỘ TRUNG BÌNH (65%)` kèm chỉ số lộ trình.
+- [x] **Bước 4.3:** Danh sách `CourseProgressCard`:
   - Khóa Toán nâng cao (8/12 buổi - 67%, đúng tiến độ).
   - Khóa Tiếng Anh IELTS Junior (5/10 buổi - 50%, cảnh báo bài viết luận).
   - Khóa STEM (12/12 buổi - 100%, huân chương & nút Xem chứng nhận).
-- [ ] **Bước 4.4:** Khối Ghi chú từ Giáo viên chủ nhiệm ở đáy trang.
-- [ ] **Bước 4.5:** Đấu nối liên kết: Bấm cảnh báo bài viết luận mở thẳng màn hình Bài tập về nhà; Bấm "Xem chứng nhận" mở dialog/bottomsheet chứng nhận.
+- [x] **Bước 4.4:** Khối Ghi chú từ Giáo viên chủ nhiệm ở đáy trang.
+- [x] **Bước 4.5:** Đấu nối liên kết: Bấm cảnh báo bài viết luận mở thẳng màn hình Bài tập về nhà; Bấm "Xem chứng nhận" mở dialog/bottomsheet chứng nhận.
 
 ### Giai đoạn 5: Đấu nối Điều hướng từ Learning Root Hub (`ParentLearningScreen`)
-- [ ] **Bước 5.1:** Đấu nối Card 3 (`Bài tập về nhà`) mở `ParentHomeworkScreen`.
-- [ ] **Bước 5.2:** Đấu nối Card 4 (`Tiến độ khóa học`) mở `ParentProgressScreen`.
-- [ ] **Bước 5.3:** Đấu nối nút đáy `[ Xem bài tập của lớp này → ]` ở `ParentClassDetailScreen` mở `ParentHomeworkScreen`.
+- [x] **Bước 5.1:** Đấu nối Card 3 (`Bài tập về nhà`) mở `ParentHomeworkScreen`.
+- [x] **Bước 5.2:** Đấu nối Card 4 (`Tiến độ khóa học`) mở `ParentProgressScreen`.
+- [x] **Bước 5.3:** Đấu nối nút đáy `[ Xem bài tập của lớp này → ]` ở `ParentClassDetailScreen` mở `ParentHomeworkScreen`.
 
 ### Giai đoạn 6: Kiểm thử, Tối ưu & Báo cáo
-- [ ] **Bước 6.1:** Chạy `flutter analyze` đảm bảo 0 lỗi, 0 cảnh báo linting.
-- [ ] **Bước 6.2:** Kiểm tra UI responsive, không bị overflow trên mọi kích thước màn hình.
-- [ ] **Bước 6.3:** Commit từng giai đoạn bằng **tiếng Việt có dấu**, không push code lên remote.
+- [x] **Bước 6.1:** Chạy `flutter analyze` đảm bảo 0 lỗi, 0 cảnh báo linting.
+- [x] **Bước 6.2:** Kiểm tra UI responsive, không bị overflow trên mọi kích thước màn hình.
+- [x] **Bước 6.3:** Commit từng giai đoạn bằng **tiếng Việt có dấu**, không push code lên remote.
 
 ---
 
