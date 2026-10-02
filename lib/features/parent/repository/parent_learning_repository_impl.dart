@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:study/features/parent/data/models/family_scope_child.dart';
 import 'package:study/features/parent/data/models/parent_class_detail_model.dart';
+import 'package:study/features/parent/data/models/parent_course_progress_model.dart';
 import 'package:study/features/parent/data/models/parent_course_recommendation_models.dart';
+import 'package:study/features/parent/data/models/parent_homework_model.dart';
 import 'package:study/features/parent/data/models/parent_learning_hub_data.dart';
 import 'package:study/features/parent/data/models/parent_learning_insights_model.dart';
 import 'package:study/features/parent/repository/parent_learning_repository.dart';
@@ -405,5 +407,329 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
       ),
     };
   }
+
+  @override
+  Future<List<ParentHomeworkItem>> getHomeworkList(String childId) async {
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+
+    // Mock theo Ảnh 0 & 1 cho Minh
+    if (childId == studentLanId) {
+      return const [
+        ParentHomeworkItem(
+          id: 'hw-lan-van-1',
+          title: 'Soạn bài: Luyện tập viết đoạn văn nghị luận',
+          subjectCode: '文',
+          subjectName: 'NGỮ VĂN 7B',
+          teacherName: 'Thầy Hưng',
+          dueTagLabel: 'HẠN NGÀY MAI',
+          dueTagTextColor: Color(0xFFD97706),
+          dueTagBgColor: Color(0xFFFEF3C7),
+          timeRemainingText: 'Còn 1 ngày',
+          status: ParentHomeworkStatus.inProgress,
+        ),
+      ];
+    }
+
+    return const [
+      ParentHomeworkItem(
+        id: 'hw-minh-toan-1',
+        title: 'Bài tập 1: Phân số cơ bản & Rút gọn',
+        subjectCode: 'Σ',
+        subjectName: 'TOÁN NÂNG CAO 10',
+        teacherName: 'Cô Lan',
+        dueTagLabel: 'CẦN NỘP HÔM NAY',
+        dueTagTextColor: Color(0xFFDC2626),
+        dueTagBgColor: Color(0xFFFEE2E2),
+        timeRemainingText: 'Còn 6 giờ',
+        status: ParentHomeworkStatus.urgent,
+        isUrgent: true,
+      ),
+      ParentHomeworkItem(
+        id: 'hw-minh-anh-1',
+        title: 'Unit 4 Reading: Climate Change & Summary',
+        subjectCode: 'En',
+        subjectName: 'TIẾNG ANH 10',
+        teacherName: 'Thầy David Nam',
+        dueTagLabel: 'HẠN NGÀY MAI',
+        dueTagTextColor: Color(0xFFD97706),
+        dueTagBgColor: Color(0xFFFEF3C7),
+        timeRemainingText: 'Còn 1 ngày',
+        status: ParentHomeworkStatus.inProgress,
+      ),
+      ParentHomeworkItem(
+        id: 'hw-minh-ly-1',
+        title: 'Báo cáo thực hành: Đo gia tốc rơi tự do',
+        subjectCode: 'Sc',
+        subjectName: 'VẬT LÝ 10',
+        teacherName: 'Thầy Hưng',
+        dueTagLabel: 'HẠN THỨ 6',
+        dueTagTextColor: Color(0xFF2563EB),
+        dueTagBgColor: Color(0xFFEFF6FF),
+        timeRemainingText: 'Còn 3 ngày',
+        status: ParentHomeworkStatus.inProgress,
+      ),
+    ];
+  }
+
+  @override
+  Future<ParentHomeworkDetailModel?> getHomeworkDetail(
+    String homeworkId, {
+    String? childId,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+
+    if (homeworkId == 'hw-minh-toan-1') {
+      return const ParentHomeworkDetailModel(
+        id: 'hw-minh-toan-1',
+        title: 'Bài tập 1: Phân số cơ bản & Rút gọn',
+        subjectName: 'Toán nâng cao 10',
+        teacherName: 'Cô Lan (ThS. Toán học)',
+        dueDateText: '23:59 Hôm nay (Thứ 4, 02/10)',
+        timeRemainingText: 'Còn khoảng 6 giờ để nộp',
+        status: ParentHomeworkStatus.urgent,
+        statusLabel: 'Cần nộp gấp hôm nay',
+        description:
+            'Hoàn thành các bài tập từ Bài 1 đến Bài 5 trong phiếu học '
+            'tập số 8. Chú ý trình bày rõ các bước quy đồng mẫu số và '
+            'điều kiện xác định của phân thức đại số trước khi rút gọn.',
+        attachments: [
+          'Phieu_bai_tap_so_8_Phan_so_Rut_gon.pdf',
+          'Huong_dan_trinh_bay_mau.pdf',
+        ],
+        studentSubmissionNote: null,
+        submittedFiles: [],
+        submittedAtText: null,
+      );
+    }
+
+    if (homeworkId == 'hw-minh-anh-1') {
+      return const ParentHomeworkDetailModel(
+        id: 'hw-minh-anh-1',
+        title: 'Unit 4 Reading: Climate Change & Summary',
+        subjectName: 'Tiếng Anh 10',
+        teacherName: 'Thầy David Nam',
+        dueDateText: '20:00 Ngày mai (Thứ 5, 03/10)',
+        timeRemainingText: 'Còn 1 ngày',
+        status: ParentHomeworkStatus.inProgress,
+        statusLabel: 'Đang làm',
+        description:
+            'Đọc bài đọc trang 45 sách học viên và viết tóm tắt khoảng 120 từ '
+            'về các giải pháp giảm phát thải rác thải nhựa trong trường học.',
+        attachments: [
+          'Unit4_Reading_Materials.pdf',
+        ],
+      );
+    }
+
+    if (homeworkId.startsWith('recent-math')) {
+      return const ParentHomeworkDetailModel(
+        id: 'recent-math-1',
+        title: 'Bài tập tuần 11: Phương trình bậc hai & Vi-ét',
+        subjectName: 'Toán nâng cao 10',
+        teacherName: 'Cô Lan',
+        dueDateText: '23:59 Thứ 6, 27/09',
+        timeRemainingText: 'Đã hoàn thành',
+        status: ParentHomeworkStatus.graded,
+        statusLabel: 'Đã chấm điểm',
+        description:
+            'Áp dụng định lý Vi-ét để giải các hệ thức đối xứng và '
+            'tìm giá trị tham số m.',
+        attachments: ['De_kiem_tra_15p_Viet.pdf'],
+        studentSubmissionNote:
+            'Em đã giải đầy đủ cả 4 câu và vẽ kèm bảng biến thiên minh họa ạ.',
+        submittedFiles: ['Bai_lam_Nguyen_Nhat_Minh.pdf'],
+        submittedAtText: '19:42 Thứ 6, 27/09/2024',
+        teacherFeedback:
+            'Minh làm bài rất cẩn thận, lập luận chặt chẽ và chọn '
+            'nghiệm chính xác. Tiếp tục phát huy nhé!',
+        score: 9.5,
+        maxScore: 10.0,
+      );
+    }
+
+    // Default fallback
+    return const ParentHomeworkDetailModel(
+      id: 'hw-generic',
+      title: 'Báo cáo thực hành: Đo gia tốc rơi tự do',
+      subjectName: 'Vật lý 10',
+      teacherName: 'Thầy Hưng',
+      dueDateText: '23:59 Thứ 6 tuần này',
+      timeRemainingText: 'Còn 3 ngày',
+      status: ParentHomeworkStatus.inProgress,
+      statusLabel: 'Đang làm',
+      description:
+          'Xử lý số liệu từ thí nghiệm đồng hồ đo thời gian hiện số '
+          'và vẽ đồ thị v theo t.',
+      attachments: ['Mau_bao_cao_thuc_hanh.docx'],
+    );
+  }
+
+  @override
+  Future<ParentGradedSummaryModel?> getGradedSummary(String childId) async {
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+
+    // Khối kết quả tuần gần nhất theo đúng Ảnh 4 & 5
+    return const ParentGradedSummaryModel(
+      submissionRatio: '3/3 bài nộp',
+      assessmentLabel: 'Tất cả đều đạt loại Giỏi',
+      ratingBadge: 'Xuất sắc',
+      averageScore: 8.8,
+      maxScore: 10.0,
+      recentGradedItems: [
+        RecentGradedItem(
+          id: 'recent-math-1',
+          title: 'Toán nâng cao',
+          gradedDateText: 'Thứ 6, 27/09',
+          score: 9.5,
+          iconData: Icons.functions,
+          iconColor: Color(0xFF2563EB),
+          iconBgColor: Color(0xFFEFF6FF),
+        ),
+        RecentGradedItem(
+          id: 'recent-literature-1',
+          title: 'Ngữ văn',
+          gradedDateText: 'Thứ 4, 25/09',
+          score: 8.5,
+          iconData: Icons.menu_book,
+          iconColor: Color(0xFF9333EA),
+          iconBgColor: Color(0xFFFAF5FF),
+        ),
+        RecentGradedItem(
+          id: 'recent-english-1',
+          title: 'Tiếng Anh',
+          gradedDateText: 'Thứ 2, 23/09',
+          score: 8.5,
+          iconData: Icons.language,
+          iconColor: Color(0xFF0D9488),
+          iconBgColor: Color(0xFFF0FDFA),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Future<ParentProgressScreenData?> getProgressOverview(String childId) async {
+    await Future<void>.delayed(const Duration(milliseconds: 250));
+
+    // Mock chuẩn xác theo Ảnh 2 & 3
+    if (childId == studentLanId) {
+      return const ParentProgressScreenData(
+        overview: ParentProgressOverviewModel(
+          activeCourseCount: 2,
+          studyingCourseCount: 2,
+          completedCourseCount: 0,
+          averageProgressPercent: 0.45,
+          progressStatusText: 'Tiến độ học tập ổn định',
+        ),
+        courses: [
+          ParentCourseProgressItem(
+            courseId: 'course-lan-van-7',
+            courseName: 'Ngữ văn 7 nâng cao',
+            subjectCode: '文',
+            subjectColor: Color(0xFF9333EA),
+            subjectBgColor: Color(0xFFFAF5FF),
+            teacherName: 'Thầy Hưng',
+            locationText: 'Phòng 204',
+            statusLabel: 'Đang học',
+            statusTextColor: Color(0xFF2563EB),
+            statusBgColor: Color(0xFFEFF6FF),
+            completedSessions: 5,
+            totalSessions: 10,
+            progressPercent: 0.50,
+            progressColor: Color(0xFF9333EA),
+            remainingSessionsText: 'Còn 5 buổi',
+            progressNote: 'Đang học đúng lộ trình chuyên đề văn học',
+          ),
+        ],
+        homeroomNote: TeacherHomeroomNote(
+          title: 'Ghi chú từ Giáo viên chủ nhiệm (Cô Lan Hương)',
+          content:
+              'Lan có tinh thần tự giác rất cao. Em luôn chủ động chuẩn bị '
+              'bài trước khi đến lớp và tích cực hỗ trợ bạn bè trong các '
+              'hoạt động nhóm.',
+        ),
+      );
+    }
+
+    // Minh: đúng theo thiết kế 3 thẻ
+    return const ParentProgressScreenData(
+      overview: ParentProgressOverviewModel(
+        activeCourseCount: 3,
+        studyingCourseCount: 2,
+        completedCourseCount: 1,
+        averageProgressPercent: 0.65,
+        progressStatusText: 'Đúng lộ trình đề ra',
+      ),
+      courses: [
+        // Thẻ 1: Toán nâng cao (Ảnh 2)
+        ParentCourseProgressItem(
+          courseId: 'class-toan-10',
+          courseName: 'Toán nâng cao 10',
+          subjectCode: 'Σ',
+          subjectColor: Color(0xFF2563EB),
+          subjectBgColor: Color(0xFFEFF6FF),
+          teacherName: 'Cô Lan',
+          locationText: 'Phòng 302',
+          statusLabel: 'Đang học',
+          statusTextColor: Color(0xFF2563EB),
+          statusBgColor: Color(0xFFEFF6FF),
+          completedSessions: 8,
+          totalSessions: 12,
+          progressPercent: 0.67,
+          progressColor: Color(0xFF2563EB),
+          remainingSessionsText: 'Còn 4 buổi',
+          progressNote: 'Đúng tiến độ · Buổi tiếp theo thứ 2 (18:00)',
+        ),
+        // Thẻ 2: Tiếng Anh IELTS (Ảnh 2)
+        ParentCourseProgressItem(
+          courseId: 'course-ielts-junior',
+          courseName: 'Tiếng Anh IELTS Junior',
+          subjectCode: '文A',
+          subjectColor: Color(0xFFEA580C),
+          subjectBgColor: Color(0xFFFFF7ED),
+          teacherName: 'Thầy David Nam',
+          locationText: 'Trực tuyến Zoom',
+          statusLabel: 'Đang học',
+          statusTextColor: Color(0xFF2563EB),
+          statusBgColor: Color(0xFFEFF6FF),
+          completedSessions: 5,
+          totalSessions: 10,
+          progressPercent: 0.50,
+          progressColor: Color(0xFFEA580C),
+          remainingSessionsText: 'Còn 5 buổi',
+          warningNote: 'Cần chú ý bài tập viết luận',
+        ),
+        // Thẻ 3: STEM Robotics (Ảnh 3)
+        ParentCourseProgressItem(
+          courseId: 'course-stem-robotics',
+          courseName: 'STEM Robotics cơ bản',
+          subjectCode: 'STEM',
+          subjectColor: Color(0xFF0D9488),
+          subjectBgColor: Color(0xFFF0FDFA),
+          teacherName: 'Thầy Hoàng Minh',
+          locationText: 'Lab STEM A2',
+          statusLabel: 'Xong',
+          statusTextColor: Color(0xFF0D9488),
+          statusBgColor: Color(0xFFF0FDFA),
+          completedSessions: 12,
+          totalSessions: 12,
+          progressPercent: 1.0,
+          progressColor: Color(0xFF0D9488),
+          remainingSessionsText: 'Đã hoàn thành',
+          isCompleted: true,
+          certificateText: 'Đã hoàn thành · Đạt chứng nhận Xuất sắc',
+        ),
+      ],
+      homeroomNote: TeacherHomeroomNote(
+        title: 'Ghi chú từ Giáo viên chủ nhiệm (Cô Mai Linh)',
+        content:
+            'Minh duy trì thái độ học tập rất nghiêm túc và có nhiều '
+            'tiến bộ ở các môn tự nhiên. Cần tiếp tục duy trì đà học tập '
+            'môn Tiếng Anh và hoàn thành bài viết luận đúng hạn để đạt '
+            'kết quả tốt nhất.',
+      ),
+    );
+  }
 }
+
 
