@@ -23,7 +23,19 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
   @override
   Future<List<FamilyScopeChild>> getChildren() async {
     // 1. Tải danh sách con thật từ backend API
-    final realChildren = await _fetchRealChildren();
+    var realChildren = <FamilyScopeChild>[];
+    try {
+      realChildren = await _fetchRealChildren();
+    } catch (e, stackTrace) {
+      if (!enablePreviewFallback) {
+        rethrow;
+      }
+      AppLogger.w(
+        'ParentSchedule: fetch real children failed, fallback to mock',
+        e,
+      );
+      AppLogger.d('ParentSchedule children stackTrace', stackTrace);
+    }
 
     // 2. Nếu bật fallback, gộp với con mẫu Minh & Lan giống như trang Home
     if (enablePreviewFallback) {
@@ -248,7 +260,19 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
     required DateTime anchorDate,
   }) async {
     final list = <ParentScheduleSession>[];
-    final realChildren = await _fetchRealChildren();
+    var realChildren = <FamilyScopeChild>[];
+    try {
+      realChildren = await _fetchRealChildren();
+    } catch (e, stackTrace) {
+      if (!enablePreviewFallback) {
+        rethrow;
+      }
+      AppLogger.w(
+        'ParentSchedule: fetch real children in sessions failed',
+        e,
+      );
+      AppLogger.d('ParentSchedule children stackTrace', stackTrace);
+    }
 
     // 1. Tải lịch của con thật từ backend
     // Mai Hoàng Tùng là tài khoản thật, chỉ hiển thị lịch học thật từ API,
@@ -256,13 +280,24 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
     if (realChildren.isNotEmpty) {
       for (final child in realChildren) {
         if (childId == null || childId == child.id) {
-          final realSessions = await _fetchRealSchedules(
-            child.id,
-            child.name,
-            child.badgeColor,
-          );
-          if (realSessions.isNotEmpty) {
-            list.addAll(realSessions);
+          try {
+            final realSessions = await _fetchRealSchedules(
+              child.id,
+              child.name,
+              child.badgeColor,
+            );
+            if (realSessions.isNotEmpty) {
+              list.addAll(realSessions);
+            }
+          } catch (e, stackTrace) {
+            AppLogger.w(
+              'ParentSchedule: fetch schedule for ${child.id} failed',
+              e,
+            );
+            AppLogger.d('ParentSchedule child schedule stackTrace', stackTrace);
+            if (!enablePreviewFallback) {
+              rethrow;
+            }
           }
         }
       }

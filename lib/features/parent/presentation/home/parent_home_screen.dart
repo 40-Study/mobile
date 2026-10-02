@@ -4,11 +4,13 @@ import 'package:study/di/di_container.dart';
 import 'package:study/features/parent/bloc/home/parent_home_bloc.dart';
 import 'package:study/features/parent/bloc/home/parent_home_event.dart';
 import 'package:study/features/parent/bloc/home/parent_home_state.dart';
+import 'package:study/features/parent/data/parent_home_api_client.dart';
 import 'package:study/features/parent/presentation/children/manage_children_screen.dart';
 import 'package:study/features/parent/presentation/home/widgets/widgets.dart';
 import 'package:study/features/parent/presentation/insights_inbox/family_insights_inbox_screen.dart';
 import 'package:study/features/parent/presentation/widgets/widgets.dart';
 import 'package:study/features/parent/repository/parent_home_repository.dart';
+import 'package:study/features/parent/repository/parent_home_repository_impl.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
 import 'package:study/theme/theme.dart';
 
@@ -28,9 +30,16 @@ class ParentHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          ParentHomeBloc(diContainer<ParentHomeRepository>())
-            ..add(const ParentHomeStarted()),
+      create: (_) => ParentHomeBloc(
+        diContainer.isRegistered<ParentHomeRepository>()
+            ? diContainer<ParentHomeRepository>()
+            : ParentHomeRepositoryImpl(
+                apiClient: diContainer.isRegistered<ParentHomeApiClient>()
+                    ? diContainer<ParentHomeApiClient>()
+                    : null,
+                enablePreviewFallback: true,
+              ),
+      )..add(const ParentHomeStarted()),
       child: _HomeContent(
         onNavigateToProfile: onNavigateToProfile,
         onNavigateToSchedule: onNavigateToSchedule,
