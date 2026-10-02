@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:study/features/parent/data/models/parent_payment_model.dart';
 import 'package:study/features/parent/repository/parent_payment_repository.dart';
 import 'package:study/features/parent/repository/parent_payment_repository_impl.dart';
+import 'checkout/payment_checkout_screen.dart';
+import 'history/payment_history_screen.dart';
+import 'invoice_detail/payment_invoice_detail_screen.dart';
+import 'result/payment_transaction_result_screen.dart';
 import 'widgets/payment_all_clear_hero_card.dart';
 import 'widgets/payment_child_filter_bar.dart';
 import 'widgets/payment_due_hero_card.dart';
@@ -100,9 +104,13 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
     if (widget.onOpenInvoiceDetail != null) {
       widget.onOpenInvoiceDetail!(invoice);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Mở chi tiết khoản thu: ${invoice.invoiceCode}'),
+      Navigator.push<void>(
+        context,
+        MaterialPageRoute<void>(
+          builder: (ctx) => PaymentInvoiceDetailScreen(
+            invoice: invoice,
+            onCheckout: _handleCheckout,
+          ),
         ),
       );
     }
@@ -112,9 +120,36 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
     if (widget.onOpenCheckout != null) {
       widget.onOpenCheckout!(invoice);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Mở thanh toán cho khoản: ${invoice.invoiceCode}'),
+      Navigator.push<void>(
+        context,
+        MaterialPageRoute<void>(
+          builder: (ctx) => PaymentCheckoutScreen(
+            invoice: invoice,
+            onPaymentCompleted: (result) {
+              Navigator.pushReplacement<void, void>(
+                ctx,
+                MaterialPageRoute<void>(
+                  builder: (resCtx) => PaymentTransactionResultScreen(
+                    initialResult: result,
+                    onReturnToPaymentHome: () {
+                      Navigator.pop(resCtx);
+                      _loadData();
+                    },
+                    onViewReceipt: (_) {
+                      Navigator.push<void>(
+                        resCtx,
+                        MaterialPageRoute<void>(
+                          builder: (_) => PaymentInvoiceDetailScreen(
+                            invoice: invoice,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       );
     }
@@ -124,9 +159,12 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
     if (widget.onOpenHistory != null) {
       widget.onOpenHistory!();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Mở Lịch sử thanh toán'),
+      Navigator.push<void>(
+        context,
+        MaterialPageRoute<void>(
+          builder: (ctx) => PaymentHistoryScreen(
+            onOpenInvoiceDetail: _handleInvoiceDetail,
+          ),
         ),
       );
     }

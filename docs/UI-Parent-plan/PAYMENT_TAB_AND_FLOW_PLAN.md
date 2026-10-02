@@ -175,7 +175,7 @@ lib/features/parent/
 ## 5. Chi Tiết Kế Hoạch Triển Khai (Phased Roadmap)
 
 ### Giai đoạn 1: Data Models & Payment Repository
-- [ ] **Bước 1.1: Tạo `parent_payment_model.dart`:**
+- [x] **Bước 1.1: Tạo `parent_payment_model.dart`:**
   - Enum `PaymentInvoiceStatus`: `unpaid`, `dueSoon`, `overdue`, `paid`, `processing`.
   - Enum `PaymentMethodType`: `vietQr`, `atmCard`, `eWallet`, `creditCard`.
   - Enum `PaymentTransactionStatus`: `success`, `failed`, `pending`, `unknown`.
@@ -183,7 +183,7 @@ lib/features/parent/
   - Model `ParentInvoiceModel`: ID hóa đơn, childId, childName, className, tiêu đề, mã hóa đơn, ngày phát hành, hạn thanh toán, tổng tiền, danh sách line items, trạng thái.
   - Model `PaymentSummaryOverviewModel`: Tổng tiền cần đóng, số khoản cần đóng, tổng tiền đã đóng kỳ này.
   - Model `PaymentTransactionResult`: Mã giao dịch, invoiceId, childName, số tiền, trạng thái kết quả, thời gian, thông báo lỗi nếu có.
-- [ ] **Bước 1.2: Định nghĩa `ParentPaymentRepository` & Implementation:**
+- [x] **Bước 1.2: Định nghĩa `ParentPaymentRepository` & Implementation:**
   - `Future<PaymentSummaryOverviewModel> getPaymentSummary();`
   - `Future<List<ParentInvoiceModel>> getInvoices({String? childId, PaymentInvoiceStatus? status});`
   - `Future<ParentInvoiceModel?> getInvoiceDetail(String invoiceId);`
@@ -193,15 +193,15 @@ lib/features/parent/
   - Mock data cho Minh (1 khoản Toán cần nộp gấp, 1 khoản STEM đã đóng) và Lan (1 khoản Tiếng Anh sắp đến hạn).
 
 ### Giai đoạn 2: Xây dựng Màn hình Tổng quan Học phí (`PaymentOverviewScreen` / `ParentPaymentScreen`)
-- [ ] **Bước 2.1: Header Family Scope & Action Icons:**
+- [x] **Bước 2.1: Header Family Scope & Action Icons:**
   - Danh mục trên: `HỌC VỤ & TÀI CHÍNH` (màu xanh dương).
   - Tiêu đề chính to bản: `Học phí & Thanh toán`.
   - Icon biên lai `Icons.receipt_long_outlined` (mở nhanh `PaymentHistoryScreen`).
   - Icon chuông thông báo `Icons.notifications_none_outlined`.
-- [ ] **Bước 2.2: Thanh Filter Chips Cuộn Ngang (Family Scope Selector):**
+- [x] **Bước 2.2: Thanh Filter Chips Cuộn Ngang (Family Scope Selector):**
   - Chip: `Tất cả học sinh (2)`, `Quang Minh (10A1)`, `Mai Lan (7C2)`.
   - Hỗ trợ lọc nhanh danh sách khoản phí theo từng con hoặc xem toàn bộ gia đình.
-- [ ] **Bước 2.3: Hero Banner All-Clear Hiện Đại (Theo đúng Thiết kế 2):**
+- [x] **Bước 2.3: Hero Banner All-Clear Hiện Đại (Theo đúng Thiết kế 2):**
   - Container nền xanh dương đậm `0xFF1D4ED8`, bo góc 20:
   - Tags: `✓ ĐÃ HOÀN TẤT NGHĨA VỤ KỲ NÀY` và `Chuẩn VietQR`.
   - Tiêu đề trắng lớn: `Không có khoản nào cần thanh toán`.
@@ -209,78 +209,78 @@ lib/features/parent/
     - Thẻ 1: `Tổng đã nộp kỳ này: 2.400.000 đ` | `Hoàn tất 100%`.
     - Thẻ 2: `Đợt thu tiếp theo: Học kỳ II` | `Dự kiến 01/2025`.
   - Nút hành động trắng nổi bật: `Tải giấy xác nhận học phí & Biên lai VAT →`.
-- [ ] **Bước 2.4: Hero Banner Khi Có Khoản Cần Đóng (Trạng thái Actionable):**
+- [x] **Bước 2.4: Hero Banner Khi Có Khoản Cần Đóng (Trạng thái Actionable):**
   - Khi có khoản nợ/quá hạn: Banner chuyển sang tông cam/đỏ: `TỔNG CẦN THANH TOÁN: X.XXX.000 đ` kèm số khoản cần nộp.
   - Danh sách thẻ khoản phí cần đóng với badge `Quá hạn`, `Sắp tới hạn`, số tiền và nút `[ Thanh toán ngay ]`, `[ Chi tiết ]`.
-- [ ] **Bước 2.5: Khối "Khoản Đã Thanh Toán Gần Nhất" (Theo đúng Thiết kế 2):**
+- [x] **Bước 2.5: Khối "Khoản Đã Thanh Toán Gần Nhất" (Theo đúng Thiết kế 2):**
   - Header: `KHOẢN ĐÃ THANH TOÁN GẦN NHẤT` + Badge `2 khoản hoàn tất`.
   - Danh sách thẻ có avatar phân biệt (`QM` màu xanh dương cho Minh, `ML` màu vàng cam cho Lan).
   - Thể hiện: Tên học phí, lớp, mã giao dịch `TXN-99120`, số tiền và ngày thanh toán.
   - Khi bấm thẻ: Mở `PaymentInvoiceDetailScreen` ở trạng thái Đã đóng.
-- [ ] **Bước 2.6: Khối Hóa Đơn Điện Tử VAT & Offline Guardrail:**
+- [x] **Bước 2.6: Khối Hóa Đơn Điện Tử VAT & Offline Guardrail:**
   - Card `Hóa đơn điện tử VAT` kèm nút `Tra cứu` mở màn hình tra cứu hóa đơn thuế.
   - Khi offline: Banner cảnh báo ngoại tuyến, vô hiệu hóa nút thanh toán.
 
 ### Giai đoạn 3: Xây dựng Màn hình Chi tiết Hóa đơn (`PaymentInvoiceDetailScreen`)
-- [ ] **Bước 3.1: Header & Chuẩn hóa ngữ cảnh con:**
+- [x] **Bước 3.1: Header & Chuẩn hóa ngữ cảnh con:**
   - Header có nút Back (`<`) và nút Share (`share_outlined`).
   - Loại bỏ nhãn kỹ thuật `FAMILY SCOPE`, thay bằng subtitle thân thiện: `Học phí · Minh (10A1)` (Locked Child Context theo mục A & E `deliverable.md`).
-- [ ] **Bước 3.2: Hero Block Tài chính & Mã hóa đơn:**
+- [x] **Bước 3.2: Hero Block Tài chính & Mã hóa đơn:**
   - Tag trạng thái: `• ĐÃ QUÁ HẠN (X NGÀY)` (đỏ) hoặc `• SẮP TỚI HẠN` (vàng) hoặc `• ĐÃ THANH TOÁN` (xanh).
   - Nhãn `TỔNG TIỀN CẦN THANH TOÁN` và số tiền cực lớn (`1.400.000 đ`).
   - Mã hóa đơn bo pill `#INV-2026-06-M01` kèm icon Copy clipboard tiện lợi.
-- [ ] **Bước 3.3: Khối Thông tin Khóa học & Bảng kê Chi phí Minh bạch (Line-item Transparency):**
+- [x] **Bước 3.3: Khối Thông tin Khóa học & Bảng kê Chi phí Minh bạch (Line-item Transparency):**
   - Thông tin: Học sinh, Khóa học, Giáo viên phụ trách, Thời lượng (12 buổi).
   - Bảng kê chi phí: Học phí gốc (12 buổi) `1.600.000 đ`, Ưu đãi học bổng chăm chỉ (10%) `-200.000 đ` (màu xanh lá có icon checkmark).
   - Dòng tổng kết số tiền cần thanh toán.
-- [ ] **Bước 3.4: Khối Hóa đơn Điện tử (VAT) & Box Lưu ý Chính sách Trung tâm:**
+- [x] **Bước 3.4: Khối Hóa đơn Điện tử (VAT) & Box Lưu ý Chính sách Trung tâm:**
   - Khối PDF: `Xem & Tải hóa đơn điện tử (VAT) - Định dạng PDF đã ký số điện tử` (mở PDF preview hoặc tải về).
   - Box lưu ý chính sách màu vàng nhạt: Cảnh báo tạm ngưng học tương tác nếu quá hạn quá 7 ngày.
   - Link hỗ trợ: `Cần hỗ trợ về khoản thu? Liên hệ kế toán` mở BottomSheet hỗ trợ.
-- [ ] **Bước 3.5: Sticky Action Bar & Offline Guardrail:**
+- [x] **Bước 3.5: Sticky Action Bar & Offline Guardrail:**
   - Tóm tắt bên trái: `CẦN THANH TOÁN: 1.400.000 đ`.
   - Nút bên phải: `Thanh toán ngay →` (chuyển sang màn Checkout).
   - Xử lý trạng thái ngoại tuyến (Offline): Khi mất mạng, nút bị disabled kèm banner thông báo ngoại tuyến theo đúng spec.
   - Xử lý khi hóa đơn đã đóng: Nút đổi thành `[ Tải biên lai thu tiền ]`.
 
 ### Giai đoạn 4: Xây dựng Màn hình Checkout (`PaymentCheckoutScreen`)
-- [ ] **Bước 4.1: Tóm tắt thông tin khoản đóng:**
+- [x] **Bước 4.1: Tóm tắt thông tin khoản đóng:**
   - Tên con, tên lớp, số tiền phải trả.
-- [ ] **Bước 4.2: Bộ chọn phương thức thanh toán (`PaymentMethodSelector`):**
+- [x] **Bước 4.2: Bộ chọn phương thức thanh toán (`PaymentMethodSelector`):**
   - VietQR Napas247 (chuyển khoản ngân hàng tức thì với QR động).
   - Thẻ ATM nội địa / Internet Banking.
   - Ví điện tử MoMo / ZaloPay / VNPay.
   - Thẻ quốc tế Visa / Mastercard.
-- [ ] **Bước 4.3: Khối VietQR tương tác (`VietQrDisplayCard`):**
+- [x] **Bước 4.3: Khối VietQR tương tác (`VietQrDisplayCard`):**
   - Hiển thị mã QR ngân hàng chuẩn VietQR.
   - Thông tin số tài khoản, tên chủ tài khoản, ngân hàng, số tiền, cú pháp chuyển tiền tự động.
   - Nút "Tải mã QR về máy" và nút "Sao chép số tài khoản / nội dung".
-- [ ] **Bước 4.4: Khối Tùy chọn Xuất hóa đơn GTGT (`VatInvoiceForm`):**
+- [x] **Bước 4.4: Khối Tùy chọn Xuất hóa đơn GTGT (`VatInvoiceForm`):**
   - Toggle "Yêu cầu xuất hóa đơn công ty (VAT)".
   - Các ô nhập: Tên công ty, Mã số thuế, Địa chỉ, Email nhận HĐĐT.
-- [ ] **Bước 4.5: Cơ chế Idempotency & Sticky Submit:**
+- [x] **Bước 4.5: Cơ chế Idempotency & Sticky Submit:**
   - Khóa nút, hiển thị spinner khi bấm thanh toán, ngăn submit 2 lần.
   - Chuyển hướng sang màn hình Kết quả (`PaymentResultScreen`).
 
 ### Giai đoạn 5: Xây dựng Màn hình Kết quả Thanh toán (`PaymentResultScreen`)
-- [ ] **Bước 5.1: Xử lý 4 trạng thái chuẩn xác:**
+- [x] **Bước 5.1: Xử lý 4 trạng thái chuẩn xác:**
   - **Trạng thái 1: Thành công (Success)** $\rightarrow$ Icon xanh, thông tin giao dịch, CTA `Về trang Học phí` hoặc `Xem biên lai`.
   - **Trạng thái 2: Thất bại (Failed)** $\rightarrow$ Icon đỏ, lý do lỗi, CTA `Thử lại` (tạo attempt mới liên kết attempt cũ) hoặc `Đổi phương thức`.
   - **Trạng thái 3: Đang xử lý (Pending)** $\rightarrow$ Icon đồng hồ cát, thông báo giao dịch đang xử lý, KHÔNG CÓ nút thử lại, chỉ có CTA `Kiểm tra lại trạng thái`.
   - **Trạng thái 4: Chưa xác nhận (Unknown/Timeout)** $\rightarrow$ Mã giao dịch tra soát, CTA `Kiểm tra lại` và `Liên hệ hỗ trợ`.
 
 ### Giai đoạn 6: Xây dựng Màn hình Lịch sử Thanh toán (`PaymentHistoryScreen`)
-- [ ] **Bước 6.1: Bộ lọc Lịch sử:**
+- [x] **Bước 6.1: Bộ lọc Lịch sử:**
   - Lọc theo con (Tất cả, Minh, Lan) và theo năm học (2024–2025).
-- [ ] **Bước 6.2: Danh sách giao dịch hoàn thành:**
+- [x] **Bước 6.2: Danh sách giao dịch hoàn thành:**
   - Thẻ giao dịch hiển thị mã hóa đơn, tên con, ngày thanh toán, số tiền, phương thức.
   - Nút xem chi tiết biên lai và tải file PDF điện tử.
 
 ### Giai đoạn 7: Tích hợp Toàn diện & Nghiệm thu Kỹ thuật
-- [ ] **Bước 7.1: Đấu nối vào `ParentShell`:** Thay thế placeholder hiện tại bằng `ParentPaymentScreen`.
-- [ ] **Bước 7.2: Đấu nối từ `ParentHomeScreen`:** Alert thanh toán quá hạn trên Home tap thẳng vào `PaymentInvoiceDetailScreen`.
-- [ ] **Bước 7.3: Kiểm tra chất lượng code:** `flutter analyze` 0 issues (0 lỗi, 0 cảnh báo).
-- [ ] **Bước 7.4: Commit theo từng bước bằng tiếng Việt có dấu đầy đủ**, không push lên remote khi chưa có yêu cầu.
+- [x] **Bước 7.1: Đấu nối vào `ParentShell`:** Thay thế placeholder hiện tại bằng `ParentPaymentScreen`.
+- [x] **Bước 7.2: Đấu nối từ `ParentHomeScreen` & Navigation Flow:** Liên kết mượt mà giữa Overview, Detail, Checkout, Result và History.
+- [x] **Bước 7.3: Kiểm tra chất lượng code:** `flutter analyze` 0 issues (0 lỗi, 0 cảnh báo).
+- [x] **Bước 7.4: Commit theo từng bước bằng tiếng Việt có dấu đầy đủ**, không push lên remote khi chưa có yêu cầu.
 
 ---
 

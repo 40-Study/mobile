@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:study/features/parent/data/models/parent_payment_model.dart';
+import '../checkout/payment_checkout_screen.dart';
+import '../result/payment_transaction_result_screen.dart';
 import '../widgets/payment_formatters.dart';
 import 'widgets/invoice_info_card.dart';
 import 'widgets/invoice_line_items_card.dart';
@@ -122,10 +124,25 @@ class _PaymentInvoiceDetailScreenState
     if (widget.onCheckout != null) {
       widget.onCheckout!(widget.invoice);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Chuyển sang màn hình thanh toán: ${widget.invoice.invoiceCode}',
+      Navigator.push<void>(
+        context,
+        MaterialPageRoute<void>(
+          builder: (ctx) => PaymentCheckoutScreen(
+            invoice: widget.invoice,
+            onPaymentCompleted: (result) {
+              Navigator.pushReplacement<void, void>(
+                ctx,
+                MaterialPageRoute<void>(
+                  builder: (resCtx) => PaymentTransactionResultScreen(
+                    initialResult: result,
+                    onReturnToPaymentHome: () {
+                      Navigator.pop(resCtx);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              );
+            },
           ),
         ),
       );
