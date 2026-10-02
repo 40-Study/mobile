@@ -1,0 +1,55 @@
+import 'package:study/features/parent/data/models/family_scope_child.dart';
+import 'package:study/features/parent/data/models/parent_class_detail_model.dart';
+import 'package:study/features/parent/data/models/parent_course_progress_model.dart';
+import 'package:study/features/parent/data/models/parent_course_recommendation_models.dart';
+import 'package:study/features/parent/data/models/parent_homework_model.dart';
+import 'package:study/features/parent/data/models/parent_learning_hub_data.dart';
+import 'package:study/features/parent/data/models/parent_learning_insights_model.dart';
+
+/// Interface repository quản lý dữ liệu cho phân hệ Học tập (Parent Learning)
+abstract class ParentLearningRepository {
+  /// Lấy danh sách con để hiển thị Family Scope Selector
+  Future<List<FamilyScopeChild>> getChildren();
+
+  /// Lấy dữ liệu tóm tắt cho 1 con cụ thể tại Learning Root Hub
+  Future<ParentLearningHubData?> getLearningHubData(String childId);
+
+  /// Lấy bản đồ dữ liệu tóm tắt của tất cả các con
+  /// dạng `Map<String, ParentLearningHubData>`
+  Future<Map<String, ParentLearningHubData>> getAllLearningHubData();
+
+  /// Lấy thông tin chi tiết một lớp học của con
+  Future<ParentClassDetailModel?> getClassDetail(
+    String classId, {
+    String? childId,
+  });
+
+  /// Lấy báo cáo phân tích sư phạm chuyên sâu của con (Learning Insights)
+  Future<ParentLearningInsightsModel?> getLearningInsights(String childId);
+
+  /// Lấy danh sách khóa học đề xuất cá nhân hoá cho con
+  Future<List<ParentRecommendedCourseItem>> getRecommendedCourses(
+    String childId,
+  );
+
+  /// Lấy thông tin chi tiết khóa học được gợi ý
+  Future<ParentRecommendedCourseDetailModel?> getRecommendedCourseDetail(
+    String courseId, {
+    String? childId,
+  });
+
+  /// Lấy danh sách bài tập về nhà của con
+  Future<List<ParentHomeworkItem>> getHomeworkList(String childId);
+
+  /// Lấy thông tin chi tiết một bài tập về nhà cụ thể
+  Future<ParentHomeworkDetailModel?> getHomeworkDetail(
+    String homeworkId, {
+    String? childId,
+  });
+
+  /// Lấy báo cáo tóm tắt bài tập đã chấm tuần gần nhất (phục vụ Empty State)
+  Future<ParentGradedSummaryModel?> getGradedSummary(String childId);
+
+  /// Lấy dữ liệu tiến độ học tập của con (màn hình Tiến độ)
+  Future<ParentProgressScreenData?> getProgressOverview(String childId);
+}
