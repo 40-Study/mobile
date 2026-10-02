@@ -28,64 +28,95 @@ Theo đặc tả nghiệp vụ tại `deliverable.md`:
 
 ---
 
-## 2. Phân Tích Thiết Kế Trong Ảnh Đính Kèm (Design Review & Gap Analysis)
+## 2. Phân Tích Các Thiết Kế Trong Ảnh Đính Kèm (Design Review & Gap Analysis)
 
-Ảnh thiết kế do người dùng cung cấp thể hiện màn hình **Chi tiết khoản thu (Screen 19: Payment/Invoice Detail)** trong trạng thái **Đã quá hạn**.
-
-### 2.1. Phân Tích Các Thành Phần Trong Ảnh Thiết Kế:
-1. **Header:** Nút Back (`<`), nhãn kỹ thuật `FAMILY SCOPE`, tiêu đề `Chi tiết khoản thu`, nút Share (`share_outlined`).
-2. **Hero Block Tài chính:**
-   - Pill cảnh báo: `• ĐÃ QUÁ HẠN (5 NGÀY)` (nền đỏ nhạt, chữ đỏ `0xFFDC2626`).
-   - Nhãn: `TỔNG TIỀN CẦN THANH TOÁN`.
-   - Số tiền nổi bật: `1.400.000 đ` (cỡ chữ 32pt, in đậm, màu đen `0xFF0F172A`).
-   - Mã hóa đơn: `#INV-2026-06-M01` kèm icon Copy màu xanh dương.
-3. **Khối Thông Tin Khóa Học:**
-   - Học sinh: `Nguyễn Nhật Minh (10A1)` (định danh con và lớp rõ ràng).
-   - Khóa học: `Toán học nâng cao & Luyện đề`.
-   - Giáo viên phụ trách: `ThS. Hoàng Minh Tuấn`.
-   - Thời lượng: `12 buổi (Tháng 6/2026)`.
-   - Hạn thanh toán: `15/06/2026` (màu đỏ cảnh báo do đã quá hạn).
-4. **Khối Chi Tiết Chi Phí (Line-item Breakdown):**
-   - Học phí gốc (12 buổi): `1.600.000 đ`.
-   - Ưu đãi học bổng chăm chỉ (10%): `-200.000 đ` (màu xanh lá `0xFF16A34A` kèm icon checkmark).
-   - Đường phân cách mảnh.
-   - Dòng tổng kết: `Số tiền cần thanh toán`: `1.400.000 đ` (màu đỏ in đậm).
-5. **Khối Hóa Đơn Điện Tử (VAT):**
-   - Box PDF: `Xem & Tải hóa đơn điện tử (VAT) - Định dạng PDF đã ký số điện tử` kèm mũi tên điều hướng.
-6. **Khối Lưu Ý Chính Sách Trung Tâm:**
-   - Box cảnh báo màu vàng nhạt `0xFFFFFBEB` kèm icon `Icons.warning_amber_rounded`:  
-     *"Lưu ý: Học sinh có thể bị tạm ngưng tham gia các buổi học tương tác nếu học phí quá hạn quá 7 ngày. Phụ huynh vui lòng hoàn tất sớm để đảm bảo việc học của con."*
-7. **Khối Sticky Action Bar Ở Đáy:**
-   - Tóm tắt bên trái: `CẦN THANH TOÁN: 1.400.000 đ`.
-   - Nút hành động chính bên phải: `Thanh toán ngay →` (ElevatedButton màu xanh dương `0xFF2563EB`, icon mũi tên trắng).
+Người dùng đã cung cấp 2 ảnh thiết kế đại diện cho 2 màn hình trọng tâm của phân hệ Học phí:
+1. **Thiết kế 1:** Màn hình **Chi tiết khoản thu (`PaymentInvoiceDetailScreen`)** — Trạng thái *Đã quá hạn*.
+2. **Thiết kế 2:** Màn hình **Học phí & Thanh toán (`PaymentOverviewScreen` / `ParentPaymentScreen`)** — Trạng thái *Đã hoàn tất nghĩa vụ kỳ này (All-Clear)*.
 
 ---
 
-### 2.2. Đánh Giá Ưu Điểm:
-1. **Trực quan hóa tài chính xuất sắc:** Số tiền cần đóng được làm nổi bật ngay lập tức ở cả vị trí Hero đầu trang lẫn Sticky bar cố định dưới chân màn hình, phụ huynh nắm bắt tức thì mà không cần tìm kiếm.
-2. **Minh bạch hóa dòng tiền (Line-item Transparency):** Thể hiện rõ học phí gốc và khoản giảm trừ học bổng `-200.000 đ` bằng màu xanh lá có tick tròn. Điều này tạo tâm lý tích cực, ghi nhận sự nỗ lực học tập của con và sự ghi nhận từ trung tâm.
-3. **Tính thực tế cao:** Tích hợp sẵn nút copy mã hóa đơn `#INV-2026-06-M01` (rất hữu ích khi phụ huynh chuyển khoản ngân hàng cần dán mã giao dịch) và khối xem/tải hóa đơn GTGT PDF có chữ ký số điện tử (cần thiết cho phụ huynh quyết toán doanh nghiệp).
-4. **Cảnh báo sư phạm & vận hành đúng mực:** Nhắc nhở quy chế "ngưng buổi học tương tác nếu quá hạn 7 ngày" vừa mang tính thúc đẩy hoàn tất nghĩa vụ học phí vừa giữ được sự văn minh, không mang tính chất đòi nợ gay gắt.
+### 2.1. Phân Tích Thiết Kế 1 — Chi Tiết Khoản Thu (`PaymentInvoiceDetailScreen`):
+- **Header:** Nút Back (`<`), nhãn kỹ thuật `FAMILY SCOPE`, tiêu đề `Chi tiết khoản thu`, nút Share (`share_outlined`).
+- **Hero Block Tài chính:**
+  - Pill cảnh báo: `• ĐÃ QUÁ HẠN (5 NGÀY)` (nền đỏ nhạt, chữ đỏ `0xFFDC2626`).
+  - Nhãn: `TỔNG TIỀN CẦN THANH TOÁN`.
+  - Số tiền nổi bật: `1.400.000 đ` (cỡ chữ 32pt, in đậm, màu đen `0xFF0F172A`).
+  - Mã hóa đơn bo pill: `#INV-2026-06-M01` kèm icon Copy clipboard màu xanh dương.
+- **Khối Thông Tin Khóa Học:**
+  - Học sinh: `Nguyễn Nhật Minh (10A1)` (định danh con và lớp rõ ràng).
+  - Khóa học: `Toán học nâng cao & Luyện đề`.
+  - Giáo viên phụ trách: `ThS. Hoàng Minh Tuấn`.
+  - Thời lượng: `12 buổi (Tháng 6/2026)`.
+  - Hạn thanh toán: `15/06/2026` (màu đỏ cảnh báo do đã quá hạn).
+- **Khối Chi Tiết Chi Phí (Line-item Transparency):**
+  - Học phí gốc (12 buổi): `1.600.000 đ`.
+  - Ưu đãi học bổng chăm chỉ (10%): `-200.000 đ` (màu xanh lá `0xFF16A34A` kèm icon checkmark).
+  - Dòng tổng kết: `Số tiền cần thanh toán`: `1.400.000 đ` (màu đỏ in đậm).
+- **Khối Tiện Ích Hóa Đơn Điện Tử (VAT):**
+  - Box PDF: `Xem & Tải hóa đơn điện tử (VAT) - Định dạng PDF đã ký số điện tử` kèm mũi tên điều hướng.
+- **Khối Lưu Ý Chính Sách Trung Tâm:**
+  - Box cảnh báo màu vàng nhạt `0xFFFFFBEB` kèm icon `Icons.warning_amber_rounded`:  
+    *"Lưu ý: Học sinh có thể bị tạm ngưng tham gia các buổi học tương tác nếu học phí quá hạn quá 7 ngày. Phụ huynh vui lòng hoàn tất sớm để đảm bảo việc học của con."*
+- **Khối Sticky Action Bar Ở Đáy:**
+  - Tóm tắt bên trái: `CẦN THANH TOÁN: 1.400.000 đ`.
+  - Nút hành động chính bên phải: `Thanh toán ngay →` (ElevatedButton màu xanh dương `0xFF2563EB`, icon mũi tên trắng).
 
 ---
 
-### 2.3. Nhược Điểm & Khoảng Trống (Gaps) Cần Chuẩn Hóa Theo deliverable.md:
-1. **Nhãn nhầm lẫn `FAMILY SCOPE` trên Header:**
-   - *Vấn đề:* Header trong ảnh có dòng text kỹ thuật `FAMILY SCOPE`. Tuy nhiên, đây là nhãn phân loại kiến trúc của tài liệu thiết kế. Khi hiển thị cho phụ huynh, dòng chữ này gây khó hiểu.
-   - *Giải pháp:* Thay bằng subtitle thân thiện hơn hoặc khóa ngữ cảnh con: `Học phí · Minh (10A1)` (đúng quy tắc Locked child context tại màn hình Detail theo mục A & E của `deliverable.md`).
-2. **Chưa xử lý trạng thái Ngoại tuyến (Offline Guardrail):**
-   - *Vấn đề:* Mục D & E của `deliverable.md` quy định nghiêm ngặt: Khi offline, phụ huynh vẫn được xem thông tin hóa đơn từ cache, nhưng **tuyệt đối vô hiệu hóa nút thanh toán** (disabled) để tránh lỗi phát sinh giao dịch ma.
-   - *Giải pháp:* Khi mất kết nối mạng, hiển thị banner cảnh báo ngoại tuyến ở đầu trang, đồng thời nút `Thanh toán ngay` chuyển sang trạng thái disabled màu xám kèm thông báo "Vui lòng kết nối Internet để thanh toán".
-3. **Chưa thể hiện trạng thái khi hóa đơn ĐÃ THANH TOÁN (Paid State):**
-   - *Vấn đề:* Ảnh chỉ thể hiện trạng thái `ĐÃ QUÁ HẠN`. Khi phụ huynh mở lại một hóa đơn đã đóng từ trước (hoặc sau khi thanh toán thành công), giao diện cần phản hồi đúng trạng thái.
-   - *Giải pháp:* Thiết kế biến thể trạng thái `Đã thanh toán`:
-     - Tag trạng thái chuyển thành `• ĐÃ THANH TOÁN` (màu xanh lá `0xFF16A34A`).
-     - Dòng hạn nộp chuyển thành `Ngày thanh toán: 12/06/2026 (Qua VietQR)`.
-     - Ẩn box cảnh báo ngưng học.
-     - Nút sticky đáy chuyển thành `[ Tải biên lai thu tiền ]` hoặc `[ Xem lịch sử giao dịch ]`.
-4. **Thiếu kênh trợ giúp / Trao đổi với Kế toán khi có thắc mắc:**
-   - *Vấn đề:* Khi khoản phí bị quá hạn hoặc có sai sót về số buổi, phụ huynh có nhu cầu liên hệ nhân viên học vụ/kế toán để xác minh hoặc xin chia kỳ đóng phí.
-   - *Giải pháp:* Thêm nút phụ hoặc link text `Cần hỗ trợ về khoản thu? Liên hệ bộ phận kế toán` mở trực tiếp BottomSheet hỗ trợ (gọi hotline hoặc nhắn tin hỗ trợ).
+### 2.2. Phân Tích Thiết Kế 2 — Tổng Quan Học Phí & Thanh Toán (`PaymentOverviewScreen`):
+- **Header App Bar:**
+  - Dòng danh mục trên nhỏ: `HỌC VỤ & TÀI CHÍNH` (màu xanh dương `0xFF2563EB`).
+  - Tiêu đề chính to bản: `Học phí & Thanh toán` (font 22pt, w800, màu `0xFF0F172A`).
+  - 2 Action icons góc phải:
+    - Nút 1: Icon biên lai `Icons.receipt_long_outlined` (mở nhanh Lịch sử thanh toán).
+    - Nút 2: Icon chuông `Icons.notifications_none_outlined` có chấm báo thông báo mới.
+- **Thanh Filter Chips Cuộn Ngang (Family Scope Selector):**
+  - `Tất cả học sinh (2)` (đang chọn — nền xanh dương đậm `0xFF2563EB`, chữ trắng).
+  - `Quang Minh (10A1)` (nền trắng, viền mảnh `0xFFE2E8F0`).
+  - `Mai Lan (7C2)` (nền trắng, viền mảnh `0xFFE2E8F0`).
+- **Hero Banner Xanh Dương Nổi Bật (All-Clear State):**
+  - Container nền xanh dương hiện đại `0xFF1D4ED8`, bo góc 20, padding 20:
+  - Hàng tags: `✓ ĐÃ HOÀN TẤT NGHĨA VỤ KỲ NÀY` (xanh mint) + `Chuẩn VietQR`.
+  - Tiêu đề lớn: `Không có khoản nào cần thanh toán` (màu trắng, font w800).
+  - Mô tả phụ: `Tất cả học phí và dịch vụ học tập của Minh & Lan trong Học kỳ I đã được thanh toán đầy đủ.`
+  - 2 thẻ tóm tắt lồng bên trong (nền mờ `0x20FFFFFF`, border mảnh):
+    - Thẻ trái: `Tổng đã nộp kỳ này: 2.400.000 đ` | `Hoàn tất 100%`.
+    - Thẻ phải: `Đợt thu tiếp theo: Học kỳ II` | `Dự kiến 01/2025`.
+  - Nút hành động nổi bật màu trắng: `Tải giấy xác nhận học phí & Biên lai VAT →`.
+- **Khối "Khoản Đã Thanh Toán Gần Nhất":**
+  - Header: `KHOẢN ĐÃ THANH TOÁN GẦN NHẤT` kèm badge xanh mint `2 khoản hoàn tất`.
+  - Danh sách thẻ giao dịch (nền trắng, bo góc 16):
+    - **Thẻ 1 (Quang Minh):** Avatar tròn xanh `QM`, tiêu đề `Minh — Học phí tháng 6`, badge `Đã đóng`, phụ đề `Lớp Toán Nâng Cao 10`, mã giao dịch `Mã: TXN-99120`, số tiền `1.400.000 đ`, ngày `15/06/2026`.
+    - **Thẻ 2 (Mai Lan):** Avatar tròn vàng `ML`, tiêu đề `Lan — Học phí tháng 6`, badge `Đã đóng`, phụ đề `Tiếng Anh Giao Tiếp 7`, mã giao dịch `Mã: TXN-99084`, số tiền `1.000.000 đ`, ngày `14/06/2026`.
+- **Khối "Hóa Đơn Điện Tử VAT":**
+  - Card bo góc 16, icon tài liệu, tiêu đề `Hóa đơn điện tử VAT`, mô tả `Hợp lệ cho kỳ khai báo thuế của phụ huynh`, nút hành động `[ Tra cứu ]`.
+- **Bottom Navigation Bar (5 tabs):**
+  - `Trang chủ`, `Lịch học`, `Học tập`, `Học phí` (active), `Hồ sơ`.
+
+---
+
+### 2.3. Đánh Giá Ưu Điểm Tổng Thể Của Thiết Kế:
+1. **Thiết kế All-Clear tạo sự an tâm tuyệt đối (Positive UX Reinforcement):** Khi gia đình đã hoàn thành nghĩa vụ học phí, Hero banner xanh dương với nhãn `ĐÃ HOÀN TẤT NGHĨA VỤ KỲ NÀY` và `Không có khoản nào cần thanh toán` giúp phụ huynh hoàn toàn an tâm, đồng thời cung cấp trước thông tin đợt thu tiếp theo để chủ động ngân sách gia đình.
+2. **Bộ lọc theo con linh hoạt (Family Scope with Child Filter Chips):** Vừa giữ đúng bản chất Family Scope không bị ép buộc locked context, vừa cho phép phụ huynh lọc xem riêng từng con (`Quang Minh`, `Mai Lan`) chỉ với 1 chạm.
+3. **Thẻ giao dịch trực quan, phân biệt rõ từng con:** Avatar màu sắc riêng biệt (`QM` xanh dương, `ML` vàng cam), hiển thị đầy đủ tên con, tên lớp, mã đối soát ngân hàng và ngày đóng rõ ràng.
+4. **Hỗ trợ thực tế nhu cầu thuế & doanh nghiệp:** Nút `Tải giấy xác nhận học phí & Biên lai VAT` và khối `Tra cứu hóa đơn điện tử VAT` giải quyết trọn vẹn bài toán quyết toán thuế của phụ huynh Việt Nam.
+5. **Minh bạch tài chính từng line item:** Màn hình chi tiết phân rã rành mạch học phí gốc và học bổng giảm trừ, tạo thiện cảm và sự tin cậy cao.
+
+---
+
+### 2.4. Nhược Điểm & Khoảng Trống (Gap Analysis) Cần Khắc Phục:
+1. **Chưa có layout khi CÓ KHOẢN CẦN THANH TOÁN (Unpaid/Overdue State) ở Root Tab:**
+   - *Vấn đề:* Thiết kế 2 thể hiện trạng thái khi đã nộp hết (Empty/Paid). Nhưng theo `deliverable.md` (Mục E - Screen 18), trường hợp cấp thiết nhất là khi **có khoản cần đóng hoặc quá hạn**.
+   - *Giải pháp:* Cần thiết kế **2 trạng thái linh hoạt cho `PaymentOverviewScreen`**:
+     - **Trạng thái 1 — Có khoản cần đóng:** Hero card đổi sang tông cảnh báo/hành động: `TỔNG CẦN THANH TOÁN: X.XXX.000 đ (2 khoản cần đóng, 1 quá hạn)`. Bên dưới hiển thị khối `KHOẢN CẦN THANH TOÁN GẤP` với các thẻ có nút `[ Thanh toán ngay ]` và `[ Chi tiết ]`.
+     - **Trạng thái 2 — Đã hoàn tất nghĩa vụ (Như Ảnh 2):** Hero banner xanh dương All-Clear + 2 thẻ tổng nộp/đợt tiếp theo + khối đã thanh toán gần nhất.
+2. **Nhãn kỹ thuật `FAMILY SCOPE` ở Thiết kế 1:**
+   - *Giải pháp:* Đổi thành ngữ cảnh con tự nhiên: `Học phí · Minh (10A1)` (Locked Child Context).
+3. **Chưa xử lý trạng thái Ngoại tuyến (Offline Guardrail):**
+   - *Giải pháp:* Hiển thị banner ngoại tuyến; ở trạng thái có khoản cần đóng, nút `Thanh toán ngay` chuyển sang disabled (xám, không bấm được) kèm thông báo "Cần kết nối Internet để thực hiện giao dịch".
+4. **Thiếu kênh trợ giúp / liên hệ kế toán trung tâm khi thắc mắc:**
+   - *Giải pháp:* Bổ sung nút liên hệ kế toán / bộ phận học vụ để phụ huynh trao đổi khi có sai sót học phí hoặc xin chia kỳ đóng.
 
 ---
 
@@ -161,23 +192,34 @@ lib/features/parent/
   - `Future<List<ParentInvoiceModel>> getPaymentHistory({String? childId, int? year});`
   - Mock data cho Minh (1 khoản Toán cần nộp gấp, 1 khoản STEM đã đóng) và Lan (1 khoản Tiếng Anh sắp đến hạn).
 
-### Giai đoạn 2: Xây dựng Màn hình Tổng quan Học phí (`PaymentOverviewScreen`)
-- [ ] **Bước 2.1: Header Family Scope:**
-  - Tiêu đề "Học phí & Thanh toán", không có child selector.
-  - Nút biểu tượng Lịch sử thanh toán trên AppBar dẫn tới `PaymentHistoryScreen`.
-- [ ] **Bước 2.2: 2 Thẻ KPI Tài chính (`PaymentSummaryCards`):**
-  - Thẻ 1 (Trọng tâm): **TỔNG CẦN THANH TOÁN** (nổi bật, số tiền lớn, số khoản cần đóng).
-  - Thẻ 2: **ĐÃ ĐÓNG KỲ NÀY** (thông tin tham khảo).
-- [ ] **Bước 2.3: Thanh lọc phụ (Filter bar):**
-  - Chip lọc theo con: `Tất cả con`, `Minh (10A1)`, `Lan (7B)`.
-  - Chip lọc trạng thái: `Cần thanh toán`, `Đã thanh toán`.
-- [ ] **Bước 2.4: Danh sách `InvoiceItemCard`:**
-  - Hiển thị badge avatar con, tên con + lớp.
-  - Tên học phần, hạn nộp, badge trạng thái (`Cần nộp gấp`, `Quá hạn`, `Đã đóng`).
-  - Số tiền và nút `Thanh toán ngay` (mở Checkout) hoặc `Chi tiết` (mở Invoice Detail).
-- [ ] **Bước 2.5: Trạng thái Empty & Offline:**
-  - Khi không có khoản nợ: Hiện card All-clear "Tuyệt vời! Gia đình không có khoản phí nào cần đóng".
-  - Khi offline: Hiện banner ngoại tuyến, vô hiệu hóa nút thanh toán.
+### Giai đoạn 2: Xây dựng Màn hình Tổng quan Học phí (`PaymentOverviewScreen` / `ParentPaymentScreen`)
+- [ ] **Bước 2.1: Header Family Scope & Action Icons:**
+  - Danh mục trên: `HỌC VỤ & TÀI CHÍNH` (màu xanh dương).
+  - Tiêu đề chính to bản: `Học phí & Thanh toán`.
+  - Icon biên lai `Icons.receipt_long_outlined` (mở nhanh `PaymentHistoryScreen`).
+  - Icon chuông thông báo `Icons.notifications_none_outlined`.
+- [ ] **Bước 2.2: Thanh Filter Chips Cuộn Ngang (Family Scope Selector):**
+  - Chip: `Tất cả học sinh (2)`, `Quang Minh (10A1)`, `Mai Lan (7C2)`.
+  - Hỗ trợ lọc nhanh danh sách khoản phí theo từng con hoặc xem toàn bộ gia đình.
+- [ ] **Bước 2.3: Hero Banner All-Clear Hiện Đại (Theo đúng Thiết kế 2):**
+  - Container nền xanh dương đậm `0xFF1D4ED8`, bo góc 20:
+  - Tags: `✓ ĐÃ HOÀN TẤT NGHĨA VỤ KỲ NÀY` và `Chuẩn VietQR`.
+  - Tiêu đề trắng lớn: `Không có khoản nào cần thanh toán`.
+  - 2 Thẻ tóm tắt lồng bên trong:
+    - Thẻ 1: `Tổng đã nộp kỳ này: 2.400.000 đ` | `Hoàn tất 100%`.
+    - Thẻ 2: `Đợt thu tiếp theo: Học kỳ II` | `Dự kiến 01/2025`.
+  - Nút hành động trắng nổi bật: `Tải giấy xác nhận học phí & Biên lai VAT →`.
+- [ ] **Bước 2.4: Hero Banner Khi Có Khoản Cần Đóng (Trạng thái Actionable):**
+  - Khi có khoản nợ/quá hạn: Banner chuyển sang tông cam/đỏ: `TỔNG CẦN THANH TOÁN: X.XXX.000 đ` kèm số khoản cần nộp.
+  - Danh sách thẻ khoản phí cần đóng với badge `Quá hạn`, `Sắp tới hạn`, số tiền và nút `[ Thanh toán ngay ]`, `[ Chi tiết ]`.
+- [ ] **Bước 2.5: Khối "Khoản Đã Thanh Toán Gần Nhất" (Theo đúng Thiết kế 2):**
+  - Header: `KHOẢN ĐÃ THANH TOÁN GẦN NHẤT` + Badge `2 khoản hoàn tất`.
+  - Danh sách thẻ có avatar phân biệt (`QM` màu xanh dương cho Minh, `ML` màu vàng cam cho Lan).
+  - Thể hiện: Tên học phí, lớp, mã giao dịch `TXN-99120`, số tiền và ngày thanh toán.
+  - Khi bấm thẻ: Mở `PaymentInvoiceDetailScreen` ở trạng thái Đã đóng.
+- [ ] **Bước 2.6: Khối Hóa Đơn Điện Tử VAT & Offline Guardrail:**
+  - Card `Hóa đơn điện tử VAT` kèm nút `Tra cứu` mở màn hình tra cứu hóa đơn thuế.
+  - Khi offline: Banner cảnh báo ngoại tuyến, vô hiệu hóa nút thanh toán.
 
 ### Giai đoạn 3: Xây dựng Màn hình Chi tiết Hóa đơn (`PaymentInvoiceDetailScreen`)
 - [ ] **Bước 3.1: Header & Chuẩn hóa ngữ cảnh con:**
