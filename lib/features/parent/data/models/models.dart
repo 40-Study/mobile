@@ -9,6 +9,7 @@ export 'parent_home_data.dart';
 export 'parent_homework_model.dart';
 export 'parent_learning_hub_data.dart';
 export 'parent_learning_insights_model.dart';
+export 'parent_payment_model.dart';
 export 'parent_schedule_item.dart';
 export 'parent_schedule_session.dart';
 export 'parent_session_detail_model.dart';
