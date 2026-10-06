@@ -32,6 +32,11 @@ import 'package:study/features/course/repository/course_repository.dart'
     as _i1065;
 import 'package:study/features/course/repository/course_repository_impl.dart'
     as _i38;
+import 'package:study/features/parent/bloc/home/parent_home_bloc.dart' as _i661;
+import 'package:study/features/parent/bloc/learning/parent_learning_bloc.dart'
+    as _i510;
+import 'package:study/features/parent/bloc/schedule/parent_schedule_bloc.dart'
+    as _i574;
 import 'package:study/features/parent/data/parent_home_api_client.dart'
     as _i933;
 import 'package:study/features/parent/repository/family_insights_repository.dart'
@@ -145,6 +150,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i933.ParentHomeApiClient>(),
       ),
     );
+    gh.factory<_i510.ParentLearningBloc>(
+      () => blocModule.parentLearningBloc(gh<_i385.ParentLearningRepository>()),
+    );
     gh.factory<_i885.AchievementBloc>(
       () => blocModule.achievementBloc(
         gh<_i962.StudentRepository>(),
@@ -186,6 +194,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1065.CourseRepository>(),
         gh<_i830.BookmarkStorage>(),
       ),
+    );
+    gh.factory<_i661.ParentHomeBloc>(
+      () => blocModule.parentHomeBloc(gh<_i90.ParentHomeRepository>()),
+    );
+    gh.factory<_i574.ParentScheduleBloc>(
+      () => blocModule.parentScheduleBloc(gh<_i87.ParentScheduleRepository>()),
     );
     return this;
   }

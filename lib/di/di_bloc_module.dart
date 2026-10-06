@@ -2,6 +2,12 @@ import 'package:injectable/injectable.dart';
 import 'package:study/data/bookmark_storage.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/course/repository/course_repository.dart';
+import 'package:study/features/parent/bloc/home/parent_home_bloc.dart';
+import 'package:study/features/parent/bloc/learning/parent_learning_bloc.dart';
+import 'package:study/features/parent/bloc/schedule/parent_schedule_bloc.dart';
+import 'package:study/features/parent/repository/parent_home_repository.dart';
+import 'package:study/features/parent/repository/parent_learning_repository.dart';
+import 'package:study/features/parent/repository/parent_schedule_repository.dart';
 import 'package:study/features/student/bloc/achievement/achievement_bloc.dart';
 import 'package:study/features/student/bloc/bookmark/bookmark_bloc.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
@@ -17,6 +23,18 @@ import 'package:study/features/student/repository/student_repository.dart';
 /// Bloc factory module - widget dùng factory thay vì lookup DI trực tiếp
 @module
 abstract class BlocModule {
+  @factoryMethod
+  ParentHomeBloc parentHomeBloc(ParentHomeRepository repo) =>
+      ParentHomeBloc(repo);
+
+  @factoryMethod
+  ParentScheduleBloc parentScheduleBloc(ParentScheduleRepository repo) =>
+      ParentScheduleBloc(repo);
+
+  @factoryMethod
+  ParentLearningBloc parentLearningBloc(ParentLearningRepository repo) =>
+      ParentLearningBloc(repo);
+
   @factoryMethod
   HomeBloc homeBloc(StudentRepository repo) => HomeBloc(repo);
 
