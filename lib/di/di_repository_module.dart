@@ -98,8 +98,11 @@ abstract class RepositoryModule {
       );
 
   @lazySingleton
-  ParentLearningRepository provideParentLearningRepository() =>
+  ParentLearningRepository provideParentLearningRepository(
+    ParentHomeApiClient apiClient,
+  ) =>
       ParentLearningRepositoryImpl(
+        apiClient: apiClient,
         enablePreviewFallback: true,
       );
 }

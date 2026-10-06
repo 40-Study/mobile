@@ -21,8 +21,12 @@ class _ParentShellState extends State<ParentShell> {
       onNavigateToSchedule: () => _onNavTap(1),
       onNavigateToLearning: () => _onNavTap(2),
     ),
-    const ParentScheduleScreen(),
-    const ParentLearningScreen(),
+    ParentScheduleScreen(
+      onNavigateToProfile: () => _onNavTap(4),
+    ),
+    ParentLearningScreen(
+      onNavigateToProfile: () => _onNavTap(4),
+    ),
     const ParentPaymentScreen(),
     const ParentProfileScreen(),
   ];

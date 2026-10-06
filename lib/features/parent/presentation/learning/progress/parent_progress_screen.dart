@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:study/di/di_container.dart';
 import 'package:study/features/parent/data/models/family_scope_child.dart';
 import 'package:study/features/parent/data/models/parent_course_progress_model.dart';
+import 'package:study/features/parent/data/parent_home_api_client.dart';
 import 'package:study/features/parent/presentation/home/widgets/family_scope_selector.dart';
 import 'package:study/features/parent/presentation/learning/class_detail/parent_class_detail_screen.dart';
 import 'package:study/features/parent/presentation/learning/homework/parent_homework_screen.dart';
@@ -36,7 +38,15 @@ class _ParentProgressScreenState extends State<ParentProgressScreen> {
   @override
   void initState() {
     super.initState();
-    _repo = widget.repository ?? ParentLearningRepositoryImpl();
+    _repo = widget.repository ??
+        (diContainer.isRegistered<ParentLearningRepository>()
+            ? diContainer<ParentLearningRepository>()
+            : ParentLearningRepositoryImpl(
+                apiClient: diContainer.isRegistered<ParentHomeApiClient>()
+                    ? diContainer<ParentHomeApiClient>()
+                    : null,
+                enablePreviewFallback: true,
+              ));
     _selectedChildId = widget.initialChildId;
     _loadInitialData();
   }
@@ -285,8 +295,17 @@ class _ParentProgressScreenState extends State<ParentProgressScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final surfaceBg = Color.alphaBlend(
+      cs.primary.withValues(
+        alpha:
+            Theme.of(context).brightness == Brightness.light ? 0.045 : 0.065,
+      ),
+      cs.surfaceContainer,
+    );
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: surfaceBg,
       appBar: AppBar(
         title: const Text(
           'Tiến độ học tập',
@@ -296,14 +315,14 @@ class _ParentProgressScreenState extends State<ParentProgressScreen> {
             color: Color(0xFF1E293B),
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: surfaceBg,
         elevation: 0,
         centerTitle: false,
         iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(56),
           child: Container(
-            color: Colors.white,
+            color: surfaceBg,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: FamilyScopeSelector(
               children: _children,

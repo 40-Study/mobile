@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/parent/data/models/parent_class_detail_model.dart';
+import 'package:study/features/parent/data/parent_home_api_client.dart';
 import 'package:study/features/parent/presentation/learning/class_detail/widgets/class_lesson_timeline_widget.dart';
 import 'package:study/features/parent/presentation/learning/class_detail/widgets/class_progress_result_card.dart';
 import 'package:study/features/parent/presentation/learning/class_detail/widgets/class_teacher_card.dart';
@@ -53,7 +54,12 @@ class _ParentClassDetailScreenState extends State<ParentClassDetailScreen> {
     try {
       final repo = diContainer.isRegistered<ParentLearningRepository>()
           ? diContainer<ParentLearningRepository>()
-          : ParentLearningRepositoryImpl();
+          : ParentLearningRepositoryImpl(
+              apiClient: diContainer.isRegistered<ParentHomeApiClient>()
+                  ? diContainer<ParentHomeApiClient>()
+                  : null,
+              enablePreviewFallback: true,
+            );
 
       final detail = await repo.getClassDetail(
         widget.classId,
@@ -90,7 +96,7 @@ class _ParentClassDetailScreenState extends State<ParentClassDetailScreen> {
     return Scaffold(
       backgroundColor: surfaceBg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: surfaceBg,
         elevation: 0,
         scrolledUnderElevation: 1,
         leading: const BackButton(color: Color(0xFF0F172A)),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/parent/data/models/parent_course_recommendation_models.dart';
+import 'package:study/features/parent/data/parent_home_api_client.dart';
 import 'package:study/features/parent/presentation/learning/course_detail/parent_course_detail_screen.dart';
 import 'package:study/features/parent/presentation/learning/recommended_courses/widgets/ai_advisor_banner.dart';
 import 'package:study/features/parent/presentation/learning/recommended_courses/widgets/course_consultation_card.dart';
@@ -44,7 +45,12 @@ class _ParentRecommendedCoursesScreenState
     super.initState();
     _repo = diContainer.isRegistered<ParentLearningRepository>()
         ? diContainer<ParentLearningRepository>()
-        : ParentLearningRepositoryImpl();
+        : ParentLearningRepositoryImpl(
+            apiClient: diContainer.isRegistered<ParentHomeApiClient>()
+                ? diContainer<ParentHomeApiClient>()
+                : null,
+            enablePreviewFallback: true,
+          );
     _fetchCourses();
   }
 
@@ -84,11 +90,18 @@ class _ParentRecommendedCoursesScreenState
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final surfaceBg = Color.alphaBlend(
+      cs.primary.withValues(
+        alpha:
+            Theme.of(context).brightness == Brightness.light ? 0.045 : 0.065,
+      ),
+      cs.surfaceContainer,
+    );
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: surfaceBg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: surfaceBg,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         leading: IconButton(

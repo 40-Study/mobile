@@ -17,6 +17,7 @@ class ParentAppHeader extends StatelessWidget {
     required this.title,
     this.onNotificationTap,
     this.onAvatarTap,
+    this.backgroundColor,
   });
 
   final IconData icon;
@@ -24,6 +25,7 @@ class ParentAppHeader extends StatelessWidget {
   final String title;
   final VoidCallback? onNotificationTap;
   final VoidCallback? onAvatarTap;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +39,7 @@ class ParentAppHeader extends StatelessWidget {
         final displayName = user?.fullName ?? user?.username ?? 'PH';
 
         return Container(
-          color: cs.surface,
+          color: backgroundColor ?? cs.surface,
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.lg,
             AppSpacing.sm,

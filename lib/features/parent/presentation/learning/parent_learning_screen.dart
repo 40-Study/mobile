@@ -5,17 +5,20 @@ import 'package:study/features/parent/bloc/learning/parent_learning_bloc.dart';
 import 'package:study/features/parent/bloc/learning/parent_learning_event.dart';
 import 'package:study/features/parent/bloc/learning/parent_learning_state.dart';
 import 'package:study/features/parent/data/models/parent_learning_hub_data.dart';
+import 'package:study/features/parent/data/parent_home_api_client.dart';
 import 'package:study/features/parent/presentation/children/manage_children_screen.dart';
+import 'package:study/features/parent/presentation/home/widgets/parent_no_child_view.dart';
 import 'package:study/features/parent/presentation/learning/class_detail/parent_class_detail_screen.dart';
 import 'package:study/features/parent/presentation/learning/homework/parent_homework_screen.dart';
 import 'package:study/features/parent/presentation/learning/insights/parent_learning_insights_screen.dart';
 import 'package:study/features/parent/presentation/learning/progress/parent_progress_screen.dart';
 import 'package:study/features/parent/presentation/learning/recommended_courses/parent_recommended_courses_screen.dart';
-import 'package:study/features/parent/presentation/learning/widgets/learning_hub_header.dart';
 import 'package:study/features/parent/presentation/learning/widgets/learning_hub_navigation_card.dart';
 import 'package:study/features/parent/presentation/widgets/widgets.dart';
 import 'package:study/features/parent/repository/parent_learning_repository.dart';
 import 'package:study/features/parent/repository/parent_learning_repository_impl.dart';
+import 'package:study/features/student/presentation/notification/notification_screen.dart';
+import 'package:study/theme/theme.dart';
 
 /// Màn hình chính của Tab Học tập dành cho Phụ huynh (Learning Root Hub).
 ///
@@ -26,7 +29,12 @@ import 'package:study/features/parent/repository/parent_learning_repository_impl
 /// 4. Tiến độ khóa học (% hoàn thành học phần theo thời gian)
 /// 5. Gợi ý cho con (Khóa học và chuyên đề bổ trợ cá nhân hoá do AI đề xuất)
 class ParentLearningScreen extends StatelessWidget {
-  const ParentLearningScreen({super.key});
+  const ParentLearningScreen({
+    super.key,
+    this.onNavigateToProfile,
+  });
+
+  final VoidCallback? onNavigateToProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -34,15 +42,38 @@ class ParentLearningScreen extends StatelessWidget {
       create: (_) => ParentLearningBloc(
         diContainer.isRegistered<ParentLearningRepository>()
             ? diContainer<ParentLearningRepository>()
-            : ParentLearningRepositoryImpl(),
+            : ParentLearningRepositoryImpl(
+                apiClient: diContainer.isRegistered<ParentHomeApiClient>()
+                    ? diContainer<ParentHomeApiClient>()
+                    : null,
+                enablePreviewFallback: true,
+              ),
       )..add(const ParentLearningStarted()),
-      child: const _LearningView(),
+      child: _LearningView(onNavigateToProfile: onNavigateToProfile),
     );
   }
 }
 
 class _LearningView extends StatelessWidget {
-  const _LearningView();
+  const _LearningView({this.onNavigateToProfile});
+
+  final VoidCallback? onNavigateToProfile;
+
+  void _openManageChildren(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const ManageChildrenScreen(),
+      ),
+    );
+  }
+
+  void _openNotifications(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const NotificationScreen(),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +104,39 @@ class _LearningView extends StatelessWidget {
               );
             }
 
+            final hasChildren = state.children.isNotEmpty;
+
+            if (!hasChildren) {
+              return RefreshIndicator(
+                onRefresh: () async {
+                  context
+                      .read<ParentLearningBloc>()
+                      .add(const ParentLearningRefreshed());
+                },
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    ParentAppHeader(
+                      icon: Icons.school_rounded,
+                      categoryLabel: 'HỌC VỤ & TIẾN ĐỘ',
+                      title: 'Học tập của con',
+                      onNotificationTap: () => _openNotifications(context),
+                      onAvatarTap: onNavigateToProfile,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                        vertical: 24,
+                      ),
+                      child: ParentNoChildView(
+                        onLinkChild: () => _openManageChildren(context),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+
             return RefreshIndicator(
               onRefresh: () async {
                 context
@@ -82,9 +146,15 @@ class _LearningView extends StatelessWidget {
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
-                  // 1. Header trên nền trắng
-                  const SliverToBoxAdapter(
-                    child: LearningHubHeader(),
+                  // 1. Header chuẩn đồng bộ với Trang chủ và Lịch
+                  SliverToBoxAdapter(
+                    child: ParentAppHeader(
+                      icon: Icons.school_rounded,
+                      categoryLabel: 'HỌC VỤ & TIẾN ĐỘ',
+                      title: 'Học tập của con',
+                      onNotificationTap: () => _openNotifications(context),
+                      onAvatarTap: onNavigateToProfile,
+                    ),
                   ),
 
                   // 2. GHIM THANH CHỌN CON (Sticky Pinned Header)
@@ -106,14 +176,7 @@ class _LearningView extends StatelessWidget {
                                   );
                             }
                           },
-                          onLinkChild: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute<void>(
-                                builder: (_) => const ManageChildrenScreen(),
-                              ),
-                            );
-                          },
+                          onLinkChild: () => _openManageChildren(context),
                         ),
                       ),
                     ),

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:study/core/logger/app_logger.dart';
+import 'package:study/features/auth/data/models/user_model.dart';
 import 'package:study/features/parent/data/models/family_scope_child.dart';
 import 'package:study/features/parent/data/models/parent_class_detail_model.dart';
 import 'package:study/features/parent/data/models/parent_course_progress_model.dart';
@@ -8,42 +10,141 @@ import 'package:study/features/parent/data/models/parent_course_recommendation_m
 import 'package:study/features/parent/data/models/parent_homework_model.dart';
 import 'package:study/features/parent/data/models/parent_learning_hub_data.dart';
 import 'package:study/features/parent/data/models/parent_learning_insights_model.dart';
+import 'package:study/features/parent/data/parent_home_api_client.dart';
 import 'package:study/features/parent/repository/parent_learning_repository.dart';
 
 class ParentLearningRepositoryImpl implements ParentLearningRepository {
   ParentLearningRepositoryImpl({
+    ParentHomeApiClient? apiClient,
     this.enablePreviewFallback = true,
-  });
+  }) : _apiClient = apiClient;
 
+  final ParentHomeApiClient? _apiClient;
   final bool enablePreviewFallback;
 
+  static const String studentTungId = '31843f49-fd61-47aa-af78-d1badbdcce52';
   static const String studentMinhId = 'a055e1b3-bbfe-46b1-8e01-df7aac8c2732';
   static const String studentLanId = 'a0f88b81-94ca-4328-b46a-b61a1a53a9ad';
 
   @override
   Future<List<FamilyScopeChild>> getChildren() async {
-    // Giả lập độ trễ mạng nhẹ
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+    // 1. Tải danh sách con thật từ backend API
+    var realChildren = <FamilyScopeChild>[];
+    try {
+      realChildren = await _fetchRealChildren();
+    } catch (e, stackTrace) {
+      if (!enablePreviewFallback) {
+        rethrow;
+      }
+      AppLogger.w(
+        'ParentLearning: fetch real children failed, fallback to mock',
+        e,
+      );
+      AppLogger.d('ParentLearning children stackTrace', stackTrace);
+    }
 
-    return [
-      FamilyScopeChild.sample(
-        id: studentMinhId,
-        name: 'Minh',
-        className: '10A1',
-      ),
-      FamilyScopeChild.sample(
-        id: studentLanId,
-        name: 'Lan',
-        className: '7B',
-      ),
-    ];
+    // 2. Nếu bật fallback, gộp với con mẫu Minh & Lan
+    // giống như trang Home và Lịch
+    if (enablePreviewFallback) {
+      return _mergeWithMockChildren(realChildren);
+    }
+    return realChildren;
+  }
+
+  Future<List<FamilyScopeChild>> _fetchRealChildren() async {
+    final api = _apiClient;
+    if (api == null) return [];
+    try {
+      final response = await api.getChildren().timeout(
+            const Duration(seconds: 10),
+          );
+      final data = _extractData(response.data);
+      final list = _extractList(data, keys: ['children', 'items']);
+      return list
+          .asMap()
+          .entries
+          .map(
+            (e) => FamilyScopeChild.fromUserModel(
+              UserModel.fromJson(e.value as Map<String, dynamic>),
+              index: e.key,
+            ),
+          )
+          .toList();
+    } catch (e, stackTrace) {
+      AppLogger.w('ParentLearning: fetch real children failed', e);
+      AppLogger.d('ParentLearning children stackTrace', stackTrace);
+      rethrow;
+    }
+  }
+
+  List<FamilyScopeChild> _mergeWithMockChildren(List<FamilyScopeChild> real) {
+    final list = <FamilyScopeChild>[];
+
+    // 1. Luôn giữ nguyên tài khoản con thật ở đầu danh sách
+    if (real.isNotEmpty) {
+      list.addAll(real);
+    } else {
+      list.add(
+        FamilyScopeChild.sample(
+          id: studentTungId,
+          name: 'Mai Hoàng Tùng',
+          className: '12A',
+        ),
+      );
+    }
+
+    // 2. Bổ sung Minh & Lan vào danh sách để trải nghiệm đầy đủ Family Scope
+    if (!list.any((c) => c.id == studentMinhId)) {
+      list.add(
+        const FamilyScopeChild(
+          id: studentMinhId,
+          name: 'Minh',
+          className: '10A1',
+          initialLetter: 'M',
+          badgeColor: Color(0xFFDBEAFE),
+        ),
+      );
+    }
+    if (!list.any((c) => c.id == studentLanId)) {
+      list.add(
+        const FamilyScopeChild(
+          id: studentLanId,
+          name: 'Lan',
+          className: '7B',
+          initialLetter: 'L',
+          badgeColor: Color(0xFFFCE7F3),
+        ),
+      );
+    }
+
+    return list;
+  }
+
+  dynamic _extractData(dynamic responseData) {
+    if (responseData is Map<String, dynamic> &&
+        responseData.containsKey('data')) {
+      return responseData['data'];
+    }
+    return responseData;
+  }
+
+  List<dynamic> _extractList(dynamic data, {List<String> keys = const []}) {
+    if (data == null) return [];
+    if (data is List) return data;
+    if (data is Map<String, dynamic>) {
+      for (final key in keys) {
+        if (data[key] is List) return data[key] as List<dynamic>;
+      }
+      if (data['items'] is List) return data['items'] as List<dynamic>;
+    }
+    return [];
   }
 
   @override
   Future<ParentLearningHubData?> getLearningHubData(String childId) async {
     await Future<void>.delayed(const Duration(milliseconds: 200));
 
-    final allData = _getSampleHubDataMap();
+    final allData = await getAllLearningHubData();
     return allData[childId] ?? allData[studentMinhId];
   }
 
@@ -51,7 +152,29 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
   Future<Map<String, ParentLearningHubData>> getAllLearningHubData() async {
     await Future<void>.delayed(const Duration(milliseconds: 250));
 
-    return _getSampleHubDataMap();
+    final sampleMap = _getSampleHubDataMap();
+    final children = await getChildren();
+    final result = Map<String, ParentLearningHubData>.from(sampleMap);
+
+    for (final child in children) {
+      if (!result.containsKey(child.id)) {
+        final template = sampleMap[studentMinhId]!;
+        result[child.id] = ParentLearningHubData(
+          childId: child.id,
+          childName: child.name,
+          className: child.className,
+          newInsightsCount: template.newInsightsCount,
+          activeClassCount: template.activeClassCount,
+          activeClassNames: template.activeClassNames,
+          pendingHomeworkCount: template.pendingHomeworkCount,
+          overdueHomeworkCount: template.overdueHomeworkCount,
+          courseProgressPercent: template.courseProgressPercent,
+          recommendedTopic: template.recommendedTopic,
+        );
+      }
+    }
+
+    return result;
   }
 
   @override

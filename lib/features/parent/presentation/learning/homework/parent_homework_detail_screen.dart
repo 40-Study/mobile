@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:study/di/di_container.dart';
 import 'package:study/features/parent/data/models/parent_homework_model.dart';
+import 'package:study/features/parent/data/parent_home_api_client.dart';
 import 'package:study/features/parent/repository/parent_learning_repository.dart';
 import 'package:study/features/parent/repository/parent_learning_repository_impl.dart';
 
@@ -32,7 +34,15 @@ class _ParentHomeworkDetailScreenState
   @override
   void initState() {
     super.initState();
-    _repo = widget.repository ?? ParentLearningRepositoryImpl();
+    _repo = widget.repository ??
+        (diContainer.isRegistered<ParentLearningRepository>()
+            ? diContainer<ParentLearningRepository>()
+            : ParentLearningRepositoryImpl(
+                apiClient: diContainer.isRegistered<ParentHomeApiClient>()
+                    ? diContainer<ParentHomeApiClient>()
+                    : null,
+                enablePreviewFallback: true,
+              ));
     _loadDetail();
   }
 
@@ -146,17 +156,30 @@ class _ParentHomeworkDetailScreenState
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final surfaceBg = Color.alphaBlend(
+      cs.primary.withValues(
+        alpha:
+            Theme.of(context).brightness == Brightness.light ? 0.045 : 0.065,
+      ),
+      cs.surfaceContainer,
+    );
+
     if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFF8FAFC),
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: surfaceBg,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     final detail = _detail;
     if (detail == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Chi tiết bài tập')),
+        backgroundColor: surfaceBg,
+        appBar: AppBar(
+          backgroundColor: surfaceBg,
+          title: const Text('Chi tiết bài tập'),
+        ),
         body: const Center(
           child: Text('Không tìm thấy thông tin bài tập'),
         ),
@@ -164,7 +187,7 @@ class _ParentHomeworkDetailScreenState
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: surfaceBg,
       appBar: AppBar(
         title: const Text(
           'Chi tiết bài tập',
@@ -174,7 +197,7 @@ class _ParentHomeworkDetailScreenState
             color: Color(0xFF1E293B),
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: surfaceBg,
         elevation: 0,
         centerTitle: false,
         iconTheme: const IconThemeData(color: Color(0xFF1E293B)),

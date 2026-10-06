@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/parent/data/models/parent_learning_insights_model.dart';
+import 'package:study/features/parent/data/parent_home_api_client.dart';
 import 'package:study/features/parent/presentation/learning/insights/widgets/focus_trend_chart_widget.dart';
 import 'package:study/features/parent/presentation/learning/insights/widgets/insights_kpi_row_widget.dart';
 import 'package:study/features/parent/presentation/learning/insights/widgets/pedagogical_analysis_card.dart';
@@ -44,7 +45,12 @@ class _ParentLearningInsightsScreenState
     super.initState();
     _repo = diContainer.isRegistered<ParentLearningRepository>()
         ? diContainer<ParentLearningRepository>()
-        : ParentLearningRepositoryImpl();
+        : ParentLearningRepositoryImpl(
+            apiClient: diContainer.isRegistered<ParentHomeApiClient>()
+                ? diContainer<ParentHomeApiClient>()
+                : null,
+            enablePreviewFallback: true,
+          );
     _fetchInsights();
   }
 
@@ -76,11 +82,18 @@ class _ParentLearningInsightsScreenState
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final surfaceBg = Color.alphaBlend(
+      cs.primary.withValues(
+        alpha:
+            Theme.of(context).brightness == Brightness.light ? 0.045 : 0.065,
+      ),
+      cs.surfaceContainer,
+    );
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: surfaceBg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: surfaceBg,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         leading: IconButton(
