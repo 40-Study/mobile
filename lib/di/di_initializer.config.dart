@@ -39,6 +39,8 @@ import 'package:study/features/parent/repository/parent_home_repository.dart'
     as _i90;
 import 'package:study/features/parent/repository/parent_learning_repository.dart'
     as _i385;
+import 'package:study/features/parent/repository/parent_payment_repository.dart'
+    as _i481;
 import 'package:study/features/parent/repository/parent_schedule_repository.dart'
     as _i87;
 import 'package:study/features/student/data/student_api_client.dart' as _i583;
@@ -126,6 +128,11 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i385.ParentLearningRepository>(
       () => repositoryModule.provideParentLearningRepository(
+        gh<_i933.ParentHomeApiClient>(),
+      ),
+    );
+    gh.lazySingleton<_i481.ParentPaymentRepository>(
+      () => repositoryModule.provideParentPaymentRepository(
         gh<_i933.ParentHomeApiClient>(),
       ),
     );

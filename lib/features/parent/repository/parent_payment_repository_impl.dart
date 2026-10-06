@@ -1,24 +1,211 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+import 'package:study/core/logger/app_logger.dart';
+import 'package:study/features/auth/data/models/user_model.dart';
+import 'package:study/features/parent/data/models/family_scope_child.dart';
 import 'package:study/features/parent/data/models/parent_payment_model.dart';
+import 'package:study/features/parent/data/parent_home_api_client.dart';
 import 'package:study/features/parent/repository/parent_payment_repository.dart';
 
 class ParentPaymentRepositoryImpl implements ParentPaymentRepository {
   ParentPaymentRepositoryImpl({
+    ParentHomeApiClient? apiClient,
     this.enablePreviewFallback = true,
-  });
+  }) : _apiClient = apiClient;
 
+  final ParentHomeApiClient? _apiClient;
   final bool enablePreviewFallback;
 
+  static const String studentTungId = '31843f49-fd61-47aa-af78-d1badbdcce52';
   static const String studentMinhId = 'a055e1b3-bbfe-46b1-8e01-df7aac8c2732';
   static const String studentLanId = 'a0f88b81-94ca-4328-b46a-b61a1a53a9ad';
 
+  bool _isMockChild(String? childId) =>
+      childId == studentMinhId || childId == studentLanId;
+
+  @override
+  Future<List<FamilyScopeChild>> getChildren() async {
+    var realChildren = <FamilyScopeChild>[];
+    try {
+      realChildren = await _fetchRealChildren();
+    } catch (e, stackTrace) {
+      if (!enablePreviewFallback) {
+        rethrow;
+      }
+      AppLogger.w(
+        'ParentPayment: fetch real children failed, fallback to mock',
+        e,
+      );
+      AppLogger.d('ParentPayment children stackTrace', stackTrace);
+    }
+
+    if (enablePreviewFallback) {
+      return _mergeWithMockChildren(realChildren);
+    }
+    return realChildren;
+  }
+
+  Future<List<FamilyScopeChild>> _fetchRealChildren() async {
+    final api = _apiClient;
+    if (api == null) return [];
+    try {
+      final response = await api.getChildren().timeout(
+            const Duration(seconds: 10),
+          );
+      final data = _extractData(response.data);
+      final list = _extractList(data, keys: ['children', 'items']);
+      return list
+          .asMap()
+          .entries
+          .map(
+            (e) => FamilyScopeChild.fromUserModel(
+              UserModel.fromJson(e.value as Map<String, dynamic>),
+              index: e.key,
+            ),
+          )
+          .toList();
+    } catch (e, stackTrace) {
+      AppLogger.w('ParentPayment: fetch real children failed', e);
+      AppLogger.d('ParentPayment children stackTrace', stackTrace);
+      rethrow;
+    }
+  }
+
+  List<FamilyScopeChild> _mergeWithMockChildren(List<FamilyScopeChild> real) {
+    final list = <FamilyScopeChild>[];
+
+    if (real.isNotEmpty) {
+      list.addAll(real);
+    } else {
+      list.add(
+        FamilyScopeChild.sample(
+          id: studentTungId,
+          name: 'Mai Hoàng Tùng',
+          className: '12A',
+        ),
+      );
+    }
+
+    if (!list.any((c) => c.id == studentMinhId)) {
+      list.add(
+        const FamilyScopeChild(
+          id: studentMinhId,
+          name: 'Minh',
+          className: '10A1',
+          initialLetter: 'M',
+          badgeColor: Color(0xFFDBEAFE),
+        ),
+      );
+    }
+    if (!list.any((c) => c.id == studentLanId)) {
+      list.add(
+        const FamilyScopeChild(
+          id: studentLanId,
+          name: 'Lan',
+          className: '7B',
+          initialLetter: 'L',
+          badgeColor: Color(0xFFFCE7F3),
+        ),
+      );
+    }
+
+    return list;
+  }
+
+  dynamic _extractData(dynamic responseData) {
+    if (responseData is Map<String, dynamic> &&
+        responseData.containsKey('data')) {
+      return responseData['data'];
+    }
+    return responseData;
+  }
+
+  List<dynamic> _extractList(dynamic data, {List<String> keys = const []}) {
+    if (data == null) return [];
+    if (data is List) return data;
+    if (data is Map<String, dynamic>) {
+      for (final key in keys) {
+        if (data[key] is List) return data[key] as List<dynamic>;
+      }
+      if (data['items'] is List) return data['items'] as List<dynamic>;
+    }
+    return [];
+  }
+
   @override
   Future<PaymentSummaryOverviewModel> getPaymentSummary({
+    String? childId,
     bool mockAllPaid = true,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 200));
 
+    // Con thật chưa có dữ liệu học phí phát sinh
+    if (childId != null && !_isMockChild(childId)) {
+      return const PaymentSummaryOverviewModel(
+        totalDueAmount: 0.0,
+        totalDueCount: 0,
+        totalPaidAmount: 0.0,
+        isAllPaid: true,
+        allPaidMessage:
+            'Học sinh hiện không có khoản học phí nào cần thanh toán.',
+        completionPercentText: 'Hoàn tất 100%',
+        nextTermName: 'Học kỳ II',
+        nextTermEstimatedDate: 'Dự kiến 01/2025',
+        recentPaidCount: 0,
+      );
+    }
+
+    // Chọn học sinh mẫu Minh
+    if (childId == studentMinhId) {
+      if (mockAllPaid) {
+        return const PaymentSummaryOverviewModel(
+          totalDueAmount: 0.0,
+          totalDueCount: 0,
+          totalPaidAmount: 1400000.0,
+          isAllPaid: true,
+          allPaidMessage:
+              'Tất cả học phí của Nguyễn Nhật Minh trong '
+              'Học kỳ I đã được thanh toán đầy đủ.',
+          completionPercentText: 'Hoàn tất 100%',
+          nextTermName: 'Học kỳ II',
+          nextTermEstimatedDate: 'Dự kiến 01/2025',
+          recentPaidCount: 1,
+        );
+      }
+      return const PaymentSummaryOverviewModel(
+        totalDueAmount: 1100000.0,
+        totalDueCount: 1,
+        totalPaidAmount: 1400000.0,
+        isAllPaid: false,
+        allPaidMessage:
+            'Nguyễn Nhật Minh có 1 khoản học phí quá hạn '
+            'cần hoàn tất thanh toán.',
+        completionPercentText: 'Hoàn tất 56%',
+        nextTermName: 'Học kỳ II',
+        nextTermEstimatedDate: 'Dự kiến 01/2025',
+        recentPaidCount: 1,
+      );
+    }
+
+    // Chọn học sinh mẫu Lan
+    if (childId == studentLanId) {
+      return const PaymentSummaryOverviewModel(
+        totalDueAmount: 0.0,
+        totalDueCount: 0,
+        totalPaidAmount: 1000000.0,
+        isAllPaid: true,
+        allPaidMessage:
+            'Tất cả học phí của Nguyễn Mai Lan trong '
+            'Học kỳ I đã được thanh toán đầy đủ.',
+        completionPercentText: 'Hoàn tất 100%',
+        nextTermName: 'Học kỳ II',
+        nextTermEstimatedDate: 'Dự kiến 01/2025',
+        recentPaidCount: 1,
+      );
+    }
+
+    // Tất cả học sinh (childId == null)
     if (mockAllPaid) {
       // Đúng chuẩn theo Thiết kế 2 (All-Clear)
       return const PaymentSummaryOverviewModel(
@@ -38,16 +225,16 @@ class ParentPaymentRepositoryImpl implements ParentPaymentRepository {
 
     // Trạng thái khi còn khoản nợ quá hạn (Thiết kế 1)
     return const PaymentSummaryOverviewModel(
-      totalDueAmount: 1400000.0,
+      totalDueAmount: 1100000.0,
       totalDueCount: 1,
-      totalPaidAmount: 1000000.0,
+      totalPaidAmount: 2400000.0,
       isAllPaid: false,
       allPaidMessage:
           'Gia đình có 1 khoản học phí quá hạn cần hoàn tất thanh toán.',
-      completionPercentText: 'Hoàn tất 42%',
+      completionPercentText: 'Hoàn tất 68%',
       nextTermName: 'Học kỳ II',
       nextTermEstimatedDate: 'Dự kiến 01/2025',
-      recentPaidCount: 1,
+      recentPaidCount: 2,
     );
   }
 
@@ -57,6 +244,10 @@ class ParentPaymentRepositoryImpl implements ParentPaymentRepository {
     PaymentInvoiceStatus? status,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 200));
+
+    if (childId != null && !_isMockChild(childId)) {
+      return [];
+    }
 
     final list = _generateSampleInvoices();
 
@@ -135,6 +326,10 @@ class ParentPaymentRepositoryImpl implements ParentPaymentRepository {
     int? year,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 250));
+
+    if (childId != null && !_isMockChild(childId)) {
+      return [];
+    }
 
     final list = _generateSampleInvoices()
         .where((inv) => inv.status == PaymentInvoiceStatus.paid)

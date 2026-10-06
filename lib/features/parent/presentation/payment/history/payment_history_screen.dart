@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/features/parent/data/models/family_scope_child.dart';
 import 'package:study/features/parent/data/models/parent_payment_model.dart';
+import 'package:study/features/parent/data/parent_home_api_client.dart';
+import 'package:study/features/parent/presentation/widgets/family_scope_selector.dart';
 import 'package:study/features/parent/repository/parent_payment_repository.dart';
 import 'package:study/features/parent/repository/parent_payment_repository_impl.dart';
-import '../widgets/payment_child_filter_bar.dart';
 import '../widgets/payment_formatters.dart';
 import 'widgets/payment_history_card.dart';
 
@@ -23,45 +26,55 @@ class PaymentHistoryScreen extends StatefulWidget {
 class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
   late final ParentPaymentRepository _repository;
 
+  List<FamilyScopeChild> _children = [];
   String? _selectedChildId;
   int _selectedYear = 2026;
   bool _isLoading = true;
   List<ParentInvoiceModel> _historyInvoices = [];
 
-  final List<PaymentChildFilterItem> _filterItems = const [
-    PaymentChildFilterItem(
-      id: null,
-      label: 'Tất cả học sinh',
-      count: 2,
-    ),
-    PaymentChildFilterItem(
-      id: 'student-minh-001',
-      label: 'Quang Minh (10A1)',
-    ),
-    PaymentChildFilterItem(
-      id: 'student-lan-002',
-      label: 'Mai Lan (7C2)',
-    ),
-  ];
-
   @override
   void initState() {
     super.initState();
-    _repository = widget.repository ?? ParentPaymentRepositoryImpl();
+    _repository = widget.repository ??
+        (diContainer.isRegistered<ParentPaymentRepository>()
+            ? diContainer<ParentPaymentRepository>()
+            : ParentPaymentRepositoryImpl(
+                apiClient: diContainer.isRegistered<ParentHomeApiClient>()
+                    ? diContainer<ParentHomeApiClient>()
+                    : null,
+                enablePreviewFallback: true,
+              ));
     _loadHistory();
   }
 
   Future<void> _loadHistory() async {
     setState(() => _isLoading = true);
-    final list = await _repository.getPaymentHistory(
-      childId: _selectedChildId,
-      year: _selectedYear,
-    );
-    if (!mounted) return;
-    setState(() {
-      _historyInvoices = list;
-      _isLoading = false;
-    });
+    try {
+      if (_children.isEmpty) {
+        _children = await _repository.getChildren();
+      }
+      final list = await _repository.getPaymentHistory(
+        childId: _selectedChildId,
+        year: _selectedYear,
+      );
+      if (!mounted) return;
+      setState(() {
+        _historyInvoices = list;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
+
+  String? get _selectedChildName {
+    if (_selectedChildId == null) return null;
+    try {
+      return _children.firstWhere((c) => c.id == _selectedChildId).name;
+    } catch (_) {
+      return null;
+    }
   }
 
   void _handleSelectYear() {
@@ -118,6 +131,20 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                     _loadHistory();
                   },
                 ),
+                ListTile(
+                  title: const Text('Năm học 2023 - 2024'),
+                  trailing: _selectedYear == 2024
+                      ? const Icon(
+                          Icons.check_rounded,
+                          color: Color(0xFF1D4ED8),
+                        )
+                      : null,
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    setState(() => _selectedYear = 2024);
+                    _loadHistory();
+                  },
+                ),
               ],
             ),
           ),
@@ -130,8 +157,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Đang tải biên lai PDF cho giao dịch: '
-          '${invoice.transactionCode ?? invoice.invoiceCode}',
+          'Đang tải biên lai VAT cho mã hóa đơn ${invoice.invoiceCode}...',
         ),
       ),
     );
@@ -158,35 +184,28 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
         backgroundColor: surfaceBg,
         elevation: 0,
         scrolledUnderElevation: 0.5,
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Lịch sử thanh toán',
-              style: TextStyle(
-                fontSize: 16.5,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF0F172A),
-              ),
-            ),
-            Text(
-              'Biên lai thu học phí & Hóa đơn VAT',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF64748B),
-              ),
-            ),
-          ],
+        title: const Text(
+          'Lịch sử thanh toán',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         actions: [
           TextButton.icon(
             onPressed: _handleSelectYear,
-            icon: const Icon(Icons.calendar_today_rounded, size: 15),
-            label: Text('$_selectedYear'),
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF1D4ED8),
-              visualDensity: VisualDensity.compact,
+            icon: const Icon(
+              Icons.calendar_today_outlined,
+              size: 15,
+              color: Color(0xFF1D4ED8),
+            ),
+            label: Text(
+              '$_selectedYear',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1D4ED8),
+              ),
             ),
           ),
           const SizedBox(width: 8),
@@ -195,15 +214,20 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 1. Bộ lọc học sinh
-          PaymentChildFilterBar(
-            items: _filterItems,
-            selectedId: _selectedChildId,
-            onChanged: (id) {
-              setState(() => _selectedChildId = id);
-              _loadHistory();
-            },
-          ),
+          // 1. Bộ lọc học sinh FamilyScopeSelector
+          if (_children.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 8),
+              child: FamilyScopeSelector(
+                children: _children,
+                selectedChildId: _selectedChildId,
+                showAllOption: true,
+                onSelected: (id) {
+                  setState(() => _selectedChildId = id);
+                  _loadHistory();
+                },
+              ),
+            ),
 
           // 2. Banner tóm tắt tổng tích lũy đã đóng
           Padding(
@@ -211,7 +235,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFF0FDF4), // Light green
+                color: const Color(0xFFF0FDF4),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: const Color(0xFFBBF7D0),
@@ -277,24 +301,33 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                 ? const Center(child: CircularProgressIndicator())
                 : _historyInvoices.isEmpty
                     ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.receipt_long_outlined,
-                              size: 56,
-                              color: cs.outlineVariant,
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Chưa có giao dịch nào trong năm này',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF64748B),
-                                fontWeight: FontWeight.w500,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.receipt_long_outlined,
+                                size: 56,
+                                color: cs.outlineVariant,
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 12),
+                              Text(
+                                _selectedChildName != null
+                                    ? 'Chưa có giao dịch nào cho '
+                                        '$_selectedChildName trong năm '
+                                        '$_selectedYear'
+                                    : 'Chưa có giao dịch nào trong năm '
+                                        '$_selectedYear',
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF64748B),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       )
                     : RefreshIndicator(
