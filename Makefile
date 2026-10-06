@@ -1,5 +1,6 @@
 .PHONY: gen genAll rebuild check get localize runDev runQa runProd \
-        release apk debug_apk lines force_upgrade integration_test
+        release apk debug_apk lines force_upgrade integration_test \
+        test test_coverage performance_smoke performance_test performance_screens
 
 # Clean project, install dependencies & generate sources
 rebuild:
@@ -26,6 +27,14 @@ localize:
 check:
 	dart analyze . && flutter analyze
 	# flutter pub run dart_code_metrics:metrics analyze lib
+
+# Fast mobile unit and widget tests
+test:
+	flutter test
+
+# Unit/widget tests with lcov output for local coverage inspection
+test_coverage:
+	flutter test --coverage
 
 # Run with flavors — all use single main.dart + --dart-define=ENV
 runDev:
@@ -56,6 +65,20 @@ force_upgrade:
 # Run integration test
 integration_test:
 	flutter test integration_test --flavor dev
+
+# Debug-only smoke run; validates that timing data is captured without hangs.
+performance_smoke:
+	flutter drive --driver=test_driver/integration_test.dart --target=integration_test/performance_test.dart --flavor dev --dart-define=ENV=dev $(if $(DEVICE),-d $(DEVICE),)
+
+# Strict performance gate. Profile mode requires a physical iOS/Android device.
+performance_test:
+	@test -n "$(DEVICE)" || (echo "Usage: make performance_test DEVICE=<physical-device-id>" && exit 1)
+	flutter drive --driver=test_driver/integration_test.dart --target=integration_test/performance_test.dart --profile --flavor dev --dart-define=ENV=dev -d $(DEVICE)
+
+# Measure all screen fixtures; PROFILE=1 requires a physical mobile device.
+performance_screens:
+	@test -n "$(DEVICE)" || (echo "Usage: make performance_screens DEVICE=<id> [PROFILE=1]" && exit 1)
+	flutter drive --no-pub --driver=test_driver/integration_test.dart --target=integration_test/all_screens_performance_test.dart $(if $(PROFILE),--profile,) --flavor dev --dart-define=ENV=dev --dart-define=PERFORMANCE_DEVICE=$(DEVICE) $(if $(SCREEN),--dart-define=PERFORMANCE_SCREEN=$(SCREEN),) -d $(DEVICE)
 
 screenshot_test:
 	flutter drive --driver=test_driver/integration_test.dart --target=screenshot_test/settings_screenshot_test.dart --flavor dev

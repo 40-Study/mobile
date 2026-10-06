@@ -29,3 +29,16 @@ final class CourseDetailSectionToggled extends CourseDetailEvent {
   @override
   List<Object?> get props => [sectionId];
 }
+
+final class CourseDetailBookmarkToggled extends CourseDetailEvent {
+  const CourseDetailBookmarkToggled();
+}
+
+final class CourseDetailCertificateRequested extends CourseDetailEvent {
+  const CourseDetailCertificateRequested(this.enrollmentId);
+
+  final String enrollmentId;
+
+  @override
+  List<Object?> get props => [enrollmentId];
+}

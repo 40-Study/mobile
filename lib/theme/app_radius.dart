@@ -48,4 +48,8 @@ abstract class AppRadius {
       const BorderRadius.vertical(bottom: Radius.circular(md));
   static final borderBottomLg =
       const BorderRadius.vertical(bottom: Radius.circular(lg));
+
+  // Dialog corner radius (legacy compatibility: 25)
+  static const double dialogCorner = 25;
+  static final borderDialog25 = BorderRadius.circular(dialogCorner);
 }

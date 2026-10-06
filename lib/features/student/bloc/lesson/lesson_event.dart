@@ -29,5 +29,14 @@ final class LessonContentTabChanged extends LessonEvent {
 }
 
 final class LessonCompleted extends LessonEvent {
-  const LessonCompleted();
+  const LessonCompleted({
+    this.playedRanges,
+    this.durationSeconds,
+  });
+
+  final List<List<int>>? playedRanges;
+  final int? durationSeconds;
+
+  @override
+  List<Object?> get props => [playedRanges, durationSeconds];
 }

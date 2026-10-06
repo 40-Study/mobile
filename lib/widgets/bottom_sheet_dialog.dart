@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:study/index.dart';
 
 const kDialogContentPadding = EdgeInsets.symmetric(
-  horizontal: Paddings.kDialogContentPadding,
+  horizontal: AppSpacing.dialogContentPadding,
 );
 
 Future<T?> showBottomSheetDialog<T>({
@@ -10,7 +10,7 @@ Future<T?> showBottomSheetDialog<T>({
   required List<Widget> children,
   EdgeInsets padding = kDialogContentPadding,
 }) {
-  return showModalBottomSheet(
+  return showModalBottomSheet<T>(
     context: context,
     isDismissible: true,
     barrierColor: Theme.of(context).colorScheme.scrim.withValues(alpha: 0.54),
@@ -19,8 +19,8 @@ Future<T?> showBottomSheetDialog<T>({
         _RoundDialog.bottom(children: children, padding: padding),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.only(
-        topLeft: Radius.circular(RadiusSize.kDialogCornerRadius),
-        topRight: Radius.circular(RadiusSize.kDialogCornerRadius),
+        topLeft: Radius.circular(AppRadius.dialogCorner),
+        topRight: Radius.circular(AppRadius.dialogCorner),
       ),
     ),
   );
@@ -50,7 +50,7 @@ class _RoundDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: Separator.spaceChildren(
-            space: Space.superLarge,
+            space: AppSpacing.xl, // 24
             children: [
               BottomSheetDialogIcon(),
               Flexible(

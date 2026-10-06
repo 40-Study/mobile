@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:study/constants/dimens.dart';
 import 'package:study/theme/app_colors.dart';
+import 'package:study/theme/app_radius.dart';
+import 'package:study/theme/app_spacing.dart';
 
 enum ScheduleCardStyle { agenda, compact }
 

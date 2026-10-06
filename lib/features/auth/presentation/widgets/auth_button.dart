@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
+import 'package:study/theme/theme.dart';
 
 /// Primary button with press scale, loading crossfade, and success checkmark.
 /// Press scale + loading/success transitions are always active (interactive).
@@ -93,12 +94,12 @@ class _AuthButtonState extends State<AuthButton>
                 color: widget.onPressed == null && !widget.isLoading
                     ? bgColor.withValues(alpha: 0.6)
                     : bgColor,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.borderMd,
               ),
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.borderMd,
                   onTap: widget.isLoading || widget.isSuccess
                       ? null
                       : widget.onPressed,

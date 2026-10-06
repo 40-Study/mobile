@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
+import 'package:study/theme/theme.dart';
 
 /// 6 OTP boxes with digit fill pulse and completion ripple (always active).
 class OtpBoxes extends StatefulWidget {
@@ -100,7 +101,7 @@ class OtpBoxesState extends State<OtpBoxes> with TickerProviderStateMixin {
 
   void _triggerCompletionRipple() {
     for (var i = 0; i < widget.length; i++) {
-      Future.delayed(
+      Future<void>.delayed(
         Duration(milliseconds: AuthAnimConst.staggerDelay.inMilliseconds * i),
         () {
           if (mounted) _glowControllers[i].forward(from: 0);
@@ -152,7 +153,7 @@ class OtpBoxesState extends State<OtpBoxes> with TickerProviderStateMixin {
                           : 1.0,
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppRadius.borderMd,
                           boxShadow: _glowControllers[i].isAnimating
                               ? [
                                   BoxShadow(
@@ -197,20 +198,20 @@ class OtpBoxesState extends State<OtpBoxes> with TickerProviderStateMixin {
                             filled: true,
                             fillColor: cs.surfaceContainerLow,
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppRadius.borderMd,
                               borderSide: BorderSide(
                                 color: hasFill ? cs.primary : cs.outline,
                               ),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppRadius.borderMd,
                               borderSide: BorderSide(
                                 color: cs.primary,
                                 width: 2,
                               ),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppRadius.borderMd,
                               borderSide: BorderSide(
                                 color: hasFill ? cs.primary : cs.outline,
                               ),

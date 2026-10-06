@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:study/constants/dimens.dart';
 import 'package:study/theme/app_colors.dart';
+import 'package:study/theme/app_radius.dart';
+import 'package:study/theme/app_spacing.dart';
 
 enum EmptyStateStyle { compactCard, card, inline, fullPage }
 
@@ -39,19 +40,19 @@ class EmptyState extends StatelessWidget {
       case EmptyStateStyle.card:
         return Card(
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xxl),
+            padding: const EdgeInsets.all(AppSpacing.xl), // 24
             child: content,
           ),
         );
       case EmptyStateStyle.inline:
         return Padding(
-          padding: const EdgeInsets.all(AppSpacing.xxl),
+          padding: const EdgeInsets.all(AppSpacing.xl), // 24
           child: content,
         );
       case EmptyStateStyle.fullPage:
         return Center(
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xxxl),
+            padding: const EdgeInsets.all(AppSpacing.xxl), // 32
             child: content,
           ),
         );
@@ -72,7 +73,7 @@ class _CompactCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xxl,
+        vertical: AppSpacing.xl, // 24
       ),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLow,

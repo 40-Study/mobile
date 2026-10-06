@@ -1379,4 +1379,348 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get addItem => 'Thêm mục';
+
+  @override
+  String get courseLoadError => 'Không thể tải khóa học';
+
+  @override
+  String get lessonUnlockError =>
+      'Bạn cần hoàn thành bài học trước để mở khoá bài này';
+
+  @override
+  String certificateIssueError(Object error) {
+    return 'Lỗi cấp chứng chỉ: $error';
+  }
+
+  @override
+  String get courseUnsaved => 'Đã bỏ lưu khóa học';
+
+  @override
+  String get courseSaved => 'Đã lưu khóa học';
+
+  @override
+  String get enrollmentDeveloping => 'Chức năng đăng ký đang phát triển';
+
+  @override
+  String get enrollNow => 'Đăng ký ngay';
+
+  @override
+  String get viewCertificateButton => 'Xem chứng chỉ';
+
+  @override
+  String get progress => 'Tiến độ';
+
+  @override
+  String lessonsCompleted(Object completed, Object total) {
+    return 'Bạn đã hoàn thành $completed / $total bài học';
+  }
+
+  @override
+  String get freeCourse => 'Miễn phí';
+
+  @override
+  String lessonCount(Object count) {
+    return '$count bài học';
+  }
+
+  @override
+  String minuteCount(Object count) {
+    return '$count phút';
+  }
+
+  @override
+  String get downloadCourseMaterial => 'Tải tài liệu khóa học';
+
+  @override
+  String get openAll => 'Mở tất cả';
+
+  @override
+  String get viewInstructorPage => 'Xem trang giảng viên';
+
+  @override
+  String coursesAndStudents(Object courses, Object students) {
+    return '$courses khóa học • $students học viên';
+  }
+
+  @override
+  String get messageInstructor => 'Nhắn tin cho cô';
+
+  @override
+  String get lessonCompleted => 'Hoàn thành';
+
+  @override
+  String get lessonInProgress => 'Đang học';
+
+  @override
+  String get lessonLocked => 'Chưa mở khóa';
+
+  @override
+  String get lessonNotStarted => 'Chưa học';
+
+  @override
+  String get lessonWatched => 'Đã xem';
+
+  @override
+  String get lessonProgress => 'Tiến độ bài học';
+
+  @override
+  String get settingsAppearance => 'Giao diện';
+
+  @override
+  String get settingsNotifications => 'Thông báo';
+
+  @override
+  String get settingsLearning => 'Học tập';
+
+  @override
+  String get settingsOther => 'Khác';
+
+  @override
+  String get settingsLanguage => 'Ngôn ngữ';
+
+  @override
+  String get settingsLanguageVietnamese => 'Tiếng Việt';
+
+  @override
+  String get settingsPushNotifications => 'Thông báo đẩy';
+
+  @override
+  String get settingsEmailNotifications => 'Thông báo email';
+
+  @override
+  String get settingsScheduleReminders => 'Nhắc lịch học';
+
+  @override
+  String get settingsAutoplayVideo => 'Tự động phát video';
+
+  @override
+  String get settingsPlaybackSpeed => 'Tốc độ phát mặc định';
+
+  @override
+  String get settingsWifiDownload => 'Tải xuống qua Wi-Fi';
+
+  @override
+  String get settingsClearCache => 'Xóa bộ nhớ đệm';
+
+  @override
+  String get settingsCacheCleared => 'Đã xóa bộ nhớ đệm';
+
+  @override
+  String get settingsVersion => 'Phiên bản';
+
+  @override
+  String get settingsDarkTheme => 'Giao diện tối';
+
+  @override
+  String get helpCenterTitle => 'Trung tâm hỗ trợ';
+
+  @override
+  String get helpCenterQuestion => 'Chúng tôi có thể giúp gì cho bạn?';
+
+  @override
+  String get helpContactSupport => 'Liên hệ hỗ trợ';
+
+  @override
+  String get helpEmail => 'Email';
+
+  @override
+  String get helpHotline => 'Hotline';
+
+  @override
+  String get helpLiveChat => 'Chat trực tuyến';
+
+  @override
+  String get helpLiveChatResponse => 'Phản hồi trong vài phút';
+
+  @override
+  String get helpFaq => 'Câu hỏi thường gặp';
+
+  @override
+  String get helpFaqPasswordChange => 'Làm sao để đổi mật khẩu?';
+
+  @override
+  String get helpFaqPasswordChangeAnswer =>
+      'Vào Tài khoản > Mật khẩu & Bảo mật > Đổi mật khẩu để thay đổi mật khẩu của bạn.';
+
+  @override
+  String get helpFaqForgotPassword => 'Tôi quên mật khẩu, phải làm sao?';
+
+  @override
+  String get helpFaqForgotPasswordAnswer =>
+      'Tại màn hình đăng nhập, nhấn \"Quên mật khẩu\" và làm theo hướng dẫn để đặt lại mật khẩu qua email.';
+
+  @override
+  String get helpFaqViewCertificate => 'Làm sao để xem chứng chỉ đã nhận?';
+
+  @override
+  String get helpFaqViewCertificateAnswer =>
+      'Vào tab Thành tích để xem tất cả chứng chỉ bạn đã đạt được.';
+
+  @override
+  String get helpFaqRefund => 'Tôi muốn hoàn tiền khóa học?';
+
+  @override
+  String get helpFaqRefundAnswer =>
+      'Liên hệ với chúng tôi qua email hoặc hotline trong vòng 7 ngày kể từ ngày mua để được hỗ trợ hoàn tiền.';
+
+  @override
+  String get scheduleErrorLoadData => 'Không thể tải dữ liệu';
+
+  @override
+  String scheduleOpenItem(Object title) {
+    return 'Mở: $title';
+  }
+
+  @override
+  String get scheduleCourseNotFound => 'Không tìm thấy khóa học';
+
+  @override
+  String get scheduleNotEnrolled => 'Bạn chưa đăng ký khóa học này';
+
+  @override
+  String get quizExitTitle => 'Thoát bài kiểm tra?';
+
+  @override
+  String get quizExitContent => 'Tiến độ làm bài của bạn sẽ không được lưu.';
+
+  @override
+  String get quizContinue => 'Tiếp tục làm';
+
+  @override
+  String get quizExit => 'Thoát';
+
+  @override
+  String get quizPrevious => 'Trước';
+
+  @override
+  String get quizNext => 'Tiếp';
+
+  @override
+  String get quizSubmit => 'Nộp bài';
+
+  @override
+  String get quizBackToLesson => 'Quay lại bài học';
+
+  @override
+  String get quizRetry => 'Làm lại';
+
+  @override
+  String exerciseMinutes(Object duration) {
+    return '$duration phút';
+  }
+
+  @override
+  String exercisePoints(Object points) {
+    return '$points điểm';
+  }
+
+  @override
+  String exerciseCompletion(Object rate) {
+    return '$rate% hoàn thành';
+  }
+
+  @override
+  String get exerciseDoOnWeb => 'Làm bài trên web';
+
+  @override
+  String get exerciseViewScore => 'Xem điểm';
+
+  @override
+  String get exerciseDoExercise => 'Làm bài';
+
+  @override
+  String get exerciseUnlimited => 'Không giới hạn';
+
+  @override
+  String get exerciseSubmit => 'Nộp bài';
+
+  @override
+  String errorGeneric(Object message) {
+    return 'Lỗi: $message';
+  }
+
+  @override
+  String get videoLoadError => 'Không thể tải video';
+
+  @override
+  String get removeFromSaved => 'Đã xóa khỏi danh sách lưu';
+
+  @override
+  String get openMenu => 'Mở menu';
+
+  @override
+  String get accountLabel => 'Tài khoản';
+
+  @override
+  String get notificationLabel => 'Thông báo';
+
+  @override
+  String get featureDeveloping => 'Tính năng đang phát triển';
+
+  @override
+  String get goBack => 'Quay lại';
+
+  @override
+  String get contactSupport => 'Liên hệ hỗ trợ';
+
+  @override
+  String get takePhoto => 'Chụp ảnh';
+
+  @override
+  String get chooseFromGallery => 'Chọn từ thư viện';
+
+  @override
+  String get updateSuccess => 'Cập nhật thành công';
+
+  @override
+  String addRoleSuccess(Object role) {
+    return 'Đã thêm vai trò $role';
+  }
+
+  @override
+  String get addRoleError => 'Lỗi: Không thể thêm vai trò';
+
+  @override
+  String get noRoleError => 'Bạn chưa có vai trò, vui lòng đăng ký';
+
+  @override
+  String cannotLoginWith(Object provider) {
+    return 'Không thể đăng nhập bằng $provider';
+  }
+
+  @override
+  String get pleaseSelectRole => 'Vui lòng quay lại chọn vai trò';
+
+  @override
+  String get parentLinkChild => 'Liên kết hồ sơ con';
+
+  @override
+  String get parentManageChildren => 'Quản lý con';
+
+  @override
+  String get parentPayment => 'Thanh toán';
+
+  @override
+  String get parentLearning => 'Học tập';
+
+  @override
+  String get parentHome => 'Trang chủ';
+
+  @override
+  String get parentSchedule => 'Lịch học';
+
+  @override
+  String get parentConfirmLink => 'Xác nhận liên kết';
+
+  @override
+  String get parentEditInfo => 'Sửa';
+
+  @override
+  String get parentEditComingSoon => 'Sửa thông tin - Coming soon';
+
+  @override
+  String get parentContactSupport => 'Liên hệ hỗ trợ';
+
+  @override
+  String get addButton => 'Thêm';
 }

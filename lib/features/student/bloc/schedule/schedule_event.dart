@@ -47,3 +47,16 @@ final class ScheduleNoteDeleted extends ScheduleEvent {
   @override
   List<Object?> get props => [date];
 }
+
+final class ScheduleClassCourseRequested extends ScheduleEvent {
+  const ScheduleClassCourseRequested(this.classId);
+
+  final String classId;
+
+  @override
+  List<Object?> get props => [classId];
+}
+
+final class ScheduleClassCourseNavigationHandled extends ScheduleEvent {
+  const ScheduleClassCourseNavigationHandled();
+}

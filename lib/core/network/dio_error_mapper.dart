@@ -27,7 +27,7 @@ abstract final class DioErrorMapper {
     final parsed = _parseErrorBody(data);
 
     return switch (statusCode) {
-      401 => const UnauthorizedFailure(),
+      401 => UnauthorizedFailure(parsed.message),
       403 => ServerFailure(
         message: parsed.message ?? 'Bạn không có quyền thực hiện hành động này',
         code: parsed.code,

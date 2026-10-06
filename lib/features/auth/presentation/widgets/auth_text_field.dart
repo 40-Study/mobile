@@ -130,7 +130,7 @@ class _AuthTextFieldState extends State<AuthTextField>
           child: AnimatedContainer(
             duration: AuthAnimConst.focusDuration,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppRadius.borderMd,
               boxShadow: _isFocused
                   ? [
                       BoxShadow(
@@ -177,19 +177,19 @@ class _AuthTextFieldState extends State<AuthTextField>
                   vertical: AppSpacing.lg - 2,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.borderMd,
                   borderSide: BorderSide(color: cs.outline),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.borderMd,
                   borderSide: BorderSide(color: cs.outline),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.borderMd,
                   borderSide: BorderSide(color: cs.primary, width: 1.5),
                 ),
                 errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.borderMd,
                   borderSide: BorderSide(color: cs.error),
                 ),
               ),

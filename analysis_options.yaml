@@ -26,6 +26,8 @@ analyzer:
     - lib/generated/**
     - lib/di/*.config.dart
     - test/*.mocks.dart
+    - android/**
+    - ios/**
   language:
     strict-casts: true
     strict-inference: true

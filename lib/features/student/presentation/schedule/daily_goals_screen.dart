@@ -113,7 +113,7 @@ class _DailyGoalsScreenState extends State<DailyGoalsScreen> {
                       AppSpacing.vGap4,
                       if (_goals.isNotEmpty)
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: AppRadius.borderXs,
                           child: LinearProgressIndicator(
                             value: completedCount / _goals.length,
                             backgroundColor: cs.surface,

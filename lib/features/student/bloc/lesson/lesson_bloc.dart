@@ -61,7 +61,11 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
     final currentState = state;
     if (currentState is! LessonSuccess || _lessonId == null) return;
 
-    final result = await _repository.markLessonComplete(_lessonId!);
+    final result = await _repository.markLessonComplete(
+      _lessonId!,
+      playedRanges: event.playedRanges,
+      durationSeconds: event.durationSeconds,
+    );
     final courseCompleted = result.when(
       success: (completed) => completed,
       failure: (_) => false,

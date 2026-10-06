@@ -43,7 +43,6 @@ void main() {
         ),
       );
 
-      // Empty state hiển thị quote động lực theo ngày thay vì dòng chữ cố định
       final quote = MotivationalQuote.scheduleForDate(DateTime.now());
       expect(find.text('Quote hôm nay'), findsOneWidget);
       expect(find.text('"${quote.quote}"'), findsOneWidget);

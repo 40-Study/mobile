@@ -41,7 +41,8 @@ final class ValidationError extends Equatable {
 }
 
 final class UnauthorizedFailure extends Failure {
-  const UnauthorizedFailure() : super(message: 'Phiên đăng nhập hết hạn');
+  const UnauthorizedFailure([String? message])
+    : super(message: message ?? 'Phiên đăng nhập hết hạn');
 }
 
 final class CacheFailure extends Failure {

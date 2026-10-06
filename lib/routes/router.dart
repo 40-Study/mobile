@@ -94,7 +94,7 @@ class NavigationService {
   Route<dynamic> onGenerateRoute(RouteSettings settings) {
     final builder = _appRoutes[settings.name];
     if (builder == null) {
-      return MaterialPageRoute(builder: (_) => const SplashView());
+      return MaterialPageRoute<Widget>(builder: (_) => const SplashView());
     }
 
     final isFullScreen = _fullScreenRoutes.contains(settings.name);
@@ -131,7 +131,7 @@ class NavigationService {
       );
     }
 
-    return MaterialPageRoute(
+    return MaterialPageRoute<Widget>(
       settings: settings,
       builder: (_) => builder(settings.arguments),
       fullscreenDialog: isFullScreen,

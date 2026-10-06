@@ -251,7 +251,7 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.black54,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: AppRadius.borderXs,
                 ),
                 child: const Text(
                   'Video mẫu',

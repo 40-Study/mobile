@@ -81,7 +81,7 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen>
                 anim.submit();
               case RegisterSuccess():
                 anim.succeed();
-                Future.delayed(AppDurations.authRegisterSuccess, () {
+                Future<void>.delayed(AppDurations.authRegisterSuccess, () {
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

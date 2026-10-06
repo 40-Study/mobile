@@ -65,13 +65,24 @@ class AuthInterceptor extends QueuedInterceptor {
 
     final isRefreshCall = path.contains('/api/auth/refresh-token');
     if (isRefreshCall) {
+      AppLogger.auth('401 on refresh-token call, clearing session');
       await _authStorage.clearAll();
       _sessionNotifier.notify();
       return handler.next(err);
     }
 
+    // Logout call gặp 401 → clear session, không refresh
+    final isLogoutCall = path.contains('/api/auth/logout');
+    if (isLogoutCall) {
+      await _authStorage.clearAll();
+      _sessionNotifier.notify();
+      return handler.next(err);
+    }
+
+    AppLogger.auth('401 on $path, attempting token refresh...');
     final refreshed = await _tryRefreshToken();
     if (!refreshed) {
+      AppLogger.auth('Token refresh failed, clearing session');
       await _authStorage.clearAll();
       _sessionNotifier.notify();
       return handler.next(err);
@@ -94,7 +105,22 @@ class AuthInterceptor extends QueuedInterceptor {
     if (refreshToken == null) return false;
 
     try {
-      final response = await _dio.post<Map<String, dynamic>>(
+      // Dùng instance Dio độc lập (không đi qua QueuedInterceptor này)
+      // để gọi API refresh token. Tránh lỗi Deadlock: QueuedInterceptor
+      // đang khóa hàng đợi của _dio khiến request refresh token bị treo.
+      final refreshDio = Dio(
+        BaseOptions(
+          baseUrl: _dio.options.baseUrl,
+          connectTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 15),
+          headers: const {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+
+      final response = await refreshDio.post<Map<String, dynamic>>(
         '/api/auth/refresh-token',
         data: {'refresh_token': refreshToken},
       );

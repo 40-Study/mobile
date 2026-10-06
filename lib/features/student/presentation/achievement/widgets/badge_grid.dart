@@ -63,7 +63,7 @@ class _BadgeItem extends StatelessWidget {
       onTap: () => _showBadgeDetail(context),
       borderRadius: BorderRadius.circular(AppRadius.card),
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: AppSpacing.paddingSm,
         decoration: BoxDecoration(
           color: cs.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(AppRadius.card),

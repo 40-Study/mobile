@@ -391,5 +391,184 @@
   "shareOnSocial": "Chia sẻ portfolio qua mạng xã hội",
   "copyPortfolioLink": "Sao chép liên kết portfolio",
   "downloadPortfolioPdf": "Tải portfolio dạng PDF",
-  "addItem": "Thêm mục"
+  "addItem": "Thêm mục",
+
+  "courseLoadError": "Không thể tải khóa học",
+  "lessonUnlockError": "Bạn cần hoàn thành bài học trước để mở khoá bài này",
+  "certificateIssueError": "Lỗi cấp chứng chỉ: {error}",
+  "@certificateIssueError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "courseUnsaved": "Đã bỏ lưu khóa học",
+  "courseSaved": "Đã lưu khóa học",
+  "enrollmentDeveloping": "Chức năng đăng ký đang phát triển",
+  "enrollNow": "Đăng ký ngay",
+  "viewCertificateButton": "Xem chứng chỉ",
+  "progress": "Tiến độ",
+  "lessonsCompleted": "Bạn đã hoàn thành {completed} / {total} bài học",
+  "@lessonsCompleted": {
+    "placeholders": {
+      "completed": {},
+      "total": {}
+    }
+  },
+  "freeCourse": "Miễn phí",
+  "lessonCount": "{count} bài học",
+  "@lessonCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "minuteCount": "{count} phút",
+  "@minuteCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "downloadCourseMaterial": "Tải tài liệu khóa học",
+  "openAll": "Mở tất cả",
+  "viewInstructorPage": "Xem trang giảng viên",
+  "coursesAndStudents": "{courses} khóa học • {students} học viên",
+  "@coursesAndStudents": {
+    "placeholders": {
+      "courses": {},
+      "students": {}
+    }
+  },
+  "messageInstructor": "Nhắn tin cho cô",
+
+  "lessonCompleted": "Hoàn thành",
+  "lessonInProgress": "Đang học",
+  "lessonLocked": "Chưa mở khóa",
+  "lessonNotStarted": "Chưa học",
+  "lessonWatched": "Đã xem",
+  "lessonProgress": "Tiến độ bài học",
+
+  "settingsAppearance": "Giao diện",
+  "settingsNotifications": "Thông báo",
+  "settingsLearning": "Học tập",
+  "settingsOther": "Khác",
+  "settingsLanguage": "Ngôn ngữ",
+  "settingsLanguageVietnamese": "Tiếng Việt",
+  "settingsPushNotifications": "Thông báo đẩy",
+  "settingsEmailNotifications": "Thông báo email",
+  "settingsScheduleReminders": "Nhắc lịch học",
+  "settingsAutoplayVideo": "Tự động phát video",
+  "settingsPlaybackSpeed": "Tốc độ phát mặc định",
+  "settingsWifiDownload": "Tải xuống qua Wi-Fi",
+  "settingsClearCache": "Xóa bộ nhớ đệm",
+  "settingsCacheCleared": "Đã xóa bộ nhớ đệm",
+  "settingsVersion": "Phiên bản",
+  "settingsDarkTheme": "Giao diện tối",
+
+  "helpCenterTitle": "Trung tâm hỗ trợ",
+  "helpCenterQuestion": "Chúng tôi có thể giúp gì cho bạn?",
+  "helpContactSupport": "Liên hệ hỗ trợ",
+  "helpEmail": "Email",
+  "helpHotline": "Hotline",
+  "helpLiveChat": "Chat trực tuyến",
+  "helpLiveChatResponse": "Phản hồi trong vài phút",
+  "helpFaq": "Câu hỏi thường gặp",
+  "helpFaqPasswordChange": "Làm sao để đổi mật khẩu?",
+  "helpFaqPasswordChangeAnswer": "Vào Tài khoản > Mật khẩu & Bảo mật > Đổi mật khẩu để thay đổi mật khẩu của bạn.",
+  "helpFaqForgotPassword": "Tôi quên mật khẩu, phải làm sao?",
+  "helpFaqForgotPasswordAnswer": "Tại màn hình đăng nhập, nhấn \"Quên mật khẩu\" và làm theo hướng dẫn để đặt lại mật khẩu qua email.",
+  "helpFaqViewCertificate": "Làm sao để xem chứng chỉ đã nhận?",
+  "helpFaqViewCertificateAnswer": "Vào tab Thành tích để xem tất cả chứng chỉ bạn đã đạt được.",
+  "helpFaqRefund": "Tôi muốn hoàn tiền khóa học?",
+  "helpFaqRefundAnswer": "Liên hệ với chúng tôi qua email hoặc hotline trong vòng 7 ngày kể từ ngày mua để được hỗ trợ hoàn tiền.",
+
+  "scheduleErrorLoadData": "Không thể tải dữ liệu",
+  "scheduleOpenItem": "Mở: {title}",
+  "@scheduleOpenItem": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "scheduleCourseNotFound": "Không tìm thấy khóa học",
+  "scheduleNotEnrolled": "Bạn chưa đăng ký khóa học này",
+
+  "quizExitTitle": "Thoát bài kiểm tra?",
+  "quizExitContent": "Tiến độ làm bài của bạn sẽ không được lưu.",
+  "quizContinue": "Tiếp tục làm",
+  "quizExit": "Thoát",
+  "quizPrevious": "Trước",
+  "quizNext": "Tiếp",
+  "quizSubmit": "Nộp bài",
+  "quizBackToLesson": "Quay lại bài học",
+  "quizRetry": "Làm lại",
+
+  "exerciseMinutes": "{duration} phút",
+  "@exerciseMinutes": {
+    "placeholders": {
+      "duration": {}
+    }
+  },
+  "exercisePoints": "{points} điểm",
+  "@exercisePoints": {
+    "placeholders": {
+      "points": {}
+    }
+  },
+  "exerciseCompletion": "{rate}% hoàn thành",
+  "@exerciseCompletion": {
+    "placeholders": {
+      "rate": {}
+    }
+  },
+  "exerciseDoOnWeb": "Làm bài trên web",
+  "exerciseViewScore": "Xem điểm",
+  "exerciseDoExercise": "Làm bài",
+  "exerciseUnlimited": "Không giới hạn",
+  "exerciseSubmit": "Nộp bài",
+
+  "errorGeneric": "Lỗi: {message}",
+  "@errorGeneric": {
+    "placeholders": {
+      "message": {}
+    }
+  },
+  "videoLoadError": "Không thể tải video",
+  "removeFromSaved": "Đã xóa khỏi danh sách lưu",
+
+  "openMenu": "Mở menu",
+  "accountLabel": "Tài khoản",
+  "notificationLabel": "Thông báo",
+
+  "featureDeveloping": "Tính năng đang phát triển",
+  "goBack": "Quay lại",
+  "contactSupport": "Liên hệ hỗ trợ",
+  "takePhoto": "Chụp ảnh",
+  "chooseFromGallery": "Chọn từ thư viện",
+  "updateSuccess": "Cập nhật thành công",
+  "addRoleSuccess": "Đã thêm vai trò {role}",
+  "@addRoleSuccess": {
+    "placeholders": {
+      "role": {}
+    }
+  },
+  "addRoleError": "Lỗi: Không thể thêm vai trò",
+  "noRoleError": "Bạn chưa có vai trò, vui lòng đăng ký",
+  "cannotLoginWith": "Không thể đăng nhập bằng {provider}",
+  "@cannotLoginWith": {
+    "placeholders": {
+      "provider": {}
+    }
+  },
+  "pleaseSelectRole": "Vui lòng quay lại chọn vai trò",
+
+  "parentLinkChild": "Liên kết hồ sơ con",
+  "parentManageChildren": "Quản lý con",
+  "parentPayment": "Thanh toán",
+  "parentLearning": "Học tập",
+  "parentHome": "Trang chủ",
+  "parentSchedule": "Lịch học",
+  "parentConfirmLink": "Xác nhận liên kết",
+  "parentEditInfo": "Sửa",
+  "parentEditComingSoon": "Sửa thông tin - Coming soon",
+  "parentContactSupport": "Liên hệ hỗ trợ",
+
+  "addButton": "Thêm"
 }

@@ -17,10 +17,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
 
   final StudentRepository _repository;
 
-  Future<void> _onStarted(
-    QuizStarted event,
-    Emitter<QuizState> emit,
-  ) async {
+  Future<void> _onStarted(QuizStarted event, Emitter<QuizState> emit) async {
     emit(const QuizLoading());
 
     final result = await _repository.startQuiz(event.quizId);
@@ -31,14 +28,16 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
           emit(const QuizFailure('Không có câu hỏi'));
           return;
         }
-        emit(QuizReady(
-          quizId: event.quizId,
-          attemptId: data.attemptId,
-          questions: data.questions,
-          currentIndex: 0,
-          answers: const {},
-          timeLimitMinutes: data.timeLimitMinutes,
-        ));
+        emit(
+          QuizReady(
+            quizId: event.quizId,
+            attemptId: data.attemptId,
+            questions: data.questions,
+            currentIndex: 0,
+            answers: const {},
+            timeLimitMinutes: data.timeLimitMinutes,
+          ),
+        );
       },
       failure: (failure) {
         emit(QuizFailure(failure.message ?? 'Đã có lỗi xảy ra'));
@@ -46,12 +45,18 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     );
   }
 
-  void _onAnswerSelected(
-    QuizAnswerSelected event,
-    Emitter<QuizState> emit,
-  ) {
+  void _onAnswerSelected(QuizAnswerSelected event, Emitter<QuizState> emit) {
     final current = state;
     if (current is! QuizReady) return;
+    if (event.questionIndex < 0 ||
+        event.questionIndex >= current.questions.length) {
+      return;
+    }
+    if (event.answerIndex < 0 ||
+        event.answerIndex >=
+            current.questions[event.questionIndex].answers.length) {
+      return;
+    }
 
     final newAnswers = Map<int, int>.from(current.answers);
     newAnswers[event.questionIndex] = event.answerIndex;
@@ -59,10 +64,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     emit(current.copyWith(answers: newAnswers));
   }
 
-  void _onNextQuestion(
-    QuizNextQuestion event,
-    Emitter<QuizState> emit,
-  ) {
+  void _onNextQuestion(QuizNextQuestion event, Emitter<QuizState> emit) {
     final current = state;
     if (current is! QuizReady) return;
     if (current.isLastQuestion) return;
@@ -81,10 +83,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
     emit(current.copyWith(currentIndex: current.currentIndex - 1));
   }
 
-  void _onGoToQuestion(
-    QuizGoToQuestion event,
-    Emitter<QuizState> emit,
-  ) {
+  void _onGoToQuestion(QuizGoToQuestion event, Emitter<QuizState> emit) {
     final current = state;
     if (current is! QuizReady) return;
     if (event.index < 0 || event.index >= current.questions.length) return;
@@ -115,13 +114,18 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
       }
     }
 
-    final result = await _repository.submitQuiz(current.quizId, current.attemptId, apiAnswers);
+    final result = await _repository.submitQuiz(
+      current.quizId,
+      current.attemptId,
+      apiAnswers,
+    );
 
     switch (result) {
       case Success(value: final submitResult):
         // Tính correct count từ percentage (vì backend không gửi is_correct)
         final totalCount = current.questions.length;
-        final correctCount = (submitResult.percentage * totalCount / 100).round();
+        final correctCount = (submitResult.percentage * totalCount / 100)
+            .round();
 
         // Lưu kết quả vào local storage
         await QuizResultStorage.saveResult(
@@ -131,12 +135,14 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
           score: submitResult.percentage,
         );
 
-        emit(QuizCompleted(
-          correctCount: correctCount,
-          totalCount: totalCount,
-          score: submitResult.percentage,
-          timeLimitMinutes: current.timeLimitMinutes,
-        ));
+        emit(
+          QuizCompleted(
+            correctCount: correctCount,
+            totalCount: totalCount,
+            score: submitResult.percentage,
+            timeLimitMinutes: current.timeLimitMinutes,
+          ),
+        );
 
       case FailureResult(error: final error):
         emit(QuizFailure(error.message ?? 'Không thể nộp bài'));

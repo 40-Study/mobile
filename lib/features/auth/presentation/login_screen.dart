@@ -13,6 +13,7 @@ import 'package:study/features/auth/presentation/widgets/auth_animations.dart';
 import 'package:study/features/auth/presentation/widgets/auth_form_card.dart';
 import 'package:study/features/auth/presentation/widgets/auth_text_field.dart';
 import 'package:study/features/auth/presentation/widgets/login_bear.dart';
+import 'package:study/features/auth/presentation/widgets/oauth_button.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/routes/router.dart';
@@ -91,11 +92,11 @@ class _LoginScreenState extends State<LoginScreen> {
               case LoginSuccess(:final response):
                 anim.succeed();
                 _bearKey.currentState?.triggerSuccess();
-                Future.delayed(AppDurations.authSuccess, () {
+                Future<void>.delayed(AppDurations.authSuccess, () {
                   if (!mounted) return;
                   context.read<AuthBloc>().add(AuthLoggedIn(response));
                   // Small delay to let AuthBloc process the event
-                  Future.delayed(AppDurations.authSuccessNavigate, () {
+                  Future<void>.delayed(AppDurations.authSuccessNavigate, () {
                     if (!mounted) return;
                     navigator.pushAndRemoveAll(Routes.app);
                   });
@@ -103,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
               case LoginNeedsRoleSelection(:final sessionToken, :final roles):
                 anim.succeed();
                 _bearKey.currentState?.triggerSuccess();
-                Future.delayed(AppDurations.authRolePickerDelay, () {
+                Future<void>.delayed(AppDurations.authRolePickerDelay, () {
                   if (!mounted) return;
                   navigator.navigateTo(Routes.loginRolePicker, {
                     'sessionToken': sessionToken,
@@ -274,17 +275,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                _OAuthButton(
+                                OAuthButton(
                                   provider: 'google',
                                   onTap: () => _loginWithOAuth('google'),
                                 ),
                                 AppSpacing.hGap12,
-                                _OAuthButton(
+                                OAuthButton(
                                   provider: 'facebook',
                                   onTap: () => _loginWithOAuth('facebook'),
                                 ),
                                 AppSpacing.hGap12,
-                                _OAuthButton(
+                                OAuthButton(
                                   provider: 'github',
                                   onTap: () => _loginWithOAuth('github'),
                                 ),
@@ -353,55 +354,6 @@ class _LoginScreenState extends State<LoginScreen> {
       'facebook' => 'Facebook',
       'github' => 'GitHub',
       _ => provider,
-    };
-  }
-}
-
-class _OAuthButton extends StatelessWidget {
-  const _OAuthButton({required this.provider, required this.onTap});
-
-  final String provider;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
-        ),
-        child: Icon(
-          _getProviderIcon(provider),
-          color: _getProviderColor(provider),
-          size: 24,
-        ),
-      ),
-    );
-  }
-
-  IconData _getProviderIcon(String provider) {
-    return switch (provider.toLowerCase()) {
-      'google' => Icons.g_mobiledata,
-      'facebook' => Icons.facebook,
-      'github' => Icons.code,
-      _ => Icons.link,
-    };
-  }
-
-  Color _getProviderColor(String provider) {
-    return switch (provider.toLowerCase()) {
-      'google' => const Color(0xFFDB4437),
-      'facebook' => const Color(0xFF4267B2),
-      'github' => const Color(0xFF333333),
-      _ => Colors.grey,
     };
   }
 }

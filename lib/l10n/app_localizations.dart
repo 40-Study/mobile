@@ -2719,6 +2719,636 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add item'**
   String get addItem;
+
+  /// No description provided for @courseLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot load course'**
+  String get courseLoadError;
+
+  /// No description provided for @lessonUnlockError.
+  ///
+  /// In en, this message translates to:
+  /// **'You need to complete the previous lesson to unlock this one'**
+  String get lessonUnlockError;
+
+  /// No description provided for @certificateIssueError.
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate issue error: {error}'**
+  String certificateIssueError(Object error);
+
+  /// No description provided for @courseUnsaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Course removed from saved'**
+  String get courseUnsaved;
+
+  /// No description provided for @courseSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Course saved'**
+  String get courseSaved;
+
+  /// No description provided for @enrollmentDeveloping.
+  ///
+  /// In en, this message translates to:
+  /// **'Enrollment feature is under development'**
+  String get enrollmentDeveloping;
+
+  /// No description provided for @enrollNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Enroll Now'**
+  String get enrollNow;
+
+  /// No description provided for @viewCertificateButton.
+  ///
+  /// In en, this message translates to:
+  /// **'View Certificate'**
+  String get viewCertificateButton;
+
+  /// No description provided for @progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get progress;
+
+  /// No description provided for @lessonsCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'You have completed {completed} / {total} lessons'**
+  String lessonsCompleted(Object completed, Object total);
+
+  /// No description provided for @freeCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get freeCourse;
+
+  /// No description provided for @lessonCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lessons'**
+  String lessonCount(Object count);
+
+  /// No description provided for @minuteCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} minutes'**
+  String minuteCount(Object count);
+
+  /// No description provided for @downloadCourseMaterial.
+  ///
+  /// In en, this message translates to:
+  /// **'Download course materials'**
+  String get downloadCourseMaterial;
+
+  /// No description provided for @openAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Open all'**
+  String get openAll;
+
+  /// No description provided for @viewInstructorPage.
+  ///
+  /// In en, this message translates to:
+  /// **'View instructor page'**
+  String get viewInstructorPage;
+
+  /// No description provided for @coursesAndStudents.
+  ///
+  /// In en, this message translates to:
+  /// **'{courses} courses • {students} students'**
+  String coursesAndStudents(Object courses, Object students);
+
+  /// No description provided for @messageInstructor.
+  ///
+  /// In en, this message translates to:
+  /// **'Message instructor'**
+  String get messageInstructor;
+
+  /// No description provided for @lessonCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get lessonCompleted;
+
+  /// No description provided for @lessonInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress'**
+  String get lessonInProgress;
+
+  /// No description provided for @lessonLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked'**
+  String get lessonLocked;
+
+  /// No description provided for @lessonNotStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Started'**
+  String get lessonNotStarted;
+
+  /// No description provided for @lessonWatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Watched'**
+  String get lessonWatched;
+
+  /// No description provided for @lessonProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson Progress'**
+  String get lessonProgress;
+
+  /// No description provided for @settingsAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearance;
+
+  /// No description provided for @settingsNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get settingsNotifications;
+
+  /// No description provided for @settingsLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning'**
+  String get settingsLearning;
+
+  /// No description provided for @settingsOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get settingsOther;
+
+  /// No description provided for @settingsLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguage;
+
+  /// No description provided for @settingsLanguageVietnamese.
+  ///
+  /// In en, this message translates to:
+  /// **'Vietnamese'**
+  String get settingsLanguageVietnamese;
+
+  /// No description provided for @settingsPushNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Push notifications'**
+  String get settingsPushNotifications;
+
+  /// No description provided for @settingsEmailNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Email notifications'**
+  String get settingsEmailNotifications;
+
+  /// No description provided for @settingsScheduleReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule reminders'**
+  String get settingsScheduleReminders;
+
+  /// No description provided for @settingsAutoplayVideo.
+  ///
+  /// In en, this message translates to:
+  /// **'Autoplay video'**
+  String get settingsAutoplayVideo;
+
+  /// No description provided for @settingsPlaybackSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Default playback speed'**
+  String get settingsPlaybackSpeed;
+
+  /// No description provided for @settingsWifiDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download over Wi-Fi only'**
+  String get settingsWifiDownload;
+
+  /// No description provided for @settingsClearCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear cache'**
+  String get settingsClearCache;
+
+  /// No description provided for @settingsCacheCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache cleared'**
+  String get settingsCacheCleared;
+
+  /// No description provided for @settingsVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get settingsVersion;
+
+  /// No description provided for @settingsDarkTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark theme'**
+  String get settingsDarkTheme;
+
+  /// No description provided for @helpCenterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Help center'**
+  String get helpCenterTitle;
+
+  /// No description provided for @helpCenterQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'How can we help you?'**
+  String get helpCenterQuestion;
+
+  /// No description provided for @helpContactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact support'**
+  String get helpContactSupport;
+
+  /// No description provided for @helpEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get helpEmail;
+
+  /// No description provided for @helpHotline.
+  ///
+  /// In en, this message translates to:
+  /// **'Hotline'**
+  String get helpHotline;
+
+  /// No description provided for @helpLiveChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Live chat'**
+  String get helpLiveChat;
+
+  /// No description provided for @helpLiveChatResponse.
+  ///
+  /// In en, this message translates to:
+  /// **'Response within minutes'**
+  String get helpLiveChatResponse;
+
+  /// No description provided for @helpFaq.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequently asked questions'**
+  String get helpFaq;
+
+  /// No description provided for @helpFaqPasswordChange.
+  ///
+  /// In en, this message translates to:
+  /// **'How to change password?'**
+  String get helpFaqPasswordChange;
+
+  /// No description provided for @helpFaqPasswordChangeAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Account > Password & Security > Change Password to update your password.'**
+  String get helpFaqPasswordChangeAnswer;
+
+  /// No description provided for @helpFaqForgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'I forgot my password, what should I do?'**
+  String get helpFaqForgotPassword;
+
+  /// No description provided for @helpFaqForgotPasswordAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'On the login screen, tap \'Forgot password\' and follow the instructions to reset your password via email.'**
+  String get helpFaqForgotPasswordAnswer;
+
+  /// No description provided for @helpFaqViewCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'How to view earned certificates?'**
+  String get helpFaqViewCertificate;
+
+  /// No description provided for @helpFaqViewCertificateAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to the Achievements tab to view all certificates you have earned.'**
+  String get helpFaqViewCertificateAnswer;
+
+  /// No description provided for @helpFaqRefund.
+  ///
+  /// In en, this message translates to:
+  /// **'I want a refund for a course?'**
+  String get helpFaqRefund;
+
+  /// No description provided for @helpFaqRefundAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact us via email or hotline within 7 days of purchase for refund support.'**
+  String get helpFaqRefundAnswer;
+
+  /// No description provided for @scheduleErrorLoadData.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot load data'**
+  String get scheduleErrorLoadData;
+
+  /// No description provided for @scheduleOpenItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Open: {title}'**
+  String scheduleOpenItem(Object title);
+
+  /// No description provided for @scheduleCourseNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Course not found'**
+  String get scheduleCourseNotFound;
+
+  /// No description provided for @scheduleNotEnrolled.
+  ///
+  /// In en, this message translates to:
+  /// **'You are not enrolled in this course'**
+  String get scheduleNotEnrolled;
+
+  /// No description provided for @quizExitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit quiz?'**
+  String get quizExitTitle;
+
+  /// No description provided for @quizExitContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Your progress will not be saved.'**
+  String get quizExitContent;
+
+  /// No description provided for @quizContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get quizContinue;
+
+  /// No description provided for @quizExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get quizExit;
+
+  /// No description provided for @quizPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get quizPrevious;
+
+  /// No description provided for @quizNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get quizNext;
+
+  /// No description provided for @quizSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get quizSubmit;
+
+  /// No description provided for @quizBackToLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to lesson'**
+  String get quizBackToLesson;
+
+  /// No description provided for @quizRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get quizRetry;
+
+  /// No description provided for @exerciseMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{duration} minutes'**
+  String exerciseMinutes(Object duration);
+
+  /// No description provided for @exercisePoints.
+  ///
+  /// In en, this message translates to:
+  /// **'{points} points'**
+  String exercisePoints(Object points);
+
+  /// No description provided for @exerciseCompletion.
+  ///
+  /// In en, this message translates to:
+  /// **'{rate}% completed'**
+  String exerciseCompletion(Object rate);
+
+  /// No description provided for @exerciseDoOnWeb.
+  ///
+  /// In en, this message translates to:
+  /// **'Do on web'**
+  String get exerciseDoOnWeb;
+
+  /// No description provided for @exerciseViewScore.
+  ///
+  /// In en, this message translates to:
+  /// **'View score'**
+  String get exerciseViewScore;
+
+  /// No description provided for @exerciseDoExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Do exercise'**
+  String get exerciseDoExercise;
+
+  /// No description provided for @exerciseUnlimited.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited'**
+  String get exerciseUnlimited;
+
+  /// No description provided for @exerciseSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get exerciseSubmit;
+
+  /// No description provided for @errorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {message}'**
+  String errorGeneric(Object message);
+
+  /// No description provided for @videoLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot load video'**
+  String get videoLoadError;
+
+  /// No description provided for @removeFromSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from saved list'**
+  String get removeFromSaved;
+
+  /// No description provided for @openMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Open menu'**
+  String get openMenu;
+
+  /// No description provided for @accountLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get accountLabel;
+
+  /// No description provided for @notificationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationLabel;
+
+  /// No description provided for @featureDeveloping.
+  ///
+  /// In en, this message translates to:
+  /// **'Feature is under development'**
+  String get featureDeveloping;
+
+  /// No description provided for @goBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Go back'**
+  String get goBack;
+
+  /// No description provided for @contactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact support'**
+  String get contactSupport;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take photo'**
+  String get takePhoto;
+
+  /// No description provided for @chooseFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from gallery'**
+  String get chooseFromGallery;
+
+  /// No description provided for @updateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated successfully'**
+  String get updateSuccess;
+
+  /// No description provided for @addRoleSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Added role {role}'**
+  String addRoleSuccess(Object role);
+
+  /// No description provided for @addRoleError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: Cannot add role'**
+  String get addRoleError;
+
+  /// No description provided for @noRoleError.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have a role, please register'**
+  String get noRoleError;
+
+  /// No description provided for @cannotLoginWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot login with {provider}'**
+  String cannotLoginWith(Object provider);
+
+  /// No description provided for @pleaseSelectRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Please go back to select a role'**
+  String get pleaseSelectRole;
+
+  /// No description provided for @parentLinkChild.
+  ///
+  /// In en, this message translates to:
+  /// **'Link child profile'**
+  String get parentLinkChild;
+
+  /// No description provided for @parentManageChildren.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage children'**
+  String get parentManageChildren;
+
+  /// No description provided for @parentPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment'**
+  String get parentPayment;
+
+  /// No description provided for @parentLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning'**
+  String get parentLearning;
+
+  /// No description provided for @parentHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get parentHome;
+
+  /// No description provided for @parentSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule'**
+  String get parentSchedule;
+
+  /// No description provided for @parentConfirmLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm link'**
+  String get parentConfirmLink;
+
+  /// No description provided for @parentEditInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit info'**
+  String get parentEditInfo;
+
+  /// No description provided for @parentEditComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit info - Coming soon'**
+  String get parentEditComingSoon;
+
+  /// No description provided for @parentContactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact support'**
+  String get parentContactSupport;
+
+  /// No description provided for @addButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get addButton;
 }
 
 class _AppLocalizationsDelegate

@@ -45,7 +45,7 @@ class LearningBloc extends Bloc<LearningEvent, LearningState> {
         final List<CourseModel> courses = coursesResult.when(
           success: (c) => c,
           failure: (_) => <CourseModel>[],
-        ) ?? <CourseModel>[];
+        );
 
         emit(LearningSuccess(
           enrollments: enrollments,

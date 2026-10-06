@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/student/data/models/models.dart';
 
 sealed class ScheduleState extends Equatable {
@@ -24,6 +25,7 @@ final class ScheduleSuccess extends ScheduleState {
     this.selectedDateItems = const [],
     this.isLoadingDay = false,
     this.dailyNotes = const {},
+    this.classCourseNavigation,
   });
 
   final DateTime currentMonth;
@@ -32,6 +34,7 @@ final class ScheduleSuccess extends ScheduleState {
   final List<ScheduleItemModel> selectedDateItems;
   final bool isLoadingDay;
   final Map<String, String> dailyNotes; // key: "yyyy-MM-dd", value: note
+  final ScheduleClassCourseNavigation? classCourseNavigation;
 
   /// Get note for a specific date
   String? getNoteForDate(DateTime date) {
@@ -56,6 +59,7 @@ final class ScheduleSuccess extends ScheduleState {
         selectedDateItems,
         isLoadingDay,
         dailyNotes,
+        classCourseNavigation,
       ];
 
   ScheduleSuccess copyWith({
@@ -65,6 +69,8 @@ final class ScheduleSuccess extends ScheduleState {
     List<ScheduleItemModel>? selectedDateItems,
     bool? isLoadingDay,
     Map<String, String>? dailyNotes,
+    ScheduleClassCourseNavigation? classCourseNavigation,
+    bool clearNavigation = false,
   }) {
     return ScheduleSuccess(
       currentMonth: currentMonth ?? this.currentMonth,
@@ -73,8 +79,39 @@ final class ScheduleSuccess extends ScheduleState {
       selectedDateItems: selectedDateItems ?? this.selectedDateItems,
       isLoadingDay: isLoadingDay ?? this.isLoadingDay,
       dailyNotes: dailyNotes ?? this.dailyNotes,
+      classCourseNavigation: clearNavigation ? null : (classCourseNavigation ?? this.classCourseNavigation),
     );
   }
+}
+
+/// Result of class->course lookup for navigation
+sealed class ScheduleClassCourseNavigation extends Equatable {
+  const ScheduleClassCourseNavigation();
+}
+
+final class ScheduleClassCourseNavigationLoading extends ScheduleClassCourseNavigation {
+  const ScheduleClassCourseNavigationLoading();
+
+  @override
+  List<Object?> get props => [];
+}
+
+final class ScheduleClassCourseNavigationSuccess extends ScheduleClassCourseNavigation {
+  const ScheduleClassCourseNavigationSuccess(this.enrollment);
+
+  final EnrollmentModel enrollment;
+
+  @override
+  List<Object?> get props => [enrollment];
+}
+
+final class ScheduleClassCourseNavigationError extends ScheduleClassCourseNavigation {
+  const ScheduleClassCourseNavigationError(this.message);
+
+  final String message;
+
+  @override
+  List<Object?> get props => [message];
 }
 
 final class ScheduleFailure extends ScheduleState {

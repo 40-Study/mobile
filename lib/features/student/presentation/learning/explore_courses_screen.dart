@@ -5,111 +5,39 @@ import 'package:study/di/di_container.dart';
 import 'package:study/features/course/data/models/course_model.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
-import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
-import 'package:study/features/student/repository/student_repository.dart';
+import 'package:study/features/student/bloc/learning/learning_bloc.dart';
+import 'package:study/features/student/bloc/learning/learning_event.dart';
+import 'package:study/features/student/bloc/learning/learning_state.dart';
+import 'package:study/features/student/presentation/learning/course_detail/course_detail_screen.dart';
 import 'package:study/theme/theme.dart';
-import 'package:study/widgets/empty_state.dart';
+import 'package:study/widgets/async_list_scaffold.dart';
 
-class ExploreCoursesScreen extends StatefulWidget {
+class ExploreCoursesScreen extends StatelessWidget {
   const ExploreCoursesScreen({super.key});
 
   @override
-  State<ExploreCoursesScreen> createState() => _ExploreCoursesScreenState();
-}
-
-class _ExploreCoursesScreenState extends State<ExploreCoursesScreen> {
-  final _repository = diContainer<StudentRepository>();
-  List<CourseModel> _courses = [];
-  bool _isLoading = true;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCourses();
-  }
-
-  Future<void> _loadCourses() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    final result = await _repository.getAllCourses();
-
-    result.when(
-      success: (courses) {
-        setState(() {
-          _courses = courses;
-          _isLoading = false;
-        });
-      },
-      failure: (failure) {
-        setState(() {
-          _error = failure.message ?? 'Không thể tải khóa học';
-          _isLoading = false;
-        });
-      },
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
+    return BlocBuilder<LearningBloc, LearningState>(
+      builder: (context, state) {
+        final courses = switch (state) {
+          LearningSuccess(:final recommendedCourses) => recommendedCourses,
+          _ => <CourseModel>[],
+        };
+        final isLoading = state is LearningInProgress;
+        final error = state is LearningFailure ? state.message : null;
 
-    return Scaffold(
-      backgroundColor: cs.surfaceContainerLowest,
-      appBar: AppBar(
-        elevation: 0,
-        scrolledUnderElevation: 0.5,
-        title: Text(
-          'Khám phá khóa học',
-          style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-        backgroundColor: cs.surface,
-        surfaceTintColor: Colors.transparent,
-      ),
-      body: _buildBody(context),
-    );
-  }
-
-  Widget _buildBody(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(strokeWidth: 2));
-    }
-
-    if (_error != null) {
-      return Center(
-        child: EmptyState(
-          icon: Icons.error_outline,
-          title: 'Lỗi',
-          message: _error!,
-          actionLabel: 'Thử lại',
-          onAction: _loadCourses,
-        ),
-      );
-    }
-
-    if (_courses.isEmpty) {
-      return const Center(
-        child: EmptyState(
-          icon: Icons.school_outlined,
-          title: 'Chưa có khóa học',
-          message: 'Hiện chưa có khóa học nào.',
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadCourses,
-      child: ListView.separated(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        itemCount: _courses.length,
-        separatorBuilder: (_, __) => AppSpacing.vGap12,
-        itemBuilder: (context, index) => _CourseCard(course: _courses[index]),
-      ),
+        return AsyncListScaffold<CourseModel>(
+          title: 'Khám phá khóa học',
+          items: courses,
+          isLoading: isLoading,
+          error: error,
+          onRefresh: () async => context.read<LearningBloc>().add(const LearningRefreshed()),
+          emptyIcon: Icons.school_outlined,
+          emptyTitle: 'Chưa có khóa học',
+          emptyMessage: 'Hiện chưa có khóa học nào.',
+          itemBuilder: (context, course) => _CourseCard(course: course),
+        );
+      },
     );
   }
 }
@@ -200,7 +128,7 @@ class _CourseCard extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: cs.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: AppRadius.borderXs,
                               ),
                               child: Text(
                                 course.level!,
@@ -236,7 +164,7 @@ class _CourseCard extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.green.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: AppRadius.borderMd,
                               ),
                               child: Text(
                                 'Miễn phí',
@@ -271,7 +199,7 @@ class _CourseCard extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => CourseDetailBloc(diContainer<StudentRepository>())
+          create: (_) => diContainer<CourseDetailBloc>()
             ..add(CourseDetailStarted(course.id, isEnrollment: false)),
           child: const CourseDetailScreen(),
         ),

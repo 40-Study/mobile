@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:study/constants/index.dart';
 
 class BottomSheetDialogIcon extends StatelessWidget {
   @override
@@ -7,8 +6,8 @@ class BottomSheetDialogIcon extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return SizedBox(
-      width: UiSize.bottomSheetTopIconWidth,
-      height: UiSize.bottomSheetTopIconHeight,
+      width: 42,
+      height: 15,
       child: Card(shadowColor: Colors.transparent, color: cs.outlineVariant),
     );
   }

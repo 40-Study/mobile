@@ -11,11 +11,17 @@ import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/auth/repository/auth_repository_impl.dart';
 import 'package:study/features/course/data/course_api_client.dart';
-import 'package:study/features/parent/data/parent_api_client.dart';
-import 'package:study/features/parent/repository/parent_repository.dart';
-// ignore: unused_import
-import 'package:study/features/parent/repository/parent_repository_impl.dart';
-import 'package:study/features/parent/repository/parent_repository_mock.dart';
+import 'package:study/features/parent/data/parent_home_api_client.dart';
+import 'package:study/features/parent/repository/family_insights_repository.dart';
+import 'package:study/features/parent/repository/family_insights_repository_impl.dart';
+import 'package:study/features/parent/repository/parent_home_repository.dart';
+import 'package:study/features/parent/repository/parent_home_repository_impl.dart';
+import 'package:study/features/parent/repository/parent_learning_repository.dart';
+import 'package:study/features/parent/repository/parent_learning_repository_impl.dart';
+import 'package:study/features/parent/repository/parent_payment_repository.dart';
+import 'package:study/features/parent/repository/parent_payment_repository_impl.dart';
+import 'package:study/features/parent/repository/parent_schedule_repository.dart';
+import 'package:study/features/parent/repository/parent_schedule_repository_impl.dart';
 import 'package:study/features/student/data/student_api_client.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/features/student/repository/student_repository_impl.dart';
@@ -38,7 +44,12 @@ abstract class RepositoryModule {
     AuthApiClient apiClient,
     AuthStorage authStorage,
     Dio dio,
-  ) => AuthRepositoryImpl(apiClient: apiClient, authStorage: authStorage, dio: dio);
+  ) =>
+      AuthRepositoryImpl(
+        apiClient: apiClient,
+        authStorage: authStorage,
+        dio: dio,
+      );
 
   @factoryMethod
   StudentApiClient provideStudentApiClient(Dio dio) => StudentApiClient(dio);
@@ -61,10 +72,48 @@ abstract class RepositoryModule {
       SharedPreferencesBookmarkStorage(diContainer<SharedPreferences>());
 
   @factoryMethod
-  ParentApiClient provideParentApiClient(Dio dio) => ParentApiClient(dio);
+  ParentHomeApiClient provideParentHomeApiClient(Dio dio) =>
+      ParentHomeApiClient(dio);
 
   @lazySingleton
-  ParentRepository provideParentRepository(ParentApiClient apiClient) =>
-      // TODO: Đổi sang ParentRepositoryImpl khi backend có GET /api/parent/children
-      ParentRepositoryMock(apiClient);
+  ParentHomeRepository provideParentHomeRepository(
+    ParentHomeApiClient apiClient,
+  ) =>
+      ParentHomeRepositoryImpl(
+        apiClient: apiClient,
+        enablePreviewFallback: true,
+      );
+
+  @lazySingleton
+  ParentScheduleRepository provideParentScheduleRepository(
+    ParentHomeApiClient apiClient,
+  ) =>
+      ParentScheduleRepositoryImpl(
+        apiClient: apiClient,
+        enablePreviewFallback: true,
+      );
+
+  @lazySingleton
+  FamilyInsightsRepository provideFamilyInsightsRepository() =>
+      FamilyInsightsRepositoryImpl(
+        enablePreviewFallback: true,
+      );
+
+  @lazySingleton
+  ParentLearningRepository provideParentLearningRepository(
+    ParentHomeApiClient apiClient,
+  ) =>
+      ParentLearningRepositoryImpl(
+        apiClient: apiClient,
+        enablePreviewFallback: true,
+      );
+
+  @lazySingleton
+  ParentPaymentRepository provideParentPaymentRepository(
+    ParentHomeApiClient apiClient,
+  ) =>
+      ParentPaymentRepositoryImpl(
+        apiClient: apiClient,
+        enablePreviewFallback: true,
+      );
 }

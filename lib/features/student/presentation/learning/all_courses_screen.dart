@@ -5,122 +5,39 @@ import 'package:study/di/di_container.dart';
 import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
-import 'package:study/features/student/presentation/learning/course_detail_screen.dart';
-import 'package:study/features/student/repository/student_repository.dart';
+import 'package:study/features/student/bloc/learning/learning_bloc.dart';
+import 'package:study/features/student/bloc/learning/learning_event.dart';
+import 'package:study/features/student/bloc/learning/learning_state.dart';
+import 'package:study/features/student/presentation/learning/course_detail/course_detail_screen.dart';
 import 'package:study/theme/theme.dart';
-import 'package:study/widgets/empty_state.dart';
+import 'package:study/widgets/async_list_scaffold.dart';
 
-class AllCoursesScreen extends StatefulWidget {
+class AllCoursesScreen extends StatelessWidget {
   const AllCoursesScreen({super.key});
 
   @override
-  State<AllCoursesScreen> createState() => _AllCoursesScreenState();
-}
-
-class _AllCoursesScreenState extends State<AllCoursesScreen> {
-  final _repository = diContainer<StudentRepository>();
-  List<EnrollmentModel> _enrollments = [];
-  bool _isLoading = true;
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCourses();
-  }
-
-  Future<void> _loadCourses() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    final result = await _repository.getActiveEnrollments();
-
-    result.when(
-      success: (enrollments) {
-        setState(() {
-          _enrollments = enrollments;
-          _isLoading = false;
-        });
-      },
-      failure: (failure) {
-        setState(() {
-          _error = failure.message ?? 'Không thể tải khóa học';
-          _isLoading = false;
-        });
-      },
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
+    return BlocBuilder<LearningBloc, LearningState>(
+      builder: (context, state) {
+        final enrollments = switch (state) {
+          LearningSuccess(:final enrollments) => enrollments,
+          _ => <EnrollmentModel>[],
+        };
+        final isLoading = state is LearningInProgress;
+        final error = state is LearningFailure ? state.message : null;
 
-    return Scaffold(
-      backgroundColor: cs.surfaceContainerLowest,
-      appBar: AppBar(
-        elevation: 0,
-        scrolledUnderElevation: 0.5,
-        title: Text(
-          'Khóa học của tôi',
-          style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-        backgroundColor: cs.surface,
-        surfaceTintColor: Colors.transparent,
-      ),
-      body: _buildBody(context),
-    );
-  }
-
-  Widget _buildBody(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator(strokeWidth: 2));
-    }
-
-    if (_error != null) {
-      return Center(
-        child: EmptyState(
-          icon: Icons.error_outline,
-          title: 'Lỗi',
-          message: _error!,
-          actionLabel: 'Thử lại',
-          onAction: _loadCourses,
-        ),
-      );
-    }
-
-    if (_enrollments.isEmpty) {
-      return const Center(
-        child: EmptyState(
-          icon: Icons.school_outlined,
-          title: 'Chưa có khóa học',
-          message: 'Bạn chưa đăng ký khóa học nào.',
-        ),
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadCourses,
-      child: CustomScrollView(
-        slivers: [
-          // Course list
-          SliverPadding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            sliver: SliverList.separated(
-              itemCount: _enrollments.length,
-              separatorBuilder: (_, __) => AppSpacing.vGap12,
-              itemBuilder: (context, index) => _CourseCard(
-                enrollment: _enrollments[index],
-              ),
-            ),
-          ),
-
-          const SliverPadding(padding: EdgeInsets.only(bottom: AppSpacing.xl)),
-        ],
-      ),
+        return AsyncListScaffold<EnrollmentModel>(
+          title: 'Khóa học của tôi',
+          items: enrollments,
+          isLoading: isLoading,
+          error: error,
+          onRefresh: () async => context.read<LearningBloc>().add(const LearningRefreshed()),
+          emptyIcon: Icons.school_outlined,
+          emptyTitle: 'Chưa có khóa học',
+          emptyMessage: 'Bạn chưa đăng ký khóa học nào.',
+          itemBuilder: (context, enrollment) => _CourseCard(enrollment: enrollment),
+        );
+      },
     );
   }
 }
@@ -189,7 +106,7 @@ class _CourseCard extends StatelessWidget {
                       // Thumbnail
                       Positioned.fill(
                         child: Padding(
-                          padding: const EdgeInsets.all(4),
+                          padding: AppSpacing.paddingXs,
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(28),
                             child: course?.thumbnailUrl != null
@@ -267,7 +184,7 @@ class _CourseCard extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: progressColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppRadius.borderMd,
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -327,7 +244,7 @@ class _CourseCard extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) => CourseDetailBloc(diContainer<StudentRepository>())
+          create: (_) => diContainer<CourseDetailBloc>()
             ..add(CourseDetailStarted(enrollment.id, isEnrollment: true)),
           child: const CourseDetailScreen(),
         ),

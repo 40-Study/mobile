@@ -10,6 +10,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<ScheduleMonthChanged>(_onMonthChanged);
     on<ScheduleNoteSaved>(_onNoteSaved);
     on<ScheduleNoteDeleted>(_onNoteDeleted);
+    on<ScheduleClassCourseRequested>(_onClassCourseRequested);
+    on<ScheduleClassCourseNavigationHandled>(_onNavigationHandled);
   }
 
   final StudentRepository _repository;
@@ -147,4 +149,49 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     emit(currentState.copyWith(dailyNotes: updatedNotes));
   }
 
+  Future<void> _onClassCourseRequested(
+    ScheduleClassCourseRequested event,
+    Emitter<ScheduleState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! ScheduleSuccess) return;
+
+    emit(currentState.copyWith(
+      classCourseNavigation: const ScheduleClassCourseNavigationLoading(),
+    ));
+
+    final classResult = await _repository.getCourseIdFromClass(event.classId);
+    final courseId = classResult.valueOrNull;
+
+    if (courseId == null) {
+      emit(currentState.copyWith(
+        classCourseNavigation: const ScheduleClassCourseNavigationError('course_not_found'),
+      ));
+      return;
+    }
+
+    final enrollmentsResult = await _repository.getActiveEnrollments();
+    final enrollments = enrollmentsResult.valueOrNull ?? [];
+    final enrollment = enrollments.where((e) => e.courseId == courseId).firstOrNull;
+
+    if (enrollment != null) {
+      emit(currentState.copyWith(
+        classCourseNavigation: ScheduleClassCourseNavigationSuccess(enrollment),
+      ));
+    } else {
+      emit(currentState.copyWith(
+        classCourseNavigation: const ScheduleClassCourseNavigationError('not_enrolled'),
+      ));
+    }
+  }
+
+  void _onNavigationHandled(
+    ScheduleClassCourseNavigationHandled event,
+    Emitter<ScheduleState> emit,
+  ) {
+    final currentState = state;
+    if (currentState is ScheduleSuccess) {
+      emit(currentState.copyWith(clearNavigation: true));
+    }
+  }
 }
