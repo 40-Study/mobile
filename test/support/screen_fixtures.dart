@@ -1,3 +1,4 @@
+import 'parent_flow_fixtures.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -177,6 +178,7 @@ List<Widget> createScreenFixtures({int itemCount = 0}) => <Widget>[
   const ParentLearningScreen(),
   const ParentScheduleScreen(),
   const ParentPaymentScreen(),
+  ...createParentFlowFixtures(),
   const ParentProfileScreen(),
   const ParentClassDetailScreen(),
   const ParentCourseDetailScreen(courseId: 'course', childName: 'Minh'),

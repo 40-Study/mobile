@@ -12,6 +12,7 @@ import 'package:study/features/student/bloc/home/home_bloc.dart';
 import 'package:study/features/student/bloc/learning/learning_bloc.dart';
 import 'package:study/features/student/bloc/schedule/schedule_bloc.dart';
 import 'package:study/features/student/presentation/student_shell.dart';
+import 'package:study/features/student/presentation/learning/learning_screen.dart';
 import 'package:study/features/student/data/models/student_stats_model.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 
@@ -19,33 +20,45 @@ class _MockAuthRepository extends Mock implements AuthRepository {}
 
 class _MockStudentRepository extends Mock implements StudentRepository {}
 
-void _stubMocks(_MockStudentRepository studentRepo, _MockAuthRepository authRepo) {
+void _stubMocks(
+  _MockStudentRepository studentRepo,
+  _MockAuthRepository authRepo,
+) {
   // HomeBloc needs
-  when(() => studentRepo.getContinueLearning())
-      .thenAnswer((_) async => const Result.success(null));
-  when(() => studentRepo.getTodaySchedule())
-      .thenAnswer((_) async => const Result.success([]));
-  when(() => studentRepo.getPendingAssignments())
-      .thenAnswer((_) async => const Result.success([]));
+  when(
+    () => studentRepo.getContinueLearning(),
+  ).thenAnswer((_) async => const Result.success(null));
+  when(
+    () => studentRepo.getTodaySchedule(),
+  ).thenAnswer((_) async => const Result.success([]));
+  when(
+    () => studentRepo.getPendingAssignments(),
+  ).thenAnswer((_) async => const Result.success([]));
 
   // LearningBloc needs
-  when(() => studentRepo.getActiveEnrollments())
-      .thenAnswer((_) async => const Result.success([]));
-  when(() => studentRepo.getAllCourses(page: any(named: 'page')))
-      .thenAnswer((_) async => const Result.success([]));
+  when(
+    () => studentRepo.getActiveEnrollments(),
+  ).thenAnswer((_) async => const Result.success([]));
+  when(
+    () => studentRepo.getAllCourses(page: any(named: 'page')),
+  ).thenAnswer((_) async => const Result.success([]));
 
   // ScheduleBloc needs
-  when(() => studentRepo.getEventDates(any()))
-      .thenAnswer((_) async => const Result.success(<DateTime>{}));
+  when(
+    () => studentRepo.getEventDates(any()),
+  ).thenAnswer((_) async => const Result.success(<DateTime>{}));
 
   // AchievementBloc needs
   when(() => authRepo.getSavedUser()).thenAnswer((_) async => null);
-  when(() => studentRepo.getStats())
-      .thenAnswer((_) async => const Result.success(StudentStatsModel()));
-  when(() => studentRepo.getBadges())
-      .thenAnswer((_) async => const Result.success([]));
-  when(() => studentRepo.getCertificates())
-      .thenAnswer((_) async => const Result.success([]));
+  when(
+    () => studentRepo.getStats(),
+  ).thenAnswer((_) async => const Result.success(StudentStatsModel()));
+  when(
+    () => studentRepo.getBadges(),
+  ).thenAnswer((_) async => const Result.success([]));
+  when(
+    () => studentRepo.getCertificates(),
+  ).thenAnswer((_) async => const Result.success([]));
 }
 
 late _MockStudentRepository _mockStudentRepo;
@@ -87,8 +100,8 @@ void main() {
       );
     });
 
-    tearDown(() {
-      GetIt.instance.reset();
+    tearDown(() async {
+      await GetIt.instance.reset();
     });
 
     testWidgets('should display 5 bottom navigation items', (tester) async {
@@ -115,8 +128,7 @@ void main() {
       await tester.tap(find.text('Học tập'));
       await tester.pumpAndSettle();
 
-      // Nav bar shows "Học tập", and we're no longer on home
-      expect(find.text('Học tập'), findsOneWidget);
+      expect(find.byType(LearningScreen), findsOneWidget);
       expect(find.text('40Study'), findsNothing);
     });
 

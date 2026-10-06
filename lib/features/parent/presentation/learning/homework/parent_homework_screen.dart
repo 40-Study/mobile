@@ -244,7 +244,7 @@ class _ParentHomeworkScreenState extends State<ParentHomeworkScreen> {
         centerTitle: false,
         iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
+          preferredSize: const Size.fromHeight(60),
           child: Container(
             color: surfaceBg,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -253,6 +253,7 @@ class _ParentHomeworkScreenState extends State<ParentHomeworkScreen> {
               selectedChildId: _selectedChildId,
               onSelected: _onChildChanged,
               showAllOption: false,
+              compactEmpty: true,
             ),
           ),
         ),
