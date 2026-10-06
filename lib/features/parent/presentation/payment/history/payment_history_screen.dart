@@ -140,6 +140,12 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final surfaceBg = Color.alphaBlend(
+      cs.primary.withValues(
+        alpha: Theme.of(context).brightness == Brightness.light ? 0.045 : 0.065,
+      ),
+      cs.surfaceContainer,
+    );
 
     final totalAmount = _historyInvoices.fold<double>(
       0.0,
@@ -147,9 +153,9 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
     );
 
     return Scaffold(
-      backgroundColor: cs.surfaceContainerLowest,
+      backgroundColor: surfaceBg,
       appBar: AppBar(
-        backgroundColor: cs.surfaceContainerLowest,
+        backgroundColor: surfaceBg,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         title: const Column(
