@@ -211,6 +211,9 @@ class _LearningView extends StatelessWidget {
     BuildContext context,
     ParentLearningHubData data,
   ) {
+    final hasClass = data.activeClassCount > 0;
+    final hasProgress = hasClass || data.courseProgressPercent > 0;
+
     return Column(
       children: [
         // Card 1: Insights / Phân tích
@@ -219,7 +222,9 @@ class _LearningView extends StatelessWidget {
           iconColor: const Color(0xFF2563EB),
           iconBgColor: const Color(0xFFEFF6FF),
           title: 'Insights / Phân tích',
-          subtitle: 'Xu hướng học tập, năng lực & điểm nổi bật',
+          subtitle: data.newInsightsCount > 0
+              ? 'Xu hướng học tập, năng lực & điểm nổi bật'
+              : 'Chưa có nhận xét hoặc phân tích mới tuần này',
           extraContent: data.newInsightsCount > 0
               ? Container(
                   padding: const EdgeInsets.symmetric(
@@ -264,10 +269,13 @@ class _LearningView extends StatelessWidget {
           iconColor: const Color(0xFF0284C7),
           iconBgColor: const Color(0xFFE0F2FE),
           title: 'Lớp học',
-          inlineBadgeText: '${data.activeClassCount} lớp đang học',
+          inlineBadgeText:
+              hasClass ? '${data.activeClassCount} lớp đang học' : null,
           inlineBadgeBgColor: const Color(0xFFE0F2FE),
           inlineBadgeTextColor: const Color(0xFF0369A1),
-          subtitle: '${data.activeClassCount} lớp đang tham gia học tập',
+          subtitle: hasClass
+              ? '${data.activeClassCount} lớp đang tham gia học tập'
+              : 'Chưa tham gia lớp học nào',
           extraContent: data.activeClassNames.isNotEmpty
               ? Row(
                   children: [
@@ -305,7 +313,9 @@ class _LearningView extends StatelessWidget {
           iconColor: const Color(0xFFD97706),
           iconBgColor: const Color(0xFFFFFBEB),
           title: 'Bài tập về nhà',
-          subtitle: '${data.pendingHomeworkCount} bài cần chú ý nộp đúng hạn',
+          subtitle: data.pendingHomeworkCount > 0
+              ? '${data.pendingHomeworkCount} bài cần chú ý nộp đúng hạn'
+              : 'Không có bài tập nào cần nộp',
           extraContent: data.overdueHomeworkCount > 0
               ? Container(
                   padding: const EdgeInsets.symmetric(
@@ -343,35 +353,39 @@ class _LearningView extends StatelessWidget {
           iconColor: const Color(0xFF7C3AED),
           iconBgColor: const Color(0xFFF5F3FF),
           title: 'Tiến độ khóa học',
-          subtitle: 'Đã hoàn thành '
-              '${(data.courseProgressPercent * 100).toInt()}% '
-              'khối lượng học phần',
-          extraContent: Row(
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: LinearProgressIndicator(
-                    value: data.courseProgressPercent,
-                    minHeight: 7,
-                    backgroundColor: const Color(0xFFF1F5F9),
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      Color(0xFF7C3AED),
+          subtitle: hasProgress
+              ? 'Đã hoàn thành '
+                  '${(data.courseProgressPercent * 100).toInt()}% '
+                  'khối lượng học phần'
+              : 'Chưa có tiến độ khóa học',
+          extraContent: hasProgress
+              ? Row(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: data.courseProgressPercent,
+                          minHeight: 7,
+                          backgroundColor: const Color(0xFFF1F5F9),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            Color(0xFF7C3AED),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                '${(data.courseProgressPercent * 100).toInt()}%',
-                style: const TextStyle(
-                  color: Color(0xFF7C3AED),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
+                    const SizedBox(width: 12),
+                    Text(
+                      '${(data.courseProgressPercent * 100).toInt()}%',
+                      style: const TextStyle(
+                        color: Color(0xFF7C3AED),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                )
+              : null,
           onTap: () => _openProgressOverview(context, data),
         ),
         const SizedBox(height: 14),
@@ -382,11 +396,11 @@ class _LearningView extends StatelessWidget {
           iconColor: const Color(0xFFDB2777),
           iconBgColor: const Color(0xFFFDF2F8),
           title: 'Gợi ý cho ${data.childName}',
-          inlineBadgeText: 'AI đề xuất',
+          inlineBadgeText: data.recommendedTopic != null ? 'AI đề xuất' : null,
           inlineBadgeBgColor: const Color(0xFFFCE7F3),
           inlineBadgeTextColor: const Color(0xFFBE185D),
           subtitle:
-              data.recommendedTopic ?? 'Chuyên đề bổ trợ phát triển năng lực',
+              data.recommendedTopic ?? 'Chưa có chuyên đề đề xuất mới',
           onTap: () => _openRecommendedCourses(context, data),
         ),
       ],
@@ -449,14 +463,17 @@ class _LearningView extends StatelessWidget {
   }
 
   void _openRecommendedCourses(
-      BuildContext context, ParentLearningHubData data) {
+    BuildContext context,
+    ParentLearningHubData data,
+  ) {
     Navigator.push(
       context,
       MaterialPageRoute<void>(
         builder: (_) => ParentRecommendedCoursesScreen(
           childId: data.childId,
           childName: data.childName,
-          className: data.className ?? '10A1',
+          className:
+              data.className?.isNotEmpty == true ? data.className! : 'Lớp học',
         ),
       ),
     );

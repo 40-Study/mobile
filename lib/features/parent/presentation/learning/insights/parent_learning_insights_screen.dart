@@ -113,7 +113,7 @@ class _ParentLearningInsightsScreenState
               ),
             ),
             Text(
-              _insights?.semester ?? 'Lớp 10A1 · Học kỳ I 2024–2025',
+              _insights?.semester ?? 'Chưa có dữ liệu kỳ học',
               style: tt.bodySmall?.copyWith(
                 color: cs.slate500,
                 fontSize: 12,
@@ -122,30 +122,32 @@ class _ParentLearningInsightsScreenState
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.share_outlined, size: 21),
-            color: cs.slate700,
-            tooltip: 'Chia sẻ báo cáo',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Đã sao chép liên kết báo cáo học tập.'),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.file_download_outlined, size: 23),
-            color: cs.slate700,
-            tooltip: 'Tải báo cáo PDF',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Đang xuất báo cáo sư phạm định dạng PDF...'),
-                ),
-              );
-            },
-          ),
+          if (_insights != null) ...[
+            IconButton(
+              icon: const Icon(Icons.share_outlined, size: 21),
+              color: cs.slate700,
+              tooltip: 'Chia sẻ báo cáo',
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Đã sao chép liên kết báo cáo học tập.'),
+                  ),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.file_download_outlined, size: 23),
+              color: cs.slate700,
+              tooltip: 'Tải báo cáo PDF',
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Đang xuất báo cáo sư phạm định dạng PDF...'),
+                  ),
+                );
+              },
+            ),
+          ],
           const SizedBox(width: 4),
         ],
       ),
@@ -160,7 +162,7 @@ class _ParentLearningInsightsScreenState
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_errorMessage != null || _insights == null) {
+    if (_errorMessage != null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -174,7 +176,7 @@ class _ParentLearningInsightsScreenState
               ),
               const SizedBox(height: 12),
               Text(
-                _errorMessage ?? 'Chưa có dữ liệu phân tích kỳ này.',
+                _errorMessage!,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
@@ -182,6 +184,54 @@ class _ParentLearningInsightsScreenState
               ElevatedButton(
                 onPressed: _fetchInsights,
                 child: const Text('Thử lại'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_insights == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFEFF6FF),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  size: 36,
+                  color: Color(0xFF2563EB),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Chưa có báo cáo phân tích cho ${widget.childName}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Hệ thống sẽ tự động cập nhật báo cáo sư phạm và phân tích '
+                'chuyên sâu khi ${widget.childName} tham gia các buổi học và '
+                'làm bài kiểm tra.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF64748B),
+                  height: 1.4,
+                ),
               ),
             ],
           ),

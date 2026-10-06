@@ -106,7 +106,7 @@ class _ParentClassDetailScreenState extends State<ParentClassDetailScreen> {
             Text(
               _classDetail != null
                   ? '${_classDetail!.className} · ${_classDetail!.childName}'
-                  : 'Toán nâng cao 10 · ${widget.childName}',
+                  : 'Lớp học · ${widget.childName}',
               style: const TextStyle(
                 color: Color(0xFF0F172A),
                 fontWeight: FontWeight.w700,
@@ -115,7 +115,7 @@ class _ParentClassDetailScreenState extends State<ParentClassDetailScreen> {
             ),
             const SizedBox(height: 2),
             Text(
-              _classDetail?.semester ?? 'Lớp 10A1 — Học kỳ I (2024–2025)',
+              _classDetail?.semester ?? 'Chưa tham gia lớp học',
               style: const TextStyle(
                 color: Color(0xFF64748B),
                 fontWeight: FontWeight.w400,
@@ -125,31 +125,33 @@ class _ParentClassDetailScreenState extends State<ParentClassDetailScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.share_outlined, color: Color(0xFF64748B)),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Chia sẻ thông tin lớp học của con'),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.info_outline_rounded,
-              color: Color(0xFF64748B),
-            ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Thông tin quy chế đào tạo và đánh giá lớp học',
+          if (_classDetail != null) ...[
+            IconButton(
+              icon: const Icon(Icons.share_outlined, color: Color(0xFF64748B)),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Chia sẻ thông tin lớp học của con'),
                   ),
-                ),
-              );
-            },
-          ),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.info_outline_rounded,
+                color: Color(0xFF64748B),
+              ),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Thông tin quy chế đào tạo và đánh giá lớp học',
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
         ],
       ),
       body: _buildBody(),
@@ -164,7 +166,7 @@ class _ParentClassDetailScreenState extends State<ParentClassDetailScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_errorMessage != null || _classDetail == null) {
+    if (_errorMessage != null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -178,7 +180,7 @@ class _ParentClassDetailScreenState extends State<ParentClassDetailScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                _errorMessage ?? 'Không tìm thấy thông tin lớp học',
+                _errorMessage!,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Color(0xFF0F172A),
@@ -190,6 +192,58 @@ class _ParentClassDetailScreenState extends State<ParentClassDetailScreen> {
                 onPressed: _loadClassDetail,
                 icon: const Icon(Icons.refresh_rounded),
                 label: const Text('Thử lại'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_classDetail == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF1F5F9),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.school_outlined,
+                  size: 36,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Chưa có thông tin lớp học',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${widget.childName} hiện chưa được ghi danh vào lớp học này '
+                'trên hệ thống.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF64748B),
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 20),
+              OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).maybePop(),
+                icon: const Icon(Icons.arrow_back_rounded, size: 18),
+                label: const Text('Quay lại'),
               ),
             ],
           ),

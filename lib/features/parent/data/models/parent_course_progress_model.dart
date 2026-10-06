@@ -84,10 +84,10 @@ class ParentProgressScreenData {
   const ParentProgressScreenData({
     required this.overview,
     required this.courses,
-    required this.homeroomNote,
+    this.homeroomNote,
   });
 
   final ParentProgressOverviewModel overview;
   final List<ParentCourseProgressItem> courses;
-  final TeacherHomeroomNote homeroomNote;
+  final TeacherHomeroomNote? homeroomNote;
 }

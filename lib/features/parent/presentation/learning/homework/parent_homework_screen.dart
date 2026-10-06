@@ -303,18 +303,41 @@ class _ParentHomeworkScreenState extends State<ParentHomeworkScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.assignment_turned_in_outlined,
-                            size: 48,
-                            color: Colors.grey.shade400,
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFF1F5F9),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.assignment_turned_in_outlined,
+                              size: 32,
+                              color: Color(0xFF64748B),
+                            ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           Text(
-                            'Không có bài tập nào trong mục này',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade600,
+                            _currentFilterKey == 'all'
+                                ? 'Chưa có bài tập nào'
+                                : 'Không có bài tập trong mục này',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _currentFilterKey == 'all'
+                                ? '${currentChild.name} hiện chưa có bài tập '
+                                    'về nhà nào cần hoàn thành.'
+                                : 'Hiện không có bài tập nào phù hợp với bộ '
+                                    'lọc đã chọn.',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF64748B),
                             ),
                           ),
                         ],

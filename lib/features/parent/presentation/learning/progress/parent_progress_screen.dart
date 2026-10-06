@@ -364,22 +364,79 @@ class _ParentProgressScreenState extends State<ParentProgressScreen> {
                     const SizedBox(height: 4),
 
                     // Danh sách các thẻ tiến độ khóa học
-                    ..._progressData!.courses.map((course) {
-                      return CourseProgressCard(
-                        item: course,
-                        onTapCard: () =>
-                            _navigateToClassDetail(course.courseId),
-                        onTapWarningAction: _navigateToHomeworkScreen,
-                        onTapViewCertificate: () =>
-                            _showCertificateBottomSheet(course),
-                      );
-                    }),
+                    if (_progressData!.courses.isEmpty)
+                      Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        padding: const EdgeInsets.all(28),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFF1F5F9),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.menu_book_outlined,
+                                size: 28,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Chưa có khóa học nào',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1E293B),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${_children.firstWhere(
+                                    (c) => c.id == _selectedChildId,
+                                    orElse: () => FamilyScopeChild.sample(
+                                      id: '',
+                                      name: 'Con',
+                                    ),
+                                  ).name} '
+                              'hiện chưa đăng ký theo dõi khóa học nào.',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      ..._progressData!.courses.map((course) {
+                        return CourseProgressCard(
+                          item: course,
+                          onTapCard: () =>
+                              _navigateToClassDetail(course.courseId),
+                          onTapWarningAction: _navigateToHomeworkScreen,
+                          onTapViewCertificate: () =>
+                              _showCertificateBottomSheet(course),
+                        );
+                      }),
                     const SizedBox(height: 12),
 
-                    // Khối ghi chú từ giáo viên chủ nhiệm
-                    TeacherHomeroomNoteCard(
-                      note: _progressData!.homeroomNote,
-                    ),
+                    // Khối ghi chú từ giáo viên chủ nhiệm nếu có
+                    if (_progressData!.homeroomNote != null)
+                      TeacherHomeroomNoteCard(
+                        note: _progressData!.homeroomNote!,
+                      ),
                   ],
                 ],
               ),

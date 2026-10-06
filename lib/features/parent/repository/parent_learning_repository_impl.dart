@@ -26,6 +26,9 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
   static const String studentMinhId = 'a055e1b3-bbfe-46b1-8e01-df7aac8c2732';
   static const String studentLanId = 'a0f88b81-94ca-4328-b46a-b61a1a53a9ad';
 
+  bool _isMockChild(String? childId) =>
+      childId == studentMinhId || childId == studentLanId;
+
   @override
   Future<List<FamilyScopeChild>> getChildren() async {
     // 1. Tải danh sách con thật từ backend API
@@ -142,36 +145,95 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
 
   @override
   Future<ParentLearningHubData?> getLearningHubData(String childId) async {
-    await Future<void>.delayed(const Duration(milliseconds: 200));
-
     final allData = await getAllLearningHubData();
-    return allData[childId] ?? allData[studentMinhId];
+    return allData[childId];
   }
 
   @override
   Future<Map<String, ParentLearningHubData>> getAllLearningHubData() async {
-    await Future<void>.delayed(const Duration(milliseconds: 250));
-
     final sampleMap = _getSampleHubDataMap();
     final children = await getChildren();
     final result = Map<String, ParentLearningHubData>.from(sampleMap);
 
     for (final child in children) {
-      if (!result.containsKey(child.id)) {
-        final template = sampleMap[studentMinhId]!;
-        result[child.id] = ParentLearningHubData(
-          childId: child.id,
-          childName: child.name,
-          className: child.className,
-          newInsightsCount: template.newInsightsCount,
-          activeClassCount: template.activeClassCount,
-          activeClassNames: template.activeClassNames,
-          pendingHomeworkCount: template.pendingHomeworkCount,
-          overdueHomeworkCount: template.overdueHomeworkCount,
-          courseProgressPercent: template.courseProgressPercent,
-          recommendedTopic: template.recommendedTopic,
-        );
+      if (_isMockChild(child.id)) {
+        continue;
       }
+
+      // Với học sinh thật: thử lấy dữ liệu từ API overview / assignments
+      ParentLearningHubData? realHubData;
+      final api = _apiClient;
+      if (api != null) {
+        try {
+          final response = await api.getOverview(child.id).timeout(
+                const Duration(seconds: 5),
+              );
+          final data = _extractData(response.data);
+          if (data is Map<String, dynamic>) {
+            final enrolledCourses =
+                (data['enrolled_courses'] as num?)?.toInt() ?? 0;
+            final completedCourses =
+                (data['completed_courses'] as num?)?.toInt() ?? 0;
+            final progress = enrolledCourses > 0
+                ? (completedCourses / enrolledCourses).clamp(0.0, 1.0)
+                : 0.0;
+
+            var pendingHw = 0;
+            var overdueHw = 0;
+            try {
+              final hwRes = await api.getAssignments(child.id).timeout(
+                    const Duration(seconds: 5),
+                  );
+              final hwData = _extractData(hwRes.data);
+              if (hwData is Map<String, dynamic> &&
+                  hwData['stats'] is Map<String, dynamic>) {
+                final stats = hwData['stats'] as Map<String, dynamic>;
+                final inProgress =
+                    (stats['in_progress'] as num?)?.toInt() ?? 0;
+                final notStarted =
+                    (stats['not_started'] as num?)?.toInt() ?? 0;
+                pendingHw = inProgress + notStarted;
+                overdueHw = (stats['overdue'] as num?)?.toInt() ?? 0;
+              }
+            } catch (_) {
+              // Bỏ qua lỗi bài tập
+            }
+
+            realHubData = ParentLearningHubData(
+              childId: child.id,
+              childName: child.name,
+              className: child.className,
+              newInsightsCount: 0,
+              activeClassCount: enrolledCourses,
+              activeClassNames: const [],
+              pendingHomeworkCount: pendingHw,
+              overdueHomeworkCount: overdueHw,
+              courseProgressPercent: progress,
+              recommendedTopic: null,
+            );
+          }
+        } catch (e) {
+          AppLogger.d(
+            'ParentLearning: fetch overview for child ${child.id} failed, '
+            'using empty data: $e',
+          );
+        }
+      }
+
+      // Trả về Empty Data cho con thật nếu không có dữ liệu thật
+      result[child.id] = realHubData ??
+          ParentLearningHubData(
+            childId: child.id,
+            childName: child.name,
+            className: child.className,
+            newInsightsCount: 0,
+            activeClassCount: 0,
+            activeClassNames: const [],
+            pendingHomeworkCount: 0,
+            overdueHomeworkCount: 0,
+            courseProgressPercent: 0.0,
+            recommendedTopic: null,
+          );
     }
 
     return result;
@@ -182,7 +244,12 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
     String classId, {
     String? childId,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+
+    // Với con thật chưa có dữ liệu lớp học: trả về null để hiển thị Empty UI
+    if (childId != null && !_isMockChild(childId)) {
+      return null;
+    }
 
     return const ParentClassDetailModel(
       classId: 'class-toan-10',
@@ -243,10 +310,14 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
   @override
   Future<ParentLearningInsightsModel?> getLearningInsights(
       String childId) async {
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+
+    if (!_isMockChild(childId)) {
+      return null;
+    }
 
     final map = _getSampleInsightsMap();
-    return map[childId] ?? map[studentMinhId];
+    return map[childId];
   }
 
   Map<String, ParentLearningInsightsModel> _getSampleInsightsMap() {
@@ -369,7 +440,11 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
   Future<List<ParentRecommendedCourseItem>> getRecommendedCourses(
     String childId,
   ) async {
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+
+    if (!_isMockChild(childId)) {
+      return const [];
+    }
 
     return const [
       ParentRecommendedCourseItem(
@@ -535,7 +610,7 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
   Future<List<ParentHomeworkItem>> getHomeworkList(String childId) async {
     await Future<void>.delayed(const Duration(milliseconds: 200));
 
-    // Mock theo Ảnh 0 & 1 cho Minh
+    // Mock theo Ảnh 0 & 1 cho Lan
     if (childId == studentLanId) {
       return const [
         ParentHomeworkItem(
@@ -553,45 +628,107 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
       ];
     }
 
-    return const [
-      ParentHomeworkItem(
-        id: 'hw-minh-toan-1',
-        title: 'Bài tập 1: Phân số cơ bản & Rút gọn',
-        subjectCode: 'Σ',
-        subjectName: 'TOÁN NÂNG CAO 10',
-        teacherName: 'Cô Lan',
-        dueTagLabel: 'CẦN NỘP HÔM NAY',
-        dueTagTextColor: Color(0xFFDC2626),
-        dueTagBgColor: Color(0xFFFEE2E2),
-        timeRemainingText: 'Còn 6 giờ',
-        status: ParentHomeworkStatus.urgent,
-        isUrgent: true,
-      ),
-      ParentHomeworkItem(
-        id: 'hw-minh-anh-1',
-        title: 'Unit 4 Reading: Climate Change & Summary',
-        subjectCode: 'En',
-        subjectName: 'TIẾNG ANH 10',
-        teacherName: 'Thầy David Nam',
-        dueTagLabel: 'HẠN NGÀY MAI',
-        dueTagTextColor: Color(0xFFD97706),
-        dueTagBgColor: Color(0xFFFEF3C7),
-        timeRemainingText: 'Còn 1 ngày',
-        status: ParentHomeworkStatus.inProgress,
-      ),
-      ParentHomeworkItem(
-        id: 'hw-minh-ly-1',
-        title: 'Báo cáo thực hành: Đo gia tốc rơi tự do',
-        subjectCode: 'Sc',
-        subjectName: 'VẬT LÝ 10',
-        teacherName: 'Thầy Hưng',
-        dueTagLabel: 'HẠN THỨ 6',
-        dueTagTextColor: Color(0xFF2563EB),
-        dueTagBgColor: Color(0xFFEFF6FF),
-        timeRemainingText: 'Còn 3 ngày',
-        status: ParentHomeworkStatus.inProgress,
-      ),
-    ];
+    // Mock theo Ảnh 0 & 1 cho Minh
+    if (childId == studentMinhId) {
+      return const [
+        ParentHomeworkItem(
+          id: 'hw-minh-toan-1',
+          title: 'Bài tập 1: Phân số cơ bản & Rút gọn',
+          subjectCode: 'Σ',
+          subjectName: 'TOÁN NÂNG CAO 10',
+          teacherName: 'Cô Lan',
+          dueTagLabel: 'CẦN NỘP HÔM NAY',
+          dueTagTextColor: Color(0xFFDC2626),
+          dueTagBgColor: Color(0xFFFEE2E2),
+          timeRemainingText: 'Còn 6 giờ',
+          status: ParentHomeworkStatus.urgent,
+          isUrgent: true,
+        ),
+        ParentHomeworkItem(
+          id: 'hw-minh-anh-1',
+          title: 'Unit 4 Reading: Climate Change & Summary',
+          subjectCode: 'En',
+          subjectName: 'TIẾNG ANH 10',
+          teacherName: 'Thầy David Nam',
+          dueTagLabel: 'HẠN NGÀY MAI',
+          dueTagTextColor: Color(0xFFD97706),
+          dueTagBgColor: Color(0xFFFEF3C7),
+          timeRemainingText: 'Còn 1 ngày',
+          status: ParentHomeworkStatus.inProgress,
+        ),
+        ParentHomeworkItem(
+          id: 'hw-minh-ly-1',
+          title: 'Báo cáo thực hành: Đo gia tốc rơi tự do',
+          subjectCode: 'Sc',
+          subjectName: 'VẬT LÝ 10',
+          teacherName: 'Thầy Hưng',
+          dueTagLabel: 'HẠN THỨ 6',
+          dueTagTextColor: Color(0xFF2563EB),
+          dueTagBgColor: Color(0xFFEFF6FF),
+          timeRemainingText: 'Còn 3 ngày',
+          status: ParentHomeworkStatus.inProgress,
+        ),
+      ];
+    }
+
+    // Với con thật: Thử gọi API backend assignments
+    final api = _apiClient;
+    if (api != null) {
+      try {
+        final res = await api.getAssignments(childId).timeout(
+              const Duration(seconds: 5),
+            );
+        final data = _extractData(res.data);
+        final rawAssignments =
+            _extractList(data, keys: ['assignments', 'items']);
+        if (rawAssignments.isNotEmpty) {
+          return rawAssignments.map((raw) {
+            final item = raw as Map<String, dynamic>;
+            final id = item['id']?.toString() ?? '';
+            final title = item['title']?.toString() ?? 'Bài tập';
+            final className = item['class_name']?.toString() ?? 'Lớp học';
+            final statusStr = item['status']?.toString() ?? 'not_started';
+            final isOverdue = statusStr == 'overdue';
+
+            ParentHomeworkStatus status;
+            if (isOverdue) {
+              status = ParentHomeworkStatus.overdue;
+            } else if (statusStr == 'completed') {
+              status = ParentHomeworkStatus.graded;
+            } else if (statusStr == 'in_progress') {
+              status = ParentHomeworkStatus.inProgress;
+            } else {
+              status = ParentHomeworkStatus.urgent;
+            }
+
+            return ParentHomeworkItem(
+              id: id,
+              title: title,
+              subjectCode: className.isNotEmpty ? className[0] : 'Bài',
+              subjectName: className.toUpperCase(),
+              teacherName: 'Giáo viên bộ môn',
+              dueTagLabel: isOverdue ? 'ĐÃ QUÁ HẠN' : 'CẦN HOÀN THÀNH',
+              dueTagTextColor: isOverdue
+                  ? const Color(0xFFDC2626)
+                  : const Color(0xFFD97706),
+              dueTagBgColor: isOverdue
+                  ? const Color(0xFFFEE2E2)
+                  : const Color(0xFFFEF3C7),
+              timeRemainingText: isOverdue ? 'Quá hạn' : 'Sắp đến hạn',
+              status: status,
+              isUrgent: isOverdue || status == ParentHomeworkStatus.urgent,
+            );
+          }).toList();
+        }
+      } catch (e) {
+        AppLogger.d(
+          'ParentLearning: fetch assignments for child $childId failed: $e',
+        );
+      }
+    }
+
+    // Không có bài tập thật -> trả về rỗng để hiển thị Empty UI
+    return const [];
   }
 
   @override
@@ -691,50 +828,55 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
   Future<ParentGradedSummaryModel?> getGradedSummary(String childId) async {
     await Future<void>.delayed(const Duration(milliseconds: 200));
 
-    // Khối kết quả tuần gần nhất theo đúng Ảnh 4 & 5
-    return const ParentGradedSummaryModel(
-      submissionRatio: '3/3 bài nộp',
-      assessmentLabel: 'Tất cả đều đạt loại Giỏi',
-      ratingBadge: 'Xuất sắc',
-      averageScore: 8.8,
-      maxScore: 10.0,
-      recentGradedItems: [
-        RecentGradedItem(
-          id: 'recent-math-1',
-          title: 'Toán nâng cao',
-          gradedDateText: 'Thứ 6, 27/09',
-          score: 9.5,
-          iconData: Icons.functions,
-          iconColor: Color(0xFF2563EB),
-          iconBgColor: Color(0xFFEFF6FF),
-        ),
-        RecentGradedItem(
-          id: 'recent-literature-1',
-          title: 'Ngữ văn',
-          gradedDateText: 'Thứ 4, 25/09',
-          score: 8.5,
-          iconData: Icons.menu_book,
-          iconColor: Color(0xFF9333EA),
-          iconBgColor: Color(0xFFFAF5FF),
-        ),
-        RecentGradedItem(
-          id: 'recent-english-1',
-          title: 'Tiếng Anh',
-          gradedDateText: 'Thứ 2, 23/09',
-          score: 8.5,
-          iconData: Icons.language,
-          iconColor: Color(0xFF0D9488),
-          iconBgColor: Color(0xFFF0FDFA),
-        ),
-      ],
-    );
+    // Khối kết quả tuần gần nhất mock cho Minh theo đúng Ảnh 4 & 5
+    if (childId == studentMinhId) {
+      return const ParentGradedSummaryModel(
+        submissionRatio: '3/3 bài nộp',
+        assessmentLabel: 'Tất cả đều đạt loại Giỏi',
+        ratingBadge: 'Xuất sắc',
+        averageScore: 8.8,
+        maxScore: 10.0,
+        recentGradedItems: [
+          RecentGradedItem(
+            id: 'recent-math-1',
+            title: 'Toán nâng cao',
+            gradedDateText: 'Thứ 6, 27/09',
+            score: 9.5,
+            iconData: Icons.functions,
+            iconColor: Color(0xFF2563EB),
+            iconBgColor: Color(0xFFEFF6FF),
+          ),
+          RecentGradedItem(
+            id: 'recent-literature-1',
+            title: 'Ngữ văn',
+            gradedDateText: 'Thứ 4, 25/09',
+            score: 8.5,
+            iconData: Icons.menu_book,
+            iconColor: Color(0xFF9333EA),
+            iconBgColor: Color(0xFFFAF5FF),
+          ),
+          RecentGradedItem(
+            id: 'recent-english-1',
+            title: 'Tiếng Anh',
+            gradedDateText: 'Thứ 2, 23/09',
+            score: 8.5,
+            iconData: Icons.language,
+            iconColor: Color(0xFF0D9488),
+            iconBgColor: Color(0xFFF0FDFA),
+          ),
+        ],
+      );
+    }
+
+    // Lan và con thật không có graded summary tuần này -> trả về null
+    return null;
   }
 
   @override
   Future<ParentProgressScreenData?> getProgressOverview(String childId) async {
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+    await Future<void>.delayed(const Duration(milliseconds: 200));
 
-    // Mock chuẩn xác theo Ảnh 2 & 3
+    // Mock chuẩn xác theo Ảnh 2 & 3 cho Lan
     if (childId == studentLanId) {
       return const ParentProgressScreenData(
         overview: ParentProgressOverviewModel(
@@ -775,82 +917,132 @@ class ParentLearningRepositoryImpl implements ParentLearningRepository {
     }
 
     // Minh: đúng theo thiết kế 3 thẻ
+    if (childId == studentMinhId) {
+      return const ParentProgressScreenData(
+        overview: ParentProgressOverviewModel(
+          activeCourseCount: 3,
+          studyingCourseCount: 2,
+          completedCourseCount: 1,
+          averageProgressPercent: 0.65,
+          progressStatusText: 'Đúng lộ trình đề ra',
+        ),
+        courses: [
+          // Thẻ 1: Toán nâng cao (Ảnh 2)
+          ParentCourseProgressItem(
+            courseId: 'class-toan-10',
+            courseName: 'Toán nâng cao 10',
+            subjectCode: 'Σ',
+            subjectColor: Color(0xFF2563EB),
+            subjectBgColor: Color(0xFFEFF6FF),
+            teacherName: 'Cô Lan',
+            locationText: 'Phòng 302',
+            statusLabel: 'Đang học',
+            statusTextColor: Color(0xFF2563EB),
+            statusBgColor: Color(0xFFEFF6FF),
+            completedSessions: 8,
+            totalSessions: 12,
+            progressPercent: 0.67,
+            progressColor: Color(0xFF2563EB),
+            remainingSessionsText: 'Còn 4 buổi',
+            progressNote: 'Đúng tiến độ · Buổi tiếp theo thứ 2 (18:00)',
+          ),
+          // Thẻ 2: Tiếng Anh IELTS (Ảnh 2)
+          ParentCourseProgressItem(
+            courseId: 'course-ielts-junior',
+            courseName: 'Tiếng Anh IELTS Junior',
+            subjectCode: '文A',
+            subjectColor: Color(0xFFEA580C),
+            subjectBgColor: Color(0xFFFFF7ED),
+            teacherName: 'Thầy David Nam',
+            locationText: 'Trực tuyến Zoom',
+            statusLabel: 'Đang học',
+            statusTextColor: Color(0xFF2563EB),
+            statusBgColor: Color(0xFFEFF6FF),
+            completedSessions: 5,
+            totalSessions: 10,
+            progressPercent: 0.50,
+            progressColor: Color(0xFFEA580C),
+            remainingSessionsText: 'Còn 5 buổi',
+            warningNote: 'Cần chú ý bài tập viết luận',
+          ),
+          // Thẻ 3: STEM Robotics (Ảnh 3)
+          ParentCourseProgressItem(
+            courseId: 'course-stem-robotics',
+            courseName: 'STEM Robotics cơ bản',
+            subjectCode: 'STEM',
+            subjectColor: Color(0xFF0D9488),
+            subjectBgColor: Color(0xFFF0FDFA),
+            teacherName: 'Thầy Hoàng Minh',
+            locationText: 'Lab STEM A2',
+            statusLabel: 'Xong',
+            statusTextColor: Color(0xFF0D9488),
+            statusBgColor: Color(0xFFF0FDFA),
+            completedSessions: 12,
+            totalSessions: 12,
+            progressPercent: 1.0,
+            progressColor: Color(0xFF0D9488),
+            remainingSessionsText: 'Đã hoàn thành',
+            isCompleted: true,
+            certificateText: 'Đã hoàn thành · Đạt chứng nhận Xuất sắc',
+          ),
+        ],
+        homeroomNote: TeacherHomeroomNote(
+          title: 'Ghi chú từ Giáo viên chủ nhiệm (Cô Mai Linh)',
+          content:
+              'Minh duy trì thái độ học tập rất nghiêm túc và có nhiều '
+              'tiến bộ ở các môn tự nhiên. Cần tiếp tục duy trì đà học tập '
+              'môn Tiếng Anh và hoàn thành bài viết luận đúng hạn để đạt '
+              'kết quả tốt nhất.',
+        ),
+      );
+    }
+
+    // Với con thật: Thử gọi API backend
+    final api = _apiClient;
+    if (api != null) {
+      try {
+        final res = await api.getOverview(childId).timeout(
+              const Duration(seconds: 5),
+            );
+        final data = _extractData(res.data);
+        if (data is Map<String, dynamic>) {
+          final enrolled = (data['enrolled_courses'] as num?)?.toInt() ?? 0;
+          final completed = (data['completed_courses'] as num?)?.toInt() ?? 0;
+          final studying = (enrolled - completed).clamp(0, enrolled);
+          final progress =
+              enrolled > 0 ? (completed / enrolled).clamp(0.0, 1.0) : 0.0;
+
+          return ParentProgressScreenData(
+            overview: ParentProgressOverviewModel(
+              activeCourseCount: enrolled,
+              studyingCourseCount: studying,
+              completedCourseCount: completed,
+              averageProgressPercent: progress,
+              progressStatusText: enrolled > 0
+                  ? 'Tiến độ học tập ghi nhận'
+                  : 'Chưa tham gia khóa học nào',
+            ),
+            courses: const [],
+            homeroomNote: null,
+          );
+        }
+      } catch (e) {
+        AppLogger.d(
+          'ParentLearning: getProgressOverview for child $childId failed: $e',
+        );
+      }
+    }
+
     return const ParentProgressScreenData(
       overview: ParentProgressOverviewModel(
-        activeCourseCount: 3,
-        studyingCourseCount: 2,
-        completedCourseCount: 1,
-        averageProgressPercent: 0.65,
-        progressStatusText: 'Đúng lộ trình đề ra',
+        activeCourseCount: 0,
+        studyingCourseCount: 0,
+        completedCourseCount: 0,
+        averageProgressPercent: 0.0,
+        progressStatusText: 'Chưa tham gia khóa học nào',
       ),
-      courses: [
-        // Thẻ 1: Toán nâng cao (Ảnh 2)
-        ParentCourseProgressItem(
-          courseId: 'class-toan-10',
-          courseName: 'Toán nâng cao 10',
-          subjectCode: 'Σ',
-          subjectColor: Color(0xFF2563EB),
-          subjectBgColor: Color(0xFFEFF6FF),
-          teacherName: 'Cô Lan',
-          locationText: 'Phòng 302',
-          statusLabel: 'Đang học',
-          statusTextColor: Color(0xFF2563EB),
-          statusBgColor: Color(0xFFEFF6FF),
-          completedSessions: 8,
-          totalSessions: 12,
-          progressPercent: 0.67,
-          progressColor: Color(0xFF2563EB),
-          remainingSessionsText: 'Còn 4 buổi',
-          progressNote: 'Đúng tiến độ · Buổi tiếp theo thứ 2 (18:00)',
-        ),
-        // Thẻ 2: Tiếng Anh IELTS (Ảnh 2)
-        ParentCourseProgressItem(
-          courseId: 'course-ielts-junior',
-          courseName: 'Tiếng Anh IELTS Junior',
-          subjectCode: '文A',
-          subjectColor: Color(0xFFEA580C),
-          subjectBgColor: Color(0xFFFFF7ED),
-          teacherName: 'Thầy David Nam',
-          locationText: 'Trực tuyến Zoom',
-          statusLabel: 'Đang học',
-          statusTextColor: Color(0xFF2563EB),
-          statusBgColor: Color(0xFFEFF6FF),
-          completedSessions: 5,
-          totalSessions: 10,
-          progressPercent: 0.50,
-          progressColor: Color(0xFFEA580C),
-          remainingSessionsText: 'Còn 5 buổi',
-          warningNote: 'Cần chú ý bài tập viết luận',
-        ),
-        // Thẻ 3: STEM Robotics (Ảnh 3)
-        ParentCourseProgressItem(
-          courseId: 'course-stem-robotics',
-          courseName: 'STEM Robotics cơ bản',
-          subjectCode: 'STEM',
-          subjectColor: Color(0xFF0D9488),
-          subjectBgColor: Color(0xFFF0FDFA),
-          teacherName: 'Thầy Hoàng Minh',
-          locationText: 'Lab STEM A2',
-          statusLabel: 'Xong',
-          statusTextColor: Color(0xFF0D9488),
-          statusBgColor: Color(0xFFF0FDFA),
-          completedSessions: 12,
-          totalSessions: 12,
-          progressPercent: 1.0,
-          progressColor: Color(0xFF0D9488),
-          remainingSessionsText: 'Đã hoàn thành',
-          isCompleted: true,
-          certificateText: 'Đã hoàn thành · Đạt chứng nhận Xuất sắc',
-        ),
-      ],
-      homeroomNote: TeacherHomeroomNote(
-        title: 'Ghi chú từ Giáo viên chủ nhiệm (Cô Mai Linh)',
-        content:
-            'Minh duy trì thái độ học tập rất nghiêm túc và có nhiều '
-            'tiến bộ ở các môn tự nhiên. Cần tiếp tục duy trì đà học tập '
-            'môn Tiếng Anh và hoàn thành bài viết luận đúng hạn để đạt '
-            'kết quả tốt nhất.',
-      ),
+      courses: <ParentCourseProgressItem>[],
+      homeroomNote: null,
     );
   }
 }
