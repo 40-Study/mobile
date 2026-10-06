@@ -82,31 +82,31 @@ class _HomeContent extends StatelessWidget {
                 ),
               ),
               final ParentHomeSuccess successState => _HomeSuccess(
-                  state: successState,
-                  surfaceBg: surfaceBg,
-                  onNavigateToProfile: onNavigateToProfile,
-                  onNavigateToSchedule: onNavigateToSchedule,
-                  onNavigateToLearning: onNavigateToLearning,
-                  onChildSelected: (id) => context.read<ParentHomeBloc>().add(
-                    ParentHomeChildSelected(id),
-                  ),
-                  onRefresh: () async {
-                    final bloc = context.read<ParentHomeBloc>()
-                      ..add(const ParentHomeRefreshed());
-                    await bloc.stream.firstWhere(
-                      (s) => s is ParentHomeSuccess || s is ParentHomeFailure,
-                    );
-                  },
-                  onRetryAlerts: () => context.read<ParentHomeBloc>().add(
-                    const ParentHomeSectionRetried(ParentHomeSection.alerts),
-                  ),
-                  onRetrySchedules: () => context.read<ParentHomeBloc>().add(
-                    const ParentHomeSectionRetried(ParentHomeSection.schedules),
-                  ),
-                  onRetryAnalytics: () => context.read<ParentHomeBloc>().add(
-                    const ParentHomeSectionRetried(ParentHomeSection.analytics),
-                  ),
+                state: successState,
+                surfaceBg: surfaceBg,
+                onNavigateToProfile: onNavigateToProfile,
+                onNavigateToSchedule: onNavigateToSchedule,
+                onNavigateToLearning: onNavigateToLearning,
+                onChildSelected: (id) => context.read<ParentHomeBloc>().add(
+                  ParentHomeChildSelected(id),
                 ),
+                onRefresh: () async {
+                  final bloc = context.read<ParentHomeBloc>()
+                    ..add(const ParentHomeRefreshed());
+                  await bloc.stream.firstWhere(
+                    (s) => s is ParentHomeSuccess || s is ParentHomeFailure,
+                  );
+                },
+                onRetryAlerts: () => context.read<ParentHomeBloc>().add(
+                  const ParentHomeSectionRetried(ParentHomeSection.alerts),
+                ),
+                onRetrySchedules: () => context.read<ParentHomeBloc>().add(
+                  const ParentHomeSectionRetried(ParentHomeSection.schedules),
+                ),
+                onRetryAnalytics: () => context.read<ParentHomeBloc>().add(
+                  const ParentHomeSectionRetried(ParentHomeSection.analytics),
+                ),
+              ),
             },
           ),
         );
@@ -222,10 +222,7 @@ class _HomeSuccess extends StatelessWidget {
           SliverToBoxAdapter(
             child: Container(
               color: surfaceBg,
-              padding: const EdgeInsets.only(
-                top: 8,
-                bottom: AppSpacing.xxl,
-              ),
+              padding: const EdgeInsets.only(top: 8, bottom: AppSpacing.xxl),
               child: Column(
                 children: [
                   ActionRequiredSection(
@@ -258,9 +255,9 @@ class _HomeSuccess extends StatelessWidget {
                     onViewLearning: onNavigateToLearning,
                     onViewDetailForChild: (childId) =>
                         FamilyInsightsInboxScreen.open(
-                      context,
-                      initialChildId: childId,
-                    ),
+                          context,
+                          initialChildId: childId,
+                        ),
                     onViewAllReports: () =>
                         FamilyInsightsInboxScreen.open(context),
                   ),
@@ -272,7 +269,6 @@ class _HomeSuccess extends StatelessWidget {
       ),
     );
   }
-
 
   void _openNotifications(BuildContext context) {
     Navigator.push(

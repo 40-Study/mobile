@@ -18,6 +18,8 @@ import 'package:study/features/parent/repository/parent_home_repository.dart';
 import 'package:study/features/parent/repository/parent_home_repository_impl.dart';
 import 'package:study/features/parent/repository/parent_learning_repository.dart';
 import 'package:study/features/parent/repository/parent_learning_repository_impl.dart';
+import 'package:study/features/parent/repository/parent_payment_repository.dart';
+import 'package:study/features/parent/repository/parent_payment_repository_impl.dart';
 import 'package:study/features/parent/repository/parent_schedule_repository.dart';
 import 'package:study/features/parent/repository/parent_schedule_repository_impl.dart';
 import 'package:study/features/student/data/student_api_client.dart';
@@ -98,8 +100,20 @@ abstract class RepositoryModule {
       );
 
   @lazySingleton
-  ParentLearningRepository provideParentLearningRepository() =>
+  ParentLearningRepository provideParentLearningRepository(
+    ParentHomeApiClient apiClient,
+  ) =>
       ParentLearningRepositoryImpl(
+        apiClient: apiClient,
+        enablePreviewFallback: true,
+      );
+
+  @lazySingleton
+  ParentPaymentRepository provideParentPaymentRepository(
+    ParentHomeApiClient apiClient,
+  ) =>
+      ParentPaymentRepositoryImpl(
+        apiClient: apiClient,
         enablePreviewFallback: true,
       );
 }

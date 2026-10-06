@@ -9,19 +9,31 @@ import 'package:study/features/parent/repository/parent_home_repository.dart';
 
 class ParentHomeRepositoryImpl implements ParentHomeRepository {
   ParentHomeRepositoryImpl({
-    required ParentHomeApiClient apiClient,
-    this.enablePreviewFallback = false,
+    ParentHomeApiClient? apiClient,
+    this.enablePreviewFallback = true,
   }) : _api = apiClient;
 
-  final ParentHomeApiClient _api;
+  final ParentHomeApiClient? _api;
 
   /// Bật fallback data mẫu để demo UI đầy đủ khi backend chưa có data.
   final bool enablePreviewFallback;
 
   @override
   Future<ParentHomeData> getHomeDashboard({String? childId}) async {
-    // 1. Luôn tải danh sách con thật từ backend
-    final realChildren = await _fetchChildren();
+    // 1. Luôn tải danh sách con thật từ backend nếu được
+    var realChildren = <FamilyScopeChild>[];
+    try {
+      realChildren = await _fetchChildren();
+    } catch (e, stackTrace) {
+      if (!enablePreviewFallback) {
+        rethrow;
+      }
+      AppLogger.w(
+        'ParentHome: fetch children failed, falling back to mock children',
+        e,
+      );
+      AppLogger.d('ParentHome children stackTrace', stackTrace);
+    }
 
     if (enablePreviewFallback) {
       final children = _mergeWithMockChildren(realChildren);
@@ -40,17 +52,31 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
               ));
 
       if (isRealChildSelected) {
-        final realResults = await Future.wait([
-          _fetchSchedules(childId),
-          _fetchAlerts(childId),
-          _fetchAnalytics(target),
-        ]);
+        List<ParentScheduleItem>? schedules;
+        List<ParentAlertItem>? alerts;
+        ParentAnalyticsData? analytics;
+        try {
+          final realResults = await Future.wait([
+            _fetchSchedules(childId),
+            _fetchAlerts(childId),
+            _fetchAnalytics(target),
+          ]);
+          schedules = realResults[0] as List<ParentScheduleItem>;
+          alerts = realResults[1] as List<ParentAlertItem>;
+          analytics = realResults[2] as ParentAnalyticsData?;
+        } catch (e, st) {
+          AppLogger.w(
+            'ParentHome: fetch real child details failed, falling back to mock',
+            e,
+          );
+          AppLogger.d('ParentHome real child stackTrace', st);
+        }
         return ParentHomeData(
           children: children,
           selectedChildId: childId,
-          alerts: realResults[1] as List<ParentAlertItem>,
-          schedules: realResults[0] as List<ParentScheduleItem>,
-          analytics: realResults[2] as ParentAnalyticsData?,
+          alerts: alerts ?? _filterFallbackAlerts(childId),
+          schedules: schedules ?? _filterFallbackSchedules(childId),
+          analytics: analytics ?? _fallbackAnalytics(target),
         );
       }
 
@@ -92,7 +118,19 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
 
   @override
   Future<List<FamilyScopeChild>> getChildren() async {
-    final realChildren = await _fetchChildren();
+    var realChildren = <FamilyScopeChild>[];
+    try {
+      realChildren = await _fetchChildren();
+    } catch (e, stackTrace) {
+      if (!enablePreviewFallback) {
+        rethrow;
+      }
+      AppLogger.w(
+        'ParentHome: fetch children failed, falling back to mock children',
+        e,
+      );
+      AppLogger.d('ParentHome children stackTrace', stackTrace);
+    }
     if (enablePreviewFallback) {
       return _mergeWithMockChildren(realChildren);
     }
@@ -102,6 +140,21 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   @override
   Future<List<ParentAlertItem>> getAlerts({String? childId}) async {
     if (enablePreviewFallback) {
+      final isRealChild = childId != null &&
+          childId != studentMinhId &&
+          childId != studentLanId;
+      if (isRealChild) {
+        try {
+          return await _fetchAlerts(childId);
+        } catch (e, st) {
+          AppLogger.w(
+            'ParentHome: getAlerts for real child failed, fallback',
+            e,
+          );
+          AppLogger.d('ParentHome getAlerts stackTrace', st);
+          return _filterFallbackAlerts(childId);
+        }
+      }
       return _filterFallbackAlerts(childId);
     }
     return _fetchAlerts(childId);
@@ -110,6 +163,21 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   @override
   Future<List<ParentScheduleItem>> getSchedules({String? childId}) async {
     if (enablePreviewFallback) {
+      final isRealChild = childId != null &&
+          childId != studentMinhId &&
+          childId != studentLanId;
+      if (isRealChild) {
+        try {
+          return await _fetchSchedules(childId);
+        } catch (e, st) {
+          AppLogger.w(
+            'ParentHome: getSchedules for real child failed, fallback to mock',
+            e,
+          );
+          AppLogger.d('ParentHome getSchedules stackTrace', st);
+          return _filterFallbackSchedules(childId);
+        }
+      }
       return _filterFallbackSchedules(childId);
     }
     return _fetchSchedules(childId);
@@ -120,6 +188,21 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     final children = await getChildren();
     final target = _resolveChild(children, childId);
     if (enablePreviewFallback) {
+      final isRealChild = target != null &&
+          target.id != studentMinhId &&
+          target.id != studentLanId;
+      if (isRealChild) {
+        try {
+          final res = await _fetchAnalytics(target);
+          if (res != null) return res;
+        } catch (e, st) {
+          AppLogger.w(
+            'ParentHome: getAnalytics for real child failed, fallback',
+            e,
+          );
+          AppLogger.d('ParentHome getAnalytics stackTrace', st);
+        }
+      }
       return _fallbackAnalytics(target);
     }
     return _fetchAnalytics(target);
@@ -131,9 +214,25 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
     if (childId != null) {
       final target = _resolveChild(children, childId);
       if (target == null) return const [];
-      final single = enablePreviewFallback
-          ? _fallbackAnalytics(target)
-          : await _fetchAnalytics(target);
+      if (enablePreviewFallback) {
+        final isRealChild =
+            target.id != studentMinhId && target.id != studentLanId;
+        if (isRealChild) {
+          try {
+            final real = await _fetchAnalytics(target);
+            if (real != null) return [real];
+          } catch (e, st) {
+            AppLogger.w(
+              'ParentHome: getAnalyticsList for real child failed, fallback',
+              e,
+            );
+            AppLogger.d('ParentHome getAnalyticsList stackTrace', st);
+          }
+        }
+        final single = _fallbackAnalytics(target);
+        return [single];
+      }
+      final single = await _fetchAnalytics(target);
       return single != null ? [single] : const [];
     }
     if (enablePreviewFallback) {
@@ -143,7 +242,6 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
       children.map(_fetchAnalytics),
     );
     return results.whereType<ParentAnalyticsData>().toList();
-
   }
 
   // =========================================================================
@@ -151,10 +249,12 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   // =========================================================================
 
   Future<List<FamilyScopeChild>> _fetchChildren() async {
+    final api = _api;
+    if (api == null) return [];
     try {
       // Giới hạn thời gian chờ tối đa 10 giây; nếu backend phản hồi chậm
       // hoặc mạng lỗi thì ném lỗi để UI hiển thị thông báo lỗi kèm nút Thử lại.
-      final response = await _api.getChildren().timeout(
+      final response = await api.getChildren().timeout(
             const Duration(seconds: 10),
           );
       final data = _extractData(response.data);
@@ -179,9 +279,10 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   }
 
   Future<List<ParentScheduleItem>> _fetchSchedules(String? childId) async {
-    if (childId == null) return [];
+    final api = _api;
+    if (childId == null || api == null) return [];
     try {
-      final response = await _api.getSchedule(childId).timeout(
+      final response = await api.getSchedule(childId).timeout(
             const Duration(seconds: 10),
           );
       final data = _extractData(response.data);
@@ -202,9 +303,10 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   }
 
   Future<List<ParentAlertItem>> _fetchAlerts(String? childId) async {
-    if (childId == null) return [];
+    final api = _api;
+    if (childId == null || api == null) return [];
     try {
-      final response = await _api.getAssignments(childId).timeout(
+      final response = await api.getAssignments(childId).timeout(
             const Duration(seconds: 10),
           );
       final data = _extractData(response.data);
@@ -223,9 +325,10 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   }
 
   Future<ParentAnalyticsData?> _fetchAnalytics(FamilyScopeChild? target) async {
-    if (target == null) return null;
+    final api = _api;
+    if (target == null || api == null) return null;
     try {
-      final response = await _api.getGrades(target.id).timeout(
+      final response = await api.getGrades(target.id).timeout(
             const Duration(seconds: 10),
           );
       final data = _extractData(response.data);

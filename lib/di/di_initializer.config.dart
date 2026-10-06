@@ -45,6 +45,8 @@ import 'package:study/features/parent/repository/parent_home_repository.dart'
     as _i90;
 import 'package:study/features/parent/repository/parent_learning_repository.dart'
     as _i385;
+import 'package:study/features/parent/repository/parent_payment_repository.dart'
+    as _i481;
 import 'package:study/features/parent/repository/parent_schedule_repository.dart'
     as _i87;
 import 'package:study/features/student/bloc/achievement/achievement_bloc.dart'
@@ -104,9 +106,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i235.FamilyInsightsRepository>(
       () => repositoryModule.provideFamilyInsightsRepository(),
     );
-    gh.lazySingleton<_i385.ParentLearningRepository>(
-      () => repositoryModule.provideParentLearningRepository(),
-    );
     gh.factory<_i354.ThemeRepository>(
       () => repositoryModule.provideThemeRepository(gh<_i1013.ThemeStorage>()),
     );
@@ -147,6 +146,16 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i87.ParentScheduleRepository>(
       () => repositoryModule.provideParentScheduleRepository(
+        gh<_i933.ParentHomeApiClient>(),
+      ),
+    );
+    gh.lazySingleton<_i385.ParentLearningRepository>(
+      () => repositoryModule.provideParentLearningRepository(
+        gh<_i933.ParentHomeApiClient>(),
+      ),
+    );
+    gh.lazySingleton<_i481.ParentPaymentRepository>(
+      () => repositoryModule.provideParentPaymentRepository(
         gh<_i933.ParentHomeApiClient>(),
       ),
     );

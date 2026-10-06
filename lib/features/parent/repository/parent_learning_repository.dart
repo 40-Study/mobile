@@ -1,6 +1,8 @@
 import 'package:study/features/parent/data/models/family_scope_child.dart';
 import 'package:study/features/parent/data/models/parent_class_detail_model.dart';
+import 'package:study/features/parent/data/models/parent_course_progress_model.dart';
 import 'package:study/features/parent/data/models/parent_course_recommendation_models.dart';
+import 'package:study/features/parent/data/models/parent_homework_model.dart';
 import 'package:study/features/parent/data/models/parent_learning_hub_data.dart';
 import 'package:study/features/parent/data/models/parent_learning_insights_model.dart';
 
@@ -35,4 +37,19 @@ abstract class ParentLearningRepository {
     String courseId, {
     String? childId,
   });
+
+  /// Lấy danh sách bài tập về nhà của con
+  Future<List<ParentHomeworkItem>> getHomeworkList(String childId);
+
+  /// Lấy thông tin chi tiết một bài tập về nhà cụ thể
+  Future<ParentHomeworkDetailModel?> getHomeworkDetail(
+    String homeworkId, {
+    String? childId,
+  });
+
+  /// Lấy báo cáo tóm tắt bài tập đã chấm tuần gần nhất (phục vụ Empty State)
+  Future<ParentGradedSummaryModel?> getGradedSummary(String childId);
+
+  /// Lấy dữ liệu tiến độ học tập của con (màn hình Tiến độ)
+  Future<ParentProgressScreenData?> getProgressOverview(String childId);
 }
