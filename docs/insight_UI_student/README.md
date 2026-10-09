@@ -28,3 +28,8 @@ Thư mục này lưu trữ toàn bộ tài liệu phân tích đối chiếu, ng
    * **Quy chuẩn xử lý trạng thái Empty Data toàn diện (Mục 4):** Ma trận thiết kế chi tiết cho tất cả các tình huống `null` hoặc danh sách rỗng (`[]`) theo triết lý *Positive & Actionable Empty States*.
    * **Lộ trình 6 giai đoạn thực thi tuần tự (Phases 1 - 6).**
    * **Checklist nghiệm thu 9 điểm an toàn (bao gồm kiểm thử Empty Data).**
+3. [**Đánh giá chuyên sâu UI Cũ vs Mới & Phân tích hiện tượng Lạm dụng Card (UI Evaluation Old vs New & Card Overuse)**](file:///C:/ForteX/mobile/docs/insight_UI_student/UI_EVALUATION_OLD_VS_NEW_AND_CARD_OVERUSE.md)
+   * **Phân tích chi tiết giao diện gốc (Old UI):** Giải mã ý đồ thiết kế ban đầu về màu sắc, bố cục Hero Greeting, Pill Stats, khay nền xám cong (Curved Surface Tray) và nút CTA hành động trực quan.
+   * **Đối chiếu Old vs New & Điểm thụt lùi (Design Regressions):** Chỉ rõ các điểm mất mát ở bản mới (mất avatar giảng viên trên thẻ khóa học, mất nút CTA tròn xanh, co cụm lời chào vào AppBar).
+   * **Phân tích sâu hiện tượng "Lạm dụng Card" (Card Fatigue / Everything-is-a-box syndrome):** Lý do đóng hộp quá mức gây đứt gãy thị giác và tại sao phong cách của Phụ huynh không thể bê nguyên xi sang Học sinh.
+   * **Đề xuất Kiến trúc Lai Tối ưu (Hybrid Surface Architecture):** Giải pháp dung hòa sự thoáng đãng, nồng nhiệt của Old UI với sự chỉn chu, hiện đại của New UI Tokens.
