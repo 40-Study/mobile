@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/di/di_container.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/features/student/bloc/achievement/achievement_bloc.dart';
 import 'package:study/features/student/bloc/home/home_bloc.dart';
@@ -14,7 +15,7 @@ import 'package:study/features/student/presentation/profile/profile_screen.dart'
 import 'package:study/features/student/presentation/schedule/schedule_screen.dart';
 import 'package:study/features/student/presentation/search/search_screen.dart';
 import 'package:study/features/student/presentation/settings/settings_screen.dart';
-import 'package:study/di/di_container.dart';
+import 'package:study/theme/theme.dart';
 import 'package:study/widgets/app_drawer.dart';
 
 enum StudentTab { home, learning, schedule, achievement, profile }
@@ -67,6 +68,7 @@ class _StudentShellState extends State<StudentShell> {
 
     return Scaffold(
       key: _scaffoldKey,
+      backgroundColor: context.surfaceBg,
       drawer: AppDrawer(
         userName: userData.name,
         userEmail: userData.email,
@@ -131,6 +133,12 @@ class _StudentShellState extends State<StudentShell> {
       ),
       bottomNavigationBar: DecoratedBox(
         decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: cs.outlineVariant.withValues(alpha: 0.5),
+              width: 0.5,
+            ),
+          ),
           boxShadow: [
             BoxShadow(
               color: cs.shadow.withValues(alpha: 0.04),

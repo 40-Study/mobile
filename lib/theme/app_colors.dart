@@ -238,6 +238,12 @@ extension TogetherColorsX on ColorScheme {
   Color get surfaceTintedTertiary =>
       Color.lerp(surfaceContainerLowest, slate100, 0.1)!;
 
+  /// Nền canvas chuẩn 3-layer surface
+  /// (hòa trộn nhẹ primary với surfaceContainer)
+  Color get surfaceCanvas => brightness == Brightness.light
+      ? Color.alphaBlend(primary.withValues(alpha: 0.045), surfaceContainer)
+      : Color.alphaBlend(primary.withValues(alpha: 0.065), surfaceContainer);
+
   // ══════════════════════════════════════════════════════════════════════════
   // LEGACY ALIASES - Backward compatibility
   // ══════════════════════════════════════════════════════════════════════════
@@ -284,4 +290,9 @@ class RoleColors {
   // Organization - Navy
   static const orgPrimary = Color(0xFF1E3A5F);
   static const orgSecondary = Color(0xFF38BDF8);
+}
+
+/// Tiện ích hỗ trợ lấy nhanh màu nền Canvas 3-layer surface cho màn hình
+extension BuildContextSurfaceX on BuildContext {
+  Color get surfaceBg => Theme.of(this).colorScheme.surfaceCanvas;
 }
