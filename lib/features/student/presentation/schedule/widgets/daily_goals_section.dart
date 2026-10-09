@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:study/data/daily_goals_storage.dart';
 import 'package:study/theme/theme.dart';
 
-import 'goal_tile.dart';
 import 'empty_goals.dart';
+import 'goal_tile.dart';
 
 class DailyGoalsSection extends StatefulWidget {
   const DailyGoalsSection({super.key, required this.date});
@@ -67,13 +67,24 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
     final completedCount = goals.where((g) => g.isCompleted).length;
     final progress = goals.isEmpty ? 0.0 : completedCount / goals.length;
 
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
+        color: isLight ? Colors.white : cs.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: cs.outline),
-        boxShadow: AppShadows.layeredCard,
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.6),
+          width: 0.8,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

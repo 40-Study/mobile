@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study/theme/theme.dart';
 
+/// Thẻ thông báo ngày không có lịch học tích cực, thanh nhã
 class FreeDay extends StatelessWidget {
   const FreeDay({super.key});
 
@@ -8,28 +9,61 @@ class FreeDay extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: cs.secondaryContainer.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(AppRadius.card),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.xl,
       ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.celebration_outlined,
-            color: cs.onSecondaryContainer,
-            size: 24,
+      decoration: BoxDecoration(
+        color: isLight ? Colors.white : cs.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.6),
+          width: 0.8,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
           ),
-          AppSpacing.hGap12,
-          Expanded(
-            child: Text(
-              'Hôm nay free! Nghỉ ngơi hoặc học thêm nhé.',
-              style: tt.bodyMedium?.copyWith(
-                color: cs.onSecondaryContainer,
-              ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: const BoxDecoration(
+              color: Color(0xFFEFF6FF),
+              shape: BoxShape.circle,
             ),
+            child: Icon(
+              Icons.event_available_rounded,
+              size: 26,
+              color: cs.blue600,
+            ),
+          ),
+          AppSpacing.vGap12,
+          Text(
+            'Không có ca học nào',
+            style: tt.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: cs.slate900,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Hôm nay bạn không có lịch học. Hãy tự ôn tập hoặc nghỉ ngơi nhé!',
+            style: tt.bodySmall?.copyWith(
+              color: cs.slate500,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

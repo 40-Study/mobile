@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/di/di_container.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
 import 'package:study/features/student/bloc/lesson/lesson_bloc.dart';
@@ -12,9 +13,8 @@ import 'package:study/features/student/presentation/home/widgets/schedule_timeli
 import 'package:study/features/student/presentation/learning/course_detail/course_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
 import 'package:study/features/student/presentation/schedule/widgets/widgets.dart';
-import 'package:study/di/di_container.dart';
+import 'package:study/features/student/presentation/widgets/widgets.dart';
 import 'package:study/theme/theme.dart';
-import 'package:study/widgets/tab_screen_header.dart';
 
 class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({super.key});
@@ -32,25 +32,61 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
+      backgroundColor: context.surfaceBg,
       body: SafeArea(
-        child: BlocConsumer<ScheduleBloc, ScheduleState>(
-          listenWhen: (prev, curr) =>
-              curr is ScheduleSuccess && curr.classCourseNavigation != null,
-          listener: (context, state) {
-            if (state is ScheduleSuccess) {
-              _handleClassCourseNavigation(context, state.classCourseNavigation);
-            }
-          },
-          builder: (context, state) {
-            return switch (state) {
-              ScheduleInitial() || ScheduleInProgress() => const Center(
-                    child: CircularProgressIndicator(strokeWidth: 2.5),
-                  ),
-              ScheduleFailure(:final message) => _buildError(context, message),
-              ScheduleSuccess() => _buildContent(context, state),
-            };
-          },
+        bottom: false,
+        child: Column(
+          children: [
+            StudentAppHeader(
+              categoryLabel: 'THỜI KHÓA BIỂU',
+              title: 'Lịch học',
+              icon: Icons.calendar_month_rounded,
+              showNotification: false,
+              showAvatar: false,
+              trailing: IconButton(
+                icon: Icon(
+                  Icons.today_rounded,
+                  color: cs.slate700,
+                ),
+                tooltip: 'Hôm nay',
+                onPressed: () {
+                  context
+                      .read<ScheduleBloc>()
+                      .add(ScheduleDateSelected(DateTime.now()));
+                },
+              ),
+            ),
+            Expanded(
+              child: BlocConsumer<ScheduleBloc, ScheduleState>(
+                listenWhen: (prev, curr) =>
+                    curr is ScheduleSuccess &&
+                    curr.classCourseNavigation != null,
+                listener: (context, state) {
+                  if (state is ScheduleSuccess) {
+                    _handleClassCourseNavigation(
+                      context,
+                      state.classCourseNavigation,
+                    );
+                  }
+                },
+                builder: (context, state) {
+                  return switch (state) {
+                    ScheduleInitial() ||
+                    ScheduleInProgress() =>
+                      const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2.5),
+                      ),
+                    ScheduleFailure(:final message) =>
+                      _buildError(context, message),
+                    ScheduleSuccess() => _buildContent(context, state),
+                  };
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -101,116 +137,71 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   }
 
   Widget _buildContent(BuildContext context, ScheduleSuccess state) {
-    final cs = Theme.of(context).colorScheme;
-
     return RefreshIndicator(
       onRefresh: () async {
         context.read<ScheduleBloc>().add(const ScheduleStarted());
         await Future<void>.delayed(const Duration(milliseconds: 600));
       },
       child: ListView(
-        padding: EdgeInsets.zero,
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenPadding,
+          AppSpacing.sm,
+          AppSpacing.screenPadding,
+          AppSpacing.xxl,
+        ),
         children: [
-          const TabScreenHeader(
-            title: 'Lịch học',
-            subtitle: 'Quản lý thời gian học tập.',
+          // Header tóm tắt tháng
+          MonthSummary(
+            eventCount: state.eventDates.length,
+            currentMonth: state.currentMonth,
           ),
-          // Calendar section
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screenPadding,
-              AppSpacing.sm,
-              AppSpacing.screenPadding,
-              AppSpacing.lg,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                MonthSummary(
-                  eventCount: state.eventDates.length,
-                  currentMonth: state.currentMonth,
-                ),
-                AppSpacing.vGap16,
-                CalendarWidget(
-                  currentMonth: state.currentMonth,
-                  selectedDate: state.selectedDate,
-                  eventDates: state.eventDates,
-                  onDateSelected: (date) {
-                    context.read<ScheduleBloc>().add(ScheduleDateSelected(date));
-                  },
-                  onMonthChanged: (month) {
-                    context.read<ScheduleBloc>().add(ScheduleMonthChanged(month));
-                  },
-                ),
-              ],
-            ),
+          AppSpacing.vGap16,
+
+          // Calendar Widget dạng Card độc lập
+          CalendarWidget(
+            currentMonth: state.currentMonth,
+            selectedDate: state.selectedDate,
+            eventDates: state.eventDates,
+            onDateSelected: (date) {
+              context.read<ScheduleBloc>().add(ScheduleDateSelected(date));
+            },
+            onMonthChanged: (month) {
+              context.read<ScheduleBloc>().add(ScheduleMonthChanged(month));
+            },
           ),
+          AppSpacing.vGap24,
 
-          // Background layer với schedule
-          Container(
-            decoration: BoxDecoration(
-              color: Color.alphaBlend(
-                cs.primary.withValues(
-                  alpha: Theme.of(context).brightness == Brightness.light
-                      ? 0.045
-                      : 0.065,
-                ),
-                cs.surfaceContainer,
-              ),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppRadius.xl),
-              ),
-              border: Border(
-                top: BorderSide(color: cs.primary.withValues(alpha: 0.1)),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: cs.shadow.withValues(alpha: 0.045),
-                  blurRadius: 32,
-                  offset: const Offset(0, -10),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screenPadding,
-              AppSpacing.xl,
-              AppSpacing.screenPadding,
-              104,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SelectedDateHeader(
-                  selectedDate: state.selectedDate,
-                  itemCount: state.selectedDateItems.length,
-                ),
-                AppSpacing.vGap16,
-
-                // Schedule timeline
-                if (state.isLoadingDay)
-                  const LoadingSchedule()
-                else if (state.selectedDateItems.isEmpty)
-                  const FreeDay()
-                else
-                  ScheduleTimeline(
-                    items: state.selectedDateItems.map((item) {
-                      return ScheduleTimelineItemData(
-                        time: _formatTimeRange(item.startTime, item.endTime),
-                        title: item.title,
-                        subtitle:
-                            '${_typeLabel(item.type)} • ${item.instructorName ?? ""}',
-                        type: _mapScheduleType(item.type),
-                        isActive: _isCurrentOrNext(item.startTime, item.endTime),
-                        onTap: () => _onScheduleItemTap(context, item),
-                      );
-                    }).toList(),
-                  ),
-
-                AppSpacing.vGap24,
-                DailyGoalsSection(date: state.selectedDate),
-              ],
-            ),
+          // Tiêu đề ngày được chọn
+          SelectedDateHeader(
+            selectedDate: state.selectedDate,
+            itemCount: state.selectedDateItems.length,
           ),
+          AppSpacing.vGap12,
+
+          // Timeline ca học
+          if (state.isLoadingDay)
+            const LoadingSchedule()
+          else if (state.selectedDateItems.isEmpty)
+            const FreeDay()
+          else
+            ScheduleTimeline(
+              items: state.selectedDateItems.map((item) {
+                return ScheduleTimelineItemData(
+                  time: _formatTimeRange(item.startTime, item.endTime),
+                  title: item.title,
+                  subtitle:
+                      '${_typeLabel(item.type)} • ${item.instructorName ?? ""}',
+                  type: _mapScheduleType(item.type),
+                  isActive: _isCurrentOrNext(item.startTime, item.endTime),
+                  onTap: () => _onScheduleItemTap(context, item),
+                );
+              }).toList(),
+            ),
+
+          AppSpacing.vGap24,
+
+          // Mục tiêu hàng ngày
+          DailyGoalsSection(date: state.selectedDate),
         ],
       ),
     );
@@ -240,16 +231,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ),
       );
     } else if (item.classId != null) {
-      context.read<ScheduleBloc>().add(ScheduleClassCourseRequested(item.classId!));
-      return; // Navigation handled via BlocConsumer listener
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Mở: ${item.title}')),
-      );
+      context
+          .read<ScheduleBloc>()
+          .add(ScheduleClassCourseRequested(item.classId!));
     }
   }
 
-  void _handleClassCourseNavigation(BuildContext context, ScheduleClassCourseNavigation? nav) {
+  void _handleClassCourseNavigation(
+    BuildContext context,
+    ScheduleClassCourseNavigation? nav,
+  ) {
     if (nav == null) return;
 
     switch (nav) {
@@ -261,7 +252,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         );
       case ScheduleClassCourseNavigationSuccess(:final enrollment):
         Navigator.of(context, rootNavigator: true).pop();
-        context.read<ScheduleBloc>().add(const ScheduleClassCourseNavigationHandled());
+        context
+            .read<ScheduleBloc>()
+            .add(const ScheduleClassCourseNavigationHandled());
         Navigator.push(
           context,
           MaterialPageRoute<void>(
@@ -274,13 +267,17 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         );
       case ScheduleClassCourseNavigationError(:final message):
         Navigator.of(context, rootNavigator: true).pop();
-        context.read<ScheduleBloc>().add(const ScheduleClassCourseNavigationHandled());
+        context
+            .read<ScheduleBloc>()
+            .add(const ScheduleClassCourseNavigationHandled());
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(
-            message == 'course_not_found'
-                ? 'Không tìm thấy khóa học'
-                : 'Bạn chưa đăng ký khóa học này',
-          )),
+          SnackBar(
+            content: Text(
+              message == 'course_not_found'
+                  ? 'Khóa học của lớp này hiện không còn khả dụng'
+                  : 'Bạn chưa được ghi danh vào khóa học của lớp này',
+            ),
+          ),
         );
     }
   }
@@ -306,7 +303,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   bool _isCurrentOrNext(DateTime start, DateTime end) {
     final now = DateTime.now();
-    return start.isAfter(now) || (start.isBefore(now) && end.isAfter(now));
+    return !start.isAfter(now) && end.isAfter(now);
   }
 
   String _typeLabel(String type) {

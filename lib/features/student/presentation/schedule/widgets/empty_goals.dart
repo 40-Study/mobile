@@ -10,27 +10,63 @@ class EmptyGoals extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
-        border: Border.all(color: cs.outline),
-        borderRadius: BorderRadius.circular(AppRadius.card),
+        color: isLight ? Colors.white : cs.surface,
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.6),
+          width: 0.8,
+        ),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Row(
         children: [
-          Icon(Icons.lightbulb_outline, color: cs.outline),
+          Container(
+            width: 36,
+            height: 36,
+            decoration: const BoxDecoration(
+              color: Color(0xFFEFF6FF),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.flag_rounded,
+              color: cs.blue600,
+              size: 18,
+            ),
+          ),
           AppSpacing.hGap12,
           Expanded(
             child: Text(
-              'Chưa có mục tiêu. Thêm ngay!',
-              style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+              'Chưa có mục tiêu cho ngày này.',
+              style: tt.bodySmall?.copyWith(color: cs.slate500),
             ),
           ),
-          TextButton(
-            onPressed: onAdd,
-            child: const Text('Thêm'),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm + 2,
+              vertical: 4,
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(AppRadius.full),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onAdd,
+                borderRadius: BorderRadius.circular(AppRadius.full),
+                child: Text(
+                  '+ Thêm',
+                  style: tt.labelSmall?.copyWith(
+                    color: cs.blue600,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
