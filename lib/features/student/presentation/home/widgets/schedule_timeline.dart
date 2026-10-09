@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:study/data/motivational_quotes.dart';
 import 'package:study/features/student/presentation/home/widgets/schedule_timeline_item.dart';
 import 'package:study/theme/theme.dart';
 
@@ -17,79 +16,62 @@ class ScheduleTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     if (items.isEmpty) {
-      final quote = MotivationalQuote.scheduleForDate(DateTime.now());
       return Container(
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFF0F7FF), Color(0xFFE8F2FC)],
-          ),
-          borderRadius: BorderRadius.circular(AppRadius.card),
-          border: Border.all(color: const Color(0xFFD0E4F7).withValues(alpha: 0.5)),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.xl,
         ),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
+        decoration: BoxDecoration(
+          color: isLight ? Colors.white : cs.surface,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(
+            color: cs.outlineVariant.withValues(alpha: 0.6),
+            width: 0.8,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: cs.shadow.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Illustration
-            Positioned(
-              right: 8,
-              bottom: 8,
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD0E4F7).withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: Icon(
-                  Icons.auto_stories_rounded,
-                  size: 48,
-                  color: cs.primary.withValues(alpha: 0.5),
-                ),
+            Container(
+              width: 48,
+              height: 48,
+              decoration: const BoxDecoration(
+                color: Color(0xFFEFF6FF),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.event_available_rounded,
+                size: 26,
+                color: cs.blue600,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.wb_sunny_outlined, size: 18, color: cs.primary),
-                      AppSpacing.hGap8,
-                      Text(
-                        'Quote hôm nay',
-                        style: tt.labelMedium?.copyWith(
-                          color: cs.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  AppSpacing.vGap12,
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.5,
-                    child: Text(
-                      '"${quote.quote}"',
-                      style: tt.bodyLarge?.copyWith(
-                        color: const Color(0xFF2D3748),
-                        fontWeight: FontWeight.w500,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                  AppSpacing.vGap8,
-                  Text(
-                    '— 40Study —',
-                    style: tt.labelSmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+            AppSpacing.vGap12,
+            Text(
+              'Hôm nay không có ca học',
+              style: tt.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: cs.slate900,
               ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Bạn có thể tự ôn tập hoặc nghỉ ngơi để nạp năng lượng!',
+              style: tt.bodySmall?.copyWith(
+                color: cs.slate500,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -97,12 +79,24 @@ class ScheduleTimeline extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: cs.outline),
-        boxShadow: AppShadows.layeredCard,
+        color: isLight ? Colors.white : cs.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.6),
+          width: 0.8,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(

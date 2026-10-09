@@ -16,49 +16,73 @@ class ContinueLearningCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
     final progressLabel = enrollment.progressPercentage.toStringAsFixed(0);
     final course = enrollment.course;
 
-    return DecoratedBox(
+    return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        boxShadow: AppShadows.soft,
+        color: isLight ? Colors.white : cs.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.6),
+          width: 0.8,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Material(
-        color: cs.surfaceContainerLowest,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.card),
-        ),
-        clipBehavior: Clip.antiAlias,
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         child: InkWell(
           onTap: onContinueTap,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: const EdgeInsets.all(AppSpacing.md + 2),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: cs.primaryContainer,
-                    borderRadius: BorderRadius.circular(AppRadius.xs),
-                  ),
-                  child: Text(
-                    'Tiếp tục học',
-                    style: tt.labelSmall?.copyWith(
-                      color: cs.primary,
-                      fontWeight: FontWeight.w600,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(AppRadius.xs),
+                      ),
+                      child: Text(
+                        'TIẾP TỤC HỌC',
+                        style: tt.labelSmall?.copyWith(
+                          color: cs.blue600,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
                     ),
-                  ),
+                    Text(
+                      '$progressLabel%',
+                      style: tt.labelSmall?.copyWith(
+                        color: cs.blue600,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
                 AppSpacing.vGap12,
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    final imageSize = constraints.maxWidth < 340 ? 88.0 : 108.0;
+                    final imageSize = constraints.maxWidth < 340 ? 84.0 : 96.0;
 
                     return Row(
                       children: [
@@ -66,76 +90,46 @@ class ContinueLearningCard extends StatelessWidget {
                           size: imageSize,
                           imageUrl: course?.thumbnailUrl,
                         ),
-                        AppSpacing.hGap16,
+                        AppSpacing.hGap12,
                         Expanded(
                           child: SizedBox(
                             height: imageSize,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        course?.title ?? 'Khóa học của bạn',
-                                        style: tt.titleMedium?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          height: 1.25,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                Expanded(
+                                  child: Text(
+                                    course?.title ?? 'Khóa học của bạn',
+                                    style: tt.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: cs.slate900,
+                                      height: 1.25,
                                     ),
-                                    AppSpacing.hGap8,
-                                    Container(
-                                      width: 36,
-                                      height: 36,
-                                      decoration: BoxDecoration(
-                                        color: cs.primary,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        Icons.arrow_forward_rounded,
-                                        size: 19,
-                                        color: cs.onPrimary,
-                                      ),
-                                    ),
-                                  ],
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                                AppSpacing.vGap4,
                                 Text(
                                   'Bài ${enrollment.completedLessons + 1} • '
                                   '${course?.instructorName ?? "40Study"}',
                                   style: tt.bodySmall?.copyWith(
-                                    color: cs.onSurfaceVariant,
+                                    color: cs.slate500,
+                                    fontSize: 12,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                const Spacer(),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(3),
-                                        child: LinearProgressIndicator(
-                                          value: progress,
-                                          minHeight: 6,
-                                          backgroundColor:
-                                              cs.surfaceContainerHighest,
-                                        ),
-                                      ),
+                                AppSpacing.vGap8,
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: LinearProgressIndicator(
+                                    value: progress,
+                                    minHeight: 6,
+                                    backgroundColor: const Color(0xFFEFF6FF),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      cs.blue600,
                                     ),
-                                    AppSpacing.hGap12,
-                                    Text(
-                                      '$progressLabel%',
-                                      style: tt.labelSmall?.copyWith(
-                                        color: cs.onSurfaceVariant,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ],
                             ),
@@ -165,7 +159,7 @@ class _CourseCover extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(AppRadius.card),
+      borderRadius: BorderRadius.circular(AppRadius.md),
       child: SizedBox.square(
         dimension: size,
         child: Stack(
@@ -181,17 +175,17 @@ class _CourseCover extends StatelessWidget {
               _PlaceholderCover(cs: cs),
             Center(
               child: Container(
-                width: 34,
-                height: 34,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
-                  color: cs.surfaceContainerLowest.withValues(alpha: 0.94),
+                  color: Colors.white.withValues(alpha: 0.92),
                   shape: BoxShape.circle,
                   boxShadow: AppShadows.sm,
                 ),
                 child: Icon(
                   Icons.play_arrow_rounded,
-                  size: 19,
-                  color: cs.primary,
+                  size: 20,
+                  color: cs.blue600,
                 ),
               ),
             ),
@@ -210,11 +204,11 @@ class _PlaceholderCover extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: cs.primaryContainer,
+      color: const Color(0xFFEFF6FF),
       child: Icon(
-        Icons.school_rounded,
-        size: 32,
-        color: cs.primary,
+        Icons.menu_book_rounded,
+        size: 30,
+        color: cs.blue600,
       ),
     );
   }
