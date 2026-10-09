@@ -16,128 +16,138 @@ class RecentLearningItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final course = enrollment.course;
     final isCompleted =
         enrollment.progressPercentage >= 100 || enrollment.completedAt != null;
 
-    final icon = Icons.play_circle_outline_rounded;
-
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Material(
-        color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Row(
-              children: [
-                // Icon
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: cs.primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
-                    border: Border.all(
-                      color: cs.primary.withValues(alpha: 0.12),
-                    ),
-                  ),
-                  child: Icon(icon, color: cs.primary, size: 20),
-                ),
-                AppSpacing.hGap12,
-
-                // Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        course?.title ?? 'Khóa học',
-                        style: tt.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${course?.categoryName ?? "Khóa học"} · Video',
-                        style: tt.bodySmall?.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                AppSpacing.hGap8,
-
-                // Status/time
-                if (isCompleted)
-                  Text(
-                    'Đã hoàn thành',
-                    style: tt.labelSmall?.copyWith(
-                      color: cs.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  )
-                else
-                  Text(
-                    '${enrollment.completedLessons}/${enrollment.totalLessons}',
-                    style: tt.labelMedium?.copyWith(
-                      color: cs.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                AppSpacing.hGap8,
-
-                // Action
-                if (isCompleted)
+      child: Container(
+        decoration: BoxDecoration(
+          color: isLight ? Colors.white : cs.surface,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(
+            color: cs.outlineVariant.withValues(alpha: 0.6),
+            width: 0.8,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: cs.shadow.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Row(
+                children: [
+                  // Icon
                   Container(
-                    width: 36,
-                    height: 36,
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
-                      color: cs.primary.withValues(alpha: 0.1),
+                      color: isCompleted
+                          ? const Color(0xFFECFDF5)
+                          : const Color(0xFFEFF6FF),
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: cs.primary.withValues(alpha: 0.2),
-                      ),
                     ),
                     child: Icon(
-                      Icons.check_rounded,
-                      color: cs.primary,
-                      size: 18,
-                    ),
-                  )
-                else
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: cs.surfaceContainerLowest,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: cs.outlineVariant.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.play_arrow_rounded,
-                      color: cs.onSurfaceVariant,
-                      size: 18,
+                      isCompleted
+                          ? Icons.check_circle_rounded
+                          : Icons.play_arrow_rounded,
+                      color: isCompleted
+                          ? const Color(0xFF059669)
+                          : cs.blue600,
+                      size: 24,
                     ),
                   ),
+                  AppSpacing.hGap12,
 
-                AppSpacing.hGap4,
+                  // Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          course?.title ?? 'Khóa học',
+                          style: tt.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: cs.slate900,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${course?.categoryName ?? "Khóa học"} • '
+                          '${course?.instructorName ?? "40Study"}',
+                          style: tt.bodySmall?.copyWith(
+                            color: cs.slate500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  AppSpacing.hGap8,
 
-                // More options
-                Icon(
-                  Icons.more_vert_rounded,
-                  color: cs.onSurfaceVariant,
-                  size: 20,
-                ),
-              ],
+                  // Status/time
+                  if (isCompleted)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFECFDF5),
+                        borderRadius: BorderRadius.circular(AppRadius.full),
+                      ),
+                      child: const Text(
+                        'Đã hoàn thành',
+                        style: TextStyle(
+                          color: Color(0xFF059669),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(AppRadius.full),
+                      ),
+                      child: Text(
+                        '${enrollment.completedLessons}/${enrollment.totalLessons} bài',
+                        style: TextStyle(
+                          color: cs.blue600,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  AppSpacing.hGap8,
+
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: cs.slate400,
+                    size: 20,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

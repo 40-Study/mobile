@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/di/di_container.dart';
 import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
@@ -10,11 +11,11 @@ import 'package:study/features/student/presentation/learning/all_courses_screen.
 import 'package:study/features/student/presentation/learning/course_detail/course_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/explore_courses_screen.dart';
 import 'package:study/features/student/presentation/learning/widgets/widgets.dart';
-import 'package:study/di/di_container.dart';
+import 'package:study/features/student/presentation/search/search_screen.dart';
+import 'package:study/features/student/presentation/widgets/widgets.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/empty_state.dart';
 import 'package:study/widgets/section_header.dart';
-import 'package:study/widgets/tab_screen_header.dart';
 
 class LearningScreen extends StatefulWidget {
   const LearningScreen({super.key});
@@ -44,17 +45,49 @@ class _LearningScreenState extends State<LearningScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
+      backgroundColor: context.surfaceBg,
       body: SafeArea(
-        child: BlocBuilder<LearningBloc, LearningState>(
-          builder: (context, state) {
-            return switch (state) {
-              LearningInitial() || LearningInProgress() =>
-                _buildLoading(context),
-              LearningFailure(:final message) => _buildError(context, message),
-              LearningSuccess() => _buildContent(context, state),
-            };
-          },
+        bottom: false,
+        child: Column(
+          children: [
+            StudentAppHeader(
+              categoryLabel: 'HỌC PHẦN & KHÓA HỌC',
+              title: 'Học tập của tôi',
+              icon: Icons.school_rounded,
+              showNotification: false,
+              showAvatar: false,
+              trailing: IconButton(
+                icon: Icon(
+                  Icons.search_rounded,
+                  color: cs.slate700,
+                ),
+                tooltip: 'Tìm kiếm khóa học',
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => const SearchScreen(),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: BlocBuilder<LearningBloc, LearningState>(
+                builder: (context, state) {
+                  return switch (state) {
+                    LearningInitial() ||
+                    LearningInProgress() =>
+                      _buildLoading(context),
+                    LearningFailure(:final message) =>
+                      _buildError(context, message),
+                    LearningSuccess() => _buildContent(context, state),
+                  };
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -66,31 +99,12 @@ class _LearningScreenState extends State<LearningScreen> {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       children: [
-        // Header skeleton
-        Container(
-          height: 40,
-          width: 150,
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(AppRadius.sm),
-          ),
-        ),
-        AppSpacing.vGap8,
-        Container(
-          height: 20,
-          width: 200,
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(AppRadius.xs),
-          ),
-        ),
-        AppSpacing.vGap24,
         // Continue learning skeleton
         Container(
-          height: 180,
+          height: 140,
           decoration: BoxDecoration(
             color: cs.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
         ),
         AppSpacing.vGap24,
@@ -102,10 +116,10 @@ class _LearningScreenState extends State<LearningScreen> {
             itemCount: 3,
             separatorBuilder: (_, _) => AppSpacing.hGap12,
             itemBuilder: (_, _) => Container(
-              width: 160,
+              width: 172,
               decoration: BoxDecoration(
                 color: cs.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
             ),
           ),
@@ -172,27 +186,20 @@ class _LearningScreenState extends State<LearningScreen> {
       },
       child: CustomScrollView(
         slivers: [
-          // Header
-          const SliverToBoxAdapter(
-            child: TabScreenHeader(
-              title: 'Learning',
-              subtitle: 'Mỗi ngày một bước tiến.',
-            ),
-          ),
-
           // Continue Learning
           if (continueLearning != null) ...[
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.screenPadding,
-                  AppSpacing.lg,
+                  AppSpacing.md,
                   AppSpacing.screenPadding,
                   0,
                 ),
                 child: ContinueLearningCard(
                   enrollment: continueLearning,
-                  onContinue: () => _navigateToCourseDetail(continueLearning.id),
+                  onContinue: () =>
+                      _navigateToCourseDetail(continueLearning.id),
                 ),
               ),
             ),
@@ -203,7 +210,7 @@ class _LearningScreenState extends State<LearningScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.screenPadding,
-                AppSpacing.xl,
+                AppSpacing.lg,
                 AppSpacing.screenPadding,
                 AppSpacing.md,
               ),
@@ -213,46 +220,48 @@ class _LearningScreenState extends State<LearningScreen> {
                 onActionTap: () => Navigator.push(
                   context,
                   MaterialPageRoute<void>(
-                      builder: (_) => BlocProvider.value(
-                        value: context.read<LearningBloc>(),
-                        child: const AllCoursesScreen(),
-                      ),
+                    builder: (_) => BlocProvider.value(
+                      value: context.read<LearningBloc>(),
+                      child: const AllCoursesScreen(),
                     ),
+                  ),
                 ),
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 230,
-              child: Builder(builder: (context) {
-                // Sort: in-progress first, completed last
-                final sorted = List.of(state.enrollments)
-                  ..sort((a, b) {
-                    final aCompleted = a.progressPercentage >= 100;
-                    final bCompleted = b.progressPercentage >= 100;
-                    if (aCompleted != bCompleted) {
-                      return aCompleted ? 1 : -1;
-                    }
-                    return 0;
-                  });
-                return ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.screenPadding,
-                  ),
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: sorted.length,
-                  separatorBuilder: (_, _) => AppSpacing.hGap12,
-                  itemBuilder: (context, index) {
-                    final enrollment = sorted[index];
-                    return MyCourseCard(
-                      enrollment: enrollment,
-                      onTap: () => _navigateToCourseDetail(enrollment.id),
-                    );
-                  },
-                );
-              }),
+              height: 236,
+              child: Builder(
+                builder: (context) {
+                  // Sort: in-progress first, completed last
+                  final sorted = List.of(state.enrollments)
+                    ..sort((a, b) {
+                      final aCompleted = a.progressPercentage >= 100;
+                      final bCompleted = b.progressPercentage >= 100;
+                      if (aCompleted != bCompleted) {
+                        return aCompleted ? 1 : -1;
+                      }
+                      return 0;
+                    });
+                  return ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.screenPadding,
+                    ),
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: sorted.length,
+                    separatorBuilder: (_, _) => AppSpacing.hGap12,
+                    itemBuilder: (context, index) {
+                      final enrollment = sorted[index];
+                      return MyCourseCard(
+                        enrollment: enrollment,
+                        onTap: () => _navigateToCourseDetail(enrollment.id),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ),
 
@@ -356,7 +365,7 @@ class _LearningScreenState extends State<LearningScreen> {
                   itemCount: state.recommendedCourses.length > 6
                       ? 6
                       : state.recommendedCourses.length,
-                  separatorBuilder: (_, __) => AppSpacing.hGap12,
+                  separatorBuilder: (_, _) => AppSpacing.hGap12,
                   itemBuilder: (context, index) {
                     return RecommendationCard(
                       course: state.recommendedCourses[index],
@@ -387,11 +396,11 @@ class _LearningScreenState extends State<LearningScreen> {
           onAction: () => Navigator.push(
             context,
             MaterialPageRoute<void>(
-                      builder: (_) => BlocProvider.value(
-                        value: context.read<LearningBloc>(),
-                        child: const AllCoursesScreen(),
-                      ),
-                    ),
+              builder: (_) => BlocProvider.value(
+                value: context.read<LearningBloc>(),
+                child: const AllCoursesScreen(),
+              ),
+            ),
           ),
         ),
       ),
