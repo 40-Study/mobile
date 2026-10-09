@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             StudentAppHeader(
-              categoryLabel: 'HỌC VIÊN 40STUDY',
+              categoryLabel: '40Study',
               title: '${_greeting()}, $firstName!',
               onDrawerTap: widget.onDrawerTap,
               onNotificationTap: () => Navigator.push(

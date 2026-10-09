@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/data/motivational_quotes.dart';
 import 'package:study/features/student/presentation/home/widgets/schedule_timeline_item.dart';
 import 'package:study/theme/theme.dart';
 
@@ -19,12 +20,11 @@ class ScheduleTimeline extends StatelessWidget {
     final isLight = Theme.of(context).brightness == Brightness.light;
 
     if (items.isEmpty) {
+      final quote = MotivationalQuote.scheduleForDate(DateTime.now());
+
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.xl,
-        ),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
           color: isLight ? Colors.white : cs.surface,
           borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -41,37 +41,101 @@ class ScheduleTimeline extends StatelessWidget {
           ],
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEFF6FF),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.event_available_rounded,
+                    size: 20,
+                    color: cs.blue600,
+                  ),
+                ),
+                AppSpacing.hGap12,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Hôm nay không có ca học',
+                        style: tt.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: cs.slate900,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Bạn có thể tự ôn tập hoặc nghỉ ngơi để nạp'
+                        ' năng lượng!',
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.slate500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            AppSpacing.vGap16,
             Container(
-              width: 48,
-              height: 48,
-              decoration: const BoxDecoration(
-                color: Color(0xFFEFF6FF),
-                shape: BoxShape.circle,
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF6FF).withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(
+                  color: cs.blue100,
+                  width: 0.8,
+                ),
               ),
-              child: Icon(
-                Icons.event_available_rounded,
-                size: 26,
-                color: cs.blue600,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.wb_sunny_outlined,
+                        size: 16,
+                        color: cs.blue600,
+                      ),
+                      AppSpacing.hGap8,
+                      Text(
+                        'Quote hôm nay',
+                        style: tt.labelSmall?.copyWith(
+                          color: cs.blue600,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  AppSpacing.vGap8,
+                  Text(
+                    '"${quote.quote}"',
+                    style: tt.bodySmall?.copyWith(
+                      color: cs.slate700,
+                      fontStyle: FontStyle.italic,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      '— 40Study —',
+                      style: tt.labelSmall?.copyWith(
+                        color: cs.slate400,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            AppSpacing.vGap12,
-            Text(
-              'Hôm nay không có ca học',
-              style: tt.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: cs.slate900,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Bạn có thể tự ôn tập hoặc nghỉ ngơi để nạp năng lượng!',
-              style: tt.bodySmall?.copyWith(
-                color: cs.slate500,
-              ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),
