@@ -48,17 +48,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final firstName = _firstName(widget.userName);
-
     return Scaffold(
       backgroundColor: context.surfaceBg,
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            StudentAppHeader(
-              categoryLabel: '40Study',
-              title: '${_greeting()}, $firstName!',
+            StudentHomeTopBar(
               onDrawerTap: widget.onDrawerTap,
               onNotificationTap: () => Navigator.push(
                 context,
@@ -145,6 +141,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildContent(BuildContext context, HomeSuccess state) {
     final activeScheduleId = _activeScheduleId(state.scheduleItems);
+    final firstName = _firstName(widget.userName);
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -159,6 +158,16 @@ class _HomeScreenState extends State<HomeScreen> {
           AppSpacing.xxl,
         ),
         children: [
+          Text(
+            '${_greeting()}, $firstName',
+            style: tt.headlineMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: cs.slate900,
+              letterSpacing: -0.5,
+              fontSize: 26,
+            ),
+          ),
+          AppSpacing.vGap12,
           TodaySummary(
             scheduleCount: state.scheduleItems.length,
             assignmentCount: state.assignments.length,
