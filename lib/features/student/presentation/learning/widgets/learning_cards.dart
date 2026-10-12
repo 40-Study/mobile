@@ -265,6 +265,12 @@ class MyCourseCard extends StatelessWidget {
   final EnrollmentModel enrollment;
   final VoidCallback onTap;
 
+  static String _getInstructorInitial(String? name) {
+    if (name == null || name.trim().isEmpty) return '4';
+    final words = name.trim().split(RegExp(r'\s+'));
+    return words.last.isNotEmpty ? words.last[0].toUpperCase() : 'T';
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -412,14 +418,39 @@ class MyCourseCard extends StatelessWidget {
                       const SizedBox(height: 4),
 
                       // Instructor
-                      Text(
-                        course?.instructorName ?? '40Study',
-                        style: tt.bodySmall?.copyWith(
-                          color: cs.slate500,
-                          fontSize: 11,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Row(
+                        children: [
+                          Container(
+                            width: 16,
+                            height: 16,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFEFF6FF),
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              _getInstructorInitial(course?.instructorName),
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: cs.blue600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              course?.instructorName ?? '40Study',
+                              style: tt.bodySmall?.copyWith(
+                                color: cs.slate600,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                       const Spacer(),
 
