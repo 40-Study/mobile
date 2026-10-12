@@ -13,7 +13,7 @@ class ContinueLearningCard extends StatelessWidget {
   final VoidCallback? onContinueTap;
 
   static String _getInstructorInitial(String? name) {
-    if (name == null || name.trim().isEmpty) return '4';
+    if (name == null || name.trim().isEmpty) return 'F';
     final words = name.trim().split(RegExp(r'\s+'));
     return words.last.isNotEmpty ? words.last[0].toUpperCase() : 'T';
   }
@@ -26,7 +26,7 @@ class ContinueLearningCard extends StatelessWidget {
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
     final progressLabel = enrollment.progressPercentage.toStringAsFixed(0);
     final course = enrollment.course;
-    final instructorName = course?.instructorName ?? '40Study';
+    final instructorName = course?.instructorName ?? 'ForteX';
 
     return Container(
       decoration: BoxDecoration(

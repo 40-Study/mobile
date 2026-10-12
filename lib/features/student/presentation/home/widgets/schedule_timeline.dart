@@ -127,7 +127,7 @@ class ScheduleTimeline extends StatelessWidget {
                   Align(
                     alignment: Alignment.centerRight,
                     child: Text(
-                      '— 40Study —',
+                      '— ForteX —',
                       style: tt.labelSmall?.copyWith(
                         color: cs.slate400,
                         fontSize: 10,

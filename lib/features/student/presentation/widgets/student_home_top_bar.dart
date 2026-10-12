@@ -62,7 +62,7 @@ class StudentHomeTopBar extends StatelessWidget {
               Expanded(
                 child: Center(
                   child: Text(
-                    '40Study',
+                    'ForteX',
                     style: tt.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                       color: cs.primary,
