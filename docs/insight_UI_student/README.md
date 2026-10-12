@@ -33,3 +33,9 @@ Thư mục này lưu trữ toàn bộ tài liệu phân tích đối chiếu, ng
    * **Đối chiếu Old vs New & Điểm thụt lùi (Design Regressions):** Chỉ rõ các điểm mất mát ở bản mới (mất avatar giảng viên trên thẻ khóa học, mất nút CTA tròn xanh, co cụm lời chào vào AppBar).
    * **Phân tích sâu hiện tượng "Lạm dụng Card" (Card Fatigue / Everything-is-a-box syndrome):** Lý do đóng hộp quá mức gây đứt gãy thị giác và tại sao phong cách của Phụ huynh không thể bê nguyên xi sang Học sinh.
    * **Đề xuất Kiến trúc Lai Tối ưu (Hybrid Surface Architecture):** Giải pháp dung hòa sự thoáng đãng, nồng nhiệt của Old UI với sự chỉn chu, hiện đại của New UI Tokens.
+4. [**Kế hoạch tinh chỉnh giao diện Học sinh theo Kiến trúc Lai Tối ưu (Student UI Refinement Plan)**](file:///C:/ForteX/mobile/docs/insight_UI_student/STUDENT_UI_REFINEMENT_PLAN.md)
+   * **Bối cảnh & Mục tiêu:** Khắc phục hội chứng "Lạm dụng Card", khôi phục cảm xúc chào đón và các điểm chạm hành động trực quan.
+   * **Triết lý Kiến trúc Lai (Hybrid Surface Architecture):** Kết hợp nhịp thở thị giác, Hero greeting to bản, Nút CTA tròn xanh, Avatar giảng viên của Old UI với hệ thống Design Tokens và Positive Empty State của New UI.
+   * **Bản đồ bố cục Trang chủ mới (ASCII Wireframe):** Chi tiết phân tầng nửa trên trắng tinh khôi + nửa dưới Khay bề mặt cong (Curved Surface Tray bo cong 28px).
+   * **Kế hoạch chi tiết 6 component/màn hình:** Top Nav Bar, Hero Greeting & Capsule Pills, Thẻ Tiếp tục học, Khay bề mặt cong, Thẻ Khóa học, và các Tab chức năng.
+   * **Lộ trình 5 giai đoạn thực thi tuần tự & Tiêu chí nghiệm thu an toàn 10 điểm.**
