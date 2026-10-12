@@ -455,7 +455,7 @@ class MyCourseCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const Spacer(),
 
                       // Instructor
                       Row(
@@ -492,7 +492,7 @@ class MyCourseCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const Spacer(),
+                      AppSpacing.vGap8,
 
                       // Progress bar or completed text
                       if (isCompleted)

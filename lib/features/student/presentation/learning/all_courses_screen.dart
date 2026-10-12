@@ -142,8 +142,6 @@ class _CourseCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
 
-                      AppSpacing.vGap4,
-
                       // Instructor
                       AppSpacing.vGap4,
                       Text(

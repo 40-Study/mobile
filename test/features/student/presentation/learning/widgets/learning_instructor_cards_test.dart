@@ -59,6 +59,17 @@ void main() {
       expect(find.text('Khóa học Flutter nâng cao'), findsOneWidget);
       expect(find.text('Thầy Nam'), findsOneWidget);
       expect(find.text('N'), findsOneWidget); // Initial của Nam
+
+      final titleBottom =
+          tester.getBottomLeft(find.text('Khóa học Flutter nâng cao')).dy;
+      final instructorTop = tester.getTopLeft(find.text('Thầy Nam')).dy;
+      final progressTop =
+          tester.getTopLeft(find.byType(LinearProgressIndicator)).dy;
+
+      // Giảng viên nằm sau tiêu đề và ngay trên thanh tiến trình
+      expect(instructorTop, greaterThan(titleBottom));
+      expect(progressTop, greaterThan(instructorTop));
+      expect(progressTop - instructorTop, lessThanOrEqualTo(25));
     });
 
     testWidgets('hiển thị Giảng viên và initial T khi instructorName là null',
