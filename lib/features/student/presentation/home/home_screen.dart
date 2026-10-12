@@ -48,13 +48,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final topSurfaceColor = isLight ? Colors.white : cs.surface;
+
     return Scaffold(
-      backgroundColor: context.surfaceBg,
+      backgroundColor: topSurfaceColor,
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
             StudentHomeTopBar(
+              backgroundColor: topSurfaceColor,
               onDrawerTap: widget.onDrawerTap,
               onNotificationTap: () => Navigator.push(
                 context,
@@ -151,40 +156,49 @@ class _HomeScreenState extends State<HomeScreen> {
         await Future<void>.delayed(const Duration(milliseconds: 600));
       },
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.screenPadding,
-          AppSpacing.md,
-          AppSpacing.screenPadding,
-          AppSpacing.xxl,
-        ),
+        padding: EdgeInsets.zero,
         children: [
-          Text(
-            '${_greeting()}, $firstName',
-            style: tt.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: cs.slate900,
-              letterSpacing: -0.5,
-              fontSize: 26,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screenPadding,
+              AppSpacing.md,
+              AppSpacing.screenPadding,
+              AppSpacing.xl,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${_greeting()}, $firstName',
+                  style: tt.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: cs.slate900,
+                    letterSpacing: -0.5,
+                    fontSize: 26,
+                  ),
+                ),
+                AppSpacing.vGap12,
+                TodaySummary(
+                  scheduleCount: state.scheduleItems.length,
+                  assignmentCount: state.assignments.length,
+                ),
+                AppSpacing.vGap16,
+                if (state.continueLearning != null)
+                  ContinueLearningCard(
+                    enrollment: state.continueLearning!,
+                    onContinueTap: () =>
+                        _navigateToCourse(context, state.continueLearning!.id),
+                  )
+                else
+                  ExploreCoursesCard(
+                    onTap: () => widget.onNavigateToTab?.call(1),
+                  ),
+              ],
             ),
           ),
-          AppSpacing.vGap12,
-          TodaySummary(
-            scheduleCount: state.scheduleItems.length,
-            assignmentCount: state.assignments.length,
+          CurvedSurfaceTray(
+            child: _buildSections(context, state, activeScheduleId),
           ),
-          AppSpacing.vGap16,
-          if (state.continueLearning != null)
-            ContinueLearningCard(
-              enrollment: state.continueLearning!,
-              onContinueTap: () =>
-                  _navigateToCourse(context, state.continueLearning!.id),
-            )
-          else
-            ExploreCoursesCard(
-              onTap: () => widget.onNavigateToTab?.call(1),
-            ),
-          AppSpacing.vGap24,
-          _buildSections(context, state, activeScheduleId),
         ],
       ),
     );
