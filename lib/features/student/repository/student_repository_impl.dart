@@ -171,16 +171,42 @@ class StudentRepositoryImpl implements StudentRepository {
     final result = Map<String, dynamic>.from(json);
     // If no nested course but has course_* fields, build course object
     if (result['course'] == null && result['course_id'] != null) {
+      final instructor = result['instructor'];
+      String? instructorName;
+      String? instructorAvatar;
+      String? instructorId = result['instructor_id']?.toString();
+      if (instructor is Map) {
+        instructorName = instructor['name'] as String?;
+        instructorAvatar = (instructor['avatar'] ?? instructor['avatar_url']) as String?;
+        instructorId ??= instructor['id']?.toString();
+      } else if (result['instructor_name'] is String) {
+        instructorName = result['instructor_name'] as String?;
+      } else if (result['course_instructor'] is String) {
+        instructorName = result['course_instructor'] as String?;
+      } else if (result['course_instructor_name'] is String) {
+        instructorName = result['course_instructor_name'] as String?;
+      }
+
       result['course'] = {
         'id': result['course_id'],
         'title': result['course_title'],
         'slug': result['course_slug'],
         'thumbnail_url': result['course_thumbnail'],
         'category_name': result['course_category'],
+        'instructor_id': instructorId,
+        'instructor_name': instructorName,
+        'instructor_avatar': instructorAvatar,
       };
     } else if (result['course'] is Map<String, dynamic>) {
+      final courseMap = Map<String, dynamic>.from(result['course'] as Map<String, dynamic>);
+      if (courseMap['instructor'] == null && result['instructor'] != null) {
+        courseMap['instructor'] = result['instructor'];
+      }
+      if (courseMap['instructor_name'] == null && result['instructor_name'] != null) {
+        courseMap['instructor_name'] = result['instructor_name'];
+      }
       // Normalize existing course (flatten instructor/category)
-      result['course'] = _normalizeCourse(result['course'] as Map<String, dynamic>);
+      result['course'] = _normalizeCourse(courseMap);
     }
     return result;
   }

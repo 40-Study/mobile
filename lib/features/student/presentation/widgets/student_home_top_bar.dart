@@ -9,7 +9,7 @@ import 'package:study/widgets/cached_avatar.dart';
 ///
 /// Thiết kế chuẩn mực theo phong cách Brand Anchor:
 /// - Leading: Nút hamburger drawer để trần, không viền, không nền màu
-/// - Center: Tên thương hiệu "40Study" đậm nét định vị ứng dụng
+/// - Center: Tên thương hiệu "ForteX" đậm nét định vị ứng dụng
 /// - Actions: Chuông thông báo đỏ + Avatar người dùng nhỏ gọn
 class StudentHomeTopBar extends StatelessWidget {
   const StudentHomeTopBar({

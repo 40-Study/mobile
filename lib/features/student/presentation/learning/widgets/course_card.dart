@@ -10,7 +10,7 @@ class CourseCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   static String _getInstructorInitial(String? name) {
-    if (name == null || name.trim().isEmpty) return '4';
+    if (name == null || name.trim().isEmpty) return 'T';
     final words = name.trim().split(RegExp(r'\s+'));
     return words.last.isNotEmpty ? words.last[0].toUpperCase() : 'T';
   }
@@ -86,42 +86,40 @@ class CourseCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (course?.instructorName != null) ...[
-                        AppSpacing.vGap4,
-                        Row(
-                          children: [
-                            Container(
-                              width: 18,
-                              height: 18,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFEFF6FF),
-                                shape: BoxShape.circle,
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                _getInstructorInitial(course!.instructorName),
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: cs.blue600,
-                                ),
+                      AppSpacing.vGap4,
+                      Row(
+                        children: [
+                          Container(
+                            width: 18,
+                            height: 18,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFEFF6FF),
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              _getInstructorInitial(course?.instructorName),
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: cs.blue600,
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            Expanded(
-                              child: Text(
-                                course!.instructorName!,
-                                style: tt.bodySmall?.copyWith(
-                                  color: cs.onSurfaceVariant,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              course?.instructorName ?? 'Giảng viên',
+                              style: tt.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                                fontWeight: FontWeight.w500,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                       AppSpacing.vGap8,
                       Row(
                         children: [

@@ -14,6 +14,12 @@ class ContinueLearningCard extends StatelessWidget {
   final EnrollmentModel enrollment;
   final VoidCallback onContinue;
 
+  static String _getInstructorInitial(String? name) {
+    if (name == null || name.trim().isEmpty) return 'T';
+    final words = name.trim().split(RegExp(r'\s+'));
+    return words.last.isNotEmpty ? words.last[0].toUpperCase() : 'T';
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -134,13 +140,47 @@ class ContinueLearningCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
 
-                      // Lesson info
-                      Text(
-                        'Bài ${enrollment.completedLessons + 1} · '
-                        '${course?.totalDurationMins ?? 0} phút',
-                        style: tt.bodySmall?.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
+                      // Lesson info & Giảng viên
+                      Row(
+                        children: [
+                          Text(
+                            'Bài ${enrollment.completedLessons + 1} · '
+                            '${course?.totalDurationMins ?? 0} phút',
+                            style: tt.bodySmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            width: 16,
+                            height: 16,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFEFF6FF),
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              _getInstructorInitial(course?.instructorName),
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: cs.blue600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              course?.instructorName ?? 'Giảng viên',
+                              style: tt.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                       AppSpacing.vGap12,
 
@@ -266,7 +306,7 @@ class MyCourseCard extends StatelessWidget {
   final VoidCallback onTap;
 
   static String _getInstructorInitial(String? name) {
-    if (name == null || name.trim().isEmpty) return '4';
+    if (name == null || name.trim().isEmpty) return 'T';
     final words = name.trim().split(RegExp(r'\s+'));
     return words.last.isNotEmpty ? words.last[0].toUpperCase() : 'T';
   }
@@ -440,7 +480,7 @@ class MyCourseCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              course?.instructorName ?? '40Study',
+                              course?.instructorName ?? 'Giảng viên',
                               style: tt.bodySmall?.copyWith(
                                 color: cs.slate600,
                                 fontSize: 11,

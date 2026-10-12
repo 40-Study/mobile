@@ -88,7 +88,7 @@ class RecentLearningItem extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           '${course?.categoryName ?? "Khóa học"} • '
-                          '${course?.instructorName ?? "40Study"}',
+                          '${course?.instructorName ?? "Giảng viên"}',
                           style: tt.bodySmall?.copyWith(
                             color: cs.slate500,
                           ),

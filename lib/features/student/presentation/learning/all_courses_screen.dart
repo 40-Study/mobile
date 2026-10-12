@@ -145,15 +145,15 @@ class _CourseCard extends StatelessWidget {
                       AppSpacing.vGap4,
 
                       // Instructor
-                      if (course?.instructorName != null)
-                        Text(
-                          course!.instructorName!,
-                          style: tt.bodySmall?.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                      AppSpacing.vGap4,
+                      Text(
+                        course?.instructorName ?? 'Giảng viên',
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
 
                       AppSpacing.vGap8,
 
