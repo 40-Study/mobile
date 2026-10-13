@@ -51,13 +51,13 @@ class SessionInfoCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
+                  color: cs.primaryContainer,
                   borderRadius: BorderRadius.circular(AppRadius.full),
                 ),
                 child: Text(
                   'Buổi $sessionNumber',
                   style: TextStyle(
-                    color: cs.blue600,
+                    color: cs.primary,
                     fontWeight: FontWeight.w700,
                     fontSize: 12,
                   ),
@@ -72,7 +72,7 @@ class SessionInfoCard extends StatelessWidget {
               Text(
                 '${progress.toStringAsFixed(0)}%',
                 style: tt.titleSmall?.copyWith(
-                  color: cs.blue600,
+                  color: cs.primary,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -105,7 +105,7 @@ class SessionInfoCard extends StatelessWidget {
               value: progress / 100,
               minHeight: 6,
               backgroundColor: cs.outlineVariant.withValues(alpha: 0.25),
-              valueColor: AlwaysStoppedAnimation<Color>(cs.blue600),
+              valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
             ),
           ),
         ],

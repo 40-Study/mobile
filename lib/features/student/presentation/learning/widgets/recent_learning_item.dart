@@ -56,7 +56,7 @@ class RecentLearningItem extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isCompleted
                           ? const Color(0xFFECFDF5)
-                          : const Color(0xFFEFF6FF),
+                          : cs.primaryContainer,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -65,7 +65,7 @@ class RecentLearningItem extends StatelessWidget {
                           : Icons.play_arrow_rounded,
                       color: isCompleted
                           ? const Color(0xFF059669)
-                          : cs.blue600,
+                          : cs.primary,
                       size: 24,
                     ),
                   ),
@@ -127,13 +127,13 @@ class RecentLearningItem extends StatelessWidget {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
+                        color: cs.primaryContainer,
                         borderRadius: BorderRadius.circular(AppRadius.full),
                       ),
                       child: Text(
                         '${enrollment.completedLessons}/${enrollment.totalLessons} bài',
                         style: TextStyle(
-                          color: cs.blue600,
+                          color: cs.primary,
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                         ),

@@ -24,7 +24,7 @@ class CourseCard extends StatelessWidget {
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
     final progressLabel = enrollment.progressPercentage.toStringAsFixed(0);
     final isCompleted = enrollment.progressPercentage >= 100;
-    final progressColor = isCompleted ? const Color(0xFF059669) : cs.blue600;
+    final progressColor = isCompleted ? const Color(0xFF059669) : cs.primary;
 
     return Container(
       decoration: BoxDecoration(
@@ -105,7 +105,7 @@ class CourseCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
-                                color: cs.blue600,
+                                color: cs.primary,
                               ),
                             ),
                           ),
@@ -159,7 +159,7 @@ class CourseCard extends StatelessWidget {
                             Text(
                               '$progressLabel%',
                               style: tt.labelSmall?.copyWith(
-                                color: cs.blue600,
+                                color: cs.primary,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),

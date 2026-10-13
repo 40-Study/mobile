@@ -152,7 +152,7 @@ class _ExploreCourseCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
-                                color: cs.blue600,
+                                color: cs.primary,
                               ),
                             ),
                           ),
@@ -182,14 +182,14 @@ class _ExploreCourseCard extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFEFF6FF),
+                                color: cs.primaryContainer,
                                 borderRadius:
                                     BorderRadius.circular(AppRadius.xs),
                               ),
                               child: Text(
                                 course.level!,
-                                style: const TextStyle(
-                                  color: Color(0xFF2563EB),
+                                style: TextStyle(
+                                  color: cs.primary,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -236,8 +236,8 @@ class _ExploreCourseCard extends StatelessWidget {
                           else if (course.price > 0)
                             Text(
                               _formatPrice(course.price),
-                              style: const TextStyle(
-                                color: Color(0xFF2563EB),
+                              style: TextStyle(
+                                color: cs.primary,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 12,
                               ),

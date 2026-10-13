@@ -164,7 +164,7 @@ class ContinueLearningCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
-                                color: cs.blue600,
+                                color: cs.primary,
                               ),
                             ),
                           ),
@@ -357,27 +357,27 @@ class MyCourseCard extends StatelessWidget {
                             imageUrl: course!.thumbnailUrl!,
                             fit: BoxFit.cover,
                             placeholder: (_, _) => Container(
-                              color: const Color(0xFFEFF6FF),
+                              color: cs.primaryContainer,
                               child: Icon(
                                 Icons.school_rounded,
-                                color: cs.blue600,
+                                color: cs.primary,
                                 size: 28,
                               ),
                             ),
                             errorWidget: (_, _, _) => Container(
-                              color: const Color(0xFFEFF6FF),
+                              color: cs.primaryContainer,
                               child: Icon(
                                 Icons.school_rounded,
-                                color: cs.blue600,
+                                color: cs.primary,
                                 size: 28,
                               ),
                             ),
                           )
                         : Container(
-                            color: const Color(0xFFEFF6FF),
+                            color: cs.primaryContainer,
                             child: Icon(
                               Icons.school_rounded,
-                              color: cs.blue600,
+                              color: cs.primary,
                               size: 28,
                             ),
                           ),
@@ -428,7 +428,7 @@ class MyCourseCard extends StatelessWidget {
                               '${enrollment.progressPercentage.toStringAsFixed(0)}'
                               '%',
                               style: TextStyle(
-                                color: cs.blue600,
+                                color: cs.primary,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -464,8 +464,8 @@ class MyCourseCard extends StatelessWidget {
                           Container(
                             width: 16,
                             height: 16,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFEFF6FF),
+                            decoration: BoxDecoration(
+                              color: cs.primaryContainer,
                               shape: BoxShape.circle,
                             ),
                             alignment: Alignment.center,
@@ -474,7 +474,7 @@ class MyCourseCard extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
-                                color: cs.blue600,
+                                color: cs.primary,
                               ),
                             ),
                           ),
@@ -521,9 +521,9 @@ class MyCourseCard extends StatelessWidget {
                           child: LinearProgressIndicator(
                             value: progress,
                             minHeight: 5,
-                            backgroundColor: const Color(0xFFEFF6FF),
+                            backgroundColor: cs.primaryContainer,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              cs.blue600,
+                              cs.primary,
                             ),
                           ),
                         ),

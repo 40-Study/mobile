@@ -36,7 +36,7 @@ class StatCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, color: cs.blue600, size: 20),
+            Icon(icon, color: cs.primary, size: 20),
             AppSpacing.vGap4,
             Text(
               value,

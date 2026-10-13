@@ -63,15 +63,15 @@ class SectionCard extends StatelessWidget {
                   Container(
                     width: 36,
                     height: 36,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFEFF6FF),
+                    decoration: BoxDecoration(
+                      color: cs.primaryContainer,
                       shape: BoxShape.circle,
                     ),
                     alignment: Alignment.center,
                     child: Text(
                       '${sectionIndex + 1}',
                       style: TextStyle(
-                        color: cs.blue600,
+                        color: cs.primary,
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                       ),
@@ -105,7 +105,7 @@ class SectionCard extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: progress >= 1
                                       ? const Color(0xFFECFDF5)
-                                      : const Color(0xFFEFF6FF),
+                                      : cs.primaryContainer,
                                   borderRadius: BorderRadius.circular(AppRadius.full),
                                 ),
                                 child: Text(
@@ -113,7 +113,7 @@ class SectionCard extends StatelessWidget {
                                   style: TextStyle(
                                     color: progress >= 1
                                         ? const Color(0xFF059669)
-                                        : cs.blue600,
+                                        : cs.primary,
                                     fontWeight: FontWeight.w700,
                                     fontSize: 10,
                                   ),
@@ -132,7 +132,7 @@ class SectionCard extends StatelessWidget {
                               backgroundColor:
                                   cs.outlineVariant.withValues(alpha: 0.25),
                               valueColor:
-                                  AlwaysStoppedAnimation<Color>(cs.blue600),
+                                  AlwaysStoppedAnimation<Color>(cs.primary),
                             ),
                           ),
                         ],
@@ -283,13 +283,13 @@ class _SectionLessonItemState extends State<SectionLessonItem> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEFF6FF),
+                      color: cs.primaryContainer,
                       borderRadius: BorderRadius.circular(AppRadius.full),
                     ),
                     child: Text(
                       '${(lesson.progress?.progressPercentage ?? 0).toStringAsFixed(0)}%',
                       style: TextStyle(
-                        color: cs.blue600,
+                        color: cs.primary,
                         fontWeight: FontWeight.w700,
                         fontSize: 11,
                       ),
@@ -407,11 +407,11 @@ class LessonStatusIcon extends StatelessWidget {
         width: 28,
         height: 28,
         decoration: BoxDecoration(
-          color: const Color(0xFFEFF6FF),
+          color: cs.primaryContainer,
           shape: BoxShape.circle,
-          border: Border.all(color: cs.blue600, width: 1.8),
+          border: Border.all(color: cs.primary, width: 1.8),
         ),
-        child: Icon(Icons.play_arrow_rounded, color: cs.blue600, size: 16),
+        child: Icon(Icons.play_arrow_rounded, color: cs.primary, size: 16),
       );
     }
 
