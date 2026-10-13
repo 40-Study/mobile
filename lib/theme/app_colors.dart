@@ -275,9 +275,9 @@ class TogetherSemanticColors {
 class RoleColors {
   RoleColors._();
 
-  // Student - Primary Blue
-  static const studentPrimary = Color(0xFF2563EB);
-  static const studentSecondary = Color(0xFF93C5FD);
+  // Student - Primary Academic Blue
+  static const studentPrimary = Color(0xFF3D5FC4);
+  static const studentSecondary = Color(0xFFEDF1FF);
 
   // Teacher - Darker Blue
   static const teacherPrimary = Color(0xFF1E40AF);
