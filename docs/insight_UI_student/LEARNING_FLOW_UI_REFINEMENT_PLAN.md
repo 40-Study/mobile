@@ -125,15 +125,15 @@ flowchart LR
 ### GIAI ĐOẠN 1: Chuẩn hóa Dashboard Học tập & Màn hình Danh sách khóa học
 * **Mục tiêu:** Đồng bộ giao diện `LearningScreen` với khay bề mặt cong và nâng cấp giao diện thẻ danh sách khóa học ở `AllCoursesScreen` & `ExploreCoursesScreen`.
 * **Các bước triển khai:**
-  - [ ] **Bước 1.1:** Tinh chỉnh nửa dưới của `LearningScreen`: Gom cụm Filter chips, danh sách "Gần đây" và "Gợi ý cho bạn" vào vùng bề mặt liền mạch (`CurvedSurfaceTray` hoặc container bề mặt cong dịu), loại bỏ viền xám thừa.
-  - [ ] **Bước 1.2:** Chuẩn hóa widget `CourseCard` trong `lib/features/student/presentation/learning/widgets/course_card.dart`:
+  - [x] **Bước 1.1:** Tinh chỉnh nửa dưới của `LearningScreen`: Gom cụm Filter chips, danh sách "Gần đây" và "Gợi ý cho bạn" vào vùng bề mặt liền mạch (`CurvedSurfaceTray` hoặc container bề mặt cong dịu), loại bỏ viền xám thừa.
+  - [x] **Bước 1.2:** Chuẩn hóa widget `CourseCard` trong `lib/features/student/presentation/learning/widgets/course_card.dart`:
     - Layout ngang chuẩn: Thumbnail bo 12px, Tiêu đề 2 dòng đậm nét, Cụm avatar giảng viên + tên giảng viên, Thanh tiến trình mảnh + số bài đã hoàn thành.
-  - [ ] **Bước 1.3:** Tái cấu trúc `AllCoursesScreen` (`all_courses_screen.dart`):
+  - [x] **Bước 1.3:** Tái cấu trúc `AllCoursesScreen` (`all_courses_screen.dart`):
     - Thay thế `_CourseCard` nội bộ cũ bằng `CourseCard` chuẩn hóa đã nâng cấp.
     - Cải thiện thanh tìm kiếm / lọc nếu có, bổ sung Empty State thân thiện.
-  - [ ] **Bước 1.4:** Tái cấu trúc `ExploreCoursesScreen` (`explore_courses_screen.dart`):
+  - [x] **Bước 1.4:** Tái cấu trúc `ExploreCoursesScreen` (`explore_courses_screen.dart`):
     - Thay thế `_CourseCard` nội bộ cũ bằng thẻ khám phá chuẩn hóa hiển thị rõ học phí, rating sao, cấp độ và giảng viên.
-  - [ ] **Bước 1.5:** Chạy kiểm thử tự động xác nhận Phase 1.
+  - [x] **Bước 1.5:** Chạy kiểm thử tự động xác nhận Phase 1.
 * **Commit dự kiến:** `refactor(student-learning): chuẩn hóa dashboard học tập và danh sách khóa học`
 
 ---
@@ -141,21 +141,21 @@ flowchart LR
 ### GIAI ĐOẠN 2: Nâng cấp màn hình Chi tiết khóa học (`CourseDetailScreen`)
 * **Mục tiêu:** Tạo trải nghiệm khám phá và theo dõi tiến độ khóa học trực quan, liền mạch, hiện đại.
 * **Các bước triển khai:**
-  - [ ] **Bước 2.1:** Tinh chỉnh `CourseHero` (`course_detail/widgets/course_hero.dart`):
+  - [x] **Bước 2.1:** Tinh chỉnh `CourseHero` (`course_detail/widgets/course_hero.dart`):
     - Thumbnail sắc nét với nút Play tròn nổi bật (icon trắng trên nền xanh hoặc mờ kính frosted glass).
     - Cụm tiêu đề, pill trạng thái ("Đang học" / "Hoàn thành"), avatar giảng viên và rating star được bố trí thoáng đãng.
-  - [ ] **Bước 2.2:** Tinh chỉnh `CourseProgressCard` (`course_detail/widgets/course_progress_card.dart`):
+  - [x] **Bước 2.2:** Tinh chỉnh `CourseProgressCard` (`course_detail/widgets/course_progress_card.dart`):
     - Với khóa học đang học: Thẻ tiến độ nhỏ gọn, thanh tiến trình màu xanh bo tròn, nút CTA "Học tiếp" rõ ràng.
     - Với khóa học đã hoàn thành: Banner màu xanh ngọc trang trọng với nút "Xem chứng chỉ".
     - Với khóa chưa đăng ký: Khối học phí và nút "Đăng ký ngay" nổi bật.
-  - [ ] **Bước 2.3:** Nâng cấp Tab Giáo trình `CourseContentTab` & `SectionCard`:
+  - [x] **Bước 2.3:** Nâng cấp Tab Giáo trình `CourseContentTab` & `SectionCard`:
     - Header mỗi buổi học (`SectionCard`): Số thứ tự buổi học tròn, vạch tiến độ buổi học rõ nét, icon mở rộng chevron mềm mại.
     - Danh sách bài học con (`SectionLessonItem`): Icon tích tròn xanh cho bài đã xong, icon play xanh cho bài đang học, icon khóa xám mờ cho bài chưa mở.
-  - [ ] **Bước 2.4:** Nâng cấp Tab Tổng quan (`CourseOverviewTab`), Tab Giảng viên (`CourseInstructorTab`) và Tab Đánh giá (`CourseReviewsTab`):
+  - [x] **Bước 2.4:** Nâng cấp Tab Tổng quan (`CourseOverviewTab`), Tab Giảng viên (`CourseInstructorTab`) và Tab Đánh giá (`CourseReviewsTab`):
     - Chuẩn hóa các bullet points mục tiêu khóa học, khung giới thiệu giảng viên và thẻ review học viên.
-  - [ ] **Bước 2.5:** Tinh chỉnh thanh cố định dưới đáy `CourseEnrollmentBar`:
+  - [x] **Bước 2.5:** Tinh chỉnh thanh cố định dưới đáy `CourseEnrollmentBar`:
     - Shadow hắt lên dịu nhẹ, nút bấm full-width với touch target chuẩn 48dp.
-  - [ ] **Bước 2.6:** Chạy kiểm thử tự động xác nhận Phase 2.
+  - [x] **Bước 2.6:** Chạy kiểm thử tự động xác nhận Phase 2.
 * **Commit dự kiến:** `refactor(student-course-detail): nâng cấp giao diện chi tiết khóa học và giáo trình bài học`
 
 ---
@@ -163,22 +163,22 @@ flowchart LR
 ### GIAI ĐOẠN 3: Tinh chỉnh màn hình Trình phát bài học (`LessonDetailScreen`)
 * **Mục tiêu:** Xử lý triệt để 100% lỗi tiếng Việt không dấu và tối ưu không gian học bài tập trung (Focused Learning).
 * **Các bước triển khai:**
-  - [ ] **Bước 3.1:** Khắc phục toàn bộ chuỗi không dấu trong `lesson_detail_screen.dart`:
+  - [x] **Bước 3.1:** Khắc phục toàn bộ chuỗi không dấu trong `lesson_detail_screen.dart`:
     - TabBar: `Nội dung`, `Tài liệu`, `Bài tập`, `Ghi chú`.
     - Tiêu đề AppBar: `Bài ${index + 1}. ${title}`.
     - Các AlertDialog: `Chúc mừng!`, `Chưa xem hết video`, `Chưa hoàn thành bài tập`, `Bỏ qua`, `Xem tiếp`, `Làm bài tập`, `Quay lại`.
-  - [ ] **Bước 3.2:** Khắc phục chuỗi không dấu và nâng cấp giao diện `LessonBottomBar` (`widgets/lesson_bottom_bar.dart`):
+  - [x] **Bước 3.2:** Khắc phục chuỗi không dấu và nâng cấp giao diện `LessonBottomBar` (`widgets/lesson_bottom_bar.dart`):
     - Đổi thành: `Bài trước`, `Bài tiếp theo`, `Bài học`.
     - Thiết kế nút tròn mũi tên hoặc pill button hiện đại thay thế cho hình hộp chữ nhật thô.
-  - [ ] **Bước 3.3:** Khắc phục chuỗi không dấu và tinh chỉnh `LessonDocumentsSection`:
+  - [x] **Bước 3.3:** Khắc phục chuỗi không dấu và tinh chỉnh `LessonDocumentsSection`:
     - Đổi thành: `Tải tất cả tài liệu`, `Tải về`, danh sách tệp đính kèm với icon định dạng tệp (PDF, Video, Slide) rõ nét.
-  - [ ] **Bước 3.4:** Khắc phục chuỗi không dấu và tinh chỉnh `LessonNotesSection`:
+  - [x] **Bước 3.4:** Khắc phục chuỗi không dấu và tinh chỉnh `LessonNotesSection`:
     - Đổi thành: `Ghi chú của bạn`, `Viết ghi chú...`.
     - Bổ sung nút "Lưu ghi chú" hoặc thanh trạng thái "Đã tự động lưu".
-  - [ ] **Bước 3.5:** Khắc phục chuỗi không dấu và tinh chỉnh `LessonExerciseSection`:
+  - [x] **Bước 3.5:** Khắc phục chuỗi không dấu và tinh chỉnh `LessonExerciseSection`:
     - Đổi thành: `Bài tập trắc nghiệm`, `Trả lời câu hỏi trắc nghiệm`.
     - Thẻ Quiz `QuizCardFromModel`: Hiển thị số lượng câu hỏi, thời gian dự kiến và badge trạng thái đã làm / chưa làm.
-  - [ ] **Bước 3.6:** Chạy kiểm thử tự động xác nhận Phase 3.
+  - [x] **Bước 3.6:** Chạy kiểm thử tự động xác nhận Phase 3.
 * **Commit dự kiến:** `refactor(student-lesson): chuẩn hóa tiếng Việt có dấu và tinh chỉnh trình phát bài học`
 
 ---
@@ -186,20 +186,20 @@ flowchart LR
 ### GIAI ĐOẠN 4: Tinh chỉnh luồng Kiểm tra & Kết quả Quiz (`QuizScreen` & `QuizResultScreen`)
 * **Mục tiêu:** Mang lại trải nghiệm làm bài tập hiện đại, giảm bớt căng thẳng thị giác, phản hồi kết quả trực quan và kích thích tinh thần học tập.
 * **Các bước triển khai:**
-  - [ ] **Bước 4.1:** Tinh chỉnh `QuizScreen` & `QuizHeader`:
+  - [x] **Bước 4.1:** Tinh chỉnh `QuizScreen` & `QuizHeader`:
     - Thanh tiến độ làm bài (ví dụ `Câu 3/10`) với thanh bar mảnh bo tròn.
     - Đồng hồ đếm ngược với icon đồng hồ cát / hẹn giờ, tự đổi màu vàng/cam khi còn dưới 1 phút.
-  - [ ] **Bước 4.2:** Nâng cấp thẻ câu hỏi (`QuestionCard`) & các lựa chọn (`AnswerOption`):
+  - [x] **Bước 4.2:** Nâng cấp thẻ câu hỏi (`QuestionCard`) & các lựa chọn (`AnswerOption`):
     - Typography câu hỏi to rõ (`16-17sp`, `FontWeight.w600`).
     - Lựa chọn đáp án: Khối bo góc `12px`, ký hiệu A/B/C/D tròn nổi bật; khi học sinh chọn chuyển sang viền xanh `cs.blue600` và nền pastel `0xFFEFF6FF`.
-  - [ ] **Bước 4.3:** Tinh chỉnh thanh điều hướng dưới `QuizBottomBar`:
+  - [x] **Bước 4.3:** Tinh chỉnh thanh điều hướng dưới `QuizBottomBar`:
     - Nút "Câu trước" (outline/ghost), nút "Câu tiếp theo" (filled), nút "Nộp bài" (nổi bật màu xanh đậm hoặc cam khi ở câu cuối).
-  - [ ] **Bước 4.4:** Nâng cấp màn hình Kết quả `QuizResultScreen`:
+  - [x] **Bước 4.4:** Nâng cấp màn hình Kết quả `QuizResultScreen`:
     - Vòng tròn điểm số `ScoreCircle`: Hiệu ứng vòng tròn tiến độ sắc nét, hiển thị rõ điểm số (ví dụ: `80%`), lời khen phù hợp ("Xuất sắc!", "Chúc mừng bạn đã đạt!", "Cần cố gắng thêm!").
     - Thẻ chỉ số `StatCard`: Số câu đúng (xanh ngọc `Icons.check_circle_rounded`), số câu sai (đỏ nhạt `Icons.cancel_rounded`), thời gian hoàn thành.
     - Danh sách câu hỏi xem lại: Phân biệt rõ ràng đáp án học viên đã chọn và đáp án đúng với lời giải thích.
     - Hai nút CTA: "Làm lại bài kiểm tra" (outlined) và "Quay về bài học" (filled).
-  - [ ] **Bước 4.5:** Chạy kiểm thử tự động xác nhận Phase 4.
+  - [x] **Bước 4.5:** Chạy kiểm thử tự động xác nhận Phase 4.
 * **Commit dự kiến:** `refactor(student-quiz): tối ưu giao diện làm bài kiểm tra và màn hình kết quả quiz`
 
 ---
@@ -207,19 +207,19 @@ flowchart LR
 ### GIAI ĐOẠN 5: Hoàn thiện màn hình Chi tiết Giảng viên & Kiểm thử toàn diện
 * **Mục tiêu:** Hoàn thiện mắt xích cuối cùng trong luồng học tập và đảm bảo toàn bộ hệ sinh thái học tập vận hành hoàn hảo, không có lỗi tiềm ẩn.
 * **Các bước triển khai:**
-  - [ ] **Bước 5.1:** Tinh chỉnh `InstructorDetailScreen` (`instructor_detail_screen.dart`):
+  - [x] **Bước 5.1:** Tinh chỉnh `InstructorDetailScreen` (`instructor_detail_screen.dart`):
     - Hero profile: Avatar tròn lớn với viền trang trọng, tên giảng viên, chức danh học vị, bio giới thiệu.
     - Khối chỉ số uy tín: Thống kê số học viên theo học, số khóa học đã giảng dạy, đánh giá trung bình sao.
     - Kỹ năng chuyên môn (`InstructorSkillChip`): Chip pill bo tròn thanh thoát.
     - Danh sách khóa học của giảng viên (`InstructorCourseCard`): Áp dụng chuẩn thiết kế thẻ khóa học mới.
-  - [ ] **Bước 5.2:** Viết bộ kiểm thử Widget Test & Golden Test toàn diện:
+  - [x] **Bước 5.2:** Viết bộ kiểm thử Widget Test & Golden Test toàn diện:
     - Bổ sung test cho `CourseDetailScreen` và các tab con.
     - Bổ sung test cho `LessonDetailScreen` và `LessonBottomBar`.
     - Bổ sung test cho `QuizScreen` và `QuizResultScreen`.
-  - [ ] **Bước 5.3:** Kiểm tra tổng thể (Regression Check):
+  - [x] **Bước 5.3:** Kiểm tra tổng thể (Regression Check):
     - Đảm bảo 100% tests trong `test/features/student/` chạy pass (mục tiêu 30+ tests pass).
     - Đảm bảo không còn bất kỳ chuỗi tiếng Việt không dấu nào trong toàn bộ thư mục `lib/features/student/presentation/learning/`.
-  - [ ] **Bước 5.4:** Commit hoàn thiện giai đoạn cuối.
+  - [x] **Bước 5.4:** Commit hoàn thiện giai đoạn cuối.
 * **Commit dự kiến:** `refactor(student-instructor): hoàn thiện màn hình giảng viên và kiểm thử toàn diện luồng học tập`
 
 ---
@@ -228,11 +228,11 @@ flowchart LR
 
 | Giai đoạn | Nội dung chính | File tác động | Số bước | Trạng thái |
 |:---:|---|---|:---:|:---:|
-| **Phase 1** | Dashboard & Danh sách khóa học | `learning_screen.dart`, `all_courses_screen.dart`, `explore_courses_screen.dart`, `course_card.dart` | 5 | ⏳ Sẵn sàng |
-| **Phase 2** | Chi tiết khóa học & Giáo trình | `course_detail_screen.dart`, `course_hero.dart`, `course_progress_card.dart`, `course_content_tab.dart`, `section_widgets.dart` | 6 | ⏳ Chờ Phase 1 |
-| **Phase 3** | Trình phát bài học & Tiếng Việt có dấu | `lesson_detail_screen.dart`, `lesson_bottom_bar.dart`, `lesson_documents_section.dart`, `lesson_notes_section.dart`, `lesson_exercise_section.dart` | 6 | ⏳ Chờ Phase 2 |
-| **Phase 4** | Làm bài kiểm tra & Kết quả Quiz | `quiz_screen.dart`, `quiz_result_screen.dart`, `question_card.dart`, `answer_option.dart`, `score_circle.dart` | 5 | ⏳ Chờ Phase 3 |
-| **Phase 5** | Chi tiết Giảng viên & Test toàn diện | `instructor_detail_screen.dart`, `test/features/student/...` | 4 | ⏳ Chờ Phase 4 |
+| **Phase 1** | Dashboard & Danh sách khóa học | `learning_screen.dart`, `all_courses_screen.dart`, `explore_courses_screen.dart`, `course_card.dart` | 5 | ✅ Hoàn thành (`4a264b2`) |
+| **Phase 2** | Chi tiết khóa học & Giáo trình | `course_detail_screen.dart`, `course_hero.dart`, `course_progress_card.dart`, `course_content_tab.dart`, `section_widgets.dart` | 6 | ✅ Hoàn thành (`d6637d2`) |
+| **Phase 3** | Trình phát bài học & Tiếng Việt có dấu | `lesson_detail_screen.dart`, `lesson_bottom_bar.dart`, `lesson_documents_section.dart`, `lesson_notes_section.dart`, `lesson_exercise_section.dart` | 6 | ✅ Hoàn thành (`82f66ad`) |
+| **Phase 4** | Làm bài kiểm tra & Kết quả Quiz | `quiz_screen.dart`, `quiz_result_screen.dart`, `question_card.dart`, `answer_option.dart`, `score_circle.dart` | 5 | ✅ Hoàn thành (`39d20c6`) |
+| **Phase 5** | Chi tiết Giảng viên & Test toàn diện | `instructor_detail_screen.dart`, `test/features/student/...` | 4 | ✅ Hoàn thành (`2b78e20`) |
 
 ---
 
