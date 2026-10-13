@@ -53,25 +53,18 @@ class InstructorDetailScreen extends StatelessWidget {
                   // Content with layered background
                   Container(
                     decoration: BoxDecoration(
-                      color: Color.alphaBlend(
-                        cs.primary.withValues(
-                          alpha: Theme.of(context).brightness == Brightness.light
-                              ? 0.045
-                              : 0.065,
-                        ),
-                        cs.surfaceContainer,
-                      ),
+                      color: cs.surfaceContainerLowest,
                       borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(AppRadius.xl),
+                        top: Radius.circular(AppRadius.xxl),
                       ),
                       border: Border(
-                        top: BorderSide(color: cs.primary.withValues(alpha: 0.1)),
+                        top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.3)),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: cs.shadow.withValues(alpha: 0.045),
-                          blurRadius: 32,
-                          offset: const Offset(0, -10),
+                          color: cs.shadow.withValues(alpha: 0.04),
+                          blurRadius: 24,
+                          offset: const Offset(0, -6),
                         ),
                       ],
                     ),
@@ -110,6 +103,8 @@ class InstructorDetailScreen extends StatelessWidget {
   }
 
   Widget _buildAppBar(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
@@ -121,7 +116,13 @@ class InstructorDetailScreen extends StatelessWidget {
             icon: Icons.arrow_back_rounded,
             onTap: () => Navigator.of(context).pop(),
           ),
-          const Spacer(),
+          AppSpacing.hGap12,
+          Expanded(
+            child: Text(
+              'Hồ sơ giảng viên',
+              style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ),
           InstructorSoftIconButton(icon: Icons.bookmark_outline_rounded, onTap: () {}),
           AppSpacing.hGap8,
           InstructorSoftIconButton(icon: Icons.more_vert_rounded, onTap: () {}),
@@ -141,8 +142,8 @@ class InstructorDetailScreen extends StatelessWidget {
         Stack(
           children: [
             Container(
-              width: 130,
-              height: 130,
+              width: 108,
+              height: 108,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -151,8 +152,8 @@ class InstructorDetailScreen extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: cs.primary.withValues(alpha: 0.15),
-                    blurRadius: 20,
+                    color: cs.primary.withValues(alpha: 0.12),
+                    blurRadius: 16,
                     spreadRadius: 2,
                   ),
                 ],
@@ -172,23 +173,23 @@ class InstructorDetailScreen extends StatelessWidget {
             ),
             // Verified badge
             Positioned(
-              bottom: 4,
-              right: 4,
+              bottom: 2,
+              right: 2,
               child: Container(
-                width: 32,
-                height: 32,
+                width: 28,
+                height: 28,
                 decoration: BoxDecoration(
                   color: cs.primary,
                   shape: BoxShape.circle,
-                  border: Border.all(color: cs.surface, width: 3),
+                  border: Border.all(color: cs.surface, width: 2.5),
                   boxShadow: [
                     BoxShadow(
                       color: cs.primary.withValues(alpha: 0.3),
-                      blurRadius: 8,
+                      blurRadius: 6,
                     ),
                   ],
                 ),
-                child: Icon(Icons.check_rounded, size: 18, color: cs.onPrimary),
+                child: Icon(Icons.check_rounded, size: 16, color: cs.onPrimary),
               ),
             ),
           ],
@@ -200,11 +201,11 @@ class InstructorDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppSpacing.vGap8,
+              AppSpacing.vGap4,
               // Name
               Text(
                 instructorName,
-                style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700, fontSize: 20),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -212,7 +213,7 @@ class InstructorDetailScreen extends StatelessWidget {
 
               // Title
               Text(
-                instructorTitle ?? 'UI/UX Design Instructor',
+                instructorTitle ?? 'Giảng viên cao cấp',
                 style: tt.bodyMedium?.copyWith(
                   color: cs.primary,
                   fontWeight: FontWeight.w600,
@@ -255,8 +256,15 @@ class InstructorDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.35)),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: const Row(
         children: [
@@ -285,9 +293,9 @@ class InstructorDetailScreen extends StatelessWidget {
         ),
         AppSpacing.vGap12,
         Text(
-          'Cô Minh Anh hiện là Product Designer tại một công ty công nghệ hàng đầu. '
-          'Cô tập trung vào thiết kế trải nghiệm người dùng, nghiên cứu người dùng '
-          'và xây dựng sản phẩm số có giá trị thực tiễn.',
+          'Giảng viên hiện là Product Designer tại một công ty công nghệ hàng đầu. '
+          'Tập trung vào thiết kế trải nghiệm người dùng, nghiên cứu người dùng '
+          'và xây dựng sản phẩm số có giá trị thực tiễn cao.',
           style: tt.bodyMedium?.copyWith(
             color: cs.onSurfaceVariant,
             height: 1.5,
@@ -354,7 +362,7 @@ class InstructorDetailScreen extends StatelessWidget {
         Row(
           children: [
             Text(
-              'Khóa học của cô',
+              'Khóa học của giảng viên',
               style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const Spacer(),
@@ -379,7 +387,7 @@ class InstructorDetailScreen extends StatelessWidget {
 
         // Horizontal course list
         SizedBox(
-          height: 210,
+          height: 224,
           child: ListView(
             scrollDirection: Axis.horizontal,
             clipBehavior: Clip.none,
@@ -464,7 +472,7 @@ class InstructorDetailScreen extends StatelessWidget {
           date: '2 tuần trước',
           rating: 5,
           content: 'Giảng viên giải thích rất dễ hiểu, ví dụ thực tế và bài tập sát với thực tế. '
-              'Mình học được rất nhiều từ cô Minh Anh!',
+              'Mình học được rất nhiều kiến thức bổ ích!',
         ),
       ],
     );
@@ -483,11 +491,18 @@ class InstructorDetailScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.3))),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
+          ),
+        ],
       ),
       child: FilledButton.icon(
         onPressed: () {},
-        icon: const Icon(Icons.chat_bubble_outline_rounded),
-        label: const Text('Nhắn tin cho cô'),
+        icon: const Icon(Icons.chat_bubble_outline_rounded, size: 20),
+        label: const Text('Nhắn tin cho giảng viên'),
         style: FilledButton.styleFrom(
           padding: AppSpacing.paddingVerticalLg,
           shape: RoundedRectangleBorder(
