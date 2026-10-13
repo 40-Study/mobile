@@ -38,7 +38,11 @@ class LessonContentSection extends StatelessWidget {
             totalTime: _formatTime(totalSeconds),
           ),
           AppSpacing.vGap16,
-          Text('Noi dung bai hoc', style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700)),
+          Text('Nội dung bài học',
+              style: tt.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: Theme.of(context).colorScheme.slate900,
+              )),
           AppSpacing.vGap12,
           ...contents.asMap().entries.map((entry) {
             final index = entry.key;

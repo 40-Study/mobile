@@ -33,42 +33,71 @@ class LessonBottomBar extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: cs.surface,
-        border: Border(top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.3))),
+        border: Border(
+          top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.4)),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
+          ),
+        ],
       ),
       child: Row(
         children: [
           // Prev button
           Expanded(
-            child: InkWell(
-              onTap: hasPrev ? onPrevious : null,
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                decoration: BoxDecoration(
-                  color: cs.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
-                  border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.chevron_left_rounded, size: 20, color: cs.onSurfaceVariant),
-                    AppSpacing.hGap4,
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('Bai truoc', style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
-                          Text(
-                            hasPrev ? 'Gioi thieu khoa hoc' : '--',
-                            style: tt.bodySmall?.copyWith(fontWeight: FontWeight.w500),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
+            child: Opacity(
+              opacity: hasPrev ? 1.0 : 0.45,
+              child: InkWell(
+                onTap: hasPrev ? onPrevious : null,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                  decoration: BoxDecoration(
+                    color: cs.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    border: Border.all(
+                      color: cs.outlineVariant.withValues(alpha: 0.6),
+                      width: 0.8,
                     ),
-                  ],
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.chevron_left_rounded,
+                        size: 20,
+                        color: cs.slate600,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Bài trước',
+                              style: tt.labelSmall?.copyWith(
+                                color: cs.slate500,
+                                fontSize: 10,
+                              ),
+                            ),
+                            Text(
+                              hasPrev ? 'Bài học trước' : 'Đầu khóa',
+                              style: tt.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: cs.slate800,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -81,9 +110,18 @@ class LessonBottomBar extends StatelessWidget {
             children: [
               Text(
                 '${currentIndex + 1}/$totalLessons',
-                style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700, color: cs.primary),
+                style: tt.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: cs.blue600,
+                ),
               ),
-              Text('Bai hoc', style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
+              Text(
+                'Bài học',
+                style: tt.labelSmall?.copyWith(
+                  color: cs.slate500,
+                  fontSize: 10,
+                ),
+              ),
             ],
           ),
           AppSpacing.hGap12,
@@ -93,27 +131,34 @@ class LessonBottomBar extends StatelessWidget {
             child: FilledButton(
               onPressed: onNext,
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
+                backgroundColor: cs.blue600,
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          hasNext ? 'Bai tiep theo' : 'Hoan thanh',
-                          style: tt.labelMedium?.copyWith(color: cs.onPrimary),
-                        ),
-                      ],
+                    child: Text(
+                      hasNext ? 'Bài tiếp theo' : 'Hoàn thành',
+                      style: tt.labelMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 4),
                   Icon(
                     hasNext ? Icons.chevron_right_rounded : Icons.check_rounded,
-                    size: 20,
-                    color: cs.onPrimary,
+                    size: 18,
+                    color: Colors.white,
                   ),
                 ],
               ),

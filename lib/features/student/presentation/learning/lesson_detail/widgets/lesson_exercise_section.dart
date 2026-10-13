@@ -53,8 +53,8 @@ class LessonExerciseSection extends StatelessWidget {
               if (quizzes.isNotEmpty)
                 ExerciseSection(
                   icon: Icons.quiz_outlined,
-                  title: 'Quiz',
-                  subtitle: 'Tra loi cau hoi trac nghiem',
+                  title: 'Bài tập trắc nghiệm',
+                  subtitle: 'Trả lời các câu hỏi để củng cố kiến thức',
                   children: quizzes.asMap().entries.map((entry) {
                     return QuizCardFromModel(
                       index: entry.key + 1,
@@ -88,25 +88,35 @@ class _EmptyExercises extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.xl),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+        color: isLight ? Colors.white : cs.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.6),
+          width: 0.8,
+        ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.quiz_outlined, size: 48, color: cs.onSurfaceVariant.withValues(alpha: 0.5)),
+          Icon(Icons.quiz_outlined, size: 48, color: cs.slate400),
           AppSpacing.vGap16,
-          Text('Chua co bai tap', style: tt.titleSmall?.copyWith(color: cs.onSurfaceVariant)),
+          Text(
+            'Chưa có bài tập',
+            style: tt.titleSmall?.copyWith(
+              color: cs.slate800,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           AppSpacing.vGap8,
           Text(
-            'Bai hoc nay chua co bai tap hoac quiz',
-            style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant.withValues(alpha: 0.7)),
+            'Bài học này hiện chưa có bài tập hoặc câu hỏi trắc nghiệm',
+            style: tt.bodySmall?.copyWith(color: cs.slate500),
             textAlign: TextAlign.center,
           ),
         ],

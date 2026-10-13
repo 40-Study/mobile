@@ -9,6 +9,7 @@ class LessonNotesSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -17,29 +18,90 @@ class LessonNotesSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.edit_note_rounded, size: 20, color: cs.primary),
+              Icon(Icons.edit_note_rounded, size: 22, color: cs.blue600),
               AppSpacing.hGap8,
-              Text('Ghi chu cua ban', style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
+              Text(
+                'Ghi chú của bạn',
+                style: tt.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: cs.slate900,
+                ),
+              ),
+              const Spacer(),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.cloud_done_rounded,
+                    size: 16,
+                    color: Color(0xFF059669),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Đã lưu tự động',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.green.shade700,
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
           AppSpacing.vGap12,
           Expanded(
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.md),
+              padding: const EdgeInsets.all(AppSpacing.md + 2),
               decoration: BoxDecoration(
-                color: cs.surfaceContainerLowest,
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+                color: isLight ? Colors.white : cs.surface,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                border: Border.all(
+                  color: cs.outlineVariant.withValues(alpha: 0.6),
+                  width: 0.8,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: cs.shadow.withValues(alpha: 0.02),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: TextField(
                 maxLines: null,
                 expands: true,
                 decoration: InputDecoration.collapsed(
-                  hintText: 'Viet ghi chu...',
-                  hintStyle: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant.withValues(alpha: 0.5)),
+                  hintText: 'Viết ghi chú bài học của bạn tại đây...',
+                  hintStyle: tt.bodyMedium?.copyWith(
+                    color: cs.slate400,
+                  ),
                 ),
-                style: tt.bodyMedium,
+                style: tt.bodyMedium?.copyWith(color: cs.slate900),
+              ),
+            ),
+          ),
+          AppSpacing.vGap12,
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Đã lưu ghi chú thành công'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.check_rounded, size: 18),
+              label: const Text('Lưu ghi chú'),
+              style: FilledButton.styleFrom(
+                backgroundColor: cs.blue600,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
               ),
             ),
           ),

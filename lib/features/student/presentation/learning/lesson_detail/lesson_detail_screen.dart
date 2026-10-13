@@ -64,15 +64,16 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: const Text('Chuc mung!'),
-        content: const Text('Ban da hoan thanh khoa hoc!\n\nChung chi cua ban da san sang.'),
+        title: const Text('Chúc mừng!'),
+        content: const Text(
+            'Bạn đã hoàn thành khóa học!\n\nChứng chỉ của bạn đã sẵn sàng.'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               Navigator.pop(context);
             },
-            child: const Text('Dong'),
+            child: const Text('Đóng'),
           ),
           FilledButton(
             onPressed: () {
@@ -80,7 +81,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
               Navigator.pop(context);
               // TODO: Navigate to certificate screen
             },
-            child: const Text('Xem chung chi'),
+            child: const Text('Xem chứng chỉ'),
           ),
         ],
       ),
@@ -124,17 +125,21 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Chua xem het video'),
-        content: const Text('Ban chua xem du 80% video bai hoc.\n\nBan co chac muon qua bai tiep theo?'),
+        title: const Text('Chưa xem hết video'),
+        content: const Text(
+            'Bạn chưa xem đủ 80% thời lượng video bài học.\n\nBạn có chắc chắn muốn chuyển sang bài tiếp theo?'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(ctx, false);
               _tabController.animateTo(0);
             },
-            child: const Text('Xem tiep'),
+            child: const Text('Xem tiếp'),
           ),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Bo qua')),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Bỏ qua'),
+          ),
         ],
       ),
     );
@@ -144,17 +149,21 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Chua hoan thanh bai tap'),
-        content: Text('Ban con $remaining bai tap chua lam.\n\nBan co chac muon qua bai tiep theo?'),
+        title: const Text('Chưa hoàn thành bài tập'),
+        content: Text(
+            'Bạn còn $remaining bài tập chưa hoàn thành.\n\nBạn có chắc chắn muốn chuyển sang bài tiếp theo?'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(ctx, false);
               _tabController.animateTo(2);
             },
-            child: const Text('Lam bai tap'),
+            child: const Text('Làm bài tập'),
           ),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Bo qua')),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Bỏ qua'),
+          ),
         ],
       ),
     );
@@ -206,7 +215,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
             AppSpacing.vGap24,
             FilledButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Quay lai'),
+              child: const Text('Quay lại'),
             ),
             const Spacer(),
           ],
@@ -234,8 +243,11 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
                 ),
                 Expanded(
                   child: Text(
-                    'Bai ${widget.currentIndex + 1}. ${state.lesson.title}',
-                    style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                    'Bài ${widget.currentIndex + 1}. ${state.lesson.title}',
+                    style: tt.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: cs.slate900,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
@@ -243,11 +255,11 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
                 ),
                 IconButton(
                   onPressed: () {},
-                  icon: Icon(Icons.bookmark_outline_rounded, color: cs.onSurfaceVariant),
+                  icon: Icon(Icons.bookmark_outline_rounded, color: cs.slate600),
                 ),
                 IconButton(
                   onPressed: () {},
-                  icon: Icon(Icons.more_horiz_rounded, color: cs.onSurfaceVariant),
+                  icon: Icon(Icons.more_horiz_rounded, color: cs.slate600),
                 ),
               ],
             ),
@@ -273,17 +285,17 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
           ),
           child: TabBar(
             controller: _tabController,
-            labelColor: cs.primary,
-            unselectedLabelColor: cs.onSurfaceVariant,
-            indicatorColor: cs.primary,
+            labelColor: cs.blue600,
+            unselectedLabelColor: cs.slate500,
+            indicatorColor: cs.blue600,
             indicatorWeight: 3,
-            labelStyle: tt.labelMedium?.copyWith(fontWeight: FontWeight.w600),
+            labelStyle: tt.labelMedium?.copyWith(fontWeight: FontWeight.w700),
             unselectedLabelStyle: tt.labelMedium,
             tabs: const [
-              Tab(icon: Icon(Icons.menu_book_outlined, size: 20), text: 'Noi dung'),
-              Tab(icon: Icon(Icons.description_outlined, size: 20), text: 'Tai lieu'),
-              Tab(icon: Icon(Icons.edit_outlined, size: 20), text: 'Bai tap'),
-              Tab(icon: Icon(Icons.sticky_note_2_outlined, size: 20), text: 'Ghi chu'),
+              Tab(icon: Icon(Icons.menu_book_outlined, size: 20), text: 'Nội dung'),
+              Tab(icon: Icon(Icons.description_outlined, size: 20), text: 'Tài liệu'),
+              Tab(icon: Icon(Icons.edit_outlined, size: 20), text: 'Bài tập'),
+              Tab(icon: Icon(Icons.sticky_note_2_outlined, size: 20), text: 'Ghi chú'),
             ],
           ),
         ),

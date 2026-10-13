@@ -20,39 +20,53 @@ class LessonDocumentsSection extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
-              color: cs.primary.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              border: Border.all(color: cs.primary.withValues(alpha: 0.2)),
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(
+                color: cs.outlineVariant.withValues(alpha: 0.6),
+                width: 0.8,
+              ),
             ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: cs.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
-                  child: Icon(Icons.folder_zip_outlined, color: cs.primary, size: 24),
+                  child: Icon(Icons.folder_zip_outlined, color: cs.blue600, size: 24),
                 ),
                 AppSpacing.hGap16,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Tai tat ca tai lieu',
-                          style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
-                      Text('4 tep • 12.5 MB',
-                          style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                      Text(
+                        'Tải tất cả tài liệu',
+                        style: tt.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: cs.slate900,
+                        ),
+                      ),
+                      Text(
+                        '4 tệp • 12.5 MB',
+                        style: tt.bodySmall?.copyWith(color: cs.slate500),
+                      ),
                     ],
                   ),
                 ),
                 FilledButton.icon(
                   onPressed: () {},
                   icon: const Icon(Icons.download_rounded, size: 18),
-                  label: const Text('Tai ve'),
+                  label: const Text('Tải về'),
                   style: FilledButton.styleFrom(
+                    backgroundColor: cs.blue600,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                    ),
                   ),
                 ),
               ],
@@ -62,19 +76,19 @@ class LessonDocumentsSection extends StatelessWidget {
 
           const DocumentSection(
             icon: Icons.slideshow_outlined,
-            title: 'Slide bai giang',
+            title: 'Slide bài giảng',
             children: [
               DocumentCard(
                 icon: Icons.picture_as_pdf_rounded,
                 iconColor: Colors.red,
-                title: 'Slide - Gioi thieu Python',
+                title: 'Slide - Giới thiệu Python',
                 subtitle: 'PDF • 2.3 MB • 15 trang',
                 isDownloaded: true,
               ),
               DocumentCard(
                 icon: Icons.picture_as_pdf_rounded,
                 iconColor: Colors.red,
-                title: 'Slide - Cai dat moi truong',
+                title: 'Slide - Cài đặt môi trường',
                 subtitle: 'PDF • 1.8 MB • 12 trang',
               ),
             ],
@@ -83,13 +97,13 @@ class LessonDocumentsSection extends StatelessWidget {
 
           DocumentSection(
             icon: Icons.code_rounded,
-            title: 'Ma nguon mau',
+            title: 'Mã nguồn mẫu',
             children: [
               DocumentCard(
                 icon: Icons.folder_zip_outlined,
                 iconColor: Colors.amber.shade700,
                 title: 'source_code_lesson1.zip',
-                subtitle: 'ZIP • 156 KB • 5 files',
+                subtitle: 'ZIP • 156 KB • 5 tệp',
               ),
             ],
           ),
@@ -97,7 +111,7 @@ class LessonDocumentsSection extends StatelessWidget {
 
           DocumentSection(
             icon: Icons.library_books_outlined,
-            title: 'Tai lieu tham khao',
+            title: 'Tài liệu tham khảo',
             children: [
               const DocumentCard(
                 icon: Icons.description_outlined,
@@ -107,9 +121,9 @@ class LessonDocumentsSection extends StatelessWidget {
               ),
               DocumentCard(
                 icon: Icons.link_rounded,
-                iconColor: cs.primary,
+                iconColor: cs.blue600,
                 title: 'Python Official Documentation',
-                subtitle: 'Link • python.org',
+                subtitle: 'Liên kết • python.org',
                 isLink: true,
               ),
             ],
