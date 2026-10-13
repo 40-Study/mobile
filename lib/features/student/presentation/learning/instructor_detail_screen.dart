@@ -499,14 +499,17 @@ class InstructorDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: FilledButton.icon(
-        onPressed: () {},
-        icon: const Icon(Icons.chat_bubble_outline_rounded, size: 20),
-        label: const Text('Nhắn tin cho giảng viên'),
-        style: FilledButton.styleFrom(
-          padding: AppSpacing.paddingVerticalLg,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
+      child: SizedBox(
+        width: double.infinity,
+        child: FilledButton.icon(
+          onPressed: () {},
+          icon: const Icon(Icons.chat_bubble_outline_rounded, size: 20),
+          label: const Text('Nhắn tin cho giảng viên'),
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
           ),
         ),
       ),
