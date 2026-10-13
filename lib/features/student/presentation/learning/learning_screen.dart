@@ -265,119 +265,83 @@ class _LearningScreenState extends State<LearningScreen> {
             ),
           ),
 
-          // Filter Chips
+          // Lower Task Tray: Curved Surface Tray
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.screenPadding,
-                AppSpacing.lg,
-                AppSpacing.screenPadding,
-                AppSpacing.md,
-              ),
-              child: FilterChipsRow(
-                selectedFilter: state.filter,
-                onFilterChanged: (filter) {
-                  context
-                      .read<LearningBloc>()
-                      .add(LearningFilterChanged(filter));
-                },
-              ),
-            ),
+            child: AppSpacing.vGap24,
           ),
+          SliverToBoxAdapter(
+            child: CurvedSurfaceTray(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Filter Chips
+                  FilterChipsRow(
+                    selectedFilter: state.filter,
+                    onFilterChanged: (filter) {
+                      context
+                          .read<LearningBloc>()
+                          .add(LearningFilterChanged(filter));
+                    },
+                  ),
+                  AppSpacing.vGap16,
 
-          // Recent Learning
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.screenPadding,
-              ),
-              child: SectionHeader(title: 'Gần đây'),
-            ),
-          ),
-          const SliverToBoxAdapter(child: AppSpacing.vGap8),
+                  // Recent Learning Header
+                  const SectionHeader(title: 'Gần đây'),
+                  AppSpacing.vGap12,
 
-          if (state.filteredEnrollments.isEmpty)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.screenPadding,
-                ),
-                child: EmptyState(
-                  style: EmptyStateStyle.compactCard,
-                  icon: Icons.school_outlined,
-                  message: _emptyFilterMessage(state.filter),
-                ),
-              ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.screenPadding,
-              ),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final enrollment = state.filteredEnrollments[index];
-                    return RecentLearningItem(
-                      enrollment: enrollment,
-                      onTap: () => _navigateToCourseDetail(enrollment.id),
-                    );
-                  },
-                  childCount: state.filteredEnrollments.length.clamp(0, 5),
-                ),
-              ),
-            ),
+                  if (state.filteredEnrollments.isEmpty)
+                    EmptyState(
+                      style: EmptyStateStyle.compactCard,
+                      icon: Icons.school_outlined,
+                      message: _emptyFilterMessage(state.filter),
+                    )
+                  else
+                    ...state.filteredEnrollments.take(5).map(
+                          (enrollment) => RecentLearningItem(
+                            enrollment: enrollment,
+                            onTap: () => _navigateToCourseDetail(enrollment.id),
+                          ),
+                        ),
 
-          // Recommendations
-          if (state.recommendedCourses.isNotEmpty) ...[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.screenPadding,
-                  AppSpacing.xl,
-                  AppSpacing.screenPadding,
-                  AppSpacing.md,
-                ),
-                child: SectionHeader(
-                  title: 'Gợi ý cho bạn',
-                  actionLabel: 'Xem tất cả',
-                  onActionTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => BlocProvider.value(
-                        value: context.read<LearningBloc>(),
-                        child: const ExploreCoursesScreen(),
+                  // Recommendations
+                  if (state.recommendedCourses.isNotEmpty) ...[
+                    AppSpacing.vGap24,
+                    SectionHeader(
+                      title: 'Gợi ý cho bạn',
+                      actionLabel: 'Xem tất cả',
+                      onActionTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => BlocProvider.value(
+                            value: context.read<LearningBloc>(),
+                            child: const ExploreCoursesScreen(),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                    AppSpacing.vGap12,
+                    SizedBox(
+                      height: 180,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: state.recommendedCourses.length > 6
+                            ? 6
+                            : state.recommendedCourses.length,
+                        separatorBuilder: (_, _) => AppSpacing.hGap12,
+                        itemBuilder: (context, index) {
+                          return RecommendationCard(
+                            course: state.recommendedCourses[index],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 80),
+                ],
               ),
             ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 180,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.screenPadding,
-                  ),
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: state.recommendedCourses.length > 6
-                      ? 6
-                      : state.recommendedCourses.length,
-                  separatorBuilder: (_, _) => AppSpacing.hGap12,
-                  itemBuilder: (context, index) {
-                    return RecommendationCard(
-                      course: state.recommendedCourses[index],
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-
-          // Bottom padding
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ),
         ],
       ),
     );

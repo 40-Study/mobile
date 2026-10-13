@@ -23,6 +23,8 @@ class CourseCard extends StatelessWidget {
     final course = enrollment.course;
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
     final progressLabel = enrollment.progressPercentage.toStringAsFixed(0);
+    final isCompleted = enrollment.progressPercentage >= 100;
+    final progressColor = isCompleted ? const Color(0xFF059669) : cs.blue600;
 
     return Container(
       decoration: BoxDecoration(
@@ -55,7 +57,7 @@ class CourseCard extends StatelessWidget {
                   height: 88,
                   decoration: BoxDecoration(
                     color: cs.primaryContainer,
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                     image: course?.thumbnailUrl != null
                         ? DecorationImage(
                             image: CachedNetworkImageProvider(
@@ -82,6 +84,7 @@ class CourseCard extends StatelessWidget {
                         course?.title ?? 'Khóa học',
                         style: tt.titleMedium?.copyWith(
                           fontWeight: FontWeight.w700,
+                          color: cs.slate900,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -111,7 +114,7 @@ class CourseCard extends StatelessWidget {
                             child: Text(
                               course?.instructorName ?? 'Giảng viên',
                               style: tt.bodySmall?.copyWith(
-                                color: cs.onSurfaceVariant,
+                                color: cs.slate500,
                                 fontWeight: FontWeight.w500,
                               ),
                               maxLines: 1,
@@ -128,17 +131,38 @@ class CourseCard extends StatelessWidget {
                               '${enrollment.completedLessons}/'
                               '${enrollment.totalLessons} bài',
                               style: tt.bodySmall?.copyWith(
-                                color: cs.onSurfaceVariant,
+                                color: cs.slate500,
                               ),
                             ),
                           ),
-                          Text(
-                            '$progressLabel%',
-                            style: tt.labelSmall?.copyWith(
-                              color: cs.primary,
-                              fontWeight: FontWeight.w700,
+                          if (isCompleted)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFECFDF5),
+                                borderRadius:
+                                    BorderRadius.circular(AppRadius.full),
+                              ),
+                              child: const Text(
+                                'Hoàn thành',
+                                style: TextStyle(
+                                  color: Color(0xFF059669),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            )
+                          else
+                            Text(
+                              '$progressLabel%',
+                              style: tt.labelSmall?.copyWith(
+                                color: cs.blue600,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
                         ],
                       ),
                       AppSpacing.vGap8,
@@ -147,13 +171,17 @@ class CourseCard extends StatelessWidget {
                         child: LinearProgressIndicator(
                           value: progress,
                           minHeight: 5,
+                          backgroundColor:
+                              cs.outlineVariant.withValues(alpha: 0.3),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(progressColor),
                         ),
                       ),
                     ],
                   ),
                 ),
                 AppSpacing.hGap8,
-                Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
+                Icon(Icons.chevron_right_rounded, color: cs.slate400),
               ],
             ),
           ),
