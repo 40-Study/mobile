@@ -112,7 +112,7 @@ class LessonBottomBar extends StatelessWidget {
                 '${currentIndex + 1}/$totalLessons',
                 style: tt.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: cs.blue600,
+                  color: cs.primary,
                 ),
               ),
               Text(
@@ -131,7 +131,7 @@ class LessonBottomBar extends StatelessWidget {
             child: FilledButton(
               onPressed: onNext,
               style: FilledButton.styleFrom(
-                backgroundColor: cs.blue600,
+                backgroundColor: cs.primary,
                 foregroundColor: Colors.white,
                 padding:
                     const EdgeInsets.symmetric(vertical: 12, horizontal: 14),

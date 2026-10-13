@@ -285,9 +285,9 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
           ),
           child: TabBar(
             controller: _tabController,
-            labelColor: cs.blue600,
+            labelColor: cs.primary,
             unselectedLabelColor: cs.slate500,
-            indicatorColor: cs.blue600,
+            indicatorColor: cs.primary,
             indicatorWeight: 3,
             labelStyle: tt.labelMedium?.copyWith(fontWeight: FontWeight.w700),
             unselectedLabelStyle: tt.labelMedium,

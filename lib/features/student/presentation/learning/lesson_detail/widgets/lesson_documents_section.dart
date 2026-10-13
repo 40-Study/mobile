@@ -35,7 +35,7 @@ class LessonDocumentsSection extends StatelessWidget {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
-                  child: Icon(Icons.folder_zip_outlined, color: cs.blue600, size: 24),
+                  child: Icon(Icons.folder_zip_outlined, color: cs.primary, size: 24),
                 ),
                 AppSpacing.hGap16,
                 Expanded(
@@ -61,7 +61,7 @@ class LessonDocumentsSection extends StatelessWidget {
                   icon: const Icon(Icons.download_rounded, size: 18),
                   label: const Text('Tải về'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: cs.blue600,
+                    backgroundColor: cs.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     shape: RoundedRectangleBorder(
@@ -121,7 +121,7 @@ class LessonDocumentsSection extends StatelessWidget {
               ),
               DocumentCard(
                 icon: Icons.link_rounded,
-                iconColor: cs.blue600,
+                iconColor: cs.primary,
                 title: 'Python Official Documentation',
                 subtitle: 'Liên kết • python.org',
                 isLink: true,

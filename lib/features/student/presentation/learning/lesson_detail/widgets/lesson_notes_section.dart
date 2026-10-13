@@ -18,7 +18,7 @@ class LessonNotesSection extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.edit_note_rounded, size: 22, color: cs.blue600),
+              Icon(Icons.edit_note_rounded, size: 22, color: cs.primary),
               AppSpacing.hGap8,
               Text(
                 'Ghi chú của bạn',
@@ -96,7 +96,7 @@ class LessonNotesSection extends StatelessWidget {
               icon: const Icon(Icons.check_rounded, size: 18),
               label: const Text('Lưu ghi chú'),
               style: FilledButton.styleFrom(
-                backgroundColor: cs.blue600,
+                backgroundColor: cs.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 shape: RoundedRectangleBorder(
