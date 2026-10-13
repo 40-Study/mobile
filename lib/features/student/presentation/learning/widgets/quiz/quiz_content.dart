@@ -34,6 +34,7 @@ class QuizContent extends StatelessWidget {
           totalQuestions: state.questions.length,
           onTimeUp: () => context.read<QuizBloc>().add(const QuizSubmitted()),
         ),
+        AppSpacing.vGap8,
         QuizProgress(
           questionsCount: state.questions.length,
           currentIndex: state.currentIndex,
@@ -42,6 +43,7 @@ class QuizContent extends StatelessWidget {
         ),
         Expanded(
           child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.all(AppSpacing.screenPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

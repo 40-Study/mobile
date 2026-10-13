@@ -27,8 +27,8 @@ class QuizProgress extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.35)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,14 +52,24 @@ class QuizProgress extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppRadius.full),
                 ),
                 child: Text(
-                  '${(answeredCount / questionsCount * 100).round()}%',
+                  '${(questionsCount > 0 ? answeredCount / questionsCount * 100 : 0).round()}%',
                   style: tt.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     color: cs.primary,
                   ),
                 ),
               ),
             ],
+          ),
+          AppSpacing.vGap8,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: questionsCount > 0 ? answeredCount / questionsCount : 0.0,
+              backgroundColor: cs.outlineVariant.withValues(alpha: 0.2),
+              valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
+              minHeight: 4,
+            ),
           ),
           AppSpacing.vGap12,
           SingleChildScrollView(

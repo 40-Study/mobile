@@ -57,13 +57,33 @@ class _QuizHeaderState extends State<QuizHeader> {
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
-  bool get _isLowTime => _remainingSeconds <= 60;
+  bool get _isCriticalTime => _remainingSeconds <= 30;
+  bool get _isWarningTime => _remainingSeconds <= 60;
+
+  Color _timerColor(ColorScheme cs) {
+    if (_isCriticalTime) return const Color(0xFFDC2626);
+    if (_isWarningTime) return const Color(0xFFD97706);
+    return cs.primary;
+  }
+
+  Color _timerBgColor(ColorScheme cs) {
+    if (_isCriticalTime) return const Color(0xFFFEE2E2);
+    if (_isWarningTime) return const Color(0xFFFEF3C7);
+    return cs.primary.withValues(alpha: 0.1);
+  }
+
+  IconData get _timerIcon {
+    if (_isCriticalTime) return Icons.alarm_on_rounded;
+    if (_isWarningTime) return Icons.hourglass_bottom_rounded;
+    return Icons.timer_outlined;
+  }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final timerColor = _isLowTime ? cs.error : cs.primary;
+    final timerColor = _timerColor(cs);
+    final timerBg = _timerBgColor(cs);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
@@ -72,16 +92,19 @@ class _QuizHeaderState extends State<QuizHeader> {
           IconButton(
             onPressed: () => _showExitDialog(context),
             icon: const Icon(Icons.close_rounded),
+            tooltip: 'Thoát',
           ),
           Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   widget.title,
-                  style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                  style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: 2),
                 Text(
                   '${widget.totalQuestions} câu hỏi • ${widget.duration} phút',
                   style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
@@ -89,22 +112,27 @@ class _QuizHeaderState extends State<QuizHeader> {
               ],
             ),
           ),
-          Container(
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: timerColor.withValues(alpha: 0.1),
+              color: timerBg,
               borderRadius: BorderRadius.circular(AppRadius.full),
+              border: Border.all(
+                color: timerColor.withValues(alpha: 0.3),
+                width: 1,
+              ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.timer_outlined, size: 16, color: timerColor),
-                AppSpacing.hGap4,
+                Icon(_timerIcon, size: 16, color: timerColor),
+                const SizedBox(width: 6),
                 Text(
                   _formattedTime,
                   style: tt.labelLarge?.copyWith(
                     color: timerColor,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],

@@ -29,32 +29,42 @@ class QuizBottomBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.3))),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
+          ),
+        ],
       ),
       child: Row(
         children: [
           if (!state.isFirstQuestion)
             OutlinedButton.icon(
               onPressed: () => bloc.add(const QuizPreviousQuestion()),
-              icon: const Icon(Icons.chevron_left_rounded, size: 20),
-              label: Text(l10n.quizPrevious),
+              icon: const Icon(Icons.arrow_back_rounded, size: 18),
+              label: const Text('Câu trước'),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
               ),
             )
           else
-            const SizedBox(width: 100),
+            const SizedBox(width: 90),
           const Spacer(),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
               color: cs.surfaceContainerLowest,
               borderRadius: BorderRadius.circular(AppRadius.full),
-              border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+              border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.4)),
             ),
             child: Text(
               '${state.currentIndex + 1}/${state.questions.length}',
-              style: tt.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+              style: tt.labelMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: cs.onSurface,
+              ),
             ),
           ),
           const Spacer(),
@@ -63,11 +73,13 @@ class QuizBottomBar extends StatelessWidget {
               onPressed: state.currentAnswer != null
                   ? () => bloc.add(const QuizSubmitted())
                   : null,
-              icon: const Icon(Icons.check_rounded, size: 20),
-              label: Text(l10n.quizSubmit),
+              icon: const Icon(Icons.check_circle_rounded, size: 18),
+              label: const Text('Nộp bài'),
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
+                backgroundColor: const Color(0xFF059669),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
               ),
             )
           else
@@ -75,11 +87,11 @@ class QuizBottomBar extends StatelessWidget {
               onPressed: state.currentAnswer != null
                   ? () => bloc.add(const QuizNextQuestion())
                   : null,
-              label: Text(l10n.quizNext),
-              icon: const Icon(Icons.chevron_right_rounded, size: 20),
+              label: const Text('Câu tiếp'),
+              icon: const Icon(Icons.arrow_forward_rounded, size: 18),
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.sm)),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
               ),
             ),
         ],

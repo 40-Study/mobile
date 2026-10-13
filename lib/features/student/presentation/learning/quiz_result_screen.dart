@@ -33,6 +33,25 @@ class QuizResultScreen extends StatelessWidget {
     final passed = percent >= 70;
     final wrong = total - correct;
 
+    final String headline;
+    final String subtitle;
+    if (percent >= 90) {
+      headline = 'Xuất sắc! 🎉';
+      subtitle = 'Bạn đã nắm rất vững kiến thức của bài học!';
+    } else if (percent >= 70) {
+      headline = 'Chúc mừng bạn đã đạt! 👏';
+      subtitle = 'Bạn đã hoàn thành tốt bài kiểm tra này.';
+    } else if (percent >= 50) {
+      headline = 'Cần cố gắng thêm! 💪';
+      subtitle = 'Bạn gần đạt rồi, hãy ôn tập lại và thử lại nhé.';
+    } else {
+      headline = 'Chưa đạt yêu cầu 📚';
+      subtitle = 'Hãy xem lại bài giảng và làm lại bài kiểm tra nhé.';
+    }
+
+    final statusColor = passed ? const Color(0xFF059669) : const Color(0xFFDC2626);
+    final statusBg = passed ? const Color(0xFFECFDF5) : const Color(0xFFFEF2F2);
+
     return Scaffold(
       backgroundColor: cs.surface,
       body: SafeArea(
@@ -40,17 +59,21 @@ class QuizResultScreen extends StatelessWidget {
           children: [
             // Header
             Padding(
-              padding: const EdgeInsets.all(AppSpacing.screenPadding),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.sm,
+              ),
               child: Row(
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close_rounded),
+                    tooltip: 'Đóng',
                   ),
                   Expanded(
                     child: Text(
                       'Kết quả bài kiểm tra',
-                      style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                      style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -73,21 +96,21 @@ class QuizResultScreen extends StatelessWidget {
 
                     // Message
                     Text(
-                      passed ? 'Xuất sắc!' : 'Cần cố gắng thêm!',
+                      headline,
                       style: tt.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: passed ? cs.primary : cs.error,
+                        fontWeight: FontWeight.w800,
+                        color: statusColor,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                     AppSpacing.vGap8,
                     Text(
-                      passed
-                          ? 'Bạn đã hoàn thành tốt bài kiểm tra'
-                          : 'Hãy ôn tập và thử lại nhé',
+                      subtitle,
                       style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                      textAlign: TextAlign.center,
                     ),
 
-                    AppSpacing.vGap32,
+                    AppSpacing.vGap24,
 
                     // Stats cards
                     Row(
@@ -95,25 +118,25 @@ class QuizResultScreen extends StatelessWidget {
                         Expanded(
                           child: StatCard(
                             icon: Icons.check_circle_rounded,
-                            iconColor: cs.primary,
+                            iconColor: const Color(0xFF059669),
                             label: 'Câu đúng',
                             value: '$correct',
                           ),
                         ),
-                        AppSpacing.hGap12,
+                        AppSpacing.hGap8,
                         Expanded(
                           child: StatCard(
                             icon: Icons.cancel_rounded,
-                            iconColor: cs.error,
+                            iconColor: const Color(0xFFDC2626),
                             label: 'Câu sai',
                             value: '$wrong',
                           ),
                         ),
-                        AppSpacing.hGap12,
+                        AppSpacing.hGap8,
                         Expanded(
                           child: StatCard(
-                            icon: Icons.quiz_rounded,
-                            iconColor: cs.tertiary,
+                            icon: Icons.assignment_rounded,
+                            iconColor: cs.primary,
                             label: 'Tổng câu',
                             value: '$total',
                           ),
@@ -121,14 +144,15 @@ class QuizResultScreen extends StatelessWidget {
                       ],
                     ),
 
-                    AppSpacing.vGap24,
+                    AppSpacing.vGap16,
 
                     // Progress bar
                     Container(
                       padding: const EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(AppRadius.md),
+                        color: cs.surfaceContainerLowest,
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.35)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,25 +161,25 @@ class QuizResultScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                'Tỷ lệ đúng',
-                                style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                                'Tỷ lệ chính xác',
+                                style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                               ),
                               Text(
-                                '$correct/$total câu',
+                                '$correct/$total câu ($percent%)',
                                 style: tt.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: passed ? cs.primary : cs.error,
+                                  fontWeight: FontWeight.w700,
+                                  color: statusColor,
                                 ),
                               ),
                             ],
                           ),
-                          AppSpacing.vGap12,
+                          AppSpacing.vGap8,
                           ClipRRect(
-                            borderRadius: AppRadius.borderXs,
+                            borderRadius: BorderRadius.circular(4),
                             child: LinearProgressIndicator(
-                              value: total > 0 ? correct / total : 0,
-                              backgroundColor: cs.outlineVariant.withValues(alpha: 0.3),
-                              color: passed ? cs.primary : cs.error,
+                              value: total > 0 ? (correct / total).clamp(0.0, 1.0) : 0,
+                              backgroundColor: cs.outlineVariant.withValues(alpha: 0.2),
+                              color: statusColor,
                               minHeight: 8,
                             ),
                           ),
@@ -171,8 +195,12 @@ class QuizResultScreen extends StatelessWidget {
                         vertical: AppSpacing.sm,
                       ),
                       decoration: BoxDecoration(
-                        color: (passed ? cs.primary : cs.error).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                        color: statusBg,
+                        borderRadius: BorderRadius.circular(AppRadius.full),
+                        border: Border.all(
+                          color: statusColor.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -182,14 +210,14 @@ class QuizResultScreen extends StatelessWidget {
                                 ? Icons.check_circle_outline_rounded
                                 : Icons.info_outline_rounded,
                             size: 18,
-                            color: passed ? cs.primary : cs.error,
+                            color: statusColor,
                           ),
                           AppSpacing.hGap8,
                           Text(
                             passed ? 'Đạt yêu cầu (≥70%)' : 'Chưa đạt yêu cầu (cần ≥70%)',
                             style: tt.bodySmall?.copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: passed ? cs.primary : cs.error,
+                              fontWeight: FontWeight.w600,
+                              color: statusColor,
                             ),
                           ),
                         ],
@@ -215,19 +243,27 @@ class QuizResultScreen extends StatelessWidget {
                 border: Border(
                   top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.3)),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: cs.shadow.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -3),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
+                    child: OutlinedButton.icon(
                       onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.arrow_back_rounded, size: 18),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.sm),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
                         ),
                       ),
-                      child: Text(AppLocalizations.of(context)!.quizBackToLesson),
+                      label: const Text('Quay về bài học'),
                     ),
                   ),
                   if (quizId != null) ...[
@@ -248,11 +284,11 @@ class QuizResultScreen extends StatelessWidget {
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.sm),
+                            borderRadius: BorderRadius.circular(AppRadius.md),
                           ),
                         ),
-                        icon: const Icon(Icons.refresh_rounded, size: 20),
-                        label: Text(AppLocalizations.of(context)!.quizRetry),
+                        icon: const Icon(Icons.replay_rounded, size: 18),
+                        label: const Text('Làm lại bài kiểm tra'),
                       ),
                     ),
                   ],
