@@ -120,7 +120,10 @@ class QuizErrorView extends StatelessWidget {
                 onPressed: () => Navigator.of(context).pop(),
                 icon: const Icon(Icons.arrow_back_rounded, size: 18),
                 style: FilledButton.styleFrom(
-                  padding: AppSpacing.paddingVerticalLg,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
