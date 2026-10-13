@@ -8,8 +8,8 @@ import 'package:study/widgets/cached_avatar.dart';
 /// Header chuẩn dùng chung cho các màn hình trong phân hệ Học sinh (Student).
 ///
 /// Thiết kế đồng bộ 100% với chuẩn ParentAppHeader:
-/// - Leading tròn 44x44 nền pastel xanh nhạt (Color(0xFFEFF6FF)),
-///   icon xanh dương (blue600)
+/// - Leading tròn 44x44 nền pastel xanh nhạt (cs.primaryContainer),
+///   icon xanh học thuật (cs.primary)
 /// - Cột tiêu đề: Phân mục uppercase tracking rộng + Tiêu đề chính đậm nét 18sp
 /// - Actions: Trailing tùy chọn + Chuông thông báo đỏ +
 ///   Avatar người dùng lấy từ AuthBloc
@@ -103,13 +103,13 @@ class StudentAppHeader extends StatelessWidget {
                     child: Container(
                       width: 44,
                       height: 44,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFEFF6FF),
+                      decoration: BoxDecoration(
+                        color: cs.primaryContainer,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         effectiveIcon,
-                        color: cs.blue600,
+                        color: cs.primary,
                         size: 24,
                       ),
                     ),

@@ -23,9 +23,9 @@ class TodaySummary extends StatelessWidget {
       children: [
         _PillBadge(
           icon: Icons.calendar_month_rounded,
-          iconColor: cs.blue600,
-          bgColor: const Color(0xFFEFF6FF),
-          textColor: cs.blue700,
+          iconColor: cs.primary,
+          bgColor: cs.primaryContainer,
+          textColor: cs.onPrimaryContainer,
           label: '$scheduleCount ca học hôm nay',
         ),
         _PillBadge(

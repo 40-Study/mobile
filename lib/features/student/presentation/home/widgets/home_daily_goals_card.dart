@@ -13,7 +13,7 @@ class HomeDailyGoalsCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final isLight = Theme.of(context).brightness == Brightness.light;
-    final goalColor = cs.blue600;
+    final goalColor = cs.primary;
 
     final storage = DailyGoalsStorage.instance;
     final goals = storage.getGoals(DateTime.now());
@@ -156,13 +156,13 @@ class _EmptyGoalsBanner extends StatelessWidget {
                 Container(
                   width: 44,
                   height: 44,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEFF6FF),
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.flag_rounded,
-                    color: cs.blue600,
+                    color: cs.primary,
                     size: 22,
                   ),
                 ),
@@ -194,18 +194,18 @@ class _EmptyGoalsBanner extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
+                    color: cs.primaryContainer,
                     borderRadius: BorderRadius.circular(AppRadius.full),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.add_rounded, size: 16, color: cs.blue600),
+                      Icon(Icons.add_rounded, size: 16, color: cs.primary),
                       const SizedBox(width: 2),
                       Text(
                         'Thêm',
                         style: tt.labelSmall?.copyWith(
-                          color: cs.blue600,
+                          color: cs.primary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),

@@ -27,13 +27,13 @@ class EmptyGoals extends StatelessWidget {
           Container(
             width: 36,
             height: 36,
-            decoration: const BoxDecoration(
-              color: Color(0xFFEFF6FF),
+            decoration: BoxDecoration(
+              color: cs.primaryContainer,
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.flag_rounded,
-              color: cs.blue600,
+              color: cs.primary,
               size: 18,
             ),
           ),
@@ -50,7 +50,7 @@ class EmptyGoals extends StatelessWidget {
               vertical: 4,
             ),
             decoration: BoxDecoration(
-              color: const Color(0xFFEFF6FF),
+              color: cs.primaryContainer,
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
             child: Material(
@@ -61,7 +61,7 @@ class EmptyGoals extends StatelessWidget {
                 child: Text(
                   '+ Thêm',
                   style: tt.labelSmall?.copyWith(
-                    color: cs.blue600,
+                    color: cs.primary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),

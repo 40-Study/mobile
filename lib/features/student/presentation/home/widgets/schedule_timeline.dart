@@ -48,14 +48,14 @@ class ScheduleTimeline extends StatelessWidget {
                 Container(
                   width: 38,
                   height: 38,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEFF6FF),
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.event_available_rounded,
                     size: 20,
-                    color: cs.blue600,
+                    color: cs.primary,
                   ),
                 ),
                 AppSpacing.hGap12,
@@ -87,10 +87,10 @@ class ScheduleTimeline extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF).withValues(alpha: 0.5),
+                color: cs.primaryContainer.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(AppRadius.md),
                 border: Border.all(
-                  color: cs.blue100,
+                  color: cs.primaryContainer,
                   width: 0.8,
                 ),
               ),
@@ -102,13 +102,13 @@ class ScheduleTimeline extends StatelessWidget {
                       Icon(
                         Icons.wb_sunny_outlined,
                         size: 16,
-                        color: cs.blue600,
+                        color: cs.primary,
                       ),
                       AppSpacing.hGap8,
                       Text(
                         'Quote hôm nay',
                         style: tt.labelSmall?.copyWith(
-                          color: cs.blue600,
+                          color: cs.primary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),

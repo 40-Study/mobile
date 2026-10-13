@@ -40,7 +40,7 @@ class RecentBadges extends StatelessWidget {
               child: Text(
                 l10n.viewAll,
                 style: tt.labelLarge?.copyWith(
-                  color: cs.blue600,
+                  color: cs.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),

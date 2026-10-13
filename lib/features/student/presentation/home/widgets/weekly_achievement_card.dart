@@ -158,8 +158,8 @@ class WeeklyAchievementCard extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: xpProgress,
                     minHeight: 6,
-                    backgroundColor: const Color(0xFFEFF6FF),
-                    valueColor: AlwaysStoppedAnimation<Color>(cs.blue600),
+                    backgroundColor: cs.primaryContainer,
+                    valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
                   ),
                 ),
               ],

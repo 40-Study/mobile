@@ -42,13 +42,13 @@ class AchievementPlaceholder extends StatelessWidget {
                 Container(
                   width: 44,
                   height: 44,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEFF6FF),
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.emoji_events_rounded,
-                    color: cs.blue600,
+                    color: cs.primary,
                     size: 22,
                   ),
                 ),

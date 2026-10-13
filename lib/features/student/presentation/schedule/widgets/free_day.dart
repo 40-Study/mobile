@@ -38,14 +38,14 @@ class FreeDay extends StatelessWidget {
           Container(
             width: 48,
             height: 48,
-            decoration: const BoxDecoration(
-              color: Color(0xFFEFF6FF),
+            decoration: BoxDecoration(
+              color: cs.primaryContainer,
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.event_available_rounded,
               size: 26,
-              color: cs.blue600,
+              color: cs.primary,
             ),
           ),
           AppSpacing.vGap12,

@@ -62,13 +62,13 @@ class ContinueLearningCard extends StatelessWidget {
                     vertical: 3,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
+                    color: cs.primaryContainer,
                     borderRadius: BorderRadius.circular(AppRadius.xs),
                   ),
                   child: Text(
                     'TIẾP TỤC HỌC',
                     style: tt.labelSmall?.copyWith(
-                      color: cs.blue600,
+                      color: cs.primary,
                       fontWeight: FontWeight.w700,
                       fontSize: 10,
                       letterSpacing: 0.6,
@@ -117,8 +117,8 @@ class ContinueLearningCard extends StatelessWidget {
                                   Container(
                                     width: 18,
                                     height: 18,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFFEFF6FF),
+                                    decoration: BoxDecoration(
+                                      color: cs.primaryContainer,
                                       shape: BoxShape.circle,
                                     ),
                                     alignment: Alignment.center,
@@ -127,7 +127,7 @@ class ContinueLearningCard extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w700,
-                                        color: cs.blue600,
+                                        color: cs.primary,
                                       ),
                                     ),
                                   ),
@@ -157,10 +157,10 @@ class ContinueLearningCard extends StatelessWidget {
                                         value: progress,
                                         minHeight: 5,
                                         backgroundColor:
-                                            const Color(0xFFEFF6FF),
+                                            cs.primaryContainer,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                          cs.blue600,
+                                          cs.primary,
                                         ),
                                       ),
                                     ),
@@ -169,7 +169,7 @@ class ContinueLearningCard extends StatelessWidget {
                                   Text(
                                     '$progressLabel%',
                                     style: tt.labelSmall?.copyWith(
-                                      color: cs.blue600,
+                                      color: cs.primary,
                                       fontWeight: FontWeight.w700,
                                       fontSize: 11,
                                     ),
@@ -185,11 +185,11 @@ class ContinueLearningCard extends StatelessWidget {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2563EB),
+                            color: cs.primary,
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF2563EB)
+                                color: cs.primary
                                     .withValues(alpha: 0.28),
                                 blurRadius: 8,
                                 offset: const Offset(0, 3),
@@ -252,7 +252,7 @@ class _CourseCover extends StatelessWidget {
                 child: Icon(
                   Icons.play_arrow_rounded,
                   size: 20,
-                  color: cs.blue600,
+                  color: cs.primary,
                 ),
               ),
             ),
@@ -271,11 +271,11 @@ class _PlaceholderCover extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFEFF6FF),
+      color: cs.primaryContainer,
       child: Icon(
         Icons.menu_book_rounded,
         size: 28,
-        color: cs.blue600,
+        color: cs.primary,
       ),
     );
   }

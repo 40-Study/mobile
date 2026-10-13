@@ -42,13 +42,13 @@ class ExploreCoursesCard extends StatelessWidget {
                 Container(
                   width: 44,
                   height: 44,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEFF6FF),
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.school_rounded,
-                    color: cs.blue600,
+                    color: cs.primary,
                     size: 24,
                   ),
                 ),
@@ -78,13 +78,13 @@ class ExploreCoursesCard extends StatelessWidget {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: cs.blue50,
+                    color: cs.primaryContainer,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.arrow_forward_rounded,
                     size: 18,
-                    color: cs.blue600,
+                    color: cs.primary,
                   ),
                 ),
               ],
