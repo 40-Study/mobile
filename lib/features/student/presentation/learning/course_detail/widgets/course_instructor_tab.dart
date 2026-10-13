@@ -101,7 +101,8 @@ class CourseInstructorTab extends StatelessWidget {
         FilledButton.tonal(
           onPressed: () => _navigateToInstructor(context),
           style: FilledButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            minimumSize: const Size.fromHeight(48),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppRadius.full),
             ),
