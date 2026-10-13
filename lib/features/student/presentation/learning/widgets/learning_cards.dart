@@ -247,6 +247,7 @@ class ContinueLearningCard extends StatelessWidget {
                                   label: const Text('Tiếp tục học'),
                                   style: FilledButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
                                       vertical: 12,
                                     ),
                                     shape: RoundedRectangleBorder(
