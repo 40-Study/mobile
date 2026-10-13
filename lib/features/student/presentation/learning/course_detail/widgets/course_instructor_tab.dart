@@ -45,7 +45,7 @@ class CourseInstructorTab extends StatelessWidget {
                 CachedAvatar(
                   url: course?.instructorAvatar,
                   radius: 34,
-                  backgroundColor: const Color(0xFFEFF6FF),
+                  backgroundColor: cs.primaryContainer,
                   name: course?.instructorName ?? 'T',
                 ),
                 AppSpacing.hGap16,

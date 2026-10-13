@@ -65,7 +65,7 @@ class CourseHero extends StatelessWidget {
                 ),
                 child: Icon(
                   Icons.play_arrow_rounded,
-                  color: cs.blue600,
+                  color: cs.primary,
                   size: 26,
                 ),
               ),
@@ -85,7 +85,7 @@ class CourseHero extends StatelessWidget {
                     color: isCompleted
                         ? const Color(0xFFECFDF5)
                         : isActive
-                            ? const Color(0xFFEFF6FF)
+                            ? cs.primaryContainer
                             : cs.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(AppRadius.full),
                   ),
@@ -99,7 +99,7 @@ class CourseHero extends StatelessWidget {
                       color: isCompleted
                           ? const Color(0xFF059669)
                           : isActive
-                              ? cs.blue600
+                              ? cs.primary
                               : cs.slate500,
                       fontWeight: FontWeight.w700,
                     ),
@@ -122,7 +122,7 @@ class CourseHero extends StatelessWidget {
                     CachedAvatar(
                       url: course?.instructorAvatar,
                       radius: 12,
-                      backgroundColor: const Color(0xFFEFF6FF),
+                      backgroundColor: cs.primaryContainer,
                       name: course?.instructorName ?? 'T',
                     ),
                     AppSpacing.hGap8,

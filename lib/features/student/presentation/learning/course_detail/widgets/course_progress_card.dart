@@ -32,13 +32,13 @@ class CourseProgressCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+            gradient: LinearGradient(
+              colors: [cs.primary, const Color(0xFF2A48A5)],
             ),
             borderRadius: BorderRadius.circular(AppRadius.lg),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF2563EB).withValues(alpha: 0.25),
+                color: cs.primary.withValues(alpha: 0.25),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -73,7 +73,7 @@ class CourseProgressCard extends StatelessWidget {
                 },
                 style: FilledButton.styleFrom(
                   backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF2563EB),
+                  foregroundColor: cs.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadius.full),
                   ),
@@ -215,7 +215,7 @@ class CourseProgressCard extends StatelessWidget {
                         '${enrollment.progressPercentage.toStringAsFixed(0)}%',
                         style: tt.labelLarge?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: cs.blue600,
+                          color: cs.primary,
                         ),
                       ),
                     ],
@@ -228,7 +228,7 @@ class CourseProgressCard extends StatelessWidget {
                       minHeight: 6,
                       backgroundColor:
                           cs.outlineVariant.withValues(alpha: 0.25),
-                      valueColor: AlwaysStoppedAnimation<Color>(cs.blue600),
+                      valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
                     ),
                   ),
                   AppSpacing.vGap8,
@@ -249,7 +249,7 @@ class CourseProgressCard extends StatelessWidget {
             FilledButton(
               onPressed: onContinue,
               style: FilledButton.styleFrom(
-                backgroundColor: cs.blue600,
+                backgroundColor: cs.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.lg,

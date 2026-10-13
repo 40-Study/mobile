@@ -57,7 +57,7 @@ class CourseEnrollmentBar extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
               style: FilledButton.styleFrom(
-                backgroundColor: cs.blue600,
+                backgroundColor: cs.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 shape: RoundedRectangleBorder(
