@@ -19,6 +19,7 @@ class CourseProgressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final l10n = AppLocalizations.of(context)!;
     final enrollment = state.enrollment;
     final course = state.course;
@@ -31,10 +32,17 @@ class CourseProgressCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [cs.primary, cs.primary.withValues(alpha: 0.8)],
+            gradient: const LinearGradient(
+              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
             ),
-            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2563EB).withValues(alpha: 0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(
             children: [
@@ -65,13 +73,19 @@ class CourseProgressCard extends StatelessWidget {
                 },
                 style: FilledButton.styleFrom(
                   backgroundColor: Colors.white,
-                  foregroundColor: cs.primary,
+                  foregroundColor: const Color(0xFF2563EB),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.full),
+                  ),
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.lg,
                     vertical: AppSpacing.md,
                   ),
                 ),
-                child: Text(l10n.enrollNow),
+                child: Text(
+                  l10n.enrollNow,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
               ),
             ],
           ),
@@ -82,25 +96,77 @@ class CourseProgressCard extends StatelessWidget {
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
     final isCompleted = enrollment.progressPercentage >= 100;
 
-    // Completed: just show certificate button
+    // Completed: show celebratory banner with certificate button
     if (isCompleted) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-        child: FilledButton(
-          onPressed: onViewCertificate,
-          style: FilledButton.styleFrom(
-            backgroundColor: Colors.green,
-            padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-            ),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.md + 2),
+          decoration: BoxDecoration(
+            color: const Color(0xFFECFDF5),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(color: const Color(0xFFA7F3D0)),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.workspace_premium_rounded, size: 18),
-              const SizedBox(width: 4),
-              Text(l10n.viewCertificateButton),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFD1FAE5),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.workspace_premium_rounded,
+                  color: Color(0xFF059669),
+                  size: 22,
+                ),
+              ),
+              AppSpacing.hGap12,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Chúc mừng! Khóa học đã hoàn thành',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF065F46),
+                      ),
+                    ),
+                    Text(
+                      'Bạn có thể xem và tải chứng chỉ của mình',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.green.shade800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              AppSpacing.hGap8,
+              FilledButton(
+                onPressed: onViewCertificate,
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF059669),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.full),
+                  ),
+                ),
+                child: Text(
+                  l10n.viewCertificateButton,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -113,9 +179,19 @@ class CourseProgressCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: cs.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+          color: isLight ? Colors.white : cs.surface,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(
+            color: cs.outlineVariant.withValues(alpha: 0.6),
+            width: 0.8,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: cs.shadow.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -125,30 +201,46 @@ class CourseProgressCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Flexible(child: Text(l10n.progress, style: tt.labelMedium)),
-                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          l10n.progress,
+                          style: tt.labelMedium?.copyWith(
+                            color: cs.slate600,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
                       Text(
                         '${enrollment.progressPercentage.toStringAsFixed(0)}%',
                         style: tt.labelLarge?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: cs.primary,
+                          color: cs.blue600,
                         ),
                       ),
                     ],
                   ),
                   AppSpacing.vGap8,
                   ClipRRect(
-                    borderRadius: AppRadius.borderXs,
+                    borderRadius: BorderRadius.circular(3),
                     child: LinearProgressIndicator(
                       value: progress,
-                      minHeight: 8,
-                      backgroundColor: cs.surfaceContainerHighest,
+                      minHeight: 6,
+                      backgroundColor:
+                          cs.outlineVariant.withValues(alpha: 0.25),
+                      valueColor: AlwaysStoppedAnimation<Color>(cs.blue600),
                     ),
                   ),
-                  AppSpacing.vGap4,
+                  AppSpacing.vGap8,
                   Text(
-                    l10n.lessonsCompleted(enrollment.completedLessons, enrollment.totalLessons),
-                    style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                    l10n.lessonsCompleted(
+                      enrollment.completedLessons,
+                      enrollment.totalLessons,
+                    ),
+                    style: tt.bodySmall?.copyWith(
+                      color: cs.slate500,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
@@ -157,12 +249,14 @@ class CourseProgressCard extends StatelessWidget {
             FilledButton(
               onPressed: onContinue,
               style: FilledButton.styleFrom(
+                backgroundColor: cs.blue600,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.lg,
                   vertical: AppSpacing.md,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  borderRadius: BorderRadius.circular(AppRadius.full),
                 ),
               ),
               child: Row(
@@ -170,7 +264,10 @@ class CourseProgressCard extends StatelessWidget {
                 children: [
                   const Icon(Icons.play_arrow_rounded, size: 18),
                   const SizedBox(width: 4),
-                  Text(l10n.continueLearning),
+                  Text(
+                    l10n.continueLearning,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ],
               ),
             ),
