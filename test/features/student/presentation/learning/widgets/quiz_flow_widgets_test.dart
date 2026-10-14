@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:study/features/student/data/models/models.dart';
 import 'package:study/features/student/presentation/learning/quiz_result_screen.dart';
 import 'package:study/features/student/presentation/learning/widgets/quiz/answer_option.dart';
 import 'package:study/features/student/presentation/learning/widgets/quiz/question_card.dart';
@@ -86,6 +87,76 @@ void main() {
       expect(find.text('Đạt yêu cầu (≥70%)'), findsOneWidget);
       expect(find.text('Quay về bài học'), findsOneWidget);
       expect(find.text('Làm lại bài kiểm tra'), findsOneWidget);
+    });
+
+    testWidgets('QuizResultScreen filters right and wrong questions on stat card tap', (tester) async {
+      const questions = [
+        QuizQuestionModel(
+          id: 'q1',
+          question: 'Flutter là gì?',
+          answers: [
+            QuizAnswerModel(id: 'a1', answerText: 'UI Framework', isCorrect: true),
+            QuizAnswerModel(id: 'a2', answerText: 'Database', isCorrect: false),
+          ],
+        ),
+        QuizQuestionModel(
+          id: 'q2',
+          question: 'Widget nào là StatelessWidget?',
+          answers: [
+            QuizAnswerModel(id: 'a3', answerText: 'Container', isCorrect: true),
+            QuizAnswerModel(id: 'a4', answerText: 'Checkbox', isCorrect: false),
+          ],
+        ),
+      ];
+
+      // q1 is correct (chose 0), q2 is wrong (chose 1, correct is 0)
+      const userAnswers = {0: 0, 1: 1};
+
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: QuizResultScreen(
+            title: 'Test Quiz',
+            correct: 1,
+            total: 2,
+            score: 50,
+            questions: questions,
+            userAnswers: userAnswers,
+          ),
+        ),
+      );
+
+      // Initially shows all 2 questions
+      expect(find.text('Câu 1'), findsOneWidget);
+      expect(find.text('Câu 2'), findsOneWidget);
+
+      // Tap "Câu sai"
+      await tester.tap(find.text('Câu sai'));
+      await tester.pumpAndSettle();
+
+      // Only Câu 2 is shown
+      expect(find.text('Câu 1'), findsNothing);
+      expect(find.text('Câu 2'), findsOneWidget);
+
+      // Tap "Câu đúng"
+      await tester.tap(find.text('Câu đúng'));
+      await tester.pumpAndSettle();
+
+      // Only Câu 1 is shown
+      expect(find.text('Câu 1'), findsOneWidget);
+      expect(find.text('Câu 2'), findsNothing);
+
+      // Tap "Tổng câu"
+      await tester.tap(find.text('Tổng câu'));
+      await tester.pumpAndSettle();
+
+      // Both shown again
+      expect(find.text('Câu 1'), findsOneWidget);
+      expect(find.text('Câu 2'), findsOneWidget);
     });
   });
 }

@@ -68,15 +68,26 @@ final class QuizCompleted extends QuizState {
     required this.totalCount,
     required this.score,
     required this.timeLimitMinutes,
+    this.questions = const [],
+    this.userAnswers = const {},
   });
 
   final int correctCount;
   final int totalCount;
   final double score;
   final int timeLimitMinutes;
+  final List<QuizQuestionModel> questions;
+  final Map<int, int> userAnswers;
 
   @override
-  List<Object?> get props => [correctCount, totalCount, score, timeLimitMinutes];
+  List<Object?> get props => [
+        correctCount,
+        totalCount,
+        score,
+        timeLimitMinutes,
+        questions,
+        userAnswers,
+      ];
 }
 
 final class QuizFailure extends QuizState {

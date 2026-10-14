@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/student/bloc/quiz/quiz_bloc.dart';
 import 'package:study/features/student/bloc/quiz/quiz_event.dart';
 import 'package:study/features/student/bloc/quiz/quiz_state.dart';
-import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
 
 /// Bottom nav bar cho quiz (prev/next/submit)
@@ -16,7 +15,6 @@ class QuizBottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final l10n = AppLocalizations.of(context)!;
     final bloc = context.read<QuizBloc>();
 
     return Container(

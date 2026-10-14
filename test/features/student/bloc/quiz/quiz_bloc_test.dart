@@ -161,6 +161,8 @@ void main() {
         totalCount: 2,
         score: 50,
         timeLimitMinutes: 10,
+        questions: _questions,
+        userAnswers: {0: 0},
       ),
     ],
     verify: (_) async {

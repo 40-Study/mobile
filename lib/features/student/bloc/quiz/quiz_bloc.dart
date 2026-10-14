@@ -141,6 +141,8 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
             totalCount: totalCount,
             score: submitResult.percentage,
             timeLimitMinutes: current.timeLimitMinutes,
+            questions: current.questions,
+            userAnswers: current.answers,
           ),
         );
 
