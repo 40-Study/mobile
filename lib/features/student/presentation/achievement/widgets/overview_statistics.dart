@@ -119,10 +119,18 @@ class AchievementStatItem extends StatelessWidget {
             builder: (context, val, _) => Text('$val',
                 style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
           ),
-          Text(label,
-              style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
-              textAlign: TextAlign.center,
-              maxLines: 2),
+          SizedBox(
+            height: 32,
+            child: Center(
+              child: Text(
+                label,
+                style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
           AppSpacing.vGap4,
           MiniSparkline(color: color),
         ],

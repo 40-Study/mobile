@@ -78,85 +78,154 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
     final totalBadges = _allBadges.length;
     final earnedCount =
         _allBadges.where((b) => b.status == BadgeStatus.earned).length;
-    final inProgressCount =
-        _allBadges.where((b) => b.status == BadgeStatus.inProgress).length;
-    final lockedCount =
-        _allBadges.where((b) => b.status == BadgeStatus.locked).length;
+    final progressVal = totalBadges > 0 ? earnedCount / totalBadges : 0.0;
 
     return Scaffold(
       backgroundColor: cs.surface,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // Header
+            // Top App Bar
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
                     AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        AchievementBackButton(onTap: () => Navigator.pop(context)),
-                        const Spacer(),
-                        FilterButton(onTap: () => _showFilterSheet(context)),
-                      ],
-                    ),
-                    AppSpacing.vGap16,
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            style: tt.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: cs.onSurface,
-                            ),
-                            children: [
-                              TextSpan(text: l10n.allBadges),
-                              TextSpan(
-                                text: '.',
-                                style: TextStyle(color: cs.primary),
-                              ),
-                            ],
-                          ),
-                        ),
-                        AppSpacing.vGap4,
-                        Row(
-                          children: [
-                            Icon(Icons.access_time_rounded,
-                                size: 14, color: cs.onSurfaceVariant),
-                            AppSpacing.hGap4,
-                            Text(
-                              l10n.badgesEarned(earnedCount, totalBadges),
-                              style: tt.bodySmall
-                                  ?.copyWith(color: cs.onSurfaceVariant),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                    AchievementBackButton(onTap: () => Navigator.pop(context)),
+                    const Spacer(),
+                    FilterButton(onTap: () => _showFilterSheet(context)),
                   ],
                 ),
               ),
             ),
 
-            // Overall Progress Card
+            // Hero Trophy Showcase Header
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.lg),
-                child: OverallProgressCard(
-                  earnedCount: earnedCount,
-                  inProgressCount: inProgressCount,
-                  lockedCount: lockedCount,
-                  totalCount: totalBadges,
+                child: Container(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1E293B), Color(0xFF1E3A8A), Color(0xFF3D5FC4)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(AppRadius.xl),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF1E3A8A).withValues(alpha: 0.3),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(AppRadius.md),
+                            ),
+                            child: const Icon(
+                              Icons.emoji_events_rounded,
+                              color: Color(0xFFFDE047),
+                              size: 28,
+                            ),
+                          ),
+                          AppSpacing.hGap12,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text(
+                                      'PHÒNG TRUYỀN THỐNG',
+                                      style: TextStyle(
+                                        color: Color(0xFF93C5FD),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.1,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(AppRadius.full),
+                                        border: Border.all(color: const Color(0xFFFCD34D), width: 0.8),
+                                      ),
+                                      child: const Text(
+                                        'Hạng Vàng',
+                                        style: TextStyle(
+                                          color: Color(0xFFFDE047),
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
+                                const Text(
+                                  'Bảng Vàng Danh Dự Học Viên',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Đã mở khóa $earnedCount/$totalBadges huy hiệu',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Text(
+                            '${(progressVal * 100).round()}% hoàn thành',
+                            style: const TextStyle(
+                              color: Color(0xFF93C5FD),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(AppRadius.full),
+                        child: LinearProgressIndicator(
+                          value: progressVal,
+                          minHeight: 8,
+                          backgroundColor: Colors.white.withValues(alpha: 0.2),
+                          valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFDE047)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -209,9 +278,9 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
               ),
             ),
 
-            const SliverToBoxAdapter(child: AppSpacing.vGap24),
+            const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
-            // Earned Badges Section
+            // Earned Badges Section (Grid 3 Columns for larger glowing badges)
             if (_earnedBadges.isNotEmpty) ...[
               SliverToBoxAdapter(
                 child: SectionHeader(
@@ -223,10 +292,10 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 sliver: SliverGrid(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
+                    crossAxisCount: 3,
                     mainAxisSpacing: 12,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 0.62,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 0.72,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) => BadgeCard(
@@ -237,7 +306,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
                   ),
                 ),
               ),
-              const SliverToBoxAdapter(child: AppSpacing.vGap32),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
 
             // In Progress Badges Section
@@ -252,10 +321,10 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 sliver: SliverGrid(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
+                    crossAxisCount: 3,
                     mainAxisSpacing: 12,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 0.55,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 0.72,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) => BadgeCard(
@@ -267,7 +336,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
                   ),
                 ),
               ),
-              const SliverToBoxAdapter(child: AppSpacing.vGap32),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
 
             // Locked Badges Section
@@ -282,10 +351,10 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                 sliver: SliverGrid(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
+                    crossAxisCount: 3,
                     mainAxisSpacing: 12,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 0.55,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 0.72,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) => BadgeCard(
@@ -299,7 +368,7 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
               ),
             ],
 
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+            const SliverToBoxAdapter(child: SizedBox(height: 80)),
           ],
         ),
       ),
@@ -329,10 +398,10 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
 
   List<AchievementBadgeData> _mapBadges(List<BadgeModel> badges) {
     final colors = [
-      AchievementColors.purple,
       AchievementColors.orange,
-      AchievementColors.green,
       AchievementColors.blue,
+      AchievementColors.green,
+      AchievementColors.purple,
       AchievementColors.pink,
       AchievementColors.violet,
       AchievementColors.deepOrange,
