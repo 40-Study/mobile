@@ -14,7 +14,6 @@ class CourseHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final isLight = Theme.of(context).brightness == Brightness.light;
     final course = state.course;
     final enrollment = state.enrollment;
     final isCompleted = enrollment.progressPercentage >= 100;
@@ -43,8 +42,11 @@ class CourseHero extends StatelessWidget {
                       ? CachedNetworkImage(
                           imageUrl: course!.thumbnailUrl!,
                           fit: BoxFit.cover,
+                          memCacheWidth: 300,
+                          memCacheHeight: 220,
                           placeholder: (_, _) => ThumbnailPlaceholder(cs: cs),
-                          errorWidget: (_, _, _) => ThumbnailPlaceholder(cs: cs),
+                          errorWidget: (_, _, _) =>
+                              ThumbnailPlaceholder(cs: cs),
                         )
                       : ThumbnailPlaceholder(cs: cs),
                 ),

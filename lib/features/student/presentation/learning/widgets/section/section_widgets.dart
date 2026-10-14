@@ -267,36 +267,38 @@ class _SectionLessonItemState extends State<SectionLessonItem> {
                 if (hasContents)
                   Icon(
                     _isExpanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
-                    color: cs.slate400,
-                    size: 20,
+                    color: cs.slate500,
+                    size: 22,
                   )
-                else if (isCompleted)
-                  const Text(
-                    'Hoàn thành',
-                    style: TextStyle(
-                      color: Color(0xFF059669),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  )
-                else if (isInProgress)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: cs.primaryContainer,
-                      borderRadius: BorderRadius.circular(AppRadius.full),
-                    ),
-                    child: Text(
-                      '${(lesson.progress?.progressPercentage ?? 0).toStringAsFixed(0)}%',
+                else ...[
+                  if (isCompleted)
+                    const Text(
+                      'Hoàn thành',
                       style: TextStyle(
-                        color: cs.primary,
-                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF059669),
                         fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    )
+                  else if (isInProgress)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: cs.primaryContainer,
+                        borderRadius: BorderRadius.circular(AppRadius.full),
+                      ),
+                      child: Text(
+                        '${(lesson.progress?.progressPercentage ?? 0).toStringAsFixed(0)}%',
+                        style: TextStyle(
+                          color: cs.primary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 11,
+                        ),
                       ),
                     ),
-                  ),
-                AppSpacing.hGap4,
-                Icon(Icons.chevron_right_rounded, size: 18, color: cs.slate400),
+                  AppSpacing.hGap4,
+                  Icon(Icons.chevron_right_rounded, size: 18, color: cs.slate400),
+                ],
               ],
             ),
           ),
