@@ -1,3 +1,5 @@
+import 'widgets/payment_empty_invoices_card.dart';
+import 'widgets/payment_toolbar.dart';
 import 'package:flutter/material.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/parent/data/models/family_scope_child.dart';
@@ -54,7 +56,8 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
   @override
   void initState() {
     super.initState();
-    _repository = widget.repository ??
+    _repository =
+        widget.repository ??
         (diContainer.isRegistered<ParentPaymentRepository>()
             ? diContainer<ParentPaymentRepository>()
             : ParentPaymentRepositoryImpl(
@@ -74,9 +77,7 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
         childId: _selectedChildId,
         mockAllPaid: !_forceActionableDueMode,
       );
-      final invoices = await _repository.getInvoices(
-        childId: _selectedChildId,
-      );
+      final invoices = await _repository.getInvoices(childId: _selectedChildId);
       if (!mounted) return;
       setState(() {
         _children = children;
@@ -114,27 +115,25 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
 
   List<ParentInvoiceModel> get _dueInvoices {
     return _filteredInvoices
-        .where((inv) =>
-            inv.status == PaymentInvoiceStatus.unpaid ||
-            inv.status == PaymentInvoiceStatus.overdue ||
-            inv.status == PaymentInvoiceStatus.dueSoon)
+        .where(
+          (inv) =>
+              inv.status == PaymentInvoiceStatus.unpaid ||
+              inv.status == PaymentInvoiceStatus.overdue ||
+              inv.status == PaymentInvoiceStatus.dueSoon,
+        )
         .toList();
   }
 
   void _openManageChildren(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const ManageChildrenScreen(),
-      ),
+      MaterialPageRoute<void>(builder: (_) => const ManageChildrenScreen()),
     );
   }
 
   void _openNotifications(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const NotificationScreen(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const NotificationScreen()));
   }
 
   void _handleInvoiceDetail(ParentInvoiceModel invoice) {
@@ -176,9 +175,8 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
                       Navigator.push<void>(
                         resCtx,
                         MaterialPageRoute<void>(
-                          builder: (_) => PaymentInvoiceDetailScreen(
-                            invoice: invoice,
-                          ),
+                          builder: (_) =>
+                              PaymentInvoiceDetailScreen(invoice: invoice),
                         ),
                       );
                     },
@@ -199,9 +197,8 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
       Navigator.push<void>(
         context,
         MaterialPageRoute<void>(
-          builder: (ctx) => PaymentHistoryScreen(
-            onOpenInvoiceDetail: _handleInvoiceDetail,
-          ),
+          builder: (ctx) =>
+              PaymentHistoryScreen(onOpenInvoiceDetail: _handleInvoiceDetail),
         ),
       );
     }
@@ -263,11 +260,7 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
                 onNotificationTap: () => _openNotifications(context),
                 onAvatarTap: widget.onNavigateToProfile,
               ),
-              const Expanded(
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
+              const Expanded(child: Center(child: CircularProgressIndicator())),
             ],
           ),
         ),
@@ -307,7 +300,8 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
       );
     }
 
-    final overview = _overview ??
+    final overview =
+        _overview ??
         const PaymentSummaryOverviewModel(
           totalDueAmount: 0,
           totalDueCount: 0,
@@ -316,7 +310,8 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
           allPaidMessage: 'Học sinh hiện không có khoản học phí nào cần đóng.',
         );
 
-    final showActionableDue = _forceActionableDueMode ||
+    final showActionableDue =
+        _forceActionableDueMode ||
         (!overview.isAllPaid && _dueInvoices.isNotEmpty);
 
     final hasNoInvoicesAtAll = _dueInvoices.isEmpty && _paidInvoices.isEmpty;
@@ -368,7 +363,17 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     // Thanh tác vụ phụ (Lịch sử thanh toán & Demo toggle)
-                    _buildSubToolbar(context, cs),
+                    PaymentToolbar(
+                      showDueDemo: _forceActionableDueMode,
+                      onOpenHistory: _handleOpenHistory,
+                      onToggleDemo: () {
+                        setState(
+                          () => _forceActionableDueMode =
+                              !_forceActionableDueMode,
+                        );
+                        _loadData();
+                      },
+                    ),
                     const SizedBox(height: 12),
 
                     // Hero Banner tương ứng theo trạng thái
@@ -401,7 +406,7 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
 
                     // Empty State khi con không có hóa đơn nào (ví dụ con thật)
                     if (hasNoInvoicesAtAll) ...[
-                      _buildEmptyInvoicesCard(cs),
+                      PaymentEmptyInvoicesCard(childName: _selectedChildName),
                       const SizedBox(height: 20),
                     ] else ...[
                       // Khối Khoản cần thanh toán (nếu có)
@@ -495,9 +500,7 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
                     ],
 
                     // Khối Hóa đơn điện tử VAT (Thiết kế 2)
-                    VatTaxLookupCard(
-                      onLookupTap: _handleVatLookup,
-                    ),
+                    VatTaxLookupCard(onLookupTap: _handleVatLookup),
                   ]),
                 ),
               ),
@@ -509,154 +512,6 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
   }
 
   /// Thanh tác vụ phụ gồm xem lịch sử thanh toán và nút chuyển đổi demo All-Clear / Có nợ
-  Widget _buildSubToolbar(BuildContext context, ColorScheme cs) {
-    return Row(
-      children: [
-        // Nút mở Lịch sử thanh toán
-        InkWell(
-          onTap: _handleOpenHistory,
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: cs.surface,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: cs.outlineVariant.withValues(alpha: 0.6),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.receipt_long_rounded,
-                  size: 16,
-                  color: cs.primary,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Lịch sử thanh toán',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: cs.onSurface,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        const Spacer(),
-
-        // Nút toggle chuyển chế độ demo All-Clear ↔ Có nợ quá hạn
-        InkWell(
-          onTap: () {
-            setState(() {
-              _forceActionableDueMode = !_forceActionableDueMode;
-            });
-            _loadData();
-          },
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: _forceActionableDueMode
-                  ? const Color(0xFFFEF2F2)
-                  : const Color(0xFFF0FDF4),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: _forceActionableDueMode
-                    ? const Color(0xFFFECACA)
-                    : const Color(0xFFBBF7D0),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  _forceActionableDueMode
-                      ? Icons.pending_actions_rounded
-                      : Icons.check_circle_outline_rounded,
-                  size: 14,
-                  color: _forceActionableDueMode
-                      ? const Color(0xFFDC2626)
-                      : const Color(0xFF15803D),
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  _forceActionableDueMode
-                      ? 'Demo: Có nợ quá hạn'
-                      : 'Demo: Tất toán',
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                    color: _forceActionableDueMode
-                      ? const Color(0xFFDC2626)
-                      : const Color(0xFF15803D),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
   /// Empty State Card khi con được chọn chưa phát sinh hóa đơn nào
-  Widget _buildEmptyInvoicesCard(ColorScheme cs) {
-    final childName = _selectedChildName;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: const BoxDecoration(
-              color: Color(0xFFF1F5F9),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.receipt_long_rounded,
-              size: 26,
-              color: Color(0xFF94A3B8),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Chưa có thông tin học phí',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: cs.onSurface,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            childName != null
-                ? 'Học sinh $childName hiện chưa phát sinh hóa đơn '
-                    'cần thanh toán hoặc lịch sử biên lai trong kỳ này.'
-                : 'Hiện không có hóa đơn học phí cần thanh toán '
-                    'hoặc lịch sử giao dịch trong kỳ này.',
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 13,
-              color: Color(0xFF64748B),
-              height: 1.4,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
