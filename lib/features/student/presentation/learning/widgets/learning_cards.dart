@@ -106,8 +106,11 @@ class ContinueLearningCard extends StatelessWidget {
                         ? CachedNetworkImage(
                             imageUrl: course!.thumbnailUrl!,
                             fit: BoxFit.cover,
+                            memCacheWidth: 240,
+                            memCacheHeight: 280,
                             placeholder: (_, _) => ThumbnailPlaceholder(cs: cs),
-                            errorWidget: (_, _, _) => ThumbnailPlaceholder(cs: cs),
+                            errorWidget: (_, _, _) =>
+                                ThumbnailPlaceholder(cs: cs),
                           )
                         : ThumbnailPlaceholder(cs: cs),
                   ),
@@ -356,6 +359,8 @@ class MyCourseCard extends StatelessWidget {
                         ? CachedNetworkImage(
                             imageUrl: course!.thumbnailUrl!,
                             fit: BoxFit.cover,
+                            memCacheWidth: 400,
+                            memCacheHeight: 200,
                             placeholder: (_, _) => Container(
                               color: cs.primaryContainer,
                               child: Icon(
