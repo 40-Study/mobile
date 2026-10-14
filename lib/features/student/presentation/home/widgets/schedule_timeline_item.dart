@@ -48,43 +48,43 @@ class ScheduleTimelineItem extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: data.isActive
-              ? accent.withValues(alpha: 0.035)
+              ? accent.withValues(alpha: 0.04)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.sm),
         ),
         child: IntrinsicHeight(
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                width: 52,
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    top: AppSpacing.md,
-                    bottom: AppSpacing.md,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
+                width: 50,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      times.first,
+                      style: tt.labelMedium?.copyWith(
+                        color: data.isActive ? cs.primary : cs.slate900,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                    if (times.length > 1) ...[
+                      const SizedBox(height: 2),
                       Text(
-                        times.first,
-                        style: tt.labelMedium?.copyWith(
-                          color: data.isActive ? cs.primary : cs.onSurface,
-                          fontWeight: FontWeight.w700,
+                        times.last,
+                        style: tt.labelSmall?.copyWith(
+                          color: cs.slate400,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 10.5,
                         ),
                       ),
-                      if (times.length > 1)
-                        Text(
-                          times.last,
-                          style: tt.labelSmall?.copyWith(
-                            color: cs.onSurfaceVariant,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
                     ],
-                  ),
+                  ],
                 ),
               ),
               AppSpacing.hGap8,
@@ -92,7 +92,7 @@ class ScheduleTimelineItem extends StatelessWidget {
                 width: 16,
                 child: CustomPaint(
                   painter: _TimelineAxisPainter(
-                    color: cs.outline,
+                    color: cs.outlineVariant.withValues(alpha: 0.6),
                     isFirst: isFirst,
                     isLast: isLast,
                   ),
@@ -104,18 +104,18 @@ class ScheduleTimelineItem extends StatelessWidget {
                         color: accent,
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: cs.surfaceContainerLowest,
+                          color: Colors.white,
                           width: 2,
                         ),
                         boxShadow: data.isActive
-                            ? [
-                                BoxShadow(
-                                  color: accent.withValues(alpha: 0.22),
-                                  blurRadius: 0,
-                                  spreadRadius: 3,
-                                ),
-                              ]
-                            : null,
+                          ? [
+                              BoxShadow(
+                                color: accent.withValues(alpha: 0.25),
+                                blurRadius: 4,
+                                spreadRadius: 2,
+                              ),
+                            ]
+                          : null,
                       ),
                     ),
                   ),
@@ -123,52 +123,69 @@ class ScheduleTimelineItem extends StatelessWidget {
               ),
               AppSpacing.hGap12,
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        data.title,
-                        style: tt.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      data.title,
+                      style: tt.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: cs.slate900,
+                        fontSize: 13.5,
                       ),
-                      AppSpacing.vGap4,
-                      Text(
-                        data.subtitle,
-                        style: tt.bodySmall?.copyWith(
-                          color: cs.onSurfaceVariant,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Icon(
+                          _deriveSubtitleIcon(data),
+                          size: 13,
+                          color: cs.slate400,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            data.subtitle,
+                            style: tt.bodySmall?.copyWith(
+                              color: cs.slate500,
+                              fontSize: 11.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 3.5,
+                ),
+                decoration: BoxDecoration(
+                  color: accent.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppRadius.full),
+                ),
+                child: Text(
+                  _typeLabel,
+                  style: tt.labelSmall?.copyWith(
+                    color: accent,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 10.5,
                   ),
                 ),
               ),
-              AppSpacing.hGap8,
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xs,
-                  ),
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppRadius.full),
-                  ),
-                  child: Text(
-                    _typeLabel,
-                    style: tt.labelSmall?.copyWith(
-                      color: accent,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+              const SizedBox(width: 4),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: Color(0xFF94A3B8),
               ),
             ],
           ),
@@ -177,10 +194,22 @@ class ScheduleTimelineItem extends StatelessWidget {
     );
   }
 
+  IconData _deriveSubtitleIcon(ScheduleTimelineItemData data) {
+    if (data.subtitle.startsWith('GV:')) {
+      return Icons.person_outline_rounded;
+    }
+    return switch (data.type) {
+      ScheduleItemType.livestream => Icons.sensors_rounded,
+      ScheduleItemType.video => Icons.ondemand_video_rounded,
+      ScheduleItemType.quiz => Icons.assignment_outlined,
+      ScheduleItemType.deadline => Icons.alarm_rounded,
+    };
+  }
+
   Color _accentColor(ColorScheme cs) {
     return switch (data.type) {
       ScheduleItemType.livestream => cs.error,
-      ScheduleItemType.video => cs.primary,
+      ScheduleItemType.video => const Color(0xFF3D5FC4),
       ScheduleItemType.quiz => cs.tertiary,
       ScheduleItemType.deadline => cs.secondary,
     };

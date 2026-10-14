@@ -73,6 +73,14 @@ class _HomeScreenState extends State<HomeScreen> {
               child: BlocConsumer<HomeBloc, HomeState>(
                 listenWhen: (prev, curr) =>
                     curr is HomeSuccess && curr.classCourseNavigation != null,
+                buildWhen: (prev, curr) {
+                  if (prev is HomeSuccess && curr is HomeSuccess) {
+                    return prev.continueLearning != curr.continueLearning ||
+                        prev.scheduleItems != curr.scheduleItems ||
+                        prev.assignments != curr.assignments;
+                  }
+                  return prev != curr;
+                },
                 listener: (context, state) {
                   if (state is HomeSuccess) {
                     _handleClassCourseNavigation(
@@ -266,10 +274,15 @@ class _HomeScreenState extends State<HomeScreen> {
         AppSpacing.vGap12,
         ScheduleTimeline(
           items: state.scheduleItems.map((item) {
+            final subtitle = (item.instructorName != null && item.instructorName!.isNotEmpty)
+                ? 'GV: ${item.instructorName}'
+                : (item.location != null && item.location!.isNotEmpty
+                    ? item.location!
+                    : 'Tự học trực tuyến');
             return ScheduleTimelineItemData(
               time: _formatTimeRange(item.startTime, item.endTime),
               title: item.title,
-              subtitle: item.instructorName ?? _typeLabel(item.type),
+              subtitle: subtitle,
               type: _mapScheduleType(item.type),
               isActive: item.id == activeScheduleId,
               onTap: () => _onScheduleItemTap(context, item),
@@ -527,14 +540,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return current?.id ?? next?.id;
   }
 
-  String _typeLabel(String type) {
-    return switch (type.toLowerCase()) {
-      'livestream' => 'Trực tuyến',
-      'quiz' => 'Bài kiểm tra',
-      'deadline' => 'Hạn nộp',
-      _ => 'Video',
-    };
-  }
 
   String _greeting() {
     final hour = DateTime.now().hour;
