@@ -66,7 +66,7 @@ class _SearchViewState extends State<_SearchView> {
             textInputAction: TextInputAction.search,
             style: tt.bodyMedium,
             decoration: InputDecoration(
-              hintText: 'Tim kiem khoa hoc, bai hoc...',
+              hintText: 'Tìm kiếm khóa học, bài học...',
               hintStyle: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
               prefixIcon: Icon(Icons.search, color: cs.onSurfaceVariant, size: 20),
               suffixIcon: BlocBuilder<SearchBloc, SearchState>(
@@ -128,7 +128,7 @@ class _SearchViewState extends State<_SearchView> {
                   child: Row(
                     children: [
                       Text(
-                        '${state.filteredResults.length} ket qua',
+                        '${state.filteredResults.length} kết quả',
                         style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                       ),
                     ],

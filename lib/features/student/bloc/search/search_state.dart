@@ -7,12 +7,14 @@ class SearchResult {
     required this.title,
     required this.subtitle,
     required this.type,
+    this.imageUrl,
   });
 
   final String id;
   final String title;
   final String subtitle;
   final SearchFilter type;
+  final String? imageUrl;
 }
 
 sealed class SearchState extends Equatable {

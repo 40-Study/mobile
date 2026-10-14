@@ -61,10 +61,10 @@ class FilterTabs extends StatelessWidget {
 
   String _getFilterLabel(SearchFilter filter) {
     return switch (filter) {
-      SearchFilter.all => 'Tat ca',
-      SearchFilter.course => 'Khoa hoc',
-      SearchFilter.lesson => 'Bai hoc',
-      SearchFilter.quiz => 'Quiz',
+      SearchFilter.all => 'Tất cả',
+      SearchFilter.course => 'Khóa học',
+      SearchFilter.lesson => 'Bài học',
+      SearchFilter.quiz => 'Trắc nghiệm',
     };
   }
 }
