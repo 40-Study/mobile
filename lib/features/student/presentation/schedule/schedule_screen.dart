@@ -186,11 +186,15 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           else
             ScheduleTimeline(
               items: state.selectedDateItems.map((item) {
+                final subtitle = (item.instructorName != null && item.instructorName!.isNotEmpty)
+                    ? 'GV: ${item.instructorName}'
+                    : (item.location != null && item.location!.isNotEmpty
+                        ? item.location!
+                        : 'Tự học trực tuyến');
                 return ScheduleTimelineItemData(
                   time: _formatTimeRange(item.startTime, item.endTime),
                   title: item.title,
-                  subtitle:
-                      '${_typeLabel(item.type)} • ${item.instructorName ?? ""}',
+                  subtitle: subtitle,
                   type: _mapScheduleType(item.type),
                   isActive: _isCurrentOrNext(item.startTime, item.endTime),
                   onTap: () => _onScheduleItemTap(context, item),
@@ -304,14 +308,5 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   bool _isCurrentOrNext(DateTime start, DateTime end) {
     final now = DateTime.now();
     return !start.isAfter(now) && end.isAfter(now);
-  }
-
-  String _typeLabel(String type) {
-    return switch (type.toLowerCase()) {
-      'livestream' => 'Trực tuyến',
-      'quiz' => 'Bài kiểm tra',
-      'deadline' => 'Hạn nộp',
-      _ => 'Video',
-    };
   }
 }
