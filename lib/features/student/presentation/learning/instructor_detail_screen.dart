@@ -11,6 +11,8 @@ import 'widgets/instructor_skill_chip.dart';
 import 'widgets/instructor_soft_icon_button.dart';
 import 'widgets/instructor_stat_item.dart';
 import 'widgets/instructor_vertical_divider.dart';
+import 'instructor_courses_screen.dart';
+import 'instructor_reviews_screen.dart';
 
 class InstructorDetailScreen extends StatelessWidget {
   const InstructorDetailScreen({
@@ -163,6 +165,8 @@ class InstructorDetailScreen extends StatelessWidget {
                     ? CachedNetworkImage(
                         imageUrl: instructorAvatar!,
                         fit: BoxFit.cover,
+                        memCacheWidth: 200,
+                        memCacheHeight: 200,
                         placeholder: (_, _) =>
                             InstructorAvatarPlaceholder(name: instructorName),
                         errorWidget: (_, _, _) =>
@@ -367,7 +371,18 @@ class InstructorDetailScreen extends StatelessWidget {
             ),
             const Spacer(),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => InstructorCoursesScreen(
+                      instructorId: instructorId,
+                      instructorName: instructorName,
+                      instructorAvatar: instructorAvatar,
+                      instructorTitle: instructorTitle,
+                    ),
+                  ),
+                );
+              },
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
                 minimumSize: Size.zero,
@@ -442,7 +457,18 @@ class InstructorDetailScreen extends StatelessWidget {
             ),
             const Spacer(),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => InstructorReviewsScreen(
+                      instructorId: instructorId,
+                      instructorName: instructorName,
+                      instructorAvatar: instructorAvatar,
+                      instructorTitle: instructorTitle,
+                    ),
+                  ),
+                );
+              },
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
                 minimumSize: Size.zero,
