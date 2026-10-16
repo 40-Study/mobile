@@ -399,8 +399,10 @@ class _LessonExerciseSectionState extends State<LessonExerciseSection> {
                             total: result.totalCount,
                             score: result.score,
                             quizId: quiz.id,
+                            attemptId: result.attemptId,
                             duration: quiz.timeLimitMinutes ?? 10,
                           ),
+
                         ),
                       );
                     },

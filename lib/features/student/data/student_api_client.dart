@@ -50,6 +50,16 @@ abstract class StudentApiClient {
     @Body() Map<String, dynamic> answers,
   );
 
+  @GET('/api/quizzes/{quizId}/attempts/{attemptId}')
+  Future<HttpResponse<dynamic>> getAttemptDetail(
+    @Path('quizId') String quizId,
+    @Path('attemptId') String attemptId,
+  );
+
+  @GET('/api/quizzes/{quizId}/attempts')
+  Future<HttpResponse<dynamic>> getMyAttempts(@Path('quizId') String quizId);
+
+
   // Search courses
   @GET('/api/courses')
   Future<HttpResponse<dynamic>> searchCourses({

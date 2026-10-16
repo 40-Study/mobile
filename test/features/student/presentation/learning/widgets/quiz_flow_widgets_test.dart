@@ -4,6 +4,7 @@ import 'package:study/features/student/data/models/models.dart';
 import 'package:study/features/student/presentation/learning/quiz_result_screen.dart';
 import 'package:study/features/student/presentation/learning/widgets/quiz/answer_option.dart';
 import 'package:study/features/student/presentation/learning/widgets/quiz/question_card.dart';
+import 'package:study/features/student/presentation/learning/widgets/quiz/question_review_card.dart';
 import 'package:study/features/student/presentation/learning/widgets/quiz/score_circle.dart';
 
 void main() {
@@ -158,5 +159,230 @@ void main() {
       expect(find.text('Câu 1'), findsOneWidget);
       expect(find.text('Câu 2'), findsOneWidget);
     });
+
+    testWidgets('QuestionCard supports flag for review toggling', (tester) async {
+      bool flagToggled = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: QuestionCard(
+              questionNumber: 3,
+              totalQuestions: 10,
+              question: 'Git commit là gì?',
+              isFlagged: false,
+              onToggleFlag: () {
+                flagToggled = true;
+              },
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Xem lại'), findsOneWidget);
+      await tester.tap(find.text('Xem lại'));
+      expect(flagToggled, isTrue);
+    });
+
+    testWidgets('QuestionReviewCard displays correct status and explanation', (tester) async {
+      const reviewItem = QuizReviewItemModel(
+        index: 1,
+        questionId: 'q1',
+        questionText: 'Lệnh nào dùng để khởi tạo một Git repo?',
+        answers: [
+          QuizAnswerModel(id: 'a1', answerText: 'git init'),
+          QuizAnswerModel(id: 'a2', answerText: 'git start'),
+        ],
+        selectedAnswerIds: ['a1'],
+        correctAnswerIds: ['a1'],
+        isCorrect: true,
+        isSkipped: false,
+        pointsEarned: 1.0,
+        explanation: 'git init tạo ra thư mục .git để theo dõi phiên bản.',
+      );
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: QuestionReviewCard(
+              index: 1,
+              reviewItem: reviewItem,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Câu 1'), findsOneWidget);
+      expect(find.text('Chính xác'), findsOneWidget);
+      expect(find.text('git init'), findsOneWidget);
+      expect(find.text('Bạn đã chọn đúng'), findsOneWidget);
+      expect(find.text('Giải thích kiến thức'), findsOneWidget);
+      expect(find.text('git init tạo ra thư mục .git để theo dõi phiên bản.'), findsOneWidget);
+    });
+
+
+    testWidgets('QuizResultScreen with reviewItems correctly separates correct vs wrong answers', (tester) async {
+      const reviewItems = [
+        QuizReviewItemModel(
+          index: 1,
+          questionId: 'q1',
+          questionText: 'Lệnh nào dùng để khởi tạo Git repo?',
+          answers: [
+            QuizAnswerModel(id: 'a1', answerText: 'git init'),
+            QuizAnswerModel(id: 'a2', answerText: 'git start'),
+          ],
+          selectedAnswerIds: ['a1'],
+          correctAnswerIds: ['a1'],
+          isCorrect: true,
+          isSkipped: false,
+          pointsEarned: 1.0,
+          explanation: 'git init là lệnh chính xác.',
+        ),
+        QuizReviewItemModel(
+          index: 2,
+          questionId: 'q2',
+          questionText: 'Lệnh nào để tạo nhánh mới?',
+          answers: [
+            QuizAnswerModel(id: 'a3', answerText: 'git branch'),
+            QuizAnswerModel(id: 'a4', answerText: 'git new'),
+          ],
+          selectedAnswerIds: ['a4'],
+          correctAnswerIds: ['a3'],
+          isCorrect: false,
+          isSkipped: false,
+          pointsEarned: 0.0,
+          explanation: 'git branch dùng để tạo nhánh mới.',
+        ),
+      ];
+
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: QuizResultScreen(
+            title: 'Git Basics Quiz',
+            correct: 1,
+            total: 2,
+            score: 50,
+            reviewItems: reviewItems,
+          ),
+        ),
+      );
+
+      // Initially shows all 2 questions
+      expect(find.text('Câu 1'), findsOneWidget);
+      expect(find.text('Câu 2'), findsOneWidget);
+      expect(find.text('Chính xác'), findsOneWidget);
+      expect(find.text('Chưa chính xác'), findsOneWidget);
+
+      // Tap "Câu đúng"
+      await tester.tap(find.text('Câu đúng'));
+      await tester.pumpAndSettle();
+
+      // Only Câu 1 (Chính xác) is shown
+      expect(find.text('Câu 1'), findsOneWidget);
+      expect(find.text('Câu 2'), findsNothing);
+      expect(find.text('Chính xác'), findsOneWidget);
+      expect(find.text('Chưa chính xác'), findsNothing);
+
+      // Tap "Câu sai"
+      await tester.tap(find.text('Câu sai'));
+      await tester.pumpAndSettle();
+
+      // Only Câu 2 (Chưa chính xác) is shown
+      expect(find.text('Câu 1'), findsNothing);
+      expect(find.text('Câu 2'), findsOneWidget);
+      expect(find.text('Chưa chính xác'), findsOneWidget);
+    });
+
+    testWidgets('QuestionCard displays multiple choice badge and hint', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: QuestionCard(
+              questionNumber: 3,
+              totalQuestions: 3,
+              question: 'Lệnh nào liên quan tới việc đưa thay đổi lên remote repository?',
+              isMultipleChoice: true,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Câu 3 / 3'), findsOneWidget);
+      expect(find.text('Chọn nhiều đáp án'), findsOneWidget);
+      expect(find.byIcon(Icons.checklist_rounded), findsOneWidget);
+      expect(find.text('Có thể chọn nhiều hơn một đáp án đúng'), findsOneWidget);
+    });
+
+    testWidgets('AnswerOption renders checkbox icons when isMultipleChoice is true', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                AnswerOption(
+                  index: 0,
+                  text: 'git push',
+                  isSelected: true,
+                  isMultipleChoice: true,
+                  onTap: () {},
+                ),
+                AnswerOption(
+                  index: 1,
+                  text: 'git commit',
+                  isSelected: false,
+                  isMultipleChoice: true,
+                  onTap: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byIcon(Icons.check_box_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.check_box_outline_blank_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.radio_button_unchecked_rounded), findsNothing);
+    });
+
+    testWidgets('QuestionReviewCard displays missed correct answer for multiple choice', (tester) async {
+      const reviewItem = QuizReviewItemModel(
+        index: 3,
+        questionId: 'q3',
+        questionText: 'Lệnh nào liên quan remote repo?',
+        answers: [
+          QuizAnswerModel(id: 'a1', answerText: 'git push'),
+          QuizAnswerModel(id: 'a2', answerText: 'git push origin main'),
+          QuizAnswerModel(id: 'a3', answerText: 'git commit'),
+        ],
+        selectedAnswerIds: ['a1'],
+        correctAnswerIds: ['a1', 'a2'],
+        isCorrect: false,
+        isSkipped: false,
+        pointsEarned: 0.0,
+      );
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: QuestionReviewCard(
+              index: 3,
+              reviewItem: reviewItem,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Câu 3'), findsOneWidget);
+      expect(find.text('Chọn nhiều'), findsOneWidget);
+      expect(find.text('Chưa chính xác'), findsOneWidget);
+      expect(find.text('Bạn đã chọn đúng'), findsOneWidget);
+      expect(find.text('Đáp án đúng (Chưa chọn)'), findsOneWidget);
+    });
   });
 }
+

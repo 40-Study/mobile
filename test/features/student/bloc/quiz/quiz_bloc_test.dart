@@ -8,6 +8,7 @@ import 'package:study/features/student/bloc/quiz/quiz_bloc.dart';
 import 'package:study/features/student/bloc/quiz/quiz_event.dart';
 import 'package:study/features/student/bloc/quiz/quiz_state.dart';
 import 'package:study/features/student/data/models/quiz_question_model.dart';
+import 'package:study/features/student/data/models/quiz_review_item_model.dart';
 import 'package:study/features/student/data/models/quiz_submit_result.dart';
 import 'package:study/features/student/data/quiz_result_storage.dart';
 import 'package:study/features/student/repository/student_repository.dart';
@@ -162,7 +163,9 @@ void main() {
         score: 50,
         timeLimitMinutes: 10,
         questions: _questions,
-        userAnswers: {0: 0},
+        userAnswers: {
+          0: {0},
+        },
       ),
     ],
     verify: (_) async {
@@ -181,8 +184,10 @@ void main() {
       expect(saved?.correctCount, 1);
       expect(saved?.totalCount, 2);
       expect(saved?.score, 50);
+      expect(saved?.attemptId, 'attempt');
     },
   );
+
 
   blocTest<QuizBloc, QuizState>(
     'reports submit failures and does not store a result',
@@ -209,4 +214,156 @@ void main() {
     verify: (_) async =>
         expect(await QuizResultStorage.hasResult('quiz'), isFalse),
   );
+
+  blocTest<QuizBloc, QuizState>(
+    'toggles question flag status correctly',
+    build: () {
+      when(
+        () => repository.startQuiz('quiz'),
+      ).thenAnswer((_) async => const Result.success(_startedQuiz));
+      return QuizBloc(repository);
+    },
+    act: (bloc) async {
+      bloc.add(const QuizStarted('quiz'));
+      await bloc.stream.firstWhere((state) => state is QuizReady);
+      bloc.add(const QuizQuestionFlagToggled(0));
+      await bloc.stream.firstWhere(
+        (state) => state is QuizReady && state.isQuestionFlagged(0),
+      );
+      bloc.add(const QuizQuestionFlagToggled(0));
+    },
+    expect: () => [
+      const QuizLoading(),
+      isA<QuizReady>().having((s) => s.flaggedQuestions, 'initial', isEmpty),
+      isA<QuizReady>().having((s) => s.flaggedQuestions, 'flagged', contains(0)),
+      isA<QuizReady>().having((s) => s.flaggedQuestions, 'unflagged', isEmpty),
+    ],
+  );
+
+  blocTest<QuizBloc, QuizState>(
+    'submits and fetches review items accurately from server',
+    build: () {
+      when(
+        () => repository.startQuiz('quiz'),
+      ).thenAnswer((_) async => const Result.success(_startedQuiz));
+      when(() => repository.submitQuiz('quiz', 'attempt', any())).thenAnswer(
+        (_) async => const Result.success(QuizSubmitResult(percentage: 50)),
+      );
+      when(() => repository.getQuizAttemptReview('quiz', 'attempt', any()))
+          .thenAnswer(
+        (_) async => const Result.success([
+          QuizReviewItemModel(
+            index: 1,
+            questionId: 'q1',
+            questionText: 'Q1',
+            answers: [QuizAnswerModel(id: 'a1', answerText: 'Ans 1')],
+            selectedAnswerIds: ['a1'],
+            correctAnswerIds: ['a1'],
+            isCorrect: true,
+            isSkipped: false,
+            pointsEarned: 1.0,
+            explanation: 'Correct explanation',
+          ),
+          QuizReviewItemModel(
+            index: 2,
+            questionId: 'q2',
+            questionText: 'Q2',
+            answers: [QuizAnswerModel(id: 'a2', answerText: 'Ans 2')],
+            selectedAnswerIds: [],
+            correctAnswerIds: ['a2'],
+            isCorrect: false,
+            isSkipped: true,
+            pointsEarned: 0.0,
+            explanation: 'Review explanation',
+          ),
+        ]),
+      );
+      return QuizBloc(repository);
+    },
+    act: (bloc) async {
+      bloc.add(const QuizStarted('quiz'));
+      await bloc.stream.firstWhere((state) => state is QuizReady);
+      bloc.add(const QuizSubmitted());
+    },
+    expect: () => [
+      const QuizLoading(),
+      isA<QuizReady>(),
+      const QuizSubmitting(),
+      isA<QuizCompleted>()
+          .having((s) => s.correctCount, 'correctCount', 1)
+          .having((s) => s.totalCount, 'totalCount', 2)
+          .having((s) => s.reviewItems.length, 'reviewItems length', 2)
+          .having((s) => s.reviewItems.first.isCorrect, 'first isCorrect', isTrue)
+          .having((s) => s.reviewItems.last.isCorrect, 'second isCorrect', isFalse),
+    ],
+  );
+
+  blocTest<QuizBloc, QuizState>(
+    'toggles multiple choice answers and submits all selected ids',
+    build: () {
+      const multiChoiceQuiz = (
+        attemptId: 'attempt_multi',
+        questions: [
+          QuizQuestionModel(
+            id: 'q_multi',
+            question: 'Select multiple git commands',
+            questionType: 'multiple_choice',
+            answers: [
+              QuizAnswerModel(id: 'a1', answerText: 'git push'),
+              QuizAnswerModel(id: 'a2', answerText: 'git commit'),
+              QuizAnswerModel(id: 'a3', answerText: 'git push origin main'),
+            ],
+          ),
+        ],
+        timeLimitMinutes: 10,
+      );
+      when(() => repository.startQuiz('quiz_multi'))
+          .thenAnswer((_) async => const Result.success(multiChoiceQuiz));
+      when(() => repository.submitQuiz('quiz_multi', 'attempt_multi', any()))
+          .thenAnswer(
+        (_) async => const Result.success(QuizSubmitResult(percentage: 100)),
+      );
+      return QuizBloc(repository);
+    },
+    act: (bloc) async {
+      bloc.add(const QuizStarted('quiz_multi'));
+      await bloc.stream.firstWhere((state) => state is QuizReady);
+      // Select option 0
+      bloc.add(const QuizAnswerSelected(0, 0));
+      await bloc.stream.firstWhere(
+        (s) => s is QuizReady && s.answers[0]?.contains(0) == true,
+      );
+      // Select option 2
+      bloc.add(const QuizAnswerSelected(0, 2));
+      await bloc.stream.firstWhere(
+        (s) => s is QuizReady && s.answers[0]?.contains(2) == true,
+      );
+      // Submit
+      bloc.add(const QuizSubmitted());
+    },
+    expect: () => [
+      const QuizLoading(),
+      isA<QuizReady>(),
+      isA<QuizReady>().having((s) => s.answers[0], 'has option 0', {0}),
+      isA<QuizReady>().having((s) => s.answers[0], 'has options 0 and 2', {0, 2}),
+      const QuizSubmitting(),
+      isA<QuizCompleted>().having(
+        (s) => s.userAnswers[0],
+        'userAnswers contains 0 and 2',
+        {0, 2},
+      ),
+    ],
+    verify: (_) async {
+      final sentAnswers = verify(
+        () => repository.submitQuiz('quiz_multi', 'attempt_multi', captureAny()),
+      ).captured.single as List<Map<String, dynamic>>;
+      expect(sentAnswers, [
+        {
+          'question_id': 'q_multi',
+          'selected_answer_ids': ['a1', 'a3'],
+        },
+      ]);
+    },
+  );
 }
+

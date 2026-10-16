@@ -6,24 +6,99 @@ class QuestionReviewCard extends StatelessWidget {
   const QuestionReviewCard({
     super.key,
     required this.index,
-    required this.question,
-    required this.userAnswerIndex,
+    this.reviewItem,
+    this.question,
+    this.userAnswerIndex,
   });
 
   final int index;
-  final QuizQuestionModel question;
+  final QuizReviewItemModel? reviewItem;
+  final QuizQuestionModel? question;
   final int? userAnswerIndex;
 
-  bool get isCorrect =>
-      userAnswerIndex != null && userAnswerIndex == question.correctAnswer;
+  bool get isSkipped {
+    if (reviewItem != null) {
+      return reviewItem!.isSkipped || reviewItem!.selectedAnswerIds.isEmpty;
+    }
+    return userAnswerIndex == null;
+  }
+
+  bool get isCorrect {
+    if (reviewItem != null) {
+      return reviewItem!.isCorrect;
+    }
+    return userAnswerIndex != null &&
+        question != null &&
+        userAnswerIndex == question!.correctAnswer;
+  }
+
+  String get questionTitle =>
+      reviewItem?.questionText ?? question?.question ?? '';
+
+  List<QuizAnswerModel> get answers =>
+      reviewItem?.answers ?? question?.answers ?? const [];
+
+  bool get isMultipleChoice {
+    if (reviewItem != null) {
+      return reviewItem!.correctAnswerIds.length > 1;
+    }
+    return question?.isMultipleChoice ?? false;
+  }
+
+  String? get explanationText {
+    final exp = reviewItem?.explanation ?? question?.explanation;
+    if (exp != null && exp.trim().isNotEmpty) {
+      return exp.trim();
+    }
+    return null;
+  }
+
+  bool _isAnswerCorrect(QuizAnswerModel answer, int optIndex) {
+    if (reviewItem != null) {
+      return reviewItem!.correctAnswerIds.contains(answer.id);
+    }
+    return question != null && optIndex == question!.correctAnswer;
+  }
+
+  bool _isAnswerSelected(QuizAnswerModel answer, int optIndex) {
+    if (reviewItem != null) {
+      return reviewItem!.selectedAnswerIds.contains(answer.id);
+    }
+    return optIndex == userAnswerIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    final badgeBg = isCorrect ? const Color(0xFFECFDF5) : const Color(0xFFFEF2F2);
-    final badgeColor = isCorrect ? const Color(0xFF059669) : const Color(0xFFDC2626);
+    final Color badgeBg;
+    final Color badgeColor;
+    final IconData badgeIcon;
+    final String badgeLabel;
+
+    if (isCorrect) {
+      badgeBg = const Color(0xFFECFDF5);
+      badgeColor = const Color(0xFF059669);
+      badgeIcon = Icons.check_circle_rounded;
+      badgeLabel = 'Chính xác';
+    } else if (isSkipped) {
+      badgeBg = const Color(0xFFF3F4F6);
+      badgeColor = const Color(0xFF6B7280);
+      badgeIcon = Icons.help_outline_rounded;
+      badgeLabel = 'Chưa làm';
+    } else {
+      badgeBg = const Color(0xFFFEF2F2);
+      badgeColor = const Color(0xFFDC2626);
+      badgeIcon = Icons.cancel_rounded;
+      badgeLabel = 'Chưa chính xác';
+    }
+
+    final borderColor = isCorrect
+        ? const Color(0xFF059669).withValues(alpha: 0.3)
+        : isSkipped
+            ? cs.outlineVariant.withValues(alpha: 0.35)
+            : const Color(0xFFDC2626).withValues(alpha: 0.3);
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -31,12 +106,7 @@ class QuestionReviewCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: isCorrect
-              ? const Color(0xFF059669).withValues(alpha: 0.3)
-              : const Color(0xFFDC2626).withValues(alpha: 0.3),
-          width: 1,
-        ),
+        border: Border.all(color: borderColor, width: 1.2),
         boxShadow: [
           BoxShadow(
             color: cs.shadow.withValues(alpha: 0.03),
@@ -52,22 +122,50 @@ class QuestionReviewCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: cs.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(AppRadius.full),
-                ),
-                child: Text(
-                  'Câu $index',
-                  style: tt.labelMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: cs.onSurface,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(AppRadius.full),
+                    ),
+                    child: Text(
+                      'Câu $index',
+                      style: tt.labelMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: cs.onSurface,
+                      ),
+                    ),
                   ),
-                ),
+                  if (isMultipleChoice) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEDE9FE),
+                        borderRadius: BorderRadius.circular(AppRadius.full),
+                      ),
+                      child: const Text(
+                        'Chọn nhiều',
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF6D28D9),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: badgeBg,
                   borderRadius: BorderRadius.circular(AppRadius.full),
@@ -76,16 +174,10 @@ class QuestionReviewCard extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      isCorrect
-                          ? Icons.check_circle_rounded
-                          : Icons.cancel_rounded,
-                      size: 14,
-                      color: badgeColor,
-                    ),
+                    Icon(badgeIcon, size: 14, color: badgeColor),
                     const SizedBox(width: 4),
                     Text(
-                      isCorrect ? 'Chính xác' : 'Chưa chính xác',
+                      badgeLabel,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -101,7 +193,7 @@ class QuestionReviewCard extends StatelessWidget {
 
           // Question text
           Text(
-            question.question,
+            questionTitle,
             style: tt.bodyMedium?.copyWith(
               fontWeight: FontWeight.w700,
               color: cs.slate900,
@@ -111,29 +203,32 @@ class QuestionReviewCard extends StatelessWidget {
           AppSpacing.vGap12,
 
           // Options list
-          ...question.answers.asMap().entries.map((entry) {
+          ...answers.asMap().entries.map((entry) {
             final optIndex = entry.key;
             final answer = entry.value;
-            final isCorrectOption = optIndex == question.correctAnswer;
-            final isUserSelected = optIndex == userAnswerIndex;
+            final isCorrectOption = _isAnswerCorrect(answer, optIndex);
+            final isUserSelected = _isAnswerSelected(answer, optIndex);
 
             Color optionBg = cs.surfaceContainerHighest.withValues(alpha: 0.4);
             Color optionBorder = cs.outlineVariant.withValues(alpha: 0.3);
             Color textColor = cs.onSurface;
             Widget? trailingWidget;
 
-            if (isCorrectOption) {
+            if (isCorrectOption && isUserSelected) {
               optionBg = const Color(0xFFECFDF5);
               optionBorder = const Color(0xFF059669);
               textColor = const Color(0xFF065F46);
               trailingWidget = const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.check_circle_rounded,
-                      size: 16, color: Color(0xFF059669)),
+                  Icon(
+                    Icons.check_circle_rounded,
+                    size: 16,
+                    color: Color(0xFF059669),
+                  ),
                   SizedBox(width: 4),
                   Text(
-                    'Đáp án đúng',
+                    'Bạn đã chọn đúng',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -142,18 +237,46 @@ class QuestionReviewCard extends StatelessWidget {
                   ),
                 ],
               );
-            } else if (isUserSelected && !isCorrect) {
+            } else if (isCorrectOption && !isUserSelected) {
+              optionBg = const Color(0xFFF0FDF4);
+              optionBorder = const Color(0xFF10B981).withValues(alpha: 0.6);
+              textColor = const Color(0xFF047857);
+              trailingWidget = Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.check_circle_outline_rounded,
+                    size: 16,
+                    color: Color(0xFF059669),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    isMultipleChoice
+                        ? 'Đáp án đúng (Chưa chọn)'
+                        : 'Đáp án đúng',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF059669),
+                    ),
+                  ),
+                ],
+              );
+            } else if (isUserSelected && !isCorrectOption) {
               optionBg = const Color(0xFFFEF2F2);
               optionBorder = const Color(0xFFDC2626);
               textColor = const Color(0xFF991B1B);
               trailingWidget = const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.cancel_rounded,
-                      size: 16, color: Color(0xFFDC2626)),
+                  Icon(
+                    Icons.cancel_rounded,
+                    size: 16,
+                    color: Color(0xFFDC2626),
+                  ),
                   SizedBox(width: 4),
                   Text(
-                    'Bạn đã chọn',
+                    'Bạn đã chọn (Sai)',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -163,6 +286,7 @@ class QuestionReviewCard extends StatelessWidget {
                 ],
               );
             }
+
 
             final labelLetter = String.fromCharCode(65 + optIndex); // A, B, C, D
 
@@ -220,9 +344,8 @@ class QuestionReviewCard extends StatelessWidget {
             );
           }),
 
-          // Explanation callout
-          if (question.explanation != null &&
-              question.explanation!.trim().isNotEmpty) ...[
+          // Pedagogical Explanation Box
+          if (explanationText != null) ...[
             AppSpacing.vGap8,
             Container(
               padding: const EdgeInsets.all(AppSpacing.md),
@@ -257,7 +380,7 @@ class QuestionReviewCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          question.explanation!,
+                          explanationText!,
                           style: tt.bodySmall?.copyWith(
                             color: cs.slate800,
                             height: 1.4,
