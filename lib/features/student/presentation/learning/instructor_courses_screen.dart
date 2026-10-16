@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study/theme/theme.dart';
-import 'widgets/instructor_avatar_placeholder.dart';
+
+import 'widgets/category_tabs_header_delegate.dart';
 
 class InstructorCoursesScreen extends StatefulWidget {
   const InstructorCoursesScreen({
@@ -33,6 +34,7 @@ class _InstructorCourseData {
     this.progress = 0,
     this.isEnrolled = false,
     this.price = 'Miễn phí',
+    this.level = 'Cơ bản',
   });
 
   final String id;
@@ -45,10 +47,13 @@ class _InstructorCourseData {
   final double progress;
   final bool isEnrolled;
   final String price;
+  final String level;
 }
 
 class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
-  String _selectedCategory = 'Tất cả';
+  late final PageController _pageController;
+  late final List<GlobalKey> _chipKeys;
+  int _selectedCategoryIndex = 0;
 
   late final List<_InstructorCourseData> _courses = [
     const _InstructorCourseData(
@@ -61,6 +66,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
       studentCount: 1250,
       progress: 0.65,
       isEnrolled: true,
+      level: 'Cơ bản',
     ),
     const _InstructorCourseData(
       id: 'course_2',
@@ -72,6 +78,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
       studentCount: 940,
       progress: 0.40,
       isEnrolled: true,
+      level: 'Nâng cao',
     ),
     const _InstructorCourseData(
       id: 'course_3',
@@ -84,6 +91,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
       progress: 0.20,
       isEnrolled: false,
       price: '499.000 đ',
+      level: 'Thực chiến',
     ),
     const _InstructorCourseData(
       id: 'course_4',
@@ -96,6 +104,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
       progress: 0,
       isEnrolled: false,
       price: '599.000 đ',
+      level: 'Chuyên sâu',
     ),
     const _InstructorCourseData(
       id: 'course_5',
@@ -108,17 +117,110 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
       progress: 0,
       isEnrolled: false,
       price: '699.000 đ',
+      level: 'Nâng cao',
     ),
   ];
 
-  List<String> get _categories {
-    final cats = _courses.map((c) => c.category).toSet().toList();
-    return ['Tất cả', ...cats];
+  late final List<String> _categories = [
+    'Tất cả',
+    ..._courses.map((c) => c.category).toSet(),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _chipKeys = List.generate(_categories.length, (_) => GlobalKey());
   }
 
-  List<_InstructorCourseData> get _filteredCourses {
-    if (_selectedCategory == 'Tất cả') return _courses;
-    return _courses.where((c) => c.category == _selectedCategory).toList();
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onCategoryTapped(int index) {
+    if (_selectedCategoryIndex == index) return;
+    setState(() => _selectedCategoryIndex = index);
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
+    );
+    _scrollToSelectedChip(index);
+  }
+
+  void _onPageChanged(int index) {
+    if (_selectedCategoryIndex == index) return;
+    setState(() => _selectedCategoryIndex = index);
+    _scrollToSelectedChip(index);
+  }
+
+  void _scrollToSelectedChip(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final key = _chipKeys[index];
+      if (key.currentContext != null) {
+        Scrollable.ensureVisible(
+          key.currentContext!,
+          alignment: 0.5,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  Color _getCategoryPastelColor(String category) {
+    switch (category) {
+      case 'UI/UX Design':
+        return const Color(0xFFEEF2FF); // Indigo pastel
+      case 'Product Design':
+        return const Color(0xFFF0FDF4); // Emerald pastel
+      case 'User Research':
+        return const Color(0xFFFAF5FF); // Lavender pastel
+      default:
+        return const Color(0xFFFFFBEB); // Amber pastel
+    }
+  }
+
+  Color _getCategoryBorderColor(String category) {
+    switch (category) {
+      case 'UI/UX Design':
+        return const Color(0xFFE0E7FF);
+      case 'Product Design':
+        return const Color(0xFFDCFCE7);
+      case 'User Research':
+        return const Color(0xFFF3E8FF);
+      default:
+        return const Color(0xFFFEF3C7);
+    }
+  }
+
+  Color _getCategoryThemeColor(String category) {
+    switch (category) {
+      case 'UI/UX Design':
+        return const Color(0xFF4F46E5);
+      case 'Product Design':
+        return const Color(0xFF059669);
+      case 'User Research':
+        return const Color(0xFF9333EA);
+      default:
+        return const Color(0xFFD97706);
+    }
+  }
+
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case 'UI/UX Design':
+        return Icons.palette_outlined;
+      case 'Product Design':
+        return Icons.layers_outlined;
+      case 'User Research':
+        return Icons.psychology_outlined;
+      default:
+        return Icons.auto_awesome_mosaic_rounded;
+    }
   }
 
   @override
@@ -131,130 +233,211 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
       appBar: AppBar(
         title: const Text('Khóa học của giảng viên'),
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: cs.surface,
       ),
-      body: CustomScrollView(
-        slivers: [
-          // Instructor mini summary
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.screenPadding),
-              child: Container(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: cs.surfaceContainerLowest,
-                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                  border: Border.all(
-                    color: cs.outlineVariant.withValues(alpha: 0.4),
-                  ),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          // Sticky Category Filter Tabs
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: CategoryTabsHeaderDelegate(
+              height: 52,
+              child: _buildCategoryTabs(cs),
+            ),
+          ),
+        ],
+        body: PageView.builder(
+          controller: _pageController,
+          onPageChanged: _onPageChanged,
+          itemCount: _categories.length,
+          itemBuilder: (context, index) {
+            final cat = _categories[index];
+            final courses = cat == 'Tất cả'
+                ? _courses
+                : _courses.where((c) => c.category == cat).toList();
+            return _buildTabCourseList(context, cat, courses, cs, tt);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryTabs(ColorScheme cs) {
+    return SizedBox(
+      height: 52,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.screenPadding,
+          vertical: 7,
+        ),
+        itemCount: _categories.length,
+        separatorBuilder: (_, _) => AppSpacing.hGap8,
+        itemBuilder: (context, index) {
+          final cat = _categories[index];
+          final isSelected = index == _selectedCategoryIndex;
+          final count = cat == 'Tất cả'
+              ? _courses.length
+              : _courses.where((c) => c.category == cat).length;
+
+          return KeyedSubtree(
+            key: _chipKeys[index],
+            child: ChoiceChip(
+              label: Text('$cat ($count)'),
+              selected: isSelected,
+              onSelected: (_) => _onCategoryTapped(index),
+              selectedColor: cs.primary,
+              backgroundColor: cs.surfaceContainerHighest,
+              labelStyle: TextStyle(
+                color: isSelected ? cs.onPrimary : cs.onSurface,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 12.5,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.full),
+                side: BorderSide(
+                  color: isSelected
+                      ? cs.primary
+                      : cs.outlineVariant.withValues(alpha: 0.4),
+                  width: 0.8,
                 ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: cs.primaryContainer,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: cs.primary.withValues(alpha: 0.2),
-                          width: 2,
-                        ),
-                      ),
-                      child: ClipOval(
-                        child: InstructorAvatarPlaceholder(
-                          name: widget.instructorName,
-                        ),
-                      ),
-                    ),
-                    AppSpacing.hGap16,
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.instructorName,
-                            style: tt.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          AppSpacing.vGap4,
-                          Text(
-                            widget.instructorTitle ?? 'Giảng viên cao cấp',
-                            style: tt.bodySmall?.copyWith(
-                              color: cs.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          AppSpacing.vGap4,
-                          Text(
-                            '${_courses.length} khóa học • 4.8 ⭐ (1.2k đánh giá)',
-                            style: tt.bodySmall?.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+              ),
+              showCheckmark: false,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTabCourseList(
+    BuildContext context,
+    String category,
+    List<_InstructorCourseData> courses,
+    ColorScheme cs,
+    TextTheme tt,
+  ) {
+    if (courses.isEmpty) {
+      return _buildEmptyState(category, cs, tt);
+    }
+
+    return ListView.separated(
+      key: PageStorageKey<String>('instructor_courses_$category'),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.screenPadding,
+        AppSpacing.sm,
+        AppSpacing.screenPadding,
+        32,
+      ),
+      itemCount: courses.length,
+      separatorBuilder: (_, _) => AppSpacing.vGap12,
+      itemBuilder: (context, index) {
+        return _buildCourseCard(context, courses[index], cs, tt);
+      },
+    );
+  }
+
+  Widget _buildEmptyState(String category, ColorScheme cs, TextTheme tt) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.school_outlined,
+                size: 36,
+                color: cs.onSurfaceVariant.withValues(alpha: 0.6),
+              ),
+            ),
+            AppSpacing.vGap16,
+            Text(
+              'Chưa có khóa học nào',
+              style: tt.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: cs.onSurface,
+              ),
+            ),
+            AppSpacing.vGap8,
+            Text(
+              'Giảng viên hiện chưa mở khóa học thuộc chuyên mục $category.',
+              textAlign: TextAlign.center,
+              style: tt.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCourseThumbnail(
+    _InstructorCourseData course,
+    ColorScheme cs,
+  ) {
+    final pastelColor = _getCategoryPastelColor(course.category);
+    final borderColor = _getCategoryBorderColor(course.category);
+    final themeColor = _getCategoryThemeColor(course.category);
+    final iconData = _getCategoryIcon(course.category);
+
+    return Container(
+      width: 86,
+      height: 94,
+      decoration: BoxDecoration(
+        color: pastelColor,
+        borderRadius: BorderRadius.circular(AppRadius.md + 2),
+        border: Border.all(color: borderColor, width: 1.0),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.85),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: borderColor,
+                width: 0.8,
+              ),
+            ),
+            child: Center(
+              child: Icon(
+                iconData,
+                color: themeColor,
+                size: 24,
               ),
             ),
           ),
-
-          // Category filter tabs
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 40,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.screenPadding,
-                ),
-                itemCount: _categories.length,
-                separatorBuilder: (_, _) => AppSpacing.hGap8,
-                itemBuilder: (context, index) {
-                  final cat = _categories[index];
-                  final isSelected = cat == _selectedCategory;
-                  return ChoiceChip(
-                    label: Text(cat),
-                    selected: isSelected,
-                    onSelected: (_) => setState(() => _selectedCategory = cat),
-                    selectedColor: cs.primary,
-                    backgroundColor: cs.surfaceContainerHighest,
-                    labelStyle: TextStyle(
-                      color: isSelected ? cs.onPrimary : cs.onSurface,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w500,
-                      fontSize: 13,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.full),
-                    ),
-                  );
-                },
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.95),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: borderColor.withValues(alpha: 0.8),
+                width: 0.6,
               ),
             ),
-          ),
-
-          const SliverToBoxAdapter(child: AppSpacing.vGap16),
-
-          // Course list
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screenPadding,
-              0,
-              AppSpacing.screenPadding,
-              32,
-            ),
-            sliver: SliverList.separated(
-              itemCount: _filteredCourses.length,
-              separatorBuilder: (_, _) => AppSpacing.vGap12,
-              itemBuilder: (context, index) {
-                final course = _filteredCourses[index];
-                return _buildCourseCard(context, course, cs, tt);
-              },
+            child: Text(
+              course.level,
+              style: TextStyle(
+                fontSize: 9.5,
+                fontWeight: FontWeight.w700,
+                color: themeColor,
+                letterSpacing: 0.2,
+              ),
             ),
           ),
         ],
@@ -268,17 +451,19 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
     ColorScheme cs,
     TextTheme tt,
   ) {
+    final themeColor = _getCategoryThemeColor(course.category);
+
     return Container(
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.4),
+          color: cs.outlineVariant.withValues(alpha: 0.45),
           width: 0.8,
         ),
         boxShadow: [
           BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.03),
+            color: cs.shadow.withValues(alpha: 0.035),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -288,8 +473,8 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           onTap: () {
-            // Navigate to course detail
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Khóa học: ${course.title}'),
@@ -298,61 +483,43 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
               ),
             );
           },
-          borderRadius: BorderRadius.circular(AppRadius.lg),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Thumbnail container
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        cs.primary.withValues(alpha: 0.15),
-                        cs.primary.withValues(alpha: 0.05),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.menu_book_rounded,
-                      color: cs.primary,
-                      size: 32,
-                    ),
-                  ),
-                ),
+                // Thematic Pastel Squircle Thumbnail
+                _buildCourseThumbnail(course, cs),
                 AppSpacing.hGap16,
 
-                // Info
+                // Info Column
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Category badge & enrollment
+                      // Category Tag & Status / Price
                       Row(
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
-                              vertical: 2,
+                              vertical: 2.5,
                             ),
                             decoration: BoxDecoration(
-                              color: cs.primary.withValues(alpha: 0.08),
+                              color: _getCategoryPastelColor(course.category),
                               borderRadius:
                                   BorderRadius.circular(AppRadius.full),
+                              border: Border.all(
+                                color: _getCategoryBorderColor(course.category),
+                                width: 0.6,
+                              ),
                             ),
                             child: Text(
                               course.category,
                               style: TextStyle(
                                 fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: cs.primary,
+                                fontWeight: FontWeight.w700,
+                                color: themeColor,
                               ),
                             ),
                           ),
@@ -361,34 +528,53 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
-                                vertical: 2,
+                                vertical: 2.5,
                               ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFEFF6FF),
                                 borderRadius:
                                     BorderRadius.circular(AppRadius.full),
-                              ),
-                              child: Text(
-                                'Đang học ${(course.progress * 100).toInt()}%',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: cs.primary,
+                                border: Border.all(
+                                  color: const Color(0xFFDBEAFE),
+                                  width: 0.6,
                                 ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFF2563EB),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Đang học '
+                                    '${(course.progress * 100).toInt()}%',
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF1D4ED8),
+                                    ),
+                                  ),
+                                ],
                               ),
                             )
                           else
                             Text(
                               course.price,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: cs.primary,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF0F172A),
                               ),
                             ),
                         ],
                       ),
-                      AppSpacing.vGap4,
+                      AppSpacing.vGap8,
 
                       // Title
                       Text(
@@ -396,49 +582,98 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
                         style: tt.titleSmall?.copyWith(
                           fontWeight: FontWeight.w700,
                           color: cs.slate900,
+                          fontSize: 14,
+                          height: 1.25,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       AppSpacing.vGap8,
 
-                      // Metadata row
+                      // Metadata row: Star rating + Lesson count + Duration
                       Row(
                         children: [
-                          Icon(
-                            Icons.star_rounded,
-                            size: 16,
-                            color: const Color(0xFFF59E0B),
+                          const Icon(
+                             Icons.star_rounded,
+                             size: 16,
+                             color: Color(0xFFF59E0B),
                           ),
                           const SizedBox(width: 3),
                           Text(
                             '${course.rating}',
-                            style: tt.bodySmall?.copyWith(
+                            style: const TextStyle(
+                              fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: cs.slate900,
+                              color: Color(0xFF0F172A),
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Text(
+                            '(${course.studentCount})',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: cs.onSurfaceVariant,
                             ),
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '•  ${course.lessonCount} bài  •  ${course.duration}',
-                            style: tt.bodySmall?.copyWith(
+                            '•',
+                            style: TextStyle(color: cs.outlineVariant),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${course.lessonCount} bài',
+                            style: TextStyle(
+                              fontSize: 11.5,
                               color: cs.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '•',
+                            style: TextStyle(color: cs.outlineVariant),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            course.duration,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: cs.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
 
+                      // Enrolled Progress Bar
                       if (course.isEnrolled) ...[
                         AppSpacing.vGap8,
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(2),
-                          child: LinearProgressIndicator(
-                            value: course.progress,
-                            minHeight: 4,
-                            backgroundColor:
-                                cs.outlineVariant.withValues(alpha: 0.3),
-                            valueColor: AlwaysStoppedAnimation(cs.primary),
-                          ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(3),
+                                child: LinearProgressIndicator(
+                                  value: course.progress,
+                                  minHeight: 5,
+                                  backgroundColor: const Color(0xFFF1F5F9),
+                                  valueColor: const AlwaysStoppedAnimation(
+                                    Color(0xFF2563EB),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${((course.progress) * course.lessonCount).round()}/${course.lessonCount} bài',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ],

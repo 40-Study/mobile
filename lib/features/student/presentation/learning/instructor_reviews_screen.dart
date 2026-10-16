@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:study/theme/theme.dart';
 
+import 'widgets/category_tabs_header_delegate.dart';
+
 class InstructorReviewsScreen extends StatefulWidget {
   const InstructorReviewsScreen({
     super.key,
@@ -43,8 +45,31 @@ class _ReviewItemData {
   bool isHelpful = false;
 }
 
+class _RatingFilterTab {
+  const _RatingFilterTab({
+    required this.starValue,
+    required this.label,
+    required this.count,
+  });
+
+  final int starValue; // 0 = Tất cả
+  final String label;
+  final int count;
+}
+
 class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
-  int _selectedRatingFilter = 0; // 0 = Tất cả
+  late final PageController _pageController;
+  late final List<GlobalKey> _chipKeys;
+  int _selectedTabIndex = 0;
+
+  static const List<_RatingFilterTab> _tabs = [
+    _RatingFilterTab(starValue: 0, label: 'Tất cả', count: 1248),
+    _RatingFilterTab(starValue: 5, label: '5 Sao', count: 1050),
+    _RatingFilterTab(starValue: 4, label: '4 Sao', count: 145),
+    _RatingFilterTab(starValue: 3, label: '3 Sao', count: 35),
+    _RatingFilterTab(starValue: 2, label: '2 Sao', count: 12),
+    _RatingFilterTab(starValue: 1, label: '1 Sao', count: 6),
+  ];
 
   late final List<_ReviewItemData> _reviews = [
     _ReviewItemData(
@@ -55,7 +80,9 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
       date: '2 ngày trước',
       courseName: 'UI/UX Design Fundamentals',
       comment:
-          'Thầy giảng rất dễ hiểu và tận tâm. Các ví dụ minh họa sát với thực tế dự án, đặc biệt phần hướng dẫn làm Wireframe và Prototype bằng Figma cực kỳ chi tiết!',
+          'Thầy giảng rất dễ hiểu và tận tâm. Các ví dụ minh họa sát với '
+          'thực tế dự án, đặc biệt phần hướng dẫn làm Wireframe và '
+          'Prototype bằng Figma cực kỳ chi tiết!',
       helpfulCount: 24,
     ),
     _ReviewItemData(
@@ -66,7 +93,9 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
       date: '5 ngày trước',
       courseName: 'Product Design Masterclass',
       comment:
-          'Khóa học vượt quá kỳ vọng của mình. Lượng kiến thức thực chiến dày dặn, các tài liệu đính kèm và template design system dùng được ngay cho công việc.',
+          'Khóa học vượt quá kỳ vọng của mình. Lượng kiến thức thực chiến '
+          'dày dặn, các tài liệu đính kèm và template design system '
+          'dùng được ngay cho công việc.',
       helpfulCount: 18,
     ),
     _ReviewItemData(
@@ -77,7 +106,9 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
       date: '1 tuần trước',
       courseName: 'Design Thinking for UX',
       comment:
-          'Nội dung rất hay và logic. Phần bài tập tình huống thực tế khá thử thách nhưng giúp hiểu sâu bài học hơn. Mong thầy ra thêm các buổi workshop giải đáp trực tuyến.',
+          'Nội dung rất hay và logic. Phần bài tập tình huống thực tế khá '
+          'thử thách nhưng giúp hiểu sâu bài học hơn. Mong thầy ra thêm các '
+          'buổi workshop giải đáp trực tuyến.',
       helpfulCount: 12,
     ),
     _ReviewItemData(
@@ -88,7 +119,9 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
       date: '2 tuần trước',
       courseName: 'UI/UX Design Fundamentals',
       comment:
-          'Giảng viên phản hồi thắc mắc ở phần hỏi đáp rất nhanh và chi tiết. Rất khuyến khích các bạn mới bắt đầu học theo lộ trình của thầy.',
+          'Giảng viên phản hồi thắc mắc ở phần hỏi đáp rất nhanh và chi '
+          'tiết. Rất khuyến khích các bạn mới bắt đầu học theo lộ trình '
+          'của thầy.',
       helpfulCount: 9,
     ),
     _ReviewItemData(
@@ -99,14 +132,55 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
       date: '3 tuần trước',
       courseName: 'User Research Methods',
       comment:
-          'Phương pháp nghiên cứu người dùng được hệ thống hóa rõ ràng, dễ áp dụng vào dự án thực tế.',
+          'Phương pháp nghiên cứu người dùng được hệ thống hóa rõ ràng, '
+          'dễ áp dụng vào dự án thực tế.',
       helpfulCount: 5,
     ),
   ];
 
-  List<_ReviewItemData> get _filteredReviews {
-    if (_selectedRatingFilter == 0) return _reviews;
-    return _reviews.where((r) => r.rating == _selectedRatingFilter).toList();
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _chipKeys = List.generate(_tabs.length, (_) => GlobalKey());
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onTabTapped(int index) {
+    if (_selectedTabIndex == index) return;
+    setState(() => _selectedTabIndex = index);
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
+    );
+    _scrollToSelectedChip(index);
+  }
+
+  void _onPageChanged(int index) {
+    if (_selectedTabIndex == index) return;
+    setState(() => _selectedTabIndex = index);
+    _scrollToSelectedChip(index);
+  }
+
+  void _scrollToSelectedChip(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final key = _chipKeys[index];
+      if (key.currentContext != null) {
+        Scrollable.ensureVisible(
+          key.currentContext!,
+          alignment: 0.5,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   @override
@@ -119,108 +193,158 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
       appBar: AppBar(
         title: const Text('Đánh giá từ học viên'),
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: cs.surface,
       ),
-      body: CustomScrollView(
-        slivers: [
-          // Rating breakdown header card
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          // Rating breakdown header card (cuộn lên trên tự nhiên)
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.screenPadding),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screenPadding,
+                AppSpacing.sm,
+                AppSpacing.screenPadding,
+                AppSpacing.md,
+              ),
               child: _buildRatingSummary(cs, tt),
             ),
           ),
 
-          // Rating filter chips
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 38,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.screenPadding,
-                ),
-                children: [
-                  _buildFilterChip('Tất cả (1,248)', 0, cs),
-                  AppSpacing.hGap8,
-                  _buildFilterChip('5 Sao (1,050)', 5, cs),
-                  AppSpacing.hGap8,
-                  _buildFilterChip('4 Sao (145)', 4, cs),
-                  AppSpacing.hGap8,
-                  _buildFilterChip('3 Sao (35)', 3, cs),
-                  AppSpacing.hGap8,
-                  _buildFilterChip('2 Sao (12)', 2, cs),
-                  AppSpacing.hGap8,
-                  _buildFilterChip('1 Sao (6)', 1, cs),
-                ],
-              ),
+          // Sticky Rating Star Filter Chips (ghim khi cuộn)
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: CategoryTabsHeaderDelegate(
+              height: 52,
+              child: _buildFilterChipsRow(cs),
             ),
           ),
-
-          const SliverToBoxAdapter(child: AppSpacing.vGap16),
-
-          // Reviews list
-          if (_filteredReviews.isEmpty)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xxl),
-                child: Center(
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.rate_review_outlined,
-                        size: 48,
-                        color: cs.onSurfaceVariant.withValues(alpha: 0.4),
-                      ),
-                      AppSpacing.vGap12,
-                      Text(
-                        'Chưa có đánh giá nào cho bộ lọc này',
-                        style: tt.bodyMedium?.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.screenPadding,
-                0,
-                AppSpacing.screenPadding,
-                32,
-              ),
-              sliver: SliverList.separated(
-                itemCount: _filteredReviews.length,
-                separatorBuilder: (_, _) => AppSpacing.vGap12,
-                itemBuilder: (context, index) {
-                  final review = _filteredReviews[index];
-                  return _buildReviewCard(review, cs, tt);
-                },
-              ),
-            ),
         ],
+        body: PageView.builder(
+          controller: _pageController,
+          onPageChanged: _onPageChanged,
+          itemCount: _tabs.length,
+          itemBuilder: (context, index) {
+            final tab = _tabs[index];
+            final filtered = tab.starValue == 0
+                ? _reviews
+                : _reviews.where((r) => r.rating == tab.starValue).toList();
+            return _buildReviewsListForTab(tab, filtered, cs, tt);
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildFilterChip(String label, int filterValue, ColorScheme cs) {
-    final isSelected = _selectedRatingFilter == filterValue;
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (_) =>
-          setState(() => _selectedRatingFilter = filterValue),
-      selectedColor: cs.primary,
-      backgroundColor: cs.surfaceContainerHighest,
-      labelStyle: TextStyle(
-        color: isSelected ? cs.onPrimary : cs.onSurface,
-        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-        fontSize: 13,
+  Widget _buildFilterChipsRow(ColorScheme cs) {
+    return SizedBox(
+      height: 52,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.screenPadding,
+          vertical: 7,
+        ),
+        itemCount: _tabs.length,
+        separatorBuilder: (_, _) => AppSpacing.hGap8,
+        itemBuilder: (context, index) {
+          final tab = _tabs[index];
+          final isSelected = index == _selectedTabIndex;
+
+          return KeyedSubtree(
+            key: _chipKeys[index],
+            child: ChoiceChip(
+              label: Text('${tab.label} (${tab.count})'),
+              selected: isSelected,
+              onSelected: (_) => _onTabTapped(index),
+              selectedColor: cs.primary,
+              backgroundColor: cs.surfaceContainerHighest,
+              labelStyle: TextStyle(
+                color: isSelected ? cs.onPrimary : cs.onSurface,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 12.5,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.full),
+                side: BorderSide(
+                  color: isSelected
+                      ? cs.primary
+                      : cs.outlineVariant.withValues(alpha: 0.4),
+                  width: 0.8,
+                ),
+              ),
+              showCheckmark: false,
+            ),
+          );
+        },
       ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.full),
+    );
+  }
+
+  Widget _buildReviewsListForTab(
+    _RatingFilterTab tab,
+    List<_ReviewItemData> reviews,
+    ColorScheme cs,
+    TextTheme tt,
+  ) {
+    if (reviews.isEmpty) {
+      return _buildEmptyState(tab, cs, tt);
+    }
+
+    return ListView.separated(
+      key: PageStorageKey<String>('instructor_reviews_tab_${tab.starValue}'),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.screenPadding,
+        AppSpacing.sm,
+        AppSpacing.screenPadding,
+        32,
+      ),
+      itemCount: reviews.length,
+      separatorBuilder: (_, _) => AppSpacing.vGap12,
+      itemBuilder: (context, index) {
+        return _buildReviewCard(reviews[index], cs, tt);
+      },
+    );
+  }
+
+  Widget _buildEmptyState(_RatingFilterTab tab, ColorScheme cs, TextTheme tt) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xxl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.rate_review_outlined,
+                size: 36,
+                color: cs.onSurfaceVariant.withValues(alpha: 0.6),
+              ),
+            ),
+            AppSpacing.vGap16,
+            Text(
+              'Chưa có đánh giá nào',
+              style: tt.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: cs.onSurface,
+              ),
+            ),
+            AppSpacing.vGap8,
+            Text(
+              'Hiện tại chưa có đánh giá nào thuộc mức ${tab.label}.',
+              textAlign: TextAlign.center,
+              style: tt.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -229,11 +353,19 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.4),
+          color: cs.outlineVariant.withValues(alpha: 0.45),
+          width: 0.8,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -265,6 +397,7 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
                 '1,248 đánh giá',
                 style: tt.bodySmall?.copyWith(
                   color: cs.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -298,7 +431,7 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
 
   Widget _buildBarRow(String star, double ratio, ColorScheme cs) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 2.5),
       child: Row(
         children: [
           SizedBox(
@@ -313,7 +446,7 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
           ),
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(2.5),
               child: LinearProgressIndicator(
                 value: ratio,
                 minHeight: 5,
@@ -330,6 +463,7 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
               style: TextStyle(
                 fontSize: 10,
                 color: cs.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.end,
             ),
@@ -347,33 +481,44 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md + 2),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.4),
+          color: cs.outlineVariant.withValues(alpha: 0.45),
           width: 0.8,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: Student info & rating
+          // Author info row
           Row(
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: cs.primary.withValues(alpha: 0.12),
+                  color: const Color(0xFFEFF6FF),
                   shape: BoxShape.circle,
+                  border: Border.all(
+                    color: const Color(0xFFDBEAFE),
+                    width: 1,
+                  ),
                 ),
                 child: Center(
                   child: Text(
                     review.studentAvatar,
-                    style: TextStyle(
-                      color: cs.primary,
+                    style: const TextStyle(
+                      fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      fontSize: 16,
+                      color: Color(0xFF1D4ED8),
                     ),
                   ),
                 ),
@@ -385,14 +530,16 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
                   children: [
                     Text(
                       review.studentName,
-                      style: tt.bodyMedium?.copyWith(
+                      style: tt.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
+                        color: cs.slate900,
                       ),
                     ),
                     Text(
                       review.date,
-                      style: tt.labelSmall?.copyWith(
+                      style: tt.bodySmall?.copyWith(
                         color: cs.onSurfaceVariant,
+                        fontSize: 11,
                       ),
                     ),
                   ],
@@ -405,8 +552,10 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
                   (i) => Icon(
                     i < review.rating
                         ? Icons.star_rounded
-                        : Icons.star_outline_rounded,
-                    color: const Color(0xFFF59E0B),
+                        : Icons.star_border_rounded,
+                    color: i < review.rating
+                        ? const Color(0xFFF59E0B)
+                        : cs.outlineVariant,
                     size: 16,
                   ),
                 ),
@@ -419,15 +568,19 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest,
+              color: const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(AppRadius.xs),
+              border: Border.all(
+                color: const Color(0xFFE2E8F0),
+                width: 0.8,
+              ),
             ),
             child: Text(
               review.courseName,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 11,
-                color: cs.onSurfaceVariant,
-                fontWeight: FontWeight.w500,
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -441,48 +594,55 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
               height: 1.45,
             ),
           ),
-          AppSpacing.vGap8,
+          AppSpacing.vGap12,
 
           // Helpful button
-          Align(
-            alignment: Alignment.centerRight,
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  review.isHelpful = !review.isHelpful;
-                  review.helpfulCount += review.isHelpful ? 1 : -1;
-                });
-              },
-              borderRadius: BorderRadius.circular(AppRadius.full),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      review.isHelpful
-                          ? Icons.thumb_up_rounded
-                          : Icons.thumb_up_outlined,
-                      size: 14,
-                      color: review.isHelpful ? cs.primary : cs.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Hữu ích (${review.helpfulCount})',
-                      style: TextStyle(
-                        fontSize: 12,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              InkWell(
+                borderRadius: BorderRadius.circular(AppRadius.full),
+                onTap: () {
+                  setState(() {
+                    review.isHelpful = !review.isHelpful;
+                    review.helpfulCount += review.isHelpful ? 1 : -1;
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        review.isHelpful
+                            ? Icons.thumb_up_rounded
+                            : Icons.thumb_up_outlined,
+                        size: 15,
                         color: review.isHelpful
                             ? cs.primary
                             : cs.onSurfaceVariant,
-                        fontWeight: review.isHelpful
-                            ? FontWeight.w700
-                            : FontWeight.w500,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      Text(
+                        'Hữu ích (${review.helpfulCount})',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: review.isHelpful
+                              ? cs.primary
+                              : cs.onSurfaceVariant,
+                          fontWeight: review.isHelpful
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ],
       ),
