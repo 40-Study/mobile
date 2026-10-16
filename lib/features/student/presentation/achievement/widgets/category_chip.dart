@@ -23,6 +23,7 @@ class CategoryChip extends StatelessWidget {
     final tt = Theme.of(context).textTheme;
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),

@@ -52,28 +52,71 @@ class AllCertificatesScreen extends StatefulWidget {
 }
 
 class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
-  CertificateCategory _selectedCategory = CertificateCategory.all;
+  static const _categories = [
+    CertificateCategory.all,
+    CertificateCategory.design,
+    CertificateCategory.programming,
+    CertificateCategory.business,
+    CertificateCategory.language,
+  ];
 
-  late final List<CertificateData> _allCertificates = _mapCertificates(widget.certificates);
+  late final List<CertificateData> _allCertificates =
+      _mapCertificates(widget.certificates);
+  late final PageController _pageController;
+  late final ScrollController _categoryScrollController;
+  final List<GlobalKey> _chipKeys = List.generate(5, (_) => GlobalKey());
 
-  List<CertificateData> get _filteredCertificates {
-    if (_selectedCategory == CertificateCategory.all) return _allCertificates;
-    return _allCertificates
-        .where((c) => c.category == _selectedCategory)
-        .toList();
+  int _selectedCategoryIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _selectedCategoryIndex);
+    _categoryScrollController = ScrollController();
   }
 
-  List<CertificateData> get _completedCertificates => _filteredCertificates
-      .where((c) => c.status == CertificateStatus.completed)
-      .toList();
-
-  List<CertificateData> get _inProgressCertificates => _filteredCertificates
-      .where((c) => c.status == CertificateStatus.inProgress)
-      .toList();
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _categoryScrollController.dispose();
+    super.dispose();
+  }
 
   int _countByCategory(CertificateCategory cat) {
     if (cat == CertificateCategory.all) return _allCertificates.length;
     return _allCertificates.where((c) => c.category == cat).length;
+  }
+
+  void _onCategoryTapped(int index) {
+    if (_selectedCategoryIndex == index) return;
+    setState(() => _selectedCategoryIndex = index);
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
+    );
+    _scrollToSelectedChip(index);
+  }
+
+  void _onPageChanged(int index) {
+    if (_selectedCategoryIndex == index) return;
+    setState(() => _selectedCategoryIndex = index);
+    _scrollToSelectedChip(index);
+  }
+
+  void _scrollToSelectedChip(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final key = _chipKeys[index];
+      if (key.currentContext != null) {
+        Scrollable.ensureVisible(
+          key.currentContext!,
+          alignment: 0.5,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   @override
@@ -91,218 +134,140 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
     return Scaffold(
       backgroundColor: cs.surface,
       body: SafeArea(
-        child: CustomScrollView(
+        child: Column(
+          children: [
+            // Top App Bar (Always visible)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xs),
+              child: Row(
+                children: [
+                  AchievementBackButton(onTap: () => Navigator.pop(context)),
+                  const Spacer(),
+                  FilterButton(onTap: () => _showFilterSheet(context)),
+                ],
+              ),
+            ),
+
+            // NestedScrollView: Hero Banner scrolls away,
+            // Category Tabs stay pinned, PageView swipes horizontally
+            Expanded(
+              child: NestedScrollView(
+                headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                  // Academic Credentials Hero Banner (Flat Light, No Gradient)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        top: AppSpacing.sm,
+                        bottom: AppSpacing.md,
+                      ),
+                      child: CertificatesHeroBanner(
+                        completedCount: completedCount,
+                        inProgressCount: inProgressCount,
+                      ),
+                    ),
+                  ),
+
+                  // Sticky Category Tabs
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: CategoryTabsHeaderDelegate(
+                      height: 52,
+                      child: _buildCategoryTabs(l10n),
+                    ),
+                  ),
+                ],
+                body: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: _onPageChanged,
+                  itemCount: _categories.length,
+                  itemBuilder: (context, index) {
+                    return _buildCategoryCertificateView(
+                      _categories[index],
+                      cs,
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryTabs(AppLocalizations l10n) {
+    final categoryIcons = [
+      Icons.grid_view_rounded,
+      Icons.palette_rounded,
+      Icons.code_rounded,
+      Icons.business_center_rounded,
+      Icons.translate_rounded,
+    ];
+
+    final categoryLabels = [
+      l10n.all,
+      l10n.design,
+      l10n.programming,
+      l10n.business,
+      l10n.language,
+    ];
+
+    return SizedBox(
+      height: 44,
+      child: ListView.separated(
+        controller: _categoryScrollController,
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        itemCount: _categories.length,
+        separatorBuilder: (context, index) => AppSpacing.hGap8,
+        itemBuilder: (context, i) {
+          final cat = _categories[i];
+          return CategoryChip(
+            key: _chipKeys[i],
+            icon: categoryIcons[i],
+            label: categoryLabels[i],
+            count: _countByCategory(cat),
+            isSelected: _selectedCategoryIndex == i,
+            onTap: () => _onCategoryTapped(i),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCategoryCertificateView(
+    CertificateCategory cat,
+    ColorScheme cs,
+  ) {
+    final certificates = cat == CertificateCategory.all
+        ? _allCertificates
+        : _allCertificates.where((c) => c.category == cat).toList();
+
+    final completed = certificates
+        .where((c) => c.status == CertificateStatus.completed)
+        .toList();
+    final inProgress = certificates
+        .where((c) => c.status == CertificateStatus.inProgress)
+        .toList();
+
+    if (completed.isEmpty && inProgress.isEmpty) {
+      return _buildEmptyState(cs);
+    }
+
+    return Builder(
+      builder: (context) {
+        return CustomScrollView(
+          key: PageStorageKey<String>('certificates_page_${cat.name}'),
           slivers: [
-            // Top App Bar
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
-                child: Row(
-                  children: [
-                    AchievementBackButton(onTap: () => Navigator.pop(context)),
-                    const Spacer(),
-                    FilterButton(onTap: () => _showFilterSheet(context)),
-                  ],
-                ),
-              ),
-            ),
-
-            // Academic Credentials Hero Banner
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF3D5FC4), Color(0xFF2E4899), Color(0xFF1E293B)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(AppRadius.xl),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF3D5FC4).withValues(alpha: 0.25),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(AppRadius.md),
-                            ),
-                            child: const Icon(
-                              Icons.school_rounded,
-                              color: Colors.white,
-                              size: 26,
-                            ),
-                          ),
-                          AppSpacing.hGap12,
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'HỒ SƠ NĂNG LỰC HỌC THUẬT',
-                                  style: TextStyle(
-                                    color: Color(0xFFBFDBFE),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 1.1,
-                                  ),
-                                ),
-                                SizedBox(height: 3),
-                                Text(
-                                  'Chứng Chỉ & Văn Bằng ForteX',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            width: 0.8,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    '$completedCount đã cấp • $inProgressCount đang học',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  const Text(
-                                    'Xác thực mã định danh điện tử trên hệ thống',
-                                    style: TextStyle(
-                                      color: Color(0xFFCBD5E1),
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withValues(alpha: 0.25),
-                                borderRadius: BorderRadius.circular(AppRadius.full),
-                                border: Border.all(color: const Color(0xFF34D399), width: 0.8),
-                              ),
-                              child: const Text(
-                                'Đã xác thực',
-                                style: TextStyle(
-                                  color: Color(0xFF6EE7B7),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // Category Tabs
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 44,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                  children: [
-                    CategoryChip(
-                      icon: Icons.grid_view_rounded,
-                      label: l10n.all,
-                      count: _countByCategory(CertificateCategory.all),
-                      isSelected: _selectedCategory == CertificateCategory.all,
-                      onTap: () => setState(
-                          () => _selectedCategory = CertificateCategory.all),
-                    ),
-                    AppSpacing.hGap8,
-                    CategoryChip(
-                      icon: Icons.palette_rounded,
-                      label: l10n.design,
-                      count: _countByCategory(CertificateCategory.design),
-                      isSelected: _selectedCategory == CertificateCategory.design,
-                      onTap: () => setState(
-                          () => _selectedCategory = CertificateCategory.design),
-                    ),
-                    AppSpacing.hGap8,
-                    CategoryChip(
-                      icon: Icons.code_rounded,
-                      label: l10n.programming,
-                      count: _countByCategory(CertificateCategory.programming),
-                      isSelected:
-                          _selectedCategory == CertificateCategory.programming,
-                      onTap: () => setState(() =>
-                          _selectedCategory = CertificateCategory.programming),
-                    ),
-                    AppSpacing.hGap8,
-                    CategoryChip(
-                      icon: Icons.business_center_rounded,
-                      label: l10n.business,
-                      count: _countByCategory(CertificateCategory.business),
-                      isSelected:
-                          _selectedCategory == CertificateCategory.business,
-                      onTap: () => setState(
-                          () => _selectedCategory = CertificateCategory.business),
-                    ),
-                    AppSpacing.hGap8,
-                    CategoryChip(
-                      icon: Icons.translate_rounded,
-                      label: l10n.language,
-                      count: _countByCategory(CertificateCategory.language),
-                      isSelected:
-                          _selectedCategory == CertificateCategory.language,
-                      onTap: () => setState(
-                          () => _selectedCategory = CertificateCategory.language),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 20)),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
             // Completed Certificates
-            if (_completedCertificates.isNotEmpty) ...[
+            if (completed.isNotEmpty) ...[
               SliverToBoxAdapter(
                 child: SectionHeader(
                   title: 'Chứng chỉ đã cấp',
-                  count: _completedCertificates.length,
+                  count: completed.length,
                 ),
               ),
               SliverPadding(
@@ -310,11 +275,11 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) => CertificateListCard(
-                      certificate: _completedCertificates[index],
+                      certificate: completed[index],
                       onTap: () => _showCertificateDetail(
-                          context, _completedCertificates[index]),
+                          context, completed[index]),
                     ),
-                    childCount: _completedCertificates.length,
+                    childCount: completed.length,
                   ),
                 ),
               ),
@@ -322,11 +287,11 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
             ],
 
             // In Progress Certificates
-            if (_inProgressCertificates.isNotEmpty) ...[
+            if (inProgress.isNotEmpty) ...[
               SliverToBoxAdapter(
                 child: SectionHeader(
                   title: 'Chứng chỉ đang theo học',
-                  count: _inProgressCertificates.length,
+                  count: inProgress.length,
                 ),
               ),
               SliverPadding(
@@ -334,47 +299,55 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) => CertificateListCard(
-                      certificate: _inProgressCertificates[index],
+                      certificate: inProgress[index],
                       onTap: () => _showCertificateDetail(
-                          context, _inProgressCertificates[index]),
+                          context, inProgress[index]),
                     ),
-                    childCount: _inProgressCertificates.length,
+                    childCount: inProgress.length,
                   ),
                 ),
               ),
             ],
 
-            if (_completedCertificates.isEmpty && _inProgressCertificates.isEmpty)
-              SliverToBoxAdapter(
-                child: Container(
-                  margin: const EdgeInsets.all(AppSpacing.lg),
-                  padding: const EdgeInsets.all(AppSpacing.xl),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: cs.surfaceContainerLowest,
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                    border: Border.all(
-                      color: cs.outlineVariant.withValues(alpha: 0.6),
-                      width: 0.8,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(Icons.workspace_premium_outlined, size: 48, color: cs.slate400),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Chưa có chứng chỉ nào trong danh mục này',
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
             const SliverToBoxAdapter(child: SizedBox(height: 80)),
           ],
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyState(ColorScheme cs) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        Container(
+          margin: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(
+              color: cs.outlineVariant.withValues(alpha: 0.6),
+              width: 0.8,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                Icons.workspace_premium_outlined,
+                size: 48,
+                color: cs.slate400,
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Chưa có chứng chỉ nào trong danh mục này',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -442,13 +415,17 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
   CertificateCategory _mapCategory(String? title) {
     if (title == null) return CertificateCategory.programming;
     final lower = title.toLowerCase();
-    if (lower.contains('ui') || lower.contains('ux') || lower.contains('thiết kế')) {
+    if (lower.contains('ui') ||
+        lower.contains('ux') ||
+        lower.contains('thiết kế')) {
       return CertificateCategory.design;
     }
     if (lower.contains('kinh doanh') || lower.contains('business')) {
       return CertificateCategory.business;
     }
-    if (lower.contains('anh') || lower.contains('tiếng') || lower.contains('nhật')) {
+    if (lower.contains('anh') ||
+        lower.contains('tiếng') ||
+        lower.contains('nhật')) {
       return CertificateCategory.language;
     }
     return CertificateCategory.programming;
