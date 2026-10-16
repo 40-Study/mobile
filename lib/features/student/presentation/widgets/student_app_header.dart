@@ -28,9 +28,16 @@ class StudentAppHeader extends StatelessWidget {
     this.backgroundColor,
     this.showNotification = true,
     this.showAvatar = true,
+    this.iconBackgroundColor,
+    this.iconColor,
+    this.iconBorderColor,
+    this.borderRadius,
+    this.enableBottomCurve = false,
+    this.enableShadow = false,
+    this.isSeamless = true,
   });
 
-  /// Icon tròn đại diện (mặc định Icons.school_rounded)
+  /// Icon đại diện (mặc định Icons.school_rounded)
   final IconData? icon;
 
   /// Widget tùy biến phần leading nếu muốn ghi đè hoàn toàn
@@ -57,7 +64,7 @@ class StudentAppHeader extends StatelessWidget {
   /// Callback khi bấm vào avatar học sinh
   final VoidCallback? onAvatarTap;
 
-  /// Màu nền header (mặc định là cs.surface)
+  /// Màu nền header (mặc định là Colors.transparent trong chế độ isSeamless)
   final Color? backgroundColor;
 
   /// Có hiển thị chuông thông báo hay không
@@ -65,6 +72,28 @@ class StudentAppHeader extends StatelessWidget {
 
   /// Có hiển thị avatar hay không
   final bool showAvatar;
+
+  /// Màu nền cho Squircle leading icon
+  final Color? iconBackgroundColor;
+
+  /// Màu biểu tượng cho leading icon
+  final Color? iconColor;
+
+  /// Màu đường viền cho Squircle leading icon
+  final Color? iconBorderColor;
+
+  /// Bo góc tùy biến cho container Header
+  final BorderRadiusGeometry? borderRadius;
+
+  /// Bật/tắt bo cong cạnh đáy Header (chỉ dùng khi isSeamless = false)
+  final bool enableBottomCurve;
+
+  /// Bật/tắt đổ bóng dưới đáy Header (chỉ dùng khi isSeamless = false)
+  final bool enableShadow;
+
+  /// Chế độ Seamless Open Header: hòa tan tự nhiên vào nền trang,
+  /// không viền, không bóng đổ, typography to bản dạng Large Title.
+  final bool isSeamless;
 
   @override
   Widget build(BuildContext context) {
@@ -81,17 +110,57 @@ class StudentAppHeader extends StatelessWidget {
         final effectiveIcon = icon ??
             (onDrawerTap != null ? Icons.menu_rounded : Icons.school_rounded);
 
+        final effectiveDecoration = isSeamless
+            ? BoxDecoration(
+                color: backgroundColor ?? Colors.transparent,
+              )
+            : BoxDecoration(
+                color: backgroundColor ?? cs.surface,
+                borderRadius: borderRadius ??
+                    (enableBottomCurve
+                        ? const BorderRadius.vertical(
+                            bottom: Radius.circular(22),
+                          )
+                        : BorderRadius.zero),
+                border: enableBottomCurve
+                    ? Border(
+                        bottom: BorderSide(
+                          color: cs.outlineVariant.withValues(alpha: 0.25),
+                          width: 0.8,
+                        ),
+                      )
+                    : null,
+                boxShadow: enableShadow
+                    ? [
+                        BoxShadow(
+                          color: cs.shadow.withValues(alpha: 0.035),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : null,
+              );
+
+        final effectivePadding = isSeamless
+            ? const EdgeInsets.fromLTRB(
+                AppSpacing.screenPadding,
+                AppSpacing.xs,
+                AppSpacing.screenPadding,
+                AppSpacing.sm,
+              )
+            : const EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.lg,
+                AppSpacing.lg,
+              );
+
         return Container(
-          color: backgroundColor ?? cs.surface,
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg,
-            AppSpacing.sm,
-            AppSpacing.lg,
-            AppSpacing.md,
-          ),
+          decoration: effectiveDecoration,
+          padding: effectivePadding,
           child: Row(
             children: [
-              // Icon đại diện phân hệ / menu dẫn hướng
+              // Icon đại diện phân hệ dạng Squircle 40x40
               if (leading != null)
                 leading!
               else
@@ -99,18 +168,23 @@ class StudentAppHeader extends StatelessWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: effectiveLeadingTap,
-                    borderRadius: BorderRadius.circular(AppRadius.full),
+                    borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      width: 44,
-                      height: 44,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: cs.primaryContainer,
-                        shape: BoxShape.circle,
+                        color: iconBackgroundColor ?? cs.primaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: iconBorderColor ??
+                              cs.outlineVariant.withValues(alpha: 0.4),
+                          width: 0.8,
+                        ),
                       ),
                       child: Icon(
                         effectiveIcon,
-                        color: cs.primary,
-                        size: 24,
+                        color: iconColor ?? cs.primary,
+                        size: 22,
                       ),
                     ),
                   ),
@@ -127,7 +201,8 @@ class StudentAppHeader extends StatelessWidget {
                       style: tt.labelSmall?.copyWith(
                         color: cs.slate500,
                         fontWeight: FontWeight.w700,
-                        letterSpacing: 1.1,
+                        letterSpacing: 1.2,
+                        fontSize: 11,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -135,10 +210,12 @@ class StudentAppHeader extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       title,
-                      style: tt.titleMedium?.copyWith(
+                      style: tt.titleLarge?.copyWith(
                         color: cs.slate900,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        fontSize: isSeamless ? 24 : 19,
+                        letterSpacing: isSeamless ? -0.5 : -0.4,
+                        height: 1.15,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

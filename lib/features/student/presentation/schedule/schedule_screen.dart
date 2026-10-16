@@ -44,19 +44,45 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
               categoryLabel: 'THỜI KHÓA BIỂU',
               title: 'Lịch học',
               icon: Icons.calendar_month_rounded,
+              iconBackgroundColor: const Color(0xFFE0F2FE),
+              iconColor: const Color(0xFF0284C7),
+              iconBorderColor: const Color(0xFFBAE6FD),
               showNotification: false,
               showAvatar: false,
-              trailing: IconButton(
-                icon: Icon(
-                  Icons.today_rounded,
-                  color: cs.slate700,
+              trailing: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    context
+                        .read<ScheduleBloc>()
+                        .add(ScheduleDateSelected(DateTime.now()));
+                  },
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: cs.outlineVariant.withValues(alpha: 0.35),
+                        width: 0.8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: cs.shadow.withValues(alpha: 0.025),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.today_rounded,
+                      color: cs.slate700,
+                      size: 20,
+                    ),
+                  ),
                 ),
-                tooltip: 'Hôm nay',
-                onPressed: () {
-                  context
-                      .read<ScheduleBloc>()
-                      .add(ScheduleDateSelected(DateTime.now()));
-                },
               ),
             ),
             Expanded(
@@ -145,7 +171,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.screenPadding,
-          AppSpacing.sm,
+          AppSpacing.md,
           AppSpacing.screenPadding,
           AppSpacing.xxl,
         ),
@@ -186,11 +212,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           else
             ScheduleTimeline(
               items: state.selectedDateItems.map((item) {
-                final subtitle = (item.instructorName != null && item.instructorName!.isNotEmpty)
+                final hasInstructor = item.instructorName != null &&
+                    item.instructorName!.isNotEmpty;
+                final hasLocation =
+                    item.location != null && item.location!.isNotEmpty;
+                final subtitle = hasInstructor
                     ? 'GV: ${item.instructorName}'
-                    : (item.location != null && item.location!.isNotEmpty
-                        ? item.location!
-                        : 'Tự học trực tuyến');
+                    : (hasLocation ? item.location! : 'Tự học trực tuyến');
                 return ScheduleTimelineItemData(
                   time: _formatTimeRange(item.startTime, item.endTime),
                   title: item.title,

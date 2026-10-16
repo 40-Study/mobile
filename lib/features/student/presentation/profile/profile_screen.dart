@@ -63,6 +63,9 @@ class _ProfileContent extends StatelessWidget {
               categoryLabel: 'TÀI KHOẢN HỌC VIÊN',
               title: 'Thông tin cá nhân',
               icon: Icons.person_rounded,
+              iconBackgroundColor: Color(0xFFF3E8FF),
+              iconColor: Color(0xFF7E22CE),
+              iconBorderColor: Color(0xFFE9D5FF),
               showNotification: false,
               showAvatar: false,
             ),
@@ -82,7 +85,7 @@ class _ProfileContent extends StatelessWidget {
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(
                         AppSpacing.screenPadding,
-                        AppSpacing.sm,
+                        AppSpacing.md,
                         AppSpacing.screenPadding,
                         AppSpacing.xxl,
                       ),

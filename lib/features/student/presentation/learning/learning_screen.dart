@@ -57,18 +57,44 @@ class _LearningScreenState extends State<LearningScreen> {
               categoryLabel: 'HỌC PHẦN & KHÓA HỌC',
               title: 'Học tập của tôi',
               icon: Icons.school_rounded,
+              iconBackgroundColor: const Color(0xFFEEF2FF),
+              iconColor: const Color(0xFF4F46E5),
+              iconBorderColor: const Color(0xFFE0E7FF),
               showNotification: false,
               showAvatar: false,
-              trailing: IconButton(
-                icon: Icon(
-                  Icons.search_rounded,
-                  color: cs.slate700,
-                ),
-                tooltip: 'Tìm kiếm khóa học',
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => const SearchScreen(),
+              trailing: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) => const SearchScreen(),
+                    ),
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: cs.outlineVariant.withValues(alpha: 0.35),
+                        width: 0.8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: cs.shadow.withValues(alpha: 0.025),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.search_rounded,
+                      color: cs.slate700,
+                      size: 20,
+                    ),
                   ),
                 ),
               ),
@@ -266,7 +292,7 @@ class _LearningScreenState extends State<LearningScreen> {
           ),
 
           // Lower Task Tray: Curved Surface Tray
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
             child: AppSpacing.vGap24,
           ),
           SliverToBoxAdapter(

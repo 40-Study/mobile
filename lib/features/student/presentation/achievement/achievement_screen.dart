@@ -35,6 +35,9 @@ class _AchievementScreenState extends State<AchievementScreen> {
               categoryLabel: 'BẢNG VÀNG THÀNH TÍCH',
               title: 'Thành tích & Điểm thưởng',
               icon: Icons.emoji_events_rounded,
+              iconBackgroundColor: Color(0xFFFEF3C7),
+              iconColor: Color(0xFFD97706),
+              iconBorderColor: Color(0xFFFDE68A),
               showNotification: false,
               showAvatar: false,
             ),
@@ -114,7 +117,7 @@ class _AchievementScreenState extends State<AchievementScreen> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(
           AppSpacing.screenPadding,
-          AppSpacing.sm,
+          AppSpacing.md,
           AppSpacing.screenPadding,
           AppSpacing.xxl,
         ),
