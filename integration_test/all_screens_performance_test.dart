@@ -80,7 +80,7 @@ void main() {
       binding.reportData!['screen_suite']['logical_size'] =
           (tester.view.physicalSize / tester.view.devicePixelRatio).toString();
       try {
-        // Providers mount first; only the actual screen route transition is measured.
+        // Providers mount first; measure the screen's route transition.
         await pumpScreenFixture(
           tester,
           c.screen,
@@ -124,7 +124,7 @@ void main() {
           result['scroll_exercised'] = true;
           await binding.watchPerformance(
             () => mockNetworkImagesFor(() async {
-              // Exercise each visible scrolling surface, including horizontal pages.
+              // Exercise visible surfaces, including horizontal pages.
               for (final scrollable in scrollables) {
                 if (!scrollable.mounted) continue;
                 final position = scrollable.position;
@@ -166,7 +166,8 @@ void main() {
       }
       final issues = screenCaptureIssues(result, strict: !kDebugMode);
       tester.printToConsole(
-        '[screen performance] $key: ${issues.isEmpty ? 'captured' : issues.join('; ')}',
+        '[screen performance] $key: '
+        '${issues.isEmpty ? 'captured' : issues.join('; ')}',
       );
       expect(issues, isEmpty, reason: key);
     }, timeout: const Timeout(Duration(minutes: 3)));

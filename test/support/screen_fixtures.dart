@@ -316,9 +316,7 @@ Future<void> setUpScreenFixtures({int itemCount = 0}) async {
     () => parentLearning.getLearningInsights(any()),
   ).thenAnswer((_) async => null);
   when(parentLearning.getChildren).thenAnswer((_) async => []);
-  when(
-    parentLearning.getAllLearningHubData,
-  ).thenAnswer((_) async => {});
+  when(parentLearning.getAllLearningHubData).thenAnswer((_) async => {});
   when(
     () => parentLearning.getRecommendedCourses(any()),
   ).thenAnswer((_) async => []);
@@ -349,30 +347,32 @@ Future<void> setUpScreenFixtures({int itemCount = 0}) async {
   when(
     () => parentSchedule.getEventDates(anchorDate: any(named: 'anchorDate')),
   ).thenAnswer((_) async => []);
-  di.registerSingleton<ParentLearningRepository>(parentLearning);
-  di.registerSingleton<FamilyInsightsRepository>(familyInsights);
-  di.registerSingleton<ParentHomeRepository>(parentHome);
-  di.registerSingleton<ParentScheduleRepository>(parentSchedule);
+  di
+    ..registerSingleton<ParentLearningRepository>(parentLearning)
+    ..registerSingleton<FamilyInsightsRepository>(familyInsights)
+    ..registerSingleton<ParentHomeRepository>(parentHome)
+    ..registerSingleton<ParentScheduleRepository>(parentSchedule);
   final bookmarks = SharedPreferencesBookmarkStorage(prefs);
-  di.registerFactory<HomeBloc>(() => HomeBloc(student));
-  di.registerFactory<LearningBloc>(() => LearningBloc(student));
-  di.registerFactory<ScheduleBloc>(() => ScheduleBloc(student));
-  di.registerFactory<AchievementBloc>(() => AchievementBloc(student, auth));
-  di.registerFactory<BookmarkBloc>(() => BookmarkBloc(bookmarks));
-  di.registerFactory<SearchBloc>(() => SearchBloc(student));
-  di.registerFactory<NotificationBloc>(() => NotificationBloc(student));
-  di.registerFactory<QuizBloc>(() => QuizBloc(student));
-  di.registerFactory<LessonBloc>(() => LessonBloc(student));
-  di.registerFactory<ParentHomeBloc>(() => ParentHomeBloc(parentHome));
-  di.registerFactory<ParentLearningBloc>(
-    () => ParentLearningBloc(parentLearning),
-  );
-  di.registerFactory<ParentScheduleBloc>(
-    () => ParentScheduleBloc(parentSchedule),
-  );
-  di.registerFactory<CourseDetailBloc>(
-    () => CourseDetailBloc(student, _CourseRepository(), bookmarks),
-  );
+  di
+    ..registerFactory<HomeBloc>(() => HomeBloc(student))
+    ..registerFactory<LearningBloc>(() => LearningBloc(student))
+    ..registerFactory<ScheduleBloc>(() => ScheduleBloc(student))
+    ..registerFactory<AchievementBloc>(() => AchievementBloc(student, auth))
+    ..registerFactory<BookmarkBloc>(() => BookmarkBloc(bookmarks))
+    ..registerFactory<SearchBloc>(() => SearchBloc(student))
+    ..registerFactory<NotificationBloc>(() => NotificationBloc(student))
+    ..registerFactory<QuizBloc>(() => QuizBloc(student))
+    ..registerFactory<LessonBloc>(() => LessonBloc(student))
+    ..registerFactory<ParentHomeBloc>(() => ParentHomeBloc(parentHome))
+    ..registerFactory<ParentLearningBloc>(
+      () => ParentLearningBloc(parentLearning),
+    )
+    ..registerFactory<ParentScheduleBloc>(
+      () => ParentScheduleBloc(parentSchedule),
+    )
+    ..registerFactory<CourseDetailBloc>(
+      () => CourseDetailBloc(student, _CourseRepository(), bookmarks),
+    );
   if (itemCount > 0) await _populateData(itemCount);
 }
 
@@ -559,9 +559,7 @@ Future<void> _populateData(int count) async {
       fullName: 'Học sinh $i',
     ),
   );
-  final scopes = children
-      .map(FamilyScopeChild.fromUserModel)
-      .toList();
+  final scopes = children.map(FamilyScopeChild.fromUserModel).toList();
   final lessons = List.generate(
     count,
     (i) => LessonModel(

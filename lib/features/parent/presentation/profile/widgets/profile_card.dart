@@ -41,69 +41,85 @@ class ProfileCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: cs.primary.withValues(alpha: 0.2),
-                width: 2,
+          Row(
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: cs.primary.withValues(alpha: 0.2),
+                    width: 2,
+                  ),
+                ),
+                child: CachedAvatar(
+                  url: user.avatarUrl,
+                  radius: 34,
+                  backgroundColor: cs.primaryContainer,
+                  name: user.fullName ?? 'User',
+                ),
               ),
-            ),
-            child: CachedAvatar(
-              url: user.avatarUrl,
-              radius: 34,
-              backgroundColor: cs.primaryContainer,
-              name: user.fullName ?? 'User',
-            ),
-          ),
-          AppSpacing.hGap16,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user.fullName ?? 'User',
-                  style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                AppSpacing.vGap4,
-                Text(
-                  user.email,
-                  style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                ),
-                if (activeProfile != null) ...[
-                  AppSpacing.vGap8,
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: cs.primary.withValues(alpha: 0.1),
-                      borderRadius: AppRadius.borderFull,
-                    ),
-                    child: Text(
-                      activeProfile!.displayName ?? activeProfile!.roleName,
-                      style: tt.labelSmall?.copyWith(
-                        color: cs.primary,
-                        fontWeight: FontWeight.w600,
+              AppSpacing.hGap16,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.fullName ?? 'User',
+                      style: tt.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                  ),
-                ],
-              ],
-            ),
+                    AppSpacing.vGap4,
+                    Text(
+                      user.email,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                    ),
+                    if (activeProfile != null) ...[
+                      AppSpacing.vGap8,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: cs.primary.withValues(alpha: 0.1),
+                          borderRadius: AppRadius.borderFull,
+                        ),
+                        child: Text(
+                          activeProfile!.displayName ?? activeProfile!.roleName,
+                          style: tt.labelSmall?.copyWith(
+                            color: cs.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ),
-          OutlinedButton.icon(
-            onPressed: onEditProfile,
-            icon: const Icon(Icons.edit_outlined, size: 16),
-            label: Text(l10n.editProfile),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              textStyle: tt.labelMedium,
+          AppSpacing.vGap16,
+          Align(
+            alignment: Alignment.centerLeft,
+            child: OutlinedButton.icon(
+              onPressed: onEditProfile,
+              icon: const Icon(Icons.edit_outlined, size: 16),
+              label: Text(l10n.editProfile),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                textStyle: tt.labelMedium,
+              ),
             ),
           ),
         ],

@@ -24,7 +24,6 @@ class AuthInterceptor extends QueuedInterceptor {
     '/api/auth/register/request',
     '/api/auth/register',
     '/api/auth/select-profile',
-    '/api/auth/select-org',
     '/api/auth/refresh-token',
     '/api/auth/reset-password/request',
     '/api/auth/reset-password',

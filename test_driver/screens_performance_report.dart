@@ -18,8 +18,9 @@ List<String> screenCaptureIssues(
     }
     final metrics = Map<String, dynamic>.from(raw);
     final frames = metrics['frame_count'];
-    if (frames is! int || frames < 15)
+    if (frames is! int || frames < 15) {
       issues.add('$phase: fewer than 15 frames');
+    }
     for (final metric in [
       '90th_percentile_frame_build_time_millis',
       '90th_percentile_frame_rasterizer_time_millis',
@@ -82,39 +83,60 @@ String buildScreensPerformanceMarkdown(
     ..sort((a, b) => a.key.compareTo(b.key));
   final ranked = captures.entries.toList()
     ..sort((a, b) => _worst(b.value).compareTo(_worst(a.value)));
+  final generated = (generatedAt ?? DateTime.now()).toUtc().toIso8601String();
+  final resultLabel = passed
+      ? (strict ? 'PASS' : 'CAPTURED (debug smoke)')
+      : 'FAIL';
   final buffer = StringBuffer()
     ..writeln('# All Mobile Screens Performance Report')
     ..writeln()
+    ..writeln('- Generated: `$generated`')
     ..writeln(
-      '- Generated: `${(generatedAt ?? DateTime.now()).toUtc().toIso8601String()}`',
+      '- Device: `${meta['device'] ?? 'unknown'}`; '
+      'platform: `${meta['platform'] ?? 'unknown'}`; '
+      'logical size: `${meta['logical_size'] ?? 'unknown'}`',
     )
     ..writeln(
-      '- Device: `${meta['device'] ?? 'unknown'}`; platform: `${meta['platform'] ?? 'unknown'}`; logical size: `${meta['logical_size'] ?? 'unknown'}`',
+      '- Mode: `${meta['mode'] ?? 'unknown'}`; result: **$resultLabel**',
     )
     ..writeln(
-      '- Mode: `${meta['mode'] ?? 'unknown'}`; result: **${passed ? (strict ? 'PASS' : 'CAPTURED (debug smoke)') : 'FAIL'}**',
+      '- Screen inventory: ${meta['screen_count'] ?? 0}; '
+      'captured cases: ${captures.length}/${expected.length}; '
+      'failures: ${failed.length}; missing: ${missing.length}',
     )
     ..writeln(
-      '- Screen inventory: ${meta['screen_count'] ?? 0}; captured cases: ${captures.length}/${expected.length}; failures: ${failed.length}; missing: ${missing.length}',
-    )
-    ..writeln(
-      '- Cases exceeding the 60 Hz budgets${strict ? '' : ' (informational in debug)'}: ${overBudget.length + (strict ? failed.length : 0)}',
+      '- Cases exceeding the 60 Hz budgets'
+      '${strict ? '' : ' (informational in debug)'}: ${overBudget.length}',
     )
     ..writeln()
     ..writeln('## Scope')
     ..writeln()
     ..writeln(
-      'Real Flutter FrameTiming measurements while opening each fixture through an animated route and scrolling visible surfaces in both directions. Sparse = 1 item; large = 100 items per injected list. Family size is capped at 5 children, profiles at 3 and trend charts at 12 points. Fixed forms/demo screens are measured once. Font, app theme and native Rive animations are enabled.',
+      'Real Flutter FrameTiming measurements while opening each fixture '
+      'through an animated route and scrolling visible surfaces in both '
+      'directions. Sparse = 1 item; large = 100 items per injected list. '
+      'Family size is capped at 5 children, profiles at 3 and trend charts '
+      'at 12 points. Fixed forms/demo screens are measured once. Font, '
+      'app theme and native Rive animations are enabled.',
     )
     ..writeln()
     ..writeln(
-      'Data comes from in-memory repositories; providers mount before the route measurement. These cases measure UI work rather than backend latency, full app cold startup, video playback, OAuth, image picking or large network image decoding. The device viewport, light theme, Vietnamese locale and default text size are used.',
+      'Data comes from in-memory repositories; providers mount before the '
+      'route measurement. These cases measure UI work rather than backend '
+      'latency, full app cold startup, video playback, OAuth, image picking '
+      'or large network image decoding. The device viewport, light theme, '
+      'Vietnamese locale and default text size are used.',
     )
     ..writeln()
     ..writeln(
       strict
-          ? 'The profile/release gate requires at least 15 samples per measured phase, P90 build and raster <= 16 ms, and missed build/raster budgets <= 5% for each phase.'
-          : '**Debug simulator results identify suspect screens; they do not establish production performance.** Run `make performance_screens DEVICE=<physical-id> PROFILE=1` for strict measurements.',
+          ? 'The profile/release gate requires at least 15 samples per '
+                'measured phase, P90 build and raster <= 16 ms, and missed '
+                'build/raster budgets <= 5% for each phase.'
+          : '**Debug simulator results identify suspect screens; they do '
+                'not establish production performance.** Run '
+                '`make performance_screens DEVICE=<physical-id> PROFILE=1` '
+                'for strict measurements.',
     )
     ..writeln()
     ..writeln('## Highest observed build/raster spikes')
@@ -129,7 +151,8 @@ String buildScreensPerformanceMarkdown(
     ..writeln('## All screen measurements')
     ..writeln()
     ..writeln(
-      '| Screen | Data | Entry P90 build/raster | Scroll P90 build/raster | Worst build/raster | Misses build/raster | Frames entry/scroll | Status |',
+      '| Screen | Data | Entry P90 build/raster | Scroll P90 build/raster | '
+      'Worst build/raster | Misses build/raster | Frames entry/scroll | Status |',
     )
     ..writeln('| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |');
   for (final e in ordered) {
@@ -148,10 +171,13 @@ String buildScreensPerformanceMarkdown(
         : strict
         ? 'PASS'
         : 'CAPTURED';
+    final scrollP90 = c['scroll_exercised'] == true ? _p90(scroll) : 'n/a';
     buffer.writeln(
-      '| ${c['screen']} | ${c['density']} | ${_p90(entry)} | ${c['scroll_exercised'] == true ? _p90(scroll) : 'n/a'} '
-      '| ${_ms(_maxMetric(phases, 'worst_frame_build_time_millis'))} / ${_ms(_maxMetric(phases, 'worst_frame_rasterizer_time_millis'))} '
-      '| ${_sum(phases, 'missed_frame_build_budget_count')} / ${_sum(phases, 'missed_frame_rasterizer_budget_count')} '
+      '| ${c['screen']} | ${c['density']} | ${_p90(entry)} | $scrollP90 '
+      '| ${_ms(_maxMetric(phases, 'worst_frame_build_time_millis'))} / '
+      '${_ms(_maxMetric(phases, 'worst_frame_rasterizer_time_millis'))} '
+      '| ${_sum(phases, 'missed_frame_build_budget_count')} / '
+      '${_sum(phases, 'missed_frame_rasterizer_budget_count')} '
       '| ${entry['frame_count'] ?? 0} / ${scroll['frame_count'] ?? 'n/a'} | $status |',
     );
   }
@@ -167,9 +193,11 @@ String buildScreensPerformanceMarkdown(
       buffer.writeln('- $key: missing case');
     }
     for (final e in findings) {
-      buffer.writeln(
-        '- ${e.key}: ${screenCaptureIssues(e.value, strict: true).map((s) => s.replaceAll('\n', ' ')).join('; ')}',
-      );
+      final text = screenCaptureIssues(
+        e.value,
+        strict: true,
+      ).map((s) => s.replaceAll('\n', ' ')).join('; ');
+      buffer.writeln('- ${e.key}: $text');
     }
   }
   return buffer.toString();

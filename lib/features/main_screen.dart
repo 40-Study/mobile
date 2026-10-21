@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/features/parent/presentation/parent_shell.dart';
 import 'package:study/features/student/presentation/student_shell.dart';
+import 'package:study/features/teacher/presentation/profile/teacher_applicant_screen.dart';
+import 'package:study/features/teacher/presentation/teacher_shell.dart';
 
 /// Main screen sau khi login - route đến shell theo role
 class MainScreen extends StatelessWidget {
@@ -26,9 +28,19 @@ class MainScreen extends StatelessWidget {
             return const StudentShell();
           case 'parent':
             return const ParentShell();
-          // TODO: Add other role shells
-          // case 'teacher':
-          //   return const TeacherShell();
+          case 'teacher':
+            return TeacherShell(
+              key: ValueKey(
+                '${state.user.id}/${state.activeProfile?.id}/teacher',
+              ),
+            );
+          case 'teacherapplicant':
+          case 'teacher_applicant':
+            return TeacherApplicantScreen(
+              key: ValueKey(
+                '${state.user.id}/${state.activeProfile?.id}/applicant',
+              ),
+            );
           default:
             return const StudentShell();
         }

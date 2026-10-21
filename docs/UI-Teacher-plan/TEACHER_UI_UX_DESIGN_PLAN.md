@@ -3,6 +3,7 @@
 - Dự án: 40Study Mobile, Flutter trên iOS/Android.
 - Ngày lập: 14/10/2026.
 - Trạng thái: đề xuất chi tiết để thiết kế và triển khai; chưa phải giao diện đã nghiệm thu.
+- Cập nhật 17/10/2026: dùng [plan xây dựng UI trên base hiện tại](TEACHER_UI_UX_BUILD_PLAN.md) cho các quyết định mới về tài khoản chung, vị trí công cụ, system theme và thứ tự triển khai UI.
 - Phạm vi: toàn bộ Teacher, cân bằng dạy lớp hằng ngày và quản lý khóa học cá nhân; phân biệt rõ Cá nhân/Tổ chức.
 - Đầu vào: [Đối chiếu backend và phạm vi giao diện](BACKEND_CAPABILITIES_AND_UI_SCOPE.md).
 - Mã nguồn đối chiếu: backend local `main`, commit `97c29a8`; mobile đang ở `tung/refactor_UI_Student` khi lập tài liệu. Khảo sát tĩnh, chưa kiểm thử API đang chạy.
@@ -96,8 +97,8 @@ Dùng giao diện phẳng, tiết chế của nhánh Student hiện tại: bề 
 | Hạng mục | Quy tắc dự kiến |
 |---|---|
 | Khoảng cách | Dùng thang 4/8/12/16/24/32 của `AppSpacing` |
-| Lề điện thoại | Mặc định 16dp; form/khối đọc dài có thể dùng token 24dp hiện có |
-| Bo góc | Theo token semantic hiện tại: card 8, button/input 4, sheet 16; không gán số riêng từng màn |
+| Lề điện thoại | Theo `AppSpacing.screenPadding` 24dp; hàng dữ liệu dày có thể dùng `lg` 16dp theo layout đã chốt |
+| Bo góc | Dùng component theme hiện chạy: card 8, button/input 8, dialog 12; không override bằng token button/input cũ 4 hoặc gán số riêng từng màn |
 | Chữ | Theo `ThemeData.textTheme`; nội dung quan trọng không dùng chữ nhỏ để ép vừa |
 | Vùng chạm | Tối thiểu 48dp trên Android, 44pt trên iOS; icon nhỏ vẫn có vùng chạm đầy đủ |
 | Nhấn chính | Filled button cho thao tác chính; outlined/text cho thao tác phụ |
@@ -116,7 +117,7 @@ Mọi kích thước là quy tắc thiết kế, cần kiểm trực quan trên 
 | Lịch dạy | Lên kế hoạch và điều chỉnh lịch | Xem buổi; tạo khi có quyền |
 | Lớp học | Quản lý việc giảng dạy theo lớp | Mở lớp, học viên, bài tập, bảng điểm |
 | Khóa học | Soạn và quản lý khóa cá nhân | Tạo khóa / tiếp tục soạn |
-| Tài khoản | Hồ sơ, nơi làm việc, thu nhập cá nhân và cài đặt | Hoàn thiện hồ sơ / xem thu nhập |
+| Tài khoản | Phần tài khoản chung với các role: danh tính, đổi role, bảo mật, cài đặt, hỗ trợ | Quản lý tài khoản bằng luồng chung |
 
 Không đổi thứ tự hoặc biến mất tab khi chuyển phạm vi. Tab Khóa học luôn giữ nhãn phạm vi cá nhân trong nội dung. Người không có dữ liệu thấy empty state đúng nguyên nhân, không thấy danh sách mẫu trộn vào dữ liệu thật.
 
@@ -141,14 +142,15 @@ Teacher entry
     │   ├── Thông tin / giá / học viên khóa
     │   ├── Giáo trình → chương → bài → nội dung
     │   └── Kiểm tra sẵn sàng / gửi duyệt / lý do từ chối
-    └── Tài khoản
-        ├── Hồ sơ nghề nghiệp / xem hồ sơ công khai
-        ├── Nơi làm việc / đổi vai trò
-        ├── Thu nhập cá nhân → giao dịch / ngân hàng / rút tiền
-        └── Bảo mật / nhắc lịch / cài đặt
+    └── Tài khoản chung
+        ├── Thông tin người dùng / đổi vai trò
+        ├── Chỉnh sửa thông tin cá nhân / bảo mật
+        └── Cài đặt / hỗ trợ / giới thiệu / đăng xuất
 ```
 
 Hộp thư, thông báo và công cụ mở rộng không chiếm thêm bottom tab. Khi mở màn sâu, ẩn bottom navigation để có đủ không gian và tránh thoát nhầm tác vụ.
+
+Theo cập nhật 17/10: hồ sơ nghề nghiệp mở từ Công việc giảng dạy ở Hôm nay; thu nhập/ngân hàng mở từ Khóa học; nhắc lịch mở từ Lịch dạy. Nơi làm việc ở header các tab giảng dạy. Bảng di chuyển đầy đủ nằm trong plan UI mới; không bỏ các tính năng này khi thay tab cuối bằng phần chung.
 
 ### 4.3. Danh mục màn hình và ưu tiên
 
@@ -180,7 +182,7 @@ Hộp thư, thông báo và công cụ mở rộng không chiếm thêm bottom t
 | T20 | Bài nộp, chi tiết kết quả, thống kê | P1 |
 | T21 | Bảng điểm và nhập hàng loạt | P1 |
 | T22 | Tổng kết và chốt điểm | P1 |
-| T23 | Tài khoản và hồ sơ nghề nghiệp | P0/P1 |
+| T23 | Tài khoản chung; hồ sơ nghề nghiệp có điểm vào riêng ở Công việc giảng dạy | P0/P1 |
 | T24 | Thu nhập cá nhân và giao dịch | P1 |
 | T25 | Ngân hàng, yêu cầu rút, lịch sử rút | P1 |
 | T26 | Thông báo và cài đặt nhắc lịch | P1 |
@@ -451,13 +453,9 @@ Hiển thị điểm trung bình, xếp loại/rank nếu API có, người ch�
 
 ### 11.1. Tài khoản
 
-Danh sách nhóm, không xếp nhiều card:
+Tab cuối tái sử dụng phần tài khoản chung đang được Student/Parent sử dụng: thông tin người dùng, đổi vai trò, chỉnh sửa thông tin cá nhân, bảo mật, cài đặt, hỗ trợ, giới thiệu và đăng xuất. Giữ các phần riêng của từng role trong wrapper tương ứng; Teacher không hiện Portfolio học viên hoặc Quản lý con.
 
-1. Hồ sơ cá nhân và hồ sơ nghề nghiệp: chuyên môn, học vấn, kinh nghiệm, chứng chỉ, bộ phận.
-2. Nơi làm việc và đổi vai trò; giữ hai thao tác tách biệt.
-3. Thu nhập cá nhân.
-4. Nhắc lịch, thông báo và bảo mật.
-5. Đăng xuất.
+Không tiếp tục phát triển bản sao `TeacherProfileScreen`/flow đổi role riêng. Dùng widget profile và luồng `ProfileCubit`/`AuthBloc` hiện có, tách phần nội dung chung khi triển khai. Hồ sơ nghề nghiệp chuyển sang Công việc giảng dạy; thu nhập/ngân hàng sang Khóa học; nhắc lịch sang Lịch dạy; nơi làm việc nằm ở header. Chi tiết di chuyển và điều kiện hồi quy trong [plan UI mới](TEACHER_UI_UX_BUILD_PLAN.md).
 
 Xem hồ sơ công khai dùng dữ liệu public/privacy đúng nguồn; không lấy nội dung từ màn quản trị rồi lộ thêm ngân hàng hoặc trạng thái xét duyệt.
 
