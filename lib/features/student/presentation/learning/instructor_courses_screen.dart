@@ -1,6 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:study/theme/theme.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
+import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
+import 'course_detail/course_detail_screen.dart';
 import 'widgets/category_tabs_header_delegate.dart';
 
 class InstructorCoursesScreen extends StatefulWidget {
@@ -64,7 +69,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
       duration: '6h 40m',
       rating: 4.9,
       studentCount: 1250,
-      progress: 0.65,
+      progress: 1.0,
       isEnrolled: true,
       level: 'Cơ bản',
     ),
@@ -137,6 +142,18 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _navigateToCourse(BuildContext context, _InstructorCourseData course) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider(
+          create: (_) => diContainer<CourseDetailBloc>()
+            ..add(CourseDetailStarted(course.id, isEnrollment: course.isEnrolled)),
+          child: const CourseDetailScreen(),
+        ),
+      ),
+    );
   }
 
   void _onCategoryTapped(int index) {
@@ -455,7 +472,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
           color: cs.outlineVariant.withValues(alpha: 0.45),
@@ -474,15 +491,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
         borderRadius: BorderRadius.circular(AppRadius.lg),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Khóa học: ${course.title}'),
-                behavior: SnackBarBehavior.floating,
-                duration: const Duration(seconds: 1),
-              ),
-            );
-          },
+          onTap: () => _navigateToCourse(context, course),
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
             child: Row(
@@ -554,7 +563,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
                                   Text(
                                     'Đang học '
                                     '${(course.progress * 100).toInt()}%',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
                                       color: Color(0xFF1D4ED8),
@@ -566,10 +575,10 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
                           else
                             Text(
                               course.price,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF0F172A),
+                                color: cs.onSurface,
                               ),
                             ),
                         ],
@@ -601,10 +610,10 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
                           const SizedBox(width: 3),
                           Text(
                             '${course.rating}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF0F172A),
+                              color: cs.onSurface,
                             ),
                           ),
                           const SizedBox(width: 2),
@@ -657,7 +666,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
                                 child: LinearProgressIndicator(
                                   value: course.progress,
                                   minHeight: 5,
-                                  backgroundColor: const Color(0xFFF1F5F9),
+                                  backgroundColor: cs.outlineVariant.withValues(alpha: 0.3),
                                   valueColor: const AlwaysStoppedAnimation(
                                     Color(0xFF2563EB),
                                   ),

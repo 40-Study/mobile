@@ -1,5 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
+import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
+import 'course_detail/course_detail_screen.dart';
 import 'package:study/theme/theme.dart';
 
 import 'widgets/instructor_avatar_placeholder.dart';
@@ -27,6 +32,18 @@ class InstructorDetailScreen extends StatelessWidget {
   final String instructorName;
   final String? instructorAvatar;
   final String? instructorTitle;
+
+  void _navigateToCourse(BuildContext context, String courseId, {bool isEnrolled = false}) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider(
+          create: (_) => diContainer<CourseDetailBloc>()
+            ..add(CourseDetailStarted(courseId, isEnrollment: isEnrolled)),
+          child: const CourseDetailScreen(),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -407,33 +424,37 @@ class InstructorDetailScreen extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             clipBehavior: Clip.none,
             children: [
-              const InstructorCourseCard(
+              InstructorCourseCard(
                 title: 'UI/UX Design Fundamentals',
                 lessonCount: 12,
                 duration: '6h 40m',
-                progress: 0.65,
+                progress: 1.0,
                 isEnrolled: true,
+                onTap: () => _navigateToCourse(context, 'course_1', isEnrolled: true),
               ),
               AppSpacing.hGap12,
-              const InstructorCourseCard(
+              InstructorCourseCard(
                 title: 'Product Design Masterclass',
                 lessonCount: 18,
                 duration: '8h 20m',
                 progress: 0.40,
+                onTap: () => _navigateToCourse(context, 'course_2', isEnrolled: false),
               ),
               AppSpacing.hGap12,
-              const InstructorCourseCard(
+              InstructorCourseCard(
                 title: 'Design Thinking for UX',
                 lessonCount: 10,
                 duration: '4h 15m',
                 progress: 0.20,
+                onTap: () => _navigateToCourse(context, 'course_3', isEnrolled: false),
               ),
               AppSpacing.hGap12,
-              const InstructorCourseCard(
+              InstructorCourseCard(
                 title: 'User Research Methods',
                 lessonCount: 14,
                 duration: '5h 30m',
                 progress: 0,
+                onTap: () => _navigateToCourse(context, 'course_4', isEnrolled: false),
               ),
             ],
           ),

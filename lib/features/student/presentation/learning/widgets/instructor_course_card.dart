@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:study/theme/theme.dart';
 
 /// Course card hiển thị trong instructor detail
@@ -10,6 +10,7 @@ class InstructorCourseCard extends StatelessWidget {
     required this.duration,
     required this.progress,
     this.isEnrolled = false,
+    this.onTap,
   });
 
   final String title;
@@ -17,6 +18,7 @@ class InstructorCourseCard extends StatelessWidget {
   final String duration;
   final double progress;
   final bool isEnrolled;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +39,13 @@ class InstructorCourseCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Thumbnail
@@ -182,6 +190,8 @@ class InstructorCourseCard extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 }
