@@ -88,3 +88,14 @@ Thư mục này lưu trữ toàn bộ tài liệu phân tích đối chiếu, ng
      * Nâng cấp Typography dạng **Large Title (25sp, bold 800)** to rõ, đẳng cấp, mang đậm phong cách công nghệ học thuật hiện đại.
      * Leading Icon Squircle pastel `40×40` và Trailing Action button trắng `38×38` nổi tự nhiên trên nền trang như các điểm chạm tinh tế.
    * **Lộ trình thực hiện:** 6 bước triển khai từ tái cấu trúc `StudentAppHeader`, cập nhật 4 màn hình chính, kiểm tra `flutter analyze` đến build & test thực tế trên Android Emulator.
+
+10. [**Kế hoạch Khắc phục Lỗi Điều hướng Khóa học Giảng viên, Tái thiết kế Card Chứng chỉ & Xử lý Toàn diện Dark Mode (Student UI Course, Certificate & Dark Mode Fix Plan)**](file:///C:/ForteX/mobile/docs/insight_UI_student/STUDENT_UI_COURSE_CERT_DARKMODE_FIX_PLAN.md)
+    * **Bóc tách 3 vấn đề cốt lõi:**
+      1. Click vào khóa học trong trang khóa học của giảng viên (`InstructorCoursesScreen`) và hồ sơ giảng viên (`InstructorDetailScreen`) không điều hướng do thiếu handler / đang dùng SnackBar tạm thời.
+      2. Bug nút "Xem chứng chỉ" bị đơ sau khi back về do điều kiện `(prev.certificate == null && curr.certificate != null)` trong `listenWhen` không còn thỏa mãn; card hoàn thành khóa học có nút xanh lá bị thô cứng, chật chội và vỡ giao diện trong Dark Mode.
+      3. Lỗi mất chữ (chữ đen trên nền đen) trên diện rộng khi chuyển sang Dark Mode do extension `TogetherColorsX` trong `app_colors.dart` cố định dải màu `slate*` thành mã màu tối mà không kiểm tra chế độ ban đêm.
+    * **Giải pháp kỹ thuật & Thẩm mỹ:**
+      * Bổ sung điều hướng chuẩn sang `CourseDetailScreen` bọc trong `CourseDetailBloc`.
+      * Sửa logic callback mở trực tiếp chứng chỉ khi đã có trong state; tái thiết kế Card chứng chỉ dạng Milestone Celebration Card sang trọng, phân tầng 2 lớp, chuẩn Design Tokens.
+      * Tái cấu trúc linh hoạt hệ thống Slate Tokens tự động đảo màu theo `brightness == Brightness.dark` và thay thế các container `Colors.white` cứng.
+    * **Lộ trình 4 giai đoạn & 5 tiêu chí nghiệm thu an toàn.**
