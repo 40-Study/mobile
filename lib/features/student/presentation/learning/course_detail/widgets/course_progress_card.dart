@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_state.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
@@ -96,74 +96,149 @@ class CourseProgressCard extends StatelessWidget {
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
     final isCompleted = enrollment.progressPercentage >= 100;
 
-    // Completed: show celebratory banner with certificate button
+    // Completed: show celebratory milestone card with certificate button
     if (isCompleted) {
+      final isLight = Theme.of(context).brightness == Brightness.light;
+      final accentColor = cs.secondary;
+
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
         child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md + 2),
+          padding: const EdgeInsets.all(AppSpacing.md + 4),
           decoration: BoxDecoration(
-            color: const Color(0xFFECFDF5),
+            color: cs.surfaceContainerLowest,
             borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(color: const Color(0xFFA7F3D0)),
+            border: Border.all(
+              color: accentColor.withValues(alpha: isLight ? 0.35 : 0.45),
+              width: 1.0,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: accentColor.withValues(alpha: isLight ? 0.06 : 0.15),
+                blurRadius: 14,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFD1FAE5),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.workspace_premium_rounded,
-                  color: Color(0xFF059669),
-                  size: 22,
-                ),
-              ),
-              AppSpacing.hGap12,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Chúc mừng! Khóa học đã hoàn thành',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF065F46),
+              // Top milestone row: badge + text
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: isLight ? 0.12 : 0.22),
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      border: Border.all(
+                        color: accentColor.withValues(alpha: 0.25),
+                        width: 0.8,
                       ),
                     ),
-                    Text(
-                      'Bạn có thể xem và tải chứng chỉ của mình',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.green.shade800,
-                      ),
+                    child: Icon(
+                      Icons.workspace_premium_rounded,
+                      color: accentColor,
+                      size: 26,
                     ),
-                  ],
-                ),
+                  ),
+                  AppSpacing.hGap12,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 2.5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: accentColor.withValues(alpha: isLight ? 0.1 : 0.2),
+                                borderRadius: BorderRadius.circular(AppRadius.full),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.verified_rounded,
+                                    size: 11,
+                                    color: accentColor,
+                                  ),
+                                  const SizedBox(width: 3.5),
+                                  Text(
+                                    'HOÀN THÀNH XUẤT SẮC',
+                                    style: tt.labelSmall?.copyWith(
+                                      color: accentColor,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 9.5,
+                                      letterSpacing: 0.4,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              '100%',
+                              style: tt.labelSmall?.copyWith(
+                                color: accentColor,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                        AppSpacing.vGap4,
+                        Text(
+                          'Chứng chỉ hoàn thành khóa học',
+                          style: tt.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: cs.onSurface,
+                            fontSize: 14,
+                            height: 1.25,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Bạn đã hoàn thành trọn vẹn toàn bộ bài học và đủ điều kiện nhận chứng chỉ tốt nghiệp.',
+                          style: tt.bodySmall?.copyWith(
+                            fontSize: 11.5,
+                            color: cs.onSurfaceVariant,
+                            height: 1.35,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              AppSpacing.hGap8,
-              FilledButton(
-                onPressed: onViewCertificate,
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF059669),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.full),
-                  ),
-                ),
-                child: Text(
-                  l10n.viewCertificateButton,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+              AppSpacing.vGap12,
+              // Action Button
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: onViewCertificate,
+                  icon: const Icon(Icons.card_membership_rounded, size: 17),
+                  label: Text(l10n.viewCertificateButton),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: accentColor,
+                    foregroundColor: cs.onSecondary,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.full),
+                    ),
+                    textStyle: tt.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ),

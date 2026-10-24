@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/course/data/models/course_model.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
@@ -105,6 +105,20 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
     context.read<CourseDetailBloc>().add(
       CourseDetailCertificateRequested(enrollmentId),
     );
+  }
+
+  void _onViewCertificate(BuildContext context, CourseDetailSuccess state) {
+    final cert = state.certificate;
+    if (cert != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => CertificateDetailScreen(certificate: cert),
+        ),
+      );
+    } else {
+      _requestCertificate(context, state.enrollment.id);
+    }
   }
 
   void _toggleBookmark(BuildContext context) {
@@ -232,7 +246,7 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                       _navigateToLesson(context, nextLesson, allLessons, state.sections);
                     }
                   },
-                  onViewCertificate: () => _requestCertificate(context, state.enrollment.id),
+                  onViewCertificate: () => _onViewCertificate(context, state),
                 ),
               ),
               SliverPersistentHeader(
