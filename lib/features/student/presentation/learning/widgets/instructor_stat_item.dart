@@ -20,15 +20,26 @@ class InstructorStatItem extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, color: cs.primary, size: 22),
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: cs.primary.withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: cs.primary, size: 20),
+          ),
           AppSpacing.vGap4,
           Text(
             value,
-            style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700, fontSize: 16),
           ),
           Text(
             label,
-            style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+            style: tt.labelSmall?.copyWith(
+              color: cs.onSurfaceVariant,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),

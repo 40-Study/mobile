@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:study/data/daily_goals_storage.dart';
 import 'package:study/theme/theme.dart';
 
-/// Daily goals card cho home screen - khác với DailyGoalCard (enrollment-based)
+/// Daily goals card cho home screen
 class HomeDailyGoalsCard extends StatelessWidget {
   const HomeDailyGoalsCard({super.key, this.onTap});
 
@@ -12,7 +12,8 @@ class HomeDailyGoalsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final goalColor = cs.secondary;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final goalColor = cs.primary;
 
     final storage = DailyGoalsStorage.instance;
     final goals = storage.getGoals(DateTime.now());
@@ -22,30 +23,38 @@ class HomeDailyGoalsCard extends StatelessWidget {
 
     // Empty state
     if (goals.isEmpty) {
-      return _EmptyGoalsBanner(onTap: onTap, goalColor: goalColor);
+      return _EmptyGoalsBanner(onTap: onTap);
     }
 
     // Has goals
-    return DecoratedBox(
+    return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        boxShadow: AppShadows.layeredCard,
+        color: isLight ? Colors.white : cs.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.6),
+          width: 0.8,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Material(
-        color: cs.surfaceContainerLowest,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.card),
-          side: BorderSide(color: cs.outline),
-        ),
-        clipBehavior: Clip.antiAlias,
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         child: InkWell(
           onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: const EdgeInsets.all(AppSpacing.md + 2),
             child: Row(
               children: [
                 SizedBox.square(
-                  dimension: 66,
+                  dimension: 58,
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
@@ -53,14 +62,17 @@ class HomeDailyGoalsCard extends StatelessWidget {
                         child: CircularProgressIndicator(
                           value: progress,
                           color: goalColor,
-                          strokeWidth: 7,
+                          strokeWidth: 6,
                           strokeCap: StrokeCap.round,
-                          backgroundColor: goalColor.withValues(alpha: 0.1),
+                          backgroundColor: const Color(0xFFEFF6FF),
                         ),
                       ),
                       Text(
                         '$completed/$total',
-                        style: tt.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+                        style: tt.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: cs.slate900,
+                        ),
                       ),
                     ],
                   ),
@@ -72,22 +84,29 @@ class HomeDailyGoalsCard extends StatelessWidget {
                     children: [
                       Text(
                         completed == total
-                            ? 'Hoàn thành tất cả!'
-                            : 'Còn ${total - completed} mục tiêu',
-                        style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                            ? 'Hoàn thành tất cả mục tiêu!'
+                            : 'Còn ${total - completed} mục tiêu hôm nay',
+                        style: tt.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: cs.slate900,
+                        ),
                       ),
-                      AppSpacing.vGap4,
+                      const SizedBox(height: 3),
                       Text(
                         nextGoal?.title ?? 'Tuyệt vời! Bạn đã hoàn thành.',
-                        style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                        maxLines: 2,
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.slate500,
+                        ),
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-                AppSpacing.hGap8,
-                Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: cs.slate400,
+                ),
               ],
             ),
           ),
@@ -98,98 +117,104 @@ class HomeDailyGoalsCard extends StatelessWidget {
 }
 
 class _EmptyGoalsBanner extends StatelessWidget {
-  const _EmptyGoalsBanner({this.onTap, required this.goalColor});
+  const _EmptyGoalsBanner({this.onTap});
 
   final VoidCallback? onTap;
-  final Color goalColor;
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFF1F8E9), Color(0xFFE8F5E9)],
-          ),
-          borderRadius: BorderRadius.circular(AppRadius.card),
-          border: Border.all(color: const Color(0xFFC8E6C9).withValues(alpha: 0.5)),
+    return Container(
+      decoration: BoxDecoration(
+        color: isLight ? Colors.white : cs.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.6),
+          width: 0.8,
         ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md + 2),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.flag_rounded,
+                    color: cs.primary,
+                    size: 22,
+                  ),
+                ),
+                AppSpacing.hGap16,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: AppSpacing.paddingSm,
-                        decoration: BoxDecoration(
-                          color: goalColor.withValues(alpha: 0.12),
-                          shape: BoxShape.circle,
+                      Text(
+                        'Đặt mục tiêu hôm nay',
+                        style: tt.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: cs.slate900,
                         ),
-                        child: Icon(Icons.flag_rounded, size: 18, color: goalColor),
                       ),
-                      AppSpacing.hGap12,
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hãy đặt mục tiêu',
-                            style: tt.titleSmall?.copyWith(
-                              color: const Color(0xFF43A047),
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Text(
-                            'để bắt đầu ngày mới!',
-                            style: tt.bodySmall?.copyWith(color: const Color(0xFF66BB6A)),
-                          ),
-                        ],
+                      const SizedBox(height: 3),
+                      Text(
+                        'Tạo 1-2 thói quen học tập để bứt phá',
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.slate500,
+                        ),
                       ),
                     ],
                   ),
-                  AppSpacing.vGap12,
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF66BB6A),
-                      borderRadius: BorderRadius.circular(AppRadius.full),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.add_rounded, size: 16, color: Colors.white),
-                        AppSpacing.hGap4,
-                        Text(
-                          'Thêm mục tiêu',
-                          style: tt.labelSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm + 2,
+                    vertical: 6,
                   ),
-                ],
-              ),
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer,
+                    borderRadius: BorderRadius.circular(AppRadius.full),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add_rounded, size: 16, color: cs.primary),
+                      const SizedBox(width: 2),
+                      Text(
+                        'Thêm',
+                        style: tt.labelSmall?.copyWith(
+                          color: cs.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                color: const Color(0xFFC8E6C9).withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(AppRadius.md),
-              ),
-              child: Icon(Icons.eco_rounded, size: 36, color: goalColor.withValues(alpha: 0.5)),
-            ),
-          ],
+          ),
         ),
       ),
     );

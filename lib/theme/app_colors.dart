@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 /// Together AI Design System - Professional Blue & White Theme
 ///
@@ -56,35 +56,37 @@ extension TogetherColorsX on ColorScheme {
   // NEUTRAL COLORS - Xám trung tính
   // ══════════════════════════════════════════════════════════════════════════
 
-  /// Slate 50 - background sáng
-  Color get slate50 => const Color(0xFFF8FAFC);
+  bool get _isDark => brightness == Brightness.dark;
+
+  /// Slate 50 - background sáng ở light mode, tối nhất ở dark mode
+  Color get slate50 => _isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
 
   /// Slate 100
-  Color get slate100 => const Color(0xFFF1F5F9);
+  Color get slate100 => _isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
 
-  /// Slate 200
-  Color get slate200 => const Color(0xFFE2E8F0);
+  /// Slate 200 - border phụ
+  Color get slate200 => _isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
 
   /// Slate 300
-  Color get slate300 => const Color(0xFFCBD5E1);
+  Color get slate300 => _isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1);
 
-  /// Slate 400
-  Color get slate400 => const Color(0xFF94A3B8);
+  /// Slate 400 - icon disabled / border
+  Color get slate400 => _isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8);
 
-  /// Slate 500
-  Color get slate500 => const Color(0xFF64748B);
+  /// Slate 500 - caption / muted text
+  Color get slate500 => _isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
-  /// Slate 600
-  Color get slate600 => const Color(0xFF475569);
+  /// Slate 600 - text phụ trợ
+  Color get slate600 => _isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569);
 
-  /// Slate 700
-  Color get slate700 => const Color(0xFF334155);
+  /// Slate 700 - text cấp 2 / icon phụ
+  Color get slate700 => _isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155);
 
-  /// Slate 800
-  Color get slate800 => const Color(0xFF1E293B);
+  /// Slate 800 - text tiêu đề vừa / icon chính
+  Color get slate800 => _isDark ? const Color(0xFFF1F5F9) : const Color(0xFF1E293B);
 
-  /// Slate 900
-  Color get slate900 => const Color(0xFF0F172A);
+  /// Slate 900 - text chính / tiêu đề quan trọng
+  Color get slate900 => _isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A);
 
   // ══════════════════════════════════════════════════════════════════════════
   // GRADIENTS - Soft & Subtle
@@ -238,6 +240,12 @@ extension TogetherColorsX on ColorScheme {
   Color get surfaceTintedTertiary =>
       Color.lerp(surfaceContainerLowest, slate100, 0.1)!;
 
+  /// Nền canvas chuẩn 3-layer surface
+  /// (hòa trộn nhẹ primary với surfaceContainer)
+  Color get surfaceCanvas => brightness == Brightness.light
+      ? Color.alphaBlend(primary.withValues(alpha: 0.045), surfaceContainer)
+      : Color.alphaBlend(primary.withValues(alpha: 0.065), surfaceContainer);
+
   // ══════════════════════════════════════════════════════════════════════════
   // LEGACY ALIASES - Backward compatibility
   // ══════════════════════════════════════════════════════════════════════════
@@ -269,9 +277,9 @@ class TogetherSemanticColors {
 class RoleColors {
   RoleColors._();
 
-  // Student - Primary Blue
-  static const studentPrimary = Color(0xFF2563EB);
-  static const studentSecondary = Color(0xFF93C5FD);
+  // Student - Primary Academic Blue
+  static const studentPrimary = Color(0xFF3D5FC4);
+  static const studentSecondary = Color(0xFFEDF1FF);
 
   // Teacher - Darker Blue
   static const teacherPrimary = Color(0xFF1E40AF);
@@ -284,4 +292,9 @@ class RoleColors {
   // Organization - Navy
   static const orgPrimary = Color(0xFF1E3A5F);
   static const orgSecondary = Color(0xFF38BDF8);
+}
+
+/// Tiện ích hỗ trợ lấy nhanh màu nền Canvas 3-layer surface cho màn hình
+extension BuildContextSurfaceX on BuildContext {
+  Color get surfaceBg => Theme.of(this).colorScheme.surfaceCanvas;
 }

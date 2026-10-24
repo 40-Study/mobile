@@ -17,6 +17,7 @@ import 'package:study/features/student/presentation/home/widgets/widgets.dart';
 import 'package:study/features/student/presentation/learning/course_detail/course_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/lesson_detail_screen.dart';
 import 'package:study/features/student/presentation/notification/notification_screen.dart';
+import 'package:study/features/student/presentation/widgets/widgets.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/section_header.dart';
@@ -48,94 +49,60 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final topSurfaceColor = isLight ? Colors.white : cs.surface;
 
     return Scaffold(
-      appBar: AppBar(
-        toolbarHeight: 56,
-        leading: widget.onDrawerTap != null
-            ? IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: widget.onDrawerTap,
-                tooltip: 'Mở menu',
-              )
-            : null,
-        title: Text(
-          '40Study',
-          style: tt.titleLarge?.copyWith(
-            color: cs.onSurface,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        actions: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications_outlined),
-                tooltip: 'Thông báo',
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => const NotificationScreen(),
-                  ),
+      backgroundColor: topSurfaceColor,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            StudentHomeTopBar(
+              backgroundColor: topSurfaceColor,
+              onDrawerTap: widget.onDrawerTap,
+              onNotificationTap: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => const NotificationScreen(),
                 ),
               ),
-              Positioned(
-                right: 10,
-                top: 9,
-                child: Container(
-                  width: 7,
-                  height: 7,
-                  decoration: BoxDecoration(
-                    color: cs.error,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: cs.surface, width: 1.5),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.md),
-            child: Tooltip(
-              message: 'Tài khoản',
-              child: InkWell(
-                onTap: () => widget.onNavigateToTab?.call(4),
-                customBorder: const CircleBorder(),
-                child: CircleAvatar(
-                  radius: 17,
-                  backgroundColor: cs.primaryContainer,
-                  child: Text(
-                    _initial(widget.userName),
-                    style: tt.labelLarge?.copyWith(
-                      color: cs.onPrimaryContainer,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+              onAvatarTap: () => widget.onNavigateToTab?.call(4),
+            ),
+            Expanded(
+              child: BlocConsumer<HomeBloc, HomeState>(
+                listenWhen: (prev, curr) =>
+                    curr is HomeSuccess && curr.classCourseNavigation != null,
+                buildWhen: (prev, curr) {
+                  if (prev is HomeSuccess && curr is HomeSuccess) {
+                    return prev.continueLearning != curr.continueLearning ||
+                        prev.scheduleItems != curr.scheduleItems ||
+                        prev.assignments != curr.assignments;
+                  }
+                  return prev != curr;
+                },
+                listener: (context, state) {
+                  if (state is HomeSuccess) {
+                    _handleClassCourseNavigation(
+                      context,
+                      state.classCourseNavigation,
+                    );
+                  }
+                },
+                builder: (context, state) {
+                  return switch (state) {
+                    HomeInitial() || HomeInProgress() => const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2.5),
+                      ),
+                    HomeFailure(:final message) =>
+                      _buildError(context, message),
+                    HomeSuccess() => _buildContent(context, state),
+                  };
+                },
               ),
             ),
-          ),
-        ],
-      ),
-      body: BlocConsumer<HomeBloc, HomeState>(
-        listenWhen: (prev, curr) =>
-            curr is HomeSuccess && curr.classCourseNavigation != null,
-        listener: (context, state) {
-          if (state is HomeSuccess) {
-            _handleClassCourseNavigation(context, state.classCourseNavigation);
-          }
-        },
-        builder: (context, state) {
-          return switch (state) {
-            HomeInitial() || HomeInProgress() => const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2.5),
-                ),
-            HomeFailure(:final message) => _buildError(context, message),
-            HomeSuccess() => _buildContent(context, state),
-          };
-        },
+          ],
+        ),
       ),
     );
   }
@@ -186,8 +153,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildContent(BuildContext context, HomeSuccess state) {
-    final cs = Theme.of(context).colorScheme;
     final activeScheduleId = _activeScheduleId(state.scheduleItems);
+    final firstName = _firstName(widget.userName);
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -202,30 +171,26 @@ class _HomeScreenState extends State<HomeScreen> {
               AppSpacing.screenPadding,
               AppSpacing.md,
               AppSpacing.screenPadding,
-              0,
-            ),
-            child: Text(
-              '${_greeting()}, ${_firstName(widget.userName)}',
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screenPadding,
-              0,
-              AppSpacing.screenPadding,
-              AppSpacing.lg,
+              AppSpacing.xl,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  '${_greeting()}, $firstName',
+                  style: tt.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: cs.slate900,
+                    letterSpacing: -0.5,
+                    fontSize: 26,
+                  ),
+                ),
+                AppSpacing.vGap12,
                 TodaySummary(
                   scheduleCount: state.scheduleItems.length,
                   assignmentCount: state.assignments.length,
                 ),
-                AppSpacing.vGap24,
+                AppSpacing.vGap16,
                 if (state.continueLearning != null)
                   ContinueLearningCard(
                     enrollment: state.continueLearning!,
@@ -239,36 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: Color.alphaBlend(
-                cs.primary.withValues(
-                  alpha: Theme.of(context).brightness == Brightness.light
-                      ? 0.045
-                      : 0.065,
-                ),
-                cs.surfaceContainer,
-              ),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppRadius.xl),
-              ),
-              border: Border(
-                top: BorderSide(color: cs.primary.withValues(alpha: 0.1)),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: cs.shadow.withValues(alpha: 0.045),
-                  blurRadius: 32,
-                  offset: const Offset(0, -10),
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screenPadding,
-              AppSpacing.xl,
-              AppSpacing.screenPadding,
-              104,
-            ),
+          CurvedSurfaceTray(
             child: _buildSections(context, state, activeScheduleId),
           ),
         ],
@@ -276,9 +212,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSections(BuildContext context, HomeSuccess state, String? activeScheduleId) {
+  Widget _buildSections(
+    BuildContext context,
+    HomeSuccess state,
+    String? activeScheduleId,
+  ) {
     final cs = Theme.of(context).colorScheme;
-    final hasGoals = DailyGoalsStorage.instance.getGoals(DateTime.now()).isNotEmpty;
+    final hasGoals =
+        DailyGoalsStorage.instance.getGoals(DateTime.now()).isNotEmpty;
 
     // Build section widgets with hasData flag
     final sections = <({int order, bool hasData, Widget widget})>[
@@ -306,13 +247,10 @@ class _HomeScreenState extends State<HomeScreen> {
         hasData: true, // Achievements always has stats
         widget: _buildAchievementsSection(context, cs),
       ),
-    ];
-
-    // Sort: sections with data first, then by default order
-    sections.sort((a, b) {
-      if (a.hasData != b.hasData) return a.hasData ? -1 : 1;
-      return a.order.compareTo(b.order);
-    });
+    ]..sort((a, b) {
+        if (a.hasData != b.hasData) return a.hasData ? -1 : 1;
+        return a.order.compareTo(b.order);
+      });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,7 +258,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildScheduleSection(BuildContext context, HomeSuccess state, String? activeScheduleId) {
+  Widget _buildScheduleSection(
+    BuildContext context,
+    HomeSuccess state,
+    String? activeScheduleId,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -332,10 +274,15 @@ class _HomeScreenState extends State<HomeScreen> {
         AppSpacing.vGap12,
         ScheduleTimeline(
           items: state.scheduleItems.map((item) {
+            final subtitle = (item.instructorName != null && item.instructorName!.isNotEmpty)
+                ? 'GV: ${item.instructorName}'
+                : (item.location != null && item.location!.isNotEmpty
+                    ? item.location!
+                    : 'Tự học trực tuyến');
             return ScheduleTimelineItemData(
               time: _formatTimeRange(item.startTime, item.endTime),
               title: item.title,
-              subtitle: item.instructorName ?? _typeLabel(item.type),
+              subtitle: subtitle,
               type: _mapScheduleType(item.type),
               isActive: item.id == activeScheduleId,
               onTap: () => _onScheduleItemTap(context, item),
@@ -364,7 +311,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildAssignmentsSection(BuildContext context, HomeSuccess state, ColorScheme cs) {
+  Widget _buildAssignmentsSection(
+    BuildContext context,
+    HomeSuccess state,
+    ColorScheme cs,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -405,22 +356,26 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (context, achievementState) {
             return switch (achievementState) {
               AchievementSuccess() => WeeklyAchievementCard(
-                stats: achievementState.stats,
-                earnedBadgeCount: achievementState.earnedBadges.length,
-                onTap: () => widget.onNavigateToTab?.call(3),
-              ),
+                  stats: achievementState.stats,
+                  earnedBadgeCount: achievementState.earnedBadges.length,
+                  onTap: () => widget.onNavigateToTab?.call(3),
+                ),
               AchievementFailure() => AchievementPlaceholder(
-                onTap: () => widget.onNavigateToTab?.call(3),
-              ),
+                  onTap: () => widget.onNavigateToTab?.call(3),
+                ),
               _ => const AchievementLoadingCard(),
             };
           },
         ),
+        AppSpacing.vGap24,
       ],
     );
   }
 
-  Future<void> _onScheduleItemTap(BuildContext context, ScheduleItemModel item) async {
+  Future<void> _onScheduleItemTap(
+    BuildContext context,
+    ScheduleItemModel item,
+  ) async {
     if (item.lessonId != null) {
       await Navigator.push(
         context,
@@ -448,7 +403,11 @@ class _HomeScreenState extends State<HomeScreen> {
       return; // Navigation handled via BlocConsumer listener
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.scheduleOpenItem(item.title))),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.scheduleOpenItem(item.title),
+          ),
+        ),
       );
       return;
     }
@@ -458,7 +417,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _handleClassCourseNavigation(BuildContext context, ClassCourseNavigation? nav) {
+  void _handleClassCourseNavigation(
+    BuildContext context,
+    ClassCourseNavigation? nav,
+  ) {
     if (nav == null) return;
 
     final l10n = AppLocalizations.of(context)!;
@@ -492,11 +454,13 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.of(context, rootNavigator: true).pop();
         context.read<HomeBloc>().add(const HomeClassCourseNavigationHandled());
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(
-            message == 'course_not_found'
-                ? l10n.scheduleCourseNotFound
-                : l10n.scheduleNotEnrolled,
-          )),
+          SnackBar(
+            content: Text(
+              message == 'course_not_found'
+                  ? l10n.scheduleCourseNotFound
+                  : l10n.scheduleNotEnrolled,
+            ),
+          ),
         );
     }
   }
@@ -517,14 +481,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> _navigateToCourse(BuildContext context, String enrollmentId) async {
+  Future<void> _navigateToCourse(
+    BuildContext context,
+    String enrollmentId,
+  ) async {
     await Navigator.push(
       context,
       MaterialPageRoute<void>(
         builder: (_) => BlocProvider(
-          create: (_) =>
-              diContainer<CourseDetailBloc>()
-                ..add(CourseDetailStarted(enrollmentId)),
+          create: (_) => diContainer<CourseDetailBloc>()
+            ..add(CourseDetailStarted(enrollmentId)),
           child: const CourseDetailScreen(),
         ),
       ),
@@ -574,14 +540,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return current?.id ?? next?.id;
   }
 
-  String _typeLabel(String type) {
-    return switch (type.toLowerCase()) {
-      'livestream' => 'Trực tuyến',
-      'quiz' => 'Bài kiểm tra',
-      'deadline' => 'Hạn nộp',
-      _ => 'Video',
-    };
-  }
 
   String _greeting() {
     final hour = DateTime.now().hour;
@@ -594,11 +552,5 @@ class _HomeScreenState extends State<HomeScreen> {
     final normalized = name?.trim();
     if (normalized == null || normalized.isEmpty) return 'bạn';
     return normalized.split(RegExp(r'\s+')).last;
-  }
-
-  String _initial(String? name) {
-    final normalized = name?.trim();
-    if (normalized == null || normalized.isEmpty) return 'B';
-    return normalized.substring(0, 1).toUpperCase();
   }
 }

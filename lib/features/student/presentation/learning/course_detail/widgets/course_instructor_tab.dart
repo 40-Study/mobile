@@ -14,6 +14,7 @@ class CourseInstructorTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final course = state.course;
 
     return ListView(
@@ -21,19 +22,29 @@ class CourseInstructorTab extends StatelessWidget {
       children: [
         InkWell(
           onTap: () => _navigateToInstructor(context),
-          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           child: Container(
             padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
-              color: cs.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+              color: isLight ? Colors.white : cs.surface,
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              border: Border.all(
+                color: cs.outlineVariant.withValues(alpha: 0.6),
+                width: 0.8,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: cs.shadow.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 CachedAvatar(
                   url: course?.instructorAvatar,
-                  radius: 36,
+                  radius: 34,
                   backgroundColor: cs.primaryContainer,
                   name: course?.instructorName ?? 'T',
                 ),
@@ -44,28 +55,32 @@ class CourseInstructorTab extends StatelessWidget {
                     children: [
                       Text(
                         course?.instructorName ?? 'Giảng viên',
-                        style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                        style: tt.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: cs.slate900,
+                        ),
                       ),
                       Text(
-                        'Giảng viên chuyên nghiệp',
-                        style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                        'Giảng viên chuyên môn',
+                        style: tt.bodyMedium?.copyWith(color: cs.slate500),
                       ),
                       AppSpacing.vGap4,
                       Row(
                         children: [
-                          const Icon(Icons.star_rounded, size: 14, color: Colors.amber),
+                          const Icon(Icons.star_rounded, size: 15, color: Colors.amber),
                           const SizedBox(width: 4),
-                          Text('4.9', style: tt.labelSmall?.copyWith(fontWeight: FontWeight.w600)),
+                          Text('4.9', style: tt.labelSmall?.copyWith(fontWeight: FontWeight.w700)),
                           const SizedBox(width: 8),
-                          Text('• 12 khóa học • 15k học viên',
-                            style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+                          Text(
+                            '• 12 khóa học • 15k học viên',
+                            style: tt.labelSmall?.copyWith(color: cs.slate500),
                           ),
                         ],
                       ),
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
+                Icon(Icons.chevron_right_rounded, color: cs.slate400),
               ],
             ),
           ),
@@ -86,9 +101,10 @@ class CourseInstructorTab extends StatelessWidget {
         FilledButton.tonal(
           onPressed: () => _navigateToInstructor(context),
           style: FilledButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            minimumSize: const Size.fromHeight(48),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.sm),
+              borderRadius: BorderRadius.circular(AppRadius.full),
             ),
           ),
           child: const Text('Xem trang giảng viên'),

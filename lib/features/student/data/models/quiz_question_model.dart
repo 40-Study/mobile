@@ -34,6 +34,21 @@ abstract class QuizQuestionModel with _$QuizQuestionModel {
   /// Lấy list options text cho UI
   List<String> get options => answers.map((a) => a.answerText).toList();
 
-  /// Lấy index đáp án đúng
+  /// Lấy index đáp án đúng đầu tiên (cho single_choice)
   int get correctAnswer => answers.indexWhere((a) => a.isCorrect);
+
+  /// Lấy danh sách indices tất cả đáp án đúng (cho multiple_choice)
+  List<int> get correctAnswers => answers
+      .asMap()
+      .entries
+      .where((e) => e.value.isCorrect)
+      .map((e) => e.key)
+      .toList();
+
+  /// Kiểm tra loại câu hỏi
+  bool get isMultipleChoice => questionType == 'multiple_choice';
+  bool get isSingleChoice =>
+      questionType == 'single_choice' || questionType == 'true_false';
+  bool get isTrueFalse => questionType == 'true_false';
 }
+

@@ -4,6 +4,7 @@ export 'achievement_placeholder.dart';
 export 'assignment_item.dart';
 export 'assignment_list.dart';
 export 'continue_learning_card.dart';
+export 'curved_surface_tray.dart';
 export 'daily_goal_card.dart';
 export 'explore_courses_card.dart';
 export 'home_daily_goals_card.dart';

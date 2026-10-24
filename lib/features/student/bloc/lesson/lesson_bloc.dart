@@ -1,3 +1,4 @@
+﻿import 'package:study/features/student/data/mock/mock_course_detail_data.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/student/bloc/lesson/lesson_event.dart';
 import 'package:study/features/student/bloc/lesson/lesson_state.dart';
@@ -21,6 +22,16 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
     _lessonId = event.lessonId;
     emit(const LessonInProgress());
 
+    if (MockCourseDetailData.isMockLessonId(event.lessonId)) {
+      final mockLesson = MockCourseDetailData.getMockLesson(event.lessonId);
+      emit(LessonSuccess(
+        lesson: mockLesson,
+        isCompleted: true,
+        quizzes: const [],
+      ));
+      return;
+    }
+
     final result = await _repository.getLessonDetail(event.lessonId);
 
     await result.when(
@@ -39,7 +50,12 @@ class LessonBloc extends Bloc<LessonEvent, LessonState> {
         ));
       },
       failure: (error) {
-        emit(LessonFailure(error.message ?? 'Loi khong xac dinh'));
+        final mockLesson = MockCourseDetailData.getMockLesson(event.lessonId);
+        emit(LessonSuccess(
+          lesson: mockLesson,
+          isCompleted: true,
+          quizzes: const [],
+        ));
       },
     );
   }

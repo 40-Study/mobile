@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:study/theme/theme.dart';
 
-/// Summary row: buổi học + bài cần làm
+/// Nhóm thẻ tóm tắt nhanh dạng Capsule Pills thanh mảnh (không viền cứng, không shadow),
+/// đóng vai trò bổ trợ tự nhiên cho Lời chào Hero Greeting.
 class TodaySummary extends StatelessWidget {
   const TodaySummary({
     super.key,
@@ -16,62 +17,73 @@ class TodaySummary extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Row(
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.xs,
       children: [
-        _SummaryItem(
-          icon: Icons.calendar_month_outlined,
-          label: '$scheduleCount buổi học',
-          color: cs.primary,
+        _PillBadge(
+          icon: Icons.calendar_month_rounded,
+          iconColor: cs.primary,
+          bgColor: cs.primaryContainer,
+          textColor: cs.onPrimaryContainer,
+          label: '$scheduleCount ca học hôm nay',
         ),
-        Container(
-          width: 1,
-          height: 18,
-          margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          color: cs.outline,
-        ),
-        _SummaryItem(
-          icon: Icons.task_alt_outlined,
+        _PillBadge(
+          icon: Icons.assignment_outlined,
+          iconColor: const Color(0xFFD97706),
+          bgColor: const Color(0xFFFEF3C7),
+          textColor: const Color(0xFFB45309),
           label: '$assignmentCount bài cần làm',
-          color: cs.tertiary,
         ),
       ],
     );
   }
 }
 
-class _SummaryItem extends StatelessWidget {
-  const _SummaryItem({
+class _PillBadge extends StatelessWidget {
+  const _PillBadge({
     required this.icon,
+    required this.iconColor,
+    required this.bgColor,
+    required this.textColor,
     required this.label,
-    required this.color,
   });
 
   final IconData icon;
+  final Color iconColor;
+  final Color bgColor;
+  final Color textColor;
   final String label;
-  final Color color;
 
   @override
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 24,
-          height: 24,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(AppRadius.xs),
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: 7,
+      ),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(AppRadius.full),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: iconColor),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: tt.labelMedium?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w600,
+              fontSize: 12.5,
+              height: 1.1,
+            ),
           ),
-          child: Icon(icon, size: 15, color: color),
-        ),
-        AppSpacing.hGap8,
-        Text(
-          label,
-          style: tt.labelSmall?.copyWith(fontWeight: FontWeight.w600),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

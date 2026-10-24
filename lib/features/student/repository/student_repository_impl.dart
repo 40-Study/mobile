@@ -171,16 +171,42 @@ class StudentRepositoryImpl implements StudentRepository {
     final result = Map<String, dynamic>.from(json);
     // If no nested course but has course_* fields, build course object
     if (result['course'] == null && result['course_id'] != null) {
+      final instructor = result['instructor'];
+      String? instructorName;
+      String? instructorAvatar;
+      String? instructorId = result['instructor_id']?.toString();
+      if (instructor is Map) {
+        instructorName = instructor['name'] as String?;
+        instructorAvatar = (instructor['avatar'] ?? instructor['avatar_url']) as String?;
+        instructorId ??= instructor['id']?.toString();
+      } else if (result['instructor_name'] is String) {
+        instructorName = result['instructor_name'] as String?;
+      } else if (result['course_instructor'] is String) {
+        instructorName = result['course_instructor'] as String?;
+      } else if (result['course_instructor_name'] is String) {
+        instructorName = result['course_instructor_name'] as String?;
+      }
+
       result['course'] = {
         'id': result['course_id'],
         'title': result['course_title'],
         'slug': result['course_slug'],
         'thumbnail_url': result['course_thumbnail'],
         'category_name': result['course_category'],
+        'instructor_id': instructorId,
+        'instructor_name': instructorName,
+        'instructor_avatar': instructorAvatar,
       };
     } else if (result['course'] is Map<String, dynamic>) {
+      final courseMap = Map<String, dynamic>.from(result['course'] as Map<String, dynamic>);
+      if (courseMap['instructor'] == null && result['instructor'] != null) {
+        courseMap['instructor'] = result['instructor'];
+      }
+      if (courseMap['instructor_name'] == null && result['instructor_name'] != null) {
+        courseMap['instructor_name'] = result['instructor_name'];
+      }
       // Normalize existing course (flatten instructor/category)
-      result['course'] = _normalizeCourse(result['course'] as Map<String, dynamic>);
+      result['course'] = _normalizeCourse(courseMap);
     }
     return result;
   }
@@ -445,7 +471,133 @@ class StudentRepositoryImpl implements StudentRepository {
   }
 
   @override
+  Future<ApiResult<List<QuizReviewItemModel>>> getQuizAttemptReview(
+    String quizId,
+    String attemptId,
+    List<QuizQuestionModel> questions,
+  ) async {
+    try {
+      final response = await _studentApi.getAttemptDetail(quizId, attemptId);
+      final data = response.data['data'] as Map<String, dynamic>?;
+      if (data == null) {
+        return const Result.failure(
+          ServerFailure(message: 'Không tìm thấy chi tiết bài làm'),
+        );
+      }
+      final rawAnswers = _extractList(data['answers']);
+
+      // Index answers by question_id for fast lookup
+      final answerMap = <String, Map<String, dynamic>>{};
+      for (final a in rawAnswers) {
+        if (a is Map<String, dynamic>) {
+          final qId = a['question_id'] as String? ?? '';
+          if (qId.isNotEmpty) {
+            answerMap[qId] = a;
+          }
+        }
+      }
+
+      final reviewItems = <QuizReviewItemModel>[];
+      for (var i = 0; i < questions.length; i++) {
+        final q = questions[i];
+        final a = answerMap[q.id];
+
+        final selectedIds = (a?['selected_answer_ids'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [];
+        final correctIds = (a?['correct_answer_ids'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [];
+        final isCorrect = a?['is_correct'] == true;
+        final isSkipped = selectedIds.isEmpty;
+        final pointsEarned = (a?['points_earned'] as num?)?.toDouble() ?? 0.0;
+        final explanation = a?['explanation'] as String? ?? q.explanation;
+
+        reviewItems.add(
+          QuizReviewItemModel(
+            index: i + 1,
+            questionId: q.id,
+            questionText: q.question,
+            answers: q.answers,
+            selectedAnswerIds: selectedIds,
+            correctAnswerIds: correctIds,
+            isCorrect: isCorrect,
+            isSkipped: isSkipped,
+            pointsEarned: pointsEarned,
+            explanation: explanation,
+          ),
+        );
+      }
+
+      return Result.success(reviewItems);
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<List<QuizReviewItemModel>>> getQuizReviewDetails(
+    String quizId, {
+    String? attemptId,
+  }) async {
+    try {
+      String? targetAttemptId = attemptId;
+
+      // 1. Nếu không có attemptId, fetch attempts từ server để tìm attempt gần nhất
+      if (targetAttemptId == null || targetAttemptId.isEmpty) {
+        final attemptsResponse = await _studentApi.getMyAttempts(quizId);
+        final rawAttempts = _extractList(attemptsResponse.data['data']);
+        if (rawAttempts.isEmpty) {
+          return const Result.failure(
+            ServerFailure(message: 'Chưa có lịch sử làm bài kiểm tra này'),
+          );
+        }
+        // Lấy attempt hoàn thành gần nhất hoặc attempt mới nhất
+        final completedAttempts = rawAttempts.where((a) {
+          if (a is Map<String, dynamic>) {
+            return a['completed_at'] != null;
+          }
+          return false;
+        }).toList();
+
+        final chosenAttempt = completedAttempts.isNotEmpty
+            ? completedAttempts.last
+            : rawAttempts.last;
+
+        if (chosenAttempt is Map<String, dynamic>) {
+          targetAttemptId = chosenAttempt['id'] as String?;
+        }
+      }
+
+      if (targetAttemptId == null || targetAttemptId.isEmpty) {
+        return const Result.failure(
+          ServerFailure(message: 'Không tìm thấy lượt làm bài'),
+        );
+      }
+
+      // 2. Tải danh sách câu hỏi để có options và đáp án gốc
+      final questionsResult = await getQuizQuestions(quizId);
+      List<QuizQuestionModel> questions = const [];
+      if (questionsResult case Success(value: final qList)) {
+        questions = qList;
+      } else {
+        return const Result.failure(
+          ServerFailure(message: 'Không thể tải danh sách câu hỏi'),
+        );
+      }
+
+      // 3. Tải chi tiết attempt và map sang review items
+      return await getQuizAttemptReview(quizId, targetAttemptId, questions);
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
   Future<ApiResult<List<QuizModel>>> getQuizzesByLesson(String lessonId) async {
+
     try {
       final response = await _studentApi.getQuizzesByLesson(lessonId);
       final list = _extractList(response.data['data']);

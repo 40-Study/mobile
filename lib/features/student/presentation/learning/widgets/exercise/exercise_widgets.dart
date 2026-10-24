@@ -422,8 +422,10 @@ class _QuizCardState extends State<QuizCard> {
                           total: _result!.totalCount,
                           score: _result!.score,
                           quizId: widget.quizId,
+                          attemptId: _result!.attemptId,
                           duration: widget.duration,
                         ),
+
                       ),
                     );
                   },

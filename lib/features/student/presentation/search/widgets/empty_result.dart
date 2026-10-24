@@ -33,12 +33,12 @@ class EmptyResult extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'Khong tim thay ket qua',
+              'Không tìm thấy kết quả',
               style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
-              'Khong co ket qua cho "$query"\nThu tu khoa khac nhe!',
+              'Không có kết quả cho "$query"\nThử từ khóa khác nhé!',
               style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),

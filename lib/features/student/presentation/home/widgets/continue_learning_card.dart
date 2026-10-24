@@ -12,133 +12,194 @@ class ContinueLearningCard extends StatelessWidget {
   final EnrollmentModel enrollment;
   final VoidCallback? onContinueTap;
 
+  static String _getInstructorInitial(String? name) {
+    if (name == null || name.trim().isEmpty) return 'F';
+    final words = name.trim().split(RegExp(r'\s+'));
+    return words.last.isNotEmpty ? words.last[0].toUpperCase() : 'T';
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
     final progress = (enrollment.progressPercentage / 100).clamp(0.0, 1.0);
     final progressLabel = enrollment.progressPercentage.toStringAsFixed(0);
     final course = enrollment.course;
+    final instructorName = course?.instructorName ?? 'ForteX';
 
-    return DecoratedBox(
+    return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        boxShadow: AppShadows.soft,
+        color: isLight ? Colors.white : cs.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.6),
+          width: 0.8,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.04),
+            blurRadius: 14,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Material(
-        color: cs.surfaceContainerLowest,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.card),
-        ),
-        clipBehavior: Clip.antiAlias,
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         child: InkWell(
           onTap: onContinueTap,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: const EdgeInsets.all(AppSpacing.md + 2),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Tag TIẾP TỤC HỌC thanh lịch góc trên bên trái
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.xs,
+                    vertical: 3,
                   ),
                   decoration: BoxDecoration(
                     color: cs.primaryContainer,
                     borderRadius: BorderRadius.circular(AppRadius.xs),
                   ),
                   child: Text(
-                    'Tiếp tục học',
+                    'TIẾP TỤC HỌC',
                     style: tt.labelSmall?.copyWith(
                       color: cs.primary,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 10,
+                      letterSpacing: 0.6,
                     ),
                   ),
                 ),
                 AppSpacing.vGap12,
                 LayoutBuilder(
                   builder: (context, constraints) {
-                    final imageSize = constraints.maxWidth < 340 ? 88.0 : 108.0;
+                    final imageSize = constraints.maxWidth < 340 ? 80.0 : 88.0;
 
                     return Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         _CourseCover(
                           size: imageSize,
                           imageUrl: course?.thumbnailUrl,
                         ),
-                        AppSpacing.hGap16,
+                        AppSpacing.hGap12,
                         Expanded(
-                          child: SizedBox(
-                            height: imageSize,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        course?.title ?? 'Khóa học của bạn',
-                                        style: tt.titleMedium?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          height: 1.25,
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    AppSpacing.hGap8,
-                                    Container(
-                                      width: 36,
-                                      height: 36,
-                                      decoration: BoxDecoration(
-                                        color: cs.primary,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        Icons.arrow_forward_rounded,
-                                        size: 19,
-                                        color: cs.onPrimary,
-                                      ),
-                                    ),
-                                  ],
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                course?.title ?? 'Khóa học của bạn',
+                                style: tt.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: cs.slate900,
+                                  height: 1.25,
                                 ),
-                                AppSpacing.vGap4,
-                                Text(
-                                  'Bài ${enrollment.completedLessons + 1} • '
-                                  '${course?.instructorName ?? "40Study"}',
-                                  style: tt.bodySmall?.copyWith(
-                                    color: cs.onSurfaceVariant,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              AppSpacing.vGap4,
+                              // Thông tin bài học & Giảng viên kèm avatar mini
+                              Row(
+                                children: [
+                                  Text(
+                                    'Bài ${enrollment.completedLessons + 1} • ',
+                                    style: tt.bodySmall?.copyWith(
+                                      color: cs.slate500,
+                                      fontSize: 12,
+                                    ),
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const Spacer(),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(3),
-                                        child: LinearProgressIndicator(
-                                          value: progress,
-                                          minHeight: 6,
-                                          backgroundColor:
-                                              cs.surfaceContainerHighest,
+                                  Container(
+                                    width: 18,
+                                    height: 18,
+                                    decoration: BoxDecoration(
+                                      color: cs.primaryContainer,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      _getInstructorInitial(instructorName),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w700,
+                                        color: cs.primary,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      instructorName,
+                                      style: tt.bodySmall?.copyWith(
+                                        color: cs.slate600,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              AppSpacing.vGap8,
+                              // Thanh tiến độ & phần trăm
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(3),
+                                      child: LinearProgressIndicator(
+                                        value: progress,
+                                        minHeight: 5,
+                                        backgroundColor:
+                                            cs.primaryContainer,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                          cs.primary,
                                         ),
                                       ),
                                     ),
-                                    AppSpacing.hGap12,
-                                    Text(
-                                      '$progressLabel%',
-                                      style: tt.labelSmall?.copyWith(
-                                        color: cs.onSurfaceVariant,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                  ),
+                                  AppSpacing.hGap8,
+                                  Text(
+                                    '$progressLabel%',
+                                    style: tt.labelSmall?.copyWith(
+                                      color: cs.primary,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 11,
                                     ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        AppSpacing.hGap12,
+                        // Nút tròn xanh CTA mũi tên (Affordance)
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: cs.primary,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: cs.primary
+                                    .withValues(alpha: 0.28),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.arrow_forward_rounded,
+                            color: Colors.white,
+                            size: 20,
                           ),
                         ),
                       ],
@@ -165,7 +226,7 @@ class _CourseCover extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(AppRadius.card),
+      borderRadius: BorderRadius.circular(AppRadius.md),
       child: SizedBox.square(
         dimension: size,
         child: Stack(
@@ -181,16 +242,16 @@ class _CourseCover extends StatelessWidget {
               _PlaceholderCover(cs: cs),
             Center(
               child: Container(
-                width: 34,
-                height: 34,
+                width: 30,
+                height: 30,
                 decoration: BoxDecoration(
-                  color: cs.surfaceContainerLowest.withValues(alpha: 0.94),
+                  color: Colors.white.withValues(alpha: 0.92),
                   shape: BoxShape.circle,
                   boxShadow: AppShadows.sm,
                 ),
                 child: Icon(
                   Icons.play_arrow_rounded,
-                  size: 19,
+                  size: 20,
                   color: cs.primary,
                 ),
               ),
@@ -212,8 +273,8 @@ class _PlaceholderCover extends StatelessWidget {
     return Container(
       color: cs.primaryContainer,
       child: Icon(
-        Icons.school_rounded,
-        size: 32,
+        Icons.menu_book_rounded,
+        size: 28,
         color: cs.primary,
       ),
     );

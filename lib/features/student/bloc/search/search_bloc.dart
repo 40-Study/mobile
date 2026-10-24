@@ -49,6 +49,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
           title: course.title,
           subtitle: '${course.categoryName ?? 'Khóa học'} · ${course.totalLessons} bài',
           type: SearchFilter.course,
+          imageUrl: course.thumbnailUrl,
         )).toList();
 
         if (results.isEmpty) {

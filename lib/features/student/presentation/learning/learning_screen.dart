@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/di/di_container.dart';
 import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
@@ -10,11 +11,11 @@ import 'package:study/features/student/presentation/learning/all_courses_screen.
 import 'package:study/features/student/presentation/learning/course_detail/course_detail_screen.dart';
 import 'package:study/features/student/presentation/learning/explore_courses_screen.dart';
 import 'package:study/features/student/presentation/learning/widgets/widgets.dart';
-import 'package:study/di/di_container.dart';
+import 'package:study/features/student/presentation/search/search_screen.dart';
+import 'package:study/features/student/presentation/widgets/widgets.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/empty_state.dart';
 import 'package:study/widgets/section_header.dart';
-import 'package:study/widgets/tab_screen_header.dart';
 
 class LearningScreen extends StatefulWidget {
   const LearningScreen({super.key});
@@ -44,17 +45,72 @@ class _LearningScreenState extends State<LearningScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Scaffold(
+      backgroundColor: context.surfaceBg,
       body: SafeArea(
-        child: BlocBuilder<LearningBloc, LearningState>(
-          builder: (context, state) {
-            return switch (state) {
-              LearningInitial() || LearningInProgress() =>
-                _buildLoading(context),
-              LearningFailure(:final message) => _buildError(context, message),
-              LearningSuccess() => _buildContent(context, state),
-            };
-          },
+        bottom: false,
+        child: Column(
+          children: [
+            StudentAppHeader(
+              categoryLabel: 'HỌC PHẦN & KHÓA HỌC',
+              title: 'Học tập của tôi',
+              icon: Icons.school_rounded,
+              showNotification: false,
+              showAvatar: false,
+              trailing: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (_) => const SearchScreen(),
+                    ),
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: cs.outlineVariant.withValues(alpha: 0.35),
+                        width: 0.8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: cs.shadow.withValues(alpha: 0.025),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.search_rounded,
+                      color: cs.slate700,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: BlocBuilder<LearningBloc, LearningState>(
+                builder: (context, state) {
+                  return switch (state) {
+                    LearningInitial() ||
+                    LearningInProgress() =>
+                      _buildLoading(context),
+                    LearningFailure(:final message) =>
+                      _buildError(context, message),
+                    LearningSuccess() => _buildContent(context, state),
+                  };
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -66,31 +122,12 @@ class _LearningScreenState extends State<LearningScreen> {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.screenPadding),
       children: [
-        // Header skeleton
-        Container(
-          height: 40,
-          width: 150,
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(AppRadius.sm),
-          ),
-        ),
-        AppSpacing.vGap8,
-        Container(
-          height: 20,
-          width: 200,
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(AppRadius.xs),
-          ),
-        ),
-        AppSpacing.vGap24,
         // Continue learning skeleton
         Container(
-          height: 180,
+          height: 140,
           decoration: BoxDecoration(
             color: cs.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
         ),
         AppSpacing.vGap24,
@@ -102,10 +139,10 @@ class _LearningScreenState extends State<LearningScreen> {
             itemCount: 3,
             separatorBuilder: (_, _) => AppSpacing.hGap12,
             itemBuilder: (_, _) => Container(
-              width: 160,
+              width: 172,
               decoration: BoxDecoration(
                 color: cs.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
             ),
           ),
@@ -172,27 +209,20 @@ class _LearningScreenState extends State<LearningScreen> {
       },
       child: CustomScrollView(
         slivers: [
-          // Header
-          const SliverToBoxAdapter(
-            child: TabScreenHeader(
-              title: 'Learning',
-              subtitle: 'Mỗi ngày một bước tiến.',
-            ),
-          ),
-
           // Continue Learning
           if (continueLearning != null) ...[
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.screenPadding,
-                  AppSpacing.lg,
+                  AppSpacing.md,
                   AppSpacing.screenPadding,
                   0,
                 ),
                 child: ContinueLearningCard(
                   enrollment: continueLearning,
-                  onContinue: () => _navigateToCourseDetail(continueLearning.id),
+                  onContinue: () =>
+                      _navigateToCourseDetail(continueLearning.id),
                 ),
               ),
             ),
@@ -203,7 +233,7 @@ class _LearningScreenState extends State<LearningScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.screenPadding,
-                AppSpacing.xl,
+                AppSpacing.lg,
                 AppSpacing.screenPadding,
                 AppSpacing.md,
               ),
@@ -213,162 +243,128 @@ class _LearningScreenState extends State<LearningScreen> {
                 onActionTap: () => Navigator.push(
                   context,
                   MaterialPageRoute<void>(
-                      builder: (_) => BlocProvider.value(
-                        value: context.read<LearningBloc>(),
-                        child: const AllCoursesScreen(),
-                      ),
+                    builder: (_) => BlocProvider.value(
+                      value: context.read<LearningBloc>(),
+                      child: const AllCoursesScreen(),
                     ),
+                  ),
                 ),
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 230,
-              child: Builder(builder: (context) {
-                // Sort: in-progress first, completed last
-                final sorted = List.of(state.enrollments)
-                  ..sort((a, b) {
-                    final aCompleted = a.progressPercentage >= 100;
-                    final bCompleted = b.progressPercentage >= 100;
-                    if (aCompleted != bCompleted) {
-                      return aCompleted ? 1 : -1;
-                    }
-                    return 0;
-                  });
-                return ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.screenPadding,
-                  ),
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: sorted.length,
-                  separatorBuilder: (_, _) => AppSpacing.hGap12,
-                  itemBuilder: (context, index) {
-                    final enrollment = sorted[index];
-                    return MyCourseCard(
-                      enrollment: enrollment,
-                      onTap: () => _navigateToCourseDetail(enrollment.id),
-                    );
-                  },
-                );
-              }),
-            ),
-          ),
-
-          // Filter Chips
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.screenPadding,
-                AppSpacing.lg,
-                AppSpacing.screenPadding,
-                AppSpacing.md,
-              ),
-              child: FilterChipsRow(
-                selectedFilter: state.filter,
-                onFilterChanged: (filter) {
-                  context
-                      .read<LearningBloc>()
-                      .add(LearningFilterChanged(filter));
+              height: 236,
+              child: Builder(
+                builder: (context) {
+                  // Sort: in-progress first, completed last
+                  final sorted = List.of(state.enrollments)
+                    ..sort((a, b) {
+                      final aCompleted = a.progressPercentage >= 100;
+                      final bCompleted = b.progressPercentage >= 100;
+                      if (aCompleted != bCompleted) {
+                        return aCompleted ? 1 : -1;
+                      }
+                      return 0;
+                    });
+                  return ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.screenPadding,
+                    ),
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: sorted.length,
+                    separatorBuilder: (_, _) => AppSpacing.hGap12,
+                    itemBuilder: (context, index) {
+                      final enrollment = sorted[index];
+                      return MyCourseCard(
+                        enrollment: enrollment,
+                        onTap: () => _navigateToCourseDetail(enrollment.id),
+                      );
+                    },
+                  );
                 },
               ),
             ),
           ),
 
-          // Recent Learning
+          // Lower Task Tray: Curved Surface Tray
           const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.screenPadding,
-              ),
-              child: SectionHeader(title: 'Gần đây'),
-            ),
+            child: AppSpacing.vGap24,
           ),
-          const SliverToBoxAdapter(child: AppSpacing.vGap8),
+          SliverToBoxAdapter(
+            child: CurvedSurfaceTray(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Filter Chips
+                  FilterChipsRow(
+                    selectedFilter: state.filter,
+                    onFilterChanged: (filter) {
+                      context
+                          .read<LearningBloc>()
+                          .add(LearningFilterChanged(filter));
+                    },
+                  ),
+                  AppSpacing.vGap16,
 
-          if (state.filteredEnrollments.isEmpty)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.screenPadding,
-                ),
-                child: EmptyState(
-                  style: EmptyStateStyle.compactCard,
-                  icon: Icons.school_outlined,
-                  message: _emptyFilterMessage(state.filter),
-                ),
-              ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.screenPadding,
-              ),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final enrollment = state.filteredEnrollments[index];
-                    return RecentLearningItem(
-                      enrollment: enrollment,
-                      onTap: () => _navigateToCourseDetail(enrollment.id),
-                    );
-                  },
-                  childCount: state.filteredEnrollments.length.clamp(0, 5),
-                ),
-              ),
-            ),
+                  // Recent Learning Header
+                  const SectionHeader(title: 'Gần đây'),
+                  AppSpacing.vGap12,
 
-          // Recommendations
-          if (state.recommendedCourses.isNotEmpty) ...[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.screenPadding,
-                  AppSpacing.xl,
-                  AppSpacing.screenPadding,
-                  AppSpacing.md,
-                ),
-                child: SectionHeader(
-                  title: 'Gợi ý cho bạn',
-                  actionLabel: 'Xem tất cả',
-                  onActionTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => BlocProvider.value(
-                        value: context.read<LearningBloc>(),
-                        child: const ExploreCoursesScreen(),
+                  if (state.filteredEnrollments.isEmpty)
+                    EmptyState(
+                      style: EmptyStateStyle.compactCard,
+                      icon: Icons.school_outlined,
+                      message: _emptyFilterMessage(state.filter),
+                    )
+                  else
+                    ...state.filteredEnrollments.take(5).map(
+                          (enrollment) => RecentLearningItem(
+                            enrollment: enrollment,
+                            onTap: () => _navigateToCourseDetail(enrollment.id),
+                          ),
+                        ),
+
+                  // Recommendations
+                  if (state.recommendedCourses.isNotEmpty) ...[
+                    AppSpacing.vGap24,
+                    SectionHeader(
+                      title: 'Gợi ý cho bạn',
+                      actionLabel: 'Xem tất cả',
+                      onActionTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => BlocProvider.value(
+                            value: context.read<LearningBloc>(),
+                            child: const ExploreCoursesScreen(),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                    AppSpacing.vGap12,
+                    SizedBox(
+                      height: 180,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: state.recommendedCourses.length > 6
+                            ? 6
+                            : state.recommendedCourses.length,
+                        separatorBuilder: (_, _) => AppSpacing.hGap12,
+                        itemBuilder: (context, index) {
+                          return RecommendationCard(
+                            course: state.recommendedCourses[index],
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 80),
+                ],
               ),
             ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 180,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.screenPadding,
-                  ),
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: state.recommendedCourses.length > 6
-                      ? 6
-                      : state.recommendedCourses.length,
-                  separatorBuilder: (_, __) => AppSpacing.hGap12,
-                  itemBuilder: (context, index) {
-                    return RecommendationCard(
-                      course: state.recommendedCourses[index],
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-
-          // Bottom padding
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ),
         ],
       ),
     );
@@ -387,11 +383,11 @@ class _LearningScreenState extends State<LearningScreen> {
           onAction: () => Navigator.push(
             context,
             MaterialPageRoute<void>(
-                      builder: (_) => BlocProvider.value(
-                        value: context.read<LearningBloc>(),
-                        child: const AllCoursesScreen(),
-                      ),
-                    ),
+              builder: (_) => BlocProvider.value(
+                value: context.read<LearningBloc>(),
+                child: const AllCoursesScreen(),
+              ),
+            ),
           ),
         ),
       ),

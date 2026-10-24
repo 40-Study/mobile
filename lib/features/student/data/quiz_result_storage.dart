@@ -11,12 +11,14 @@ class QuizResultStorage {
     required int correctCount,
     required int totalCount,
     required double score,
+    String? attemptId,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     final data = {
       'correctCount': correctCount,
       'totalCount': totalCount,
       'score': score,
+      if (attemptId != null) 'attemptId': attemptId,
       'completedAt': DateTime.now().toIso8601String(),
     };
     await prefs.setString('$_prefix$quizId', jsonEncode(data));
@@ -32,6 +34,7 @@ class QuizResultStorage {
       correctCount: data['correctCount'] as int,
       totalCount: data['totalCount'] as int,
       score: (data['score'] as num).toDouble(),
+      attemptId: data['attemptId'] as String?,
     );
   }
 
@@ -46,9 +49,12 @@ class QuizResultData {
     required this.correctCount,
     required this.totalCount,
     required this.score,
+    this.attemptId,
   });
 
   final int correctCount;
   final int totalCount;
   final double score;
+  final String? attemptId;
 }
+

@@ -1,5 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/di/di_container.dart';
+import 'package:study/features/student/bloc/course_detail/course_detail_bloc.dart';
+import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
+import 'course_detail/course_detail_screen.dart';
 import 'package:study/theme/theme.dart';
 
 import 'widgets/instructor_avatar_placeholder.dart';
@@ -11,6 +16,8 @@ import 'widgets/instructor_skill_chip.dart';
 import 'widgets/instructor_soft_icon_button.dart';
 import 'widgets/instructor_stat_item.dart';
 import 'widgets/instructor_vertical_divider.dart';
+import 'instructor_courses_screen.dart';
+import 'instructor_reviews_screen.dart';
 
 class InstructorDetailScreen extends StatelessWidget {
   const InstructorDetailScreen({
@@ -25,6 +32,18 @@ class InstructorDetailScreen extends StatelessWidget {
   final String instructorName;
   final String? instructorAvatar;
   final String? instructorTitle;
+
+  void _navigateToCourse(BuildContext context, String courseId, {bool isEnrolled = false}) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BlocProvider(
+          create: (_) => diContainer<CourseDetailBloc>()
+            ..add(CourseDetailStarted(courseId, isEnrollment: isEnrolled)),
+          child: const CourseDetailScreen(),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,25 +72,18 @@ class InstructorDetailScreen extends StatelessWidget {
                   // Content with layered background
                   Container(
                     decoration: BoxDecoration(
-                      color: Color.alphaBlend(
-                        cs.primary.withValues(
-                          alpha: Theme.of(context).brightness == Brightness.light
-                              ? 0.045
-                              : 0.065,
-                        ),
-                        cs.surfaceContainer,
-                      ),
+                      color: cs.surfaceContainerLowest,
                       borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(AppRadius.xl),
+                        top: Radius.circular(AppRadius.xxl),
                       ),
                       border: Border(
-                        top: BorderSide(color: cs.primary.withValues(alpha: 0.1)),
+                        top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.3)),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: cs.shadow.withValues(alpha: 0.045),
-                          blurRadius: 32,
-                          offset: const Offset(0, -10),
+                          color: cs.shadow.withValues(alpha: 0.04),
+                          blurRadius: 24,
+                          offset: const Offset(0, -6),
                         ),
                       ],
                     ),
@@ -110,6 +122,8 @@ class InstructorDetailScreen extends StatelessWidget {
   }
 
   Widget _buildAppBar(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.sm,
@@ -121,7 +135,13 @@ class InstructorDetailScreen extends StatelessWidget {
             icon: Icons.arrow_back_rounded,
             onTap: () => Navigator.of(context).pop(),
           ),
-          const Spacer(),
+          AppSpacing.hGap12,
+          Expanded(
+            child: Text(
+              'Hồ sơ giảng viên',
+              style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ),
           InstructorSoftIconButton(icon: Icons.bookmark_outline_rounded, onTap: () {}),
           AppSpacing.hGap8,
           InstructorSoftIconButton(icon: Icons.more_vert_rounded, onTap: () {}),
@@ -141,8 +161,8 @@ class InstructorDetailScreen extends StatelessWidget {
         Stack(
           children: [
             Container(
-              width: 130,
-              height: 130,
+              width: 108,
+              height: 108,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -151,8 +171,8 @@ class InstructorDetailScreen extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: cs.primary.withValues(alpha: 0.15),
-                    blurRadius: 20,
+                    color: cs.primary.withValues(alpha: 0.12),
+                    blurRadius: 16,
                     spreadRadius: 2,
                   ),
                 ],
@@ -162,6 +182,8 @@ class InstructorDetailScreen extends StatelessWidget {
                     ? CachedNetworkImage(
                         imageUrl: instructorAvatar!,
                         fit: BoxFit.cover,
+                        memCacheWidth: 200,
+                        memCacheHeight: 200,
                         placeholder: (_, _) =>
                             InstructorAvatarPlaceholder(name: instructorName),
                         errorWidget: (_, _, _) =>
@@ -172,23 +194,23 @@ class InstructorDetailScreen extends StatelessWidget {
             ),
             // Verified badge
             Positioned(
-              bottom: 4,
-              right: 4,
+              bottom: 2,
+              right: 2,
               child: Container(
-                width: 32,
-                height: 32,
+                width: 28,
+                height: 28,
                 decoration: BoxDecoration(
                   color: cs.primary,
                   shape: BoxShape.circle,
-                  border: Border.all(color: cs.surface, width: 3),
+                  border: Border.all(color: cs.surface, width: 2.5),
                   boxShadow: [
                     BoxShadow(
                       color: cs.primary.withValues(alpha: 0.3),
-                      blurRadius: 8,
+                      blurRadius: 6,
                     ),
                   ],
                 ),
-                child: Icon(Icons.check_rounded, size: 18, color: cs.onPrimary),
+                child: Icon(Icons.check_rounded, size: 16, color: cs.onPrimary),
               ),
             ),
           ],
@@ -200,11 +222,11 @@ class InstructorDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppSpacing.vGap8,
+              AppSpacing.vGap4,
               // Name
               Text(
                 instructorName,
-                style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700, fontSize: 20),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -212,7 +234,7 @@ class InstructorDetailScreen extends StatelessWidget {
 
               // Title
               Text(
-                instructorTitle ?? 'UI/UX Design Instructor',
+                instructorTitle ?? 'Giảng viên cao cấp',
                 style: tt.bodyMedium?.copyWith(
                   color: cs.primary,
                   fontWeight: FontWeight.w600,
@@ -255,8 +277,15 @@ class InstructorDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.35)),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: const Row(
         children: [
@@ -285,9 +314,9 @@ class InstructorDetailScreen extends StatelessWidget {
         ),
         AppSpacing.vGap12,
         Text(
-          'Cô Minh Anh hiện là Product Designer tại một công ty công nghệ hàng đầu. '
-          'Cô tập trung vào thiết kế trải nghiệm người dùng, nghiên cứu người dùng '
-          'và xây dựng sản phẩm số có giá trị thực tiễn.',
+          'Giảng viên hiện là Product Designer tại một công ty công nghệ hàng đầu. '
+          'Tập trung vào thiết kế trải nghiệm người dùng, nghiên cứu người dùng '
+          'và xây dựng sản phẩm số có giá trị thực tiễn cao.',
           style: tt.bodyMedium?.copyWith(
             color: cs.onSurfaceVariant,
             height: 1.5,
@@ -354,12 +383,23 @@ class InstructorDetailScreen extends StatelessWidget {
         Row(
           children: [
             Text(
-              'Khóa học của cô',
+              'Khóa học của giảng viên',
               style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const Spacer(),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => InstructorCoursesScreen(
+                      instructorId: instructorId,
+                      instructorName: instructorName,
+                      instructorAvatar: instructorAvatar,
+                      instructorTitle: instructorTitle,
+                    ),
+                  ),
+                );
+              },
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
                 minimumSize: Size.zero,
@@ -379,38 +419,42 @@ class InstructorDetailScreen extends StatelessWidget {
 
         // Horizontal course list
         SizedBox(
-          height: 210,
+          height: 224,
           child: ListView(
             scrollDirection: Axis.horizontal,
             clipBehavior: Clip.none,
             children: [
-              const InstructorCourseCard(
+              InstructorCourseCard(
                 title: 'UI/UX Design Fundamentals',
                 lessonCount: 12,
                 duration: '6h 40m',
-                progress: 0.65,
+                progress: 1.0,
                 isEnrolled: true,
+                onTap: () => _navigateToCourse(context, 'course_1', isEnrolled: true),
               ),
               AppSpacing.hGap12,
-              const InstructorCourseCard(
+              InstructorCourseCard(
                 title: 'Product Design Masterclass',
                 lessonCount: 18,
                 duration: '8h 20m',
                 progress: 0.40,
+                onTap: () => _navigateToCourse(context, 'course_2', isEnrolled: false),
               ),
               AppSpacing.hGap12,
-              const InstructorCourseCard(
+              InstructorCourseCard(
                 title: 'Design Thinking for UX',
                 lessonCount: 10,
                 duration: '4h 15m',
                 progress: 0.20,
+                onTap: () => _navigateToCourse(context, 'course_3', isEnrolled: false),
               ),
               AppSpacing.hGap12,
-              const InstructorCourseCard(
+              InstructorCourseCard(
                 title: 'User Research Methods',
                 lessonCount: 14,
                 duration: '5h 30m',
                 progress: 0,
+                onTap: () => _navigateToCourse(context, 'course_4', isEnrolled: false),
               ),
             ],
           ),
@@ -434,7 +478,18 @@ class InstructorDetailScreen extends StatelessWidget {
             ),
             const Spacer(),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => InstructorReviewsScreen(
+                      instructorId: instructorId,
+                      instructorName: instructorName,
+                      instructorAvatar: instructorAvatar,
+                      instructorTitle: instructorTitle,
+                    ),
+                  ),
+                );
+              },
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
                 minimumSize: Size.zero,
@@ -464,7 +519,7 @@ class InstructorDetailScreen extends StatelessWidget {
           date: '2 tuần trước',
           rating: 5,
           content: 'Giảng viên giải thích rất dễ hiểu, ví dụ thực tế và bài tập sát với thực tế. '
-              'Mình học được rất nhiều từ cô Minh Anh!',
+              'Mình học được rất nhiều kiến thức bổ ích!',
         ),
       ],
     );
@@ -483,15 +538,25 @@ class InstructorDetailScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.3))),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
+          ),
+        ],
       ),
-      child: FilledButton.icon(
-        onPressed: () {},
-        icon: const Icon(Icons.chat_bubble_outline_rounded),
-        label: const Text('Nhắn tin cho cô'),
-        style: FilledButton.styleFrom(
-          padding: AppSpacing.paddingVerticalLg,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
+      child: SizedBox(
+        width: double.infinity,
+        child: FilledButton.icon(
+          onPressed: () {},
+          icon: const Icon(Icons.chat_bubble_outline_rounded, size: 20),
+          label: const Text('Nhắn tin cho giảng viên'),
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
           ),
         ),
       ),

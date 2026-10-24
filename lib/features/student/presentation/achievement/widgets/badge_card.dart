@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:study/features/student/presentation/achievement/all_achievements_screen.dart';
 import 'package:study/l10n/app_localizations.dart';
@@ -17,73 +16,181 @@ class BadgeCard extends StatelessWidget {
 
     final isLocked = badge.status == BadgeStatus.locked;
     final isInProgress = badge.status == BadgeStatus.inProgress;
-    final displayColor = isLocked ? cs.outlineVariant : badge.color;
+    final isEarned = badge.status == BadgeStatus.earned;
+    final displayColor = isLocked ? cs.slate400 : badge.color;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: cs.surface,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
-        ),
-        child: Column(
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                HexagonBadge(
-                  icon: badge.icon,
-                  color: displayColor,
-                  isLocked: isLocked,
-                  isInProgress: isInProgress,
-                ),
-                if (badge.isNew)
-                  Positioned(
-                    top: -4,
-                    right: -4,
-                    child: Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+    return RepaintBoundary(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Badge Icon with Ambient Colored Glow
+              Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  if (isEarned) ...[
+                    // Multi-layer ambient colored glow behind the badge
+                    Container(
+                      width: 52,
+                      height: 52,
                       decoration: BoxDecoration(
-                        color: cs.primary,
-                        borderRadius: AppRadius.borderXs,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: badge.color.withValues(alpha: 0.5),
+                            blurRadius: 22,
+                            spreadRadius: 3,
+                            offset: const Offset(0, 4),
+                          ),
+                          BoxShadow(
+                            color: badge.color.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                      child: Text(AppLocalizations.of(context)!.newBadge,
-                          style: tt.labelSmall?.copyWith(
-                              color: cs.onPrimary,
-                              fontSize: 8,
-                              fontWeight: FontWeight.w700)),
                     ),
+                  ] else if (isInProgress) ...[
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: badge.color.withValues(alpha: 0.25),
+                            blurRadius: 14,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  HexagonBadge(
+                    icon: badge.icon,
+                    color: displayColor,
+                    isLocked: isLocked,
+                    isInProgress: isInProgress,
                   ),
-              ],
-            ),
-            AppSpacing.vGap4,
-            Text(badge.title,
-                style: tt.labelSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: isLocked ? cs.onSurfaceVariant : cs.onSurface),
+                  if (badge.isNew)
+                    Positioned(
+                      top: -4,
+                      right: -4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 1.5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444),
+                          borderRadius: BorderRadius.circular(AppRadius.full),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.red.withValues(alpha: 0.4),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          AppLocalizations.of(context)!.newBadge,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  if (isLocked)
+                    Positioned(
+                      bottom: -2,
+                      right: -2,
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          color: cs.slate700,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.lock_rounded,
+                          size: 10,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              // Badge Title
+              Text(
+                badge.title,
+                style: tt.bodySmall?.copyWith(
+                  fontWeight: isEarned ? FontWeight.w700 : FontWeight.w600,
+                  color: isLocked ? cs.slate400 : cs.slate900,
+                  fontSize: 12,
+                ),
                 textAlign: TextAlign.center,
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis),
-            Text(badge.description,
-                style: tt.labelSmall
-                    ?.copyWith(color: cs.onSurfaceVariant, fontSize: 9),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis),
-            if (badge.status == BadgeStatus.earned && badge.earnedAt != null)
-              Text(_formatDate(badge.earnedAt!),
-                  style: tt.labelSmall?.copyWith(color: cs.outline, fontSize: 9)),
-            if (isInProgress || isLocked) ...[
-              AppSpacing.vGap4,
-              MiniProgressBar(percent: badge.progressPercent, color: displayColor),
-              Text('${(badge.progressPercent * 100).round()}%',
-                  style: tt.labelSmall
-                      ?.copyWith(color: cs.onSurfaceVariant, fontSize: 9)),
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 3),
+
+              // Description / Status
+              if (isEarned) ...[
+                if (badge.earnedAt != null)
+                  Text(
+                    _formatDate(badge.earnedAt!),
+                    style: TextStyle(
+                      color: badge.color,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  )
+                else
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.stars_rounded, size: 12, color: badge.color),
+                      const SizedBox(width: 2),
+                      Text(
+                        'Đã đạt',
+                        style: TextStyle(
+                          color: badge.color,
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+              ] else if (isInProgress) ...[
+                const SizedBox(height: 4),
+                MiniProgressBar(
+                  percent: badge.progressPercent,
+                  color: displayColor,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${(badge.progressPercent * 100).round()}%',
+                  style: TextStyle(
+                    color: badge.color,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ] else ...[
+                Text(
+                  'Chưa mở khóa',
+                  style: TextStyle(color: cs.slate400, fontSize: 10),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -109,17 +216,21 @@ class HexagonBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayColor =
-        isLocked ? color : (isInProgress ? color.withValues(alpha: 0.7) : color);
+    final displayColor = isLocked
+        ? const Color(0xFF94A3B8)
+        : (isInProgress ? color.withValues(alpha: 0.75) : color);
 
     return CustomPaint(
       painter: HexagonPainter(color: displayColor, isLocked: isLocked),
       child: SizedBox(
-        width: 56,
-        height: 64,
+        width: 52,
+        height: 60,
         child: Center(
-          child:
-              Icon(icon, size: 24, color: isLocked ? Colors.white54 : Colors.white),
+          child: Icon(
+            icon,
+            size: 24,
+            color: isLocked ? Colors.white60 : Colors.white,
+          ),
         ),
       ),
     );
@@ -143,9 +254,9 @@ class HexagonPainter extends CustomPainter {
     canvas.drawPath(path, paint);
 
     final borderPaint = Paint()
-      ..color = isLocked ? color : color.withValues(alpha: 0.3)
+      ..color = isLocked ? Colors.white24 : Colors.white.withValues(alpha: 0.5)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
+      ..strokeWidth = 1.8;
 
     canvas.drawPath(path, borderPaint);
   }
@@ -171,14 +282,17 @@ class HexagonPainter extends CustomPainter {
 }
 
 class MiniProgressBar extends StatelessWidget {
-  const MiniProgressBar({super.key, required this.percent, required this.color});
+  const MiniProgressBar({
+    super.key,
+    required this.percent,
+    required this.color,
+  });
 
   final double percent;
   final Color color;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return SizedBox(
       width: double.infinity,
       height: 4,
@@ -186,7 +300,7 @@ class MiniProgressBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(2),
         child: LinearProgressIndicator(
           value: percent,
-          backgroundColor: cs.surfaceContainerHighest,
+          backgroundColor: const Color(0xFFE2E8F0),
           valueColor: AlwaysStoppedAnimation(color),
         ),
       ),
@@ -198,80 +312,28 @@ class CircularProgress extends StatelessWidget {
   const CircularProgress({
     super.key,
     required this.percent,
-    required this.size,
-    required this.strokeWidth,
+    this.color,
+    this.size = 32,
+    this.strokeWidth = 3,
   });
 
   final double percent;
+  final Color? color;
   final double size;
   final double strokeWidth;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final progressColor = color ?? Theme.of(context).colorScheme.primary;
     return SizedBox(
       width: size,
       height: size,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CustomPaint(
-            size: Size(size, size),
-            painter: CircularProgressPainter(
-              percent: percent,
-              strokeWidth: strokeWidth,
-              backgroundColor: cs.surfaceContainerHighest,
-              progressColor: cs.primary,
-            ),
-          ),
-          Icon(Icons.emoji_events_rounded, size: 28, color: cs.onSurfaceVariant),
-        ],
+      child: CircularProgressIndicator(
+        value: percent,
+        strokeWidth: strokeWidth,
+        backgroundColor: const Color(0xFFE2E8F0),
+        valueColor: AlwaysStoppedAnimation(progressColor),
       ),
     );
   }
-}
-
-class CircularProgressPainter extends CustomPainter {
-  CircularProgressPainter({
-    required this.percent,
-    required this.strokeWidth,
-    required this.backgroundColor,
-    required this.progressColor,
-  });
-
-  final double percent;
-  final double strokeWidth;
-  final Color backgroundColor;
-  final Color progressColor;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - strokeWidth) / 2;
-
-    final bgPaint = Paint()
-      ..color = backgroundColor
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawCircle(center, radius, bgPaint);
-
-    final progressPaint = Paint()
-      ..color = progressColor
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -math.pi / 2,
-      2 * math.pi * percent,
-      false,
-      progressPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

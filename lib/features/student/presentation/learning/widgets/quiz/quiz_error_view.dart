@@ -116,15 +116,19 @@ class QuizErrorView extends StatelessWidget {
             // Button
             SizedBox(
               width: double.infinity,
-              child: FilledButton(
+              child: FilledButton.icon(
                 onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.arrow_back_rounded, size: 18),
                 style: FilledButton.styleFrom(
-                  padding: AppSpacing.paddingVerticalLg,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 14,
+                  ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                 ),
-                child: const Text('Quay lại bài học'),
+                label: const Text('Quay lại bài học'),
               ),
             ),
           ],

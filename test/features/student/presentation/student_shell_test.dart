@@ -116,20 +116,20 @@ void main() {
     ) async {
       await _pumpShell(tester);
 
-      expect(find.text('40Study'), findsOneWidget);
+      expect(find.text('ForteX'), findsOneWidget);
       expect(find.text('Trang chủ'), findsOneWidget);
     });
 
     testWidgets('should switch tab khi tap navigation item', (tester) async {
       await _pumpShell(tester);
 
-      expect(find.text('40Study'), findsOneWidget);
+      expect(find.text('ForteX'), findsOneWidget);
 
       await tester.tap(find.text('Học tập'));
       await tester.pumpAndSettle();
 
       expect(find.byType(LearningScreen), findsOneWidget);
-      expect(find.text('40Study'), findsNothing);
+      expect(find.text('ForteX'), findsNothing);
     });
 
     testWidgets('should start on given initialTab', (tester) async {

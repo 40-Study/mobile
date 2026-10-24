@@ -24,25 +24,32 @@ final class QuizReady extends QuizState {
     required this.currentIndex,
     required this.answers,
     required this.timeLimitMinutes,
+    this.flaggedQuestions = const {},
   });
 
   final String quizId;
   final String attemptId;
   final List<QuizQuestionModel> questions;
   final int currentIndex;
-  final Map<int, int> answers;
+  final Map<int, Set<int>> answers;
   final int timeLimitMinutes;
+  final Set<int> flaggedQuestions;
 
   QuizQuestionModel get currentQuestion => questions[currentIndex];
-  int? get currentAnswer => answers[currentIndex];
+  Set<int> get currentAnswers => answers[currentIndex] ?? const {};
+  int? get currentAnswer => currentAnswers.firstOrNull;
+  bool isAnswerSelected(int questionIndex, int answerIndex) =>
+      answers[questionIndex]?.contains(answerIndex) ?? false;
   bool get isFirstQuestion => currentIndex == 0;
   bool get isLastQuestion => currentIndex == questions.length - 1;
-  int get answeredCount => answers.length;
+  int get answeredCount => answers.values.where((s) => s.isNotEmpty).length;
   double get progress => questions.isEmpty ? 0 : answeredCount / questions.length;
+  bool isQuestionFlagged(int index) => flaggedQuestions.contains(index);
 
   QuizReady copyWith({
     int? currentIndex,
-    Map<int, int>? answers,
+    Map<int, Set<int>>? answers,
+    Set<int>? flaggedQuestions,
   }) {
     return QuizReady(
       quizId: quizId,
@@ -51,11 +58,20 @@ final class QuizReady extends QuizState {
       currentIndex: currentIndex ?? this.currentIndex,
       answers: answers ?? this.answers,
       timeLimitMinutes: timeLimitMinutes,
+      flaggedQuestions: flaggedQuestions ?? this.flaggedQuestions,
     );
   }
 
   @override
-  List<Object?> get props => [quizId, attemptId, questions, currentIndex, answers, timeLimitMinutes];
+  List<Object?> get props => [
+        quizId,
+        attemptId,
+        questions,
+        currentIndex,
+        answers,
+        timeLimitMinutes,
+        flaggedQuestions,
+      ];
 }
 
 final class QuizSubmitting extends QuizState {
@@ -68,16 +84,31 @@ final class QuizCompleted extends QuizState {
     required this.totalCount,
     required this.score,
     required this.timeLimitMinutes,
+    this.questions = const [],
+    this.userAnswers = const {},
+    this.reviewItems = const [],
   });
 
   final int correctCount;
   final int totalCount;
   final double score;
   final int timeLimitMinutes;
+  final List<QuizQuestionModel> questions;
+  final Map<int, Set<int>> userAnswers;
+  final List<QuizReviewItemModel> reviewItems;
 
   @override
-  List<Object?> get props => [correctCount, totalCount, score, timeLimitMinutes];
+  List<Object?> get props => [
+        correctCount,
+        totalCount,
+        score,
+        timeLimitMinutes,
+        questions,
+        userAnswers,
+        reviewItems,
+      ];
 }
+
 
 final class QuizFailure extends QuizState {
   const QuizFailure(this.message);

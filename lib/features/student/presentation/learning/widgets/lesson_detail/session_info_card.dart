@@ -24,57 +24,88 @@ class SessionInfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+        color: isLight ? Colors.white : cs.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.6),
+          width: 0.8,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text(
-                'Buổi $sessionNumber',
-                style: tt.labelLarge?.copyWith(color: cs.primary, fontWeight: FontWeight.w600),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: cs.primaryContainer,
+                  borderRadius: BorderRadius.circular(AppRadius.full),
+                ),
+                child: Text(
+                  'Buổi $sessionNumber',
+                  style: TextStyle(
+                    color: cs.primary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                  ),
+                ),
               ),
               const Spacer(),
-              Text('Tiến độ bài học', style: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
-              AppSpacing.hGap4,
+              Text(
+                'Tiến độ bài học',
+                style: tt.labelSmall?.copyWith(color: cs.slate500),
+              ),
+              const SizedBox(width: 6),
               Text(
                 '${progress.toStringAsFixed(0)}%',
-                style: tt.titleMedium?.copyWith(color: cs.primary, fontWeight: FontWeight.w700),
+                style: tt.titleSmall?.copyWith(
+                  color: cs.primary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
           ),
-          AppSpacing.vGap4,
+          AppSpacing.vGap8,
           Row(
             children: [
               Expanded(
                 child: Text(
                   sessionTitle,
-                  style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                  style: tt.bodyMedium?.copyWith(
+                    color: cs.slate900,
+                    fontWeight: FontWeight.w600,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               Text(
                 '$currentTime / $totalTime',
-                style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                style: tt.bodySmall?.copyWith(color: cs.slate500),
               ),
             ],
           ),
           AppSpacing.vGap12,
           ClipRRect(
-            borderRadius: AppRadius.borderXs,
+            borderRadius: BorderRadius.circular(3),
             child: LinearProgressIndicator(
               value: progress / 100,
               minHeight: 6,
-              backgroundColor: cs.surfaceContainerHighest,
-              color: cs.primary,
+              backgroundColor: cs.outlineVariant.withValues(alpha: 0.25),
+              valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
             ),
           ),
         ],

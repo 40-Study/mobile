@@ -52,36 +52,78 @@ class AllCertificatesScreen extends StatefulWidget {
 }
 
 class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
-  CertificateCategory _selectedCategory = CertificateCategory.all;
+  static const _categories = [
+    CertificateCategory.all,
+    CertificateCategory.design,
+    CertificateCategory.programming,
+    CertificateCategory.business,
+    CertificateCategory.language,
+  ];
 
-  late final List<CertificateData> _allCertificates = _mapCertificates(widget.certificates);
+  late final List<CertificateData> _allCertificates =
+      _mapCertificates(widget.certificates);
+  late final PageController _pageController;
+  late final ScrollController _categoryScrollController;
+  final List<GlobalKey> _chipKeys = List.generate(5, (_) => GlobalKey());
 
-  List<CertificateData> get _filteredCertificates {
-    if (_selectedCategory == CertificateCategory.all) return _allCertificates;
-    return _allCertificates
-        .where((c) => c.category == _selectedCategory)
-        .toList();
+  int _selectedCategoryIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _selectedCategoryIndex);
+    _categoryScrollController = ScrollController();
   }
 
-  List<CertificateData> get _completedCertificates => _filteredCertificates
-      .where((c) => c.status == CertificateStatus.completed)
-      .toList();
-
-  List<CertificateData> get _inProgressCertificates => _filteredCertificates
-      .where((c) => c.status == CertificateStatus.inProgress)
-      .toList();
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _categoryScrollController.dispose();
+    super.dispose();
+  }
 
   int _countByCategory(CertificateCategory cat) {
     if (cat == CertificateCategory.all) return _allCertificates.length;
     return _allCertificates.where((c) => c.category == cat).length;
   }
 
+  void _onCategoryTapped(int index) {
+    if (_selectedCategoryIndex == index) return;
+    setState(() => _selectedCategoryIndex = index);
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
+    );
+    _scrollToSelectedChip(index);
+  }
+
+  void _onPageChanged(int index) {
+    if (_selectedCategoryIndex == index) return;
+    setState(() => _selectedCategoryIndex = index);
+    _scrollToSelectedChip(index);
+  }
+
+  void _scrollToSelectedChip(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final key = _chipKeys[index];
+      if (key.currentContext != null) {
+        Scrollable.ensureVisible(
+          key.currentContext!,
+          alignment: 0.5,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context)!;
 
-    final totalCount = _allCertificates.length;
     final completedCount = _allCertificates
         .where((c) => c.status == CertificateStatus.completed)
         .length;
@@ -92,195 +134,220 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
     return Scaffold(
       backgroundColor: cs.surface,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // Header
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        AchievementBackButton(onTap: () => Navigator.pop(context)),
-                        const Spacer(),
-                        FilterButton(onTap: () => _showFilterSheet(context)),
-                      ],
-                    ),
-                    AppSpacing.vGap16,
-                    Builder(builder: (context) {
-                      final l10n = AppLocalizations.of(context)!;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          RichText(
-                            text: TextSpan(
-                              style: tt.headlineMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: cs.onSurface,
-                              ),
-                              children: [
-                                TextSpan(text: l10n.yourCertificates),
-                                TextSpan(text: '.', style: TextStyle(color: cs.primary)),
-                              ],
-                            ),
-                          ),
-                          AppSpacing.vGap4,
-                          Row(
-                            children: [
-                              Icon(Icons.workspace_premium_rounded,
-                                  size: 14, color: cs.onSurfaceVariant),
-                              AppSpacing.hGap4,
-                              Text(
-                                l10n.certificatesEarned(completedCount),
-                                style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                              ),
-                            ],
-                          ),
-                        ],
-                      );
-                    }),
-                  ],
-                ),
+        child: Column(
+          children: [
+            // Top App Bar (Always visible)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xs),
+              child: Row(
+                children: [
+                  AchievementBackButton(onTap: () => Navigator.pop(context)),
+                  const Spacer(),
+                  FilterButton(onTap: () => _showFilterSheet(context)),
+                ],
               ),
             ),
 
-            // Overview Card
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: CertificateOverviewCard(
-                  completedCount: completedCount,
-                  inProgressCount: inProgressCount,
-                  totalCount: totalCount,
-                ),
-              ),
-            ),
-
-            // Category Tabs
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 44,
-                child: Builder(builder: (context) {
-                  final l10n = AppLocalizations.of(context)!;
-                  return ListView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                    children: [
-                      CategoryChip(
-                        icon: Icons.grid_view_rounded,
-                        label: l10n.all,
-                        count: _countByCategory(CertificateCategory.all),
-                        isSelected: _selectedCategory == CertificateCategory.all,
-                        onTap: () => setState(
-                            () => _selectedCategory = CertificateCategory.all),
+            // NestedScrollView: Hero Banner scrolls away,
+            // Category Tabs stay pinned, PageView swipes horizontally
+            Expanded(
+              child: NestedScrollView(
+                headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                  // Academic Credentials Hero Banner (Flat Light, No Gradient)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        top: AppSpacing.sm,
+                        bottom: AppSpacing.md,
                       ),
-                      AppSpacing.hGap8,
-                      CategoryChip(
-                        icon: Icons.palette_rounded,
-                        label: l10n.design,
-                        count: _countByCategory(CertificateCategory.design),
-                        isSelected: _selectedCategory == CertificateCategory.design,
-                        onTap: () => setState(
-                            () => _selectedCategory = CertificateCategory.design),
-                      ),
-                      AppSpacing.hGap8,
-                      CategoryChip(
-                        icon: Icons.code_rounded,
-                        label: l10n.programming,
-                        count: _countByCategory(CertificateCategory.programming),
-                        isSelected:
-                            _selectedCategory == CertificateCategory.programming,
-                        onTap: () => setState(() =>
-                            _selectedCategory = CertificateCategory.programming),
-                      ),
-                      AppSpacing.hGap8,
-                      CategoryChip(
-                        icon: Icons.business_center_rounded,
-                        label: l10n.business,
-                        count: _countByCategory(CertificateCategory.business),
-                        isSelected:
-                            _selectedCategory == CertificateCategory.business,
-                        onTap: () => setState(
-                            () => _selectedCategory = CertificateCategory.business),
-                      ),
-                      AppSpacing.hGap8,
-                      CategoryChip(
-                        icon: Icons.translate_rounded,
-                        label: l10n.language,
-                        count: _countByCategory(CertificateCategory.language),
-                        isSelected:
-                            _selectedCategory == CertificateCategory.language,
-                        onTap: () => setState(
-                            () => _selectedCategory = CertificateCategory.language),
-                      ),
-                    ],
-                  );
-                }),
-              ),
-            ),
-
-            const SliverToBoxAdapter(child: AppSpacing.vGap24),
-
-            // Completed Certificates
-            if (_completedCertificates.isNotEmpty) ...[
-              SliverToBoxAdapter(
-                child: SectionHeader(
-                  title: AppLocalizations.of(context)!.completed,
-                  count: _completedCertificates.length,
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                      child: CertificateListCard(
-                        certificate: _completedCertificates[index],
-                        onTap: () => _showCertificateDetail(
-                            context, _completedCertificates[index]),
+                      child: CertificatesHeroBanner(
+                        completedCount: completedCount,
+                        inProgressCount: inProgressCount,
                       ),
                     ),
-                    childCount: _completedCertificates.length,
                   ),
-                ),
-              ),
-              const SliverToBoxAdapter(child: AppSpacing.vGap16),
-            ],
 
-            // In Progress Certificates
-            if (_inProgressCertificates.isNotEmpty) ...[
-              SliverToBoxAdapter(
-                child: SectionHeader(
-                  title: AppLocalizations.of(context)!.studying,
-                  count: _inProgressCertificates.length,
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                      child: CertificateListCard(
-                        certificate: _inProgressCertificates[index],
-                        onTap: () => _showCertificateDetail(
-                            context, _inProgressCertificates[index]),
-                      ),
+                  // Sticky Category Tabs
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: CategoryTabsHeaderDelegate(
+                      height: 52,
+                      child: _buildCategoryTabs(l10n),
                     ),
-                    childCount: _inProgressCertificates.length,
                   ),
+                ],
+                body: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: _onPageChanged,
+                  itemCount: _categories.length,
+                  itemBuilder: (context, index) {
+                    return _buildCategoryCertificateView(
+                      _categories[index],
+                      cs,
+                    );
+                  },
                 ),
               ),
-            ],
-
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCategoryTabs(AppLocalizations l10n) {
+    final categoryIcons = [
+      Icons.grid_view_rounded,
+      Icons.palette_rounded,
+      Icons.code_rounded,
+      Icons.business_center_rounded,
+      Icons.translate_rounded,
+    ];
+
+    final categoryLabels = [
+      l10n.all,
+      l10n.design,
+      l10n.programming,
+      l10n.business,
+      l10n.language,
+    ];
+
+    return SizedBox(
+      height: 44,
+      child: ListView.separated(
+        controller: _categoryScrollController,
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        itemCount: _categories.length,
+        separatorBuilder: (context, index) => AppSpacing.hGap8,
+        itemBuilder: (context, i) {
+          final cat = _categories[i];
+          return CategoryChip(
+            key: _chipKeys[i],
+            icon: categoryIcons[i],
+            label: categoryLabels[i],
+            count: _countByCategory(cat),
+            isSelected: _selectedCategoryIndex == i,
+            onTap: () => _onCategoryTapped(i),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCategoryCertificateView(
+    CertificateCategory cat,
+    ColorScheme cs,
+  ) {
+    final certificates = cat == CertificateCategory.all
+        ? _allCertificates
+        : _allCertificates.where((c) => c.category == cat).toList();
+
+    final completed = certificates
+        .where((c) => c.status == CertificateStatus.completed)
+        .toList();
+    final inProgress = certificates
+        .where((c) => c.status == CertificateStatus.inProgress)
+        .toList();
+
+    if (completed.isEmpty && inProgress.isEmpty) {
+      return _buildEmptyState(cs);
+    }
+
+    return Builder(
+      builder: (context) {
+        return CustomScrollView(
+          key: PageStorageKey<String>('certificates_page_${cat.name}'),
+          slivers: [
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+            // Completed Certificates
+            if (completed.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: SectionHeader(
+                  title: 'Chứng chỉ đã cấp',
+                  count: completed.length,
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => CertificateListCard(
+                      certificate: completed[index],
+                      onTap: () => _showCertificateDetail(
+                          context, completed[index]),
+                    ),
+                    childCount: completed.length,
+                  ),
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            ],
+
+            // In Progress Certificates
+            if (inProgress.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: SectionHeader(
+                  title: 'Chứng chỉ đang theo học',
+                  count: inProgress.length,
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => CertificateListCard(
+                      certificate: inProgress[index],
+                      onTap: () => _showCertificateDetail(
+                          context, inProgress[index]),
+                    ),
+                    childCount: inProgress.length,
+                  ),
+                ),
+              ),
+            ],
+
+            const SliverToBoxAdapter(child: SizedBox(height: 80)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyState(ColorScheme cs) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        Container(
+          margin: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(
+              color: cs.outlineVariant.withValues(alpha: 0.6),
+              width: 0.8,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                Icons.workspace_premium_outlined,
+                size: 48,
+                color: cs.slate400,
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Chưa có chứng chỉ nào trong danh mục này',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -295,77 +362,70 @@ class _AllCertificatesScreenState extends State<AllCertificatesScreen> {
   }
 
   void _showCertificateDetail(BuildContext context, CertificateData cert) {
-    if (cert.isCompleted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute<void>(
-          builder: (_) => CertificateDetailScreen(
-            certificate: CertificateModel(
-              id: cert.id,
-              courseTitle: cert.courseTitle,
-              instructorName: cert.instructorName,
-              issueDate: cert.issueDate,
-              certificateNumber: cert.certificateNumber,
-            ),
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => CertificateDetailScreen(
+          certificate: CertificateModel(
+            id: cert.id,
+            courseTitle: cert.courseTitle,
+            instructorName: cert.instructorName,
+            issueDate: cert.issueDate,
+            certificateNumber: cert.certificateNumber,
           ),
         ),
-      );
-    } else {
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        shape: const RoundedRectangleBorder(
-          borderRadius:
-              BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-        ),
-        builder: (context) => CertificateDetailSheet(certificate: cert),
-      );
-    }
+      ),
+    );
   }
 
-  List<CertificateData> _mapCertificates(List<CertificateModel> certificates) {
+  List<CertificateData> _mapCertificates(List<CertificateModel> certs) {
     final colors = [
-      AchievementColors.purple,
-      AchievementColors.lightBlue,
-      AchievementColors.blue,
-      AchievementColors.green,
-      AchievementColors.violet,
+      const Color(0xFF3D5FC4),
       AchievementColors.orange,
-      AchievementColors.pink,
-      AchievementColors.red,
+      AchievementColors.green,
+      AchievementColors.purple,
     ];
 
-    return certificates.asMap().entries.map((entry) {
+    return certs.asMap().entries.map((entry) {
       final i = entry.key;
-      final cert = entry.value;
-      final category = _mapCategory(cert.courseTitle ?? '');
+      final c = entry.value;
+
+      final isCompleted = c.issueDate != null;
+      final status = isCompleted
+          ? CertificateStatus.completed
+          : CertificateStatus.inProgress;
+
+      final category = _mapCategory(c.courseTitle);
 
       return CertificateData(
-        id: cert.id,
-        courseTitle: cert.courseTitle ?? '',
-        instructorName: cert.instructorName ?? '',
-        status: CertificateStatus.completed,
+        id: c.id,
+        courseTitle: c.courseTitle ?? 'Khóa học',
+        instructorName: c.instructorName ?? 'Giảng viên ForteX',
+        status: status,
         category: category,
         color: colors[i % colors.length],
-        certificateNumber: cert.certificateNumber,
-        issueDate: cert.issueDate,
+        certificateNumber: c.certificateNumber ?? 'FTX-2026-${8800 + i}',
+        issueDate: c.issueDate,
+        progress: isCompleted ? 1.0 : 0.65,
+        totalLessons: 24,
+        completedLessons: isCompleted ? 24 : 16,
       );
     }).toList();
   }
 
-  CertificateCategory _mapCategory(String title) {
+  CertificateCategory _mapCategory(String? title) {
+    if (title == null) return CertificateCategory.programming;
     final lower = title.toLowerCase();
-    if (lower.contains('design') || lower.contains('ui') || lower.contains('ux') || lower.contains('figma')) {
+    if (lower.contains('ui') ||
+        lower.contains('ux') ||
+        lower.contains('thiết kế')) {
       return CertificateCategory.design;
     }
-    if (lower.contains('python') || lower.contains('react') || lower.contains('flutter') ||
-        lower.contains('dart') || lower.contains('web') || lower.contains('programming')) {
-      return CertificateCategory.programming;
-    }
-    if (lower.contains('business') || lower.contains('marketing') || lower.contains('kinh doanh')) {
+    if (lower.contains('kinh doanh') || lower.contains('business')) {
       return CertificateCategory.business;
     }
-    if (lower.contains('english') || lower.contains('tiếng') || lower.contains('language')) {
+    if (lower.contains('anh') ||
+        lower.contains('tiếng') ||
+        lower.contains('nhật')) {
       return CertificateCategory.language;
     }
     return CertificateCategory.programming;

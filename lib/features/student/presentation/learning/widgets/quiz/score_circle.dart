@@ -11,18 +11,27 @@ class ScoreCircle extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final color = passed ? cs.primary : cs.error;
+    final color = passed ? const Color(0xFF059669) : const Color(0xFFDC2626);
 
     return SizedBox(
-      width: 160,
-      height: 160,
+      width: 164,
+      height: 164,
       child: Stack(
         alignment: Alignment.center,
         children: [
+          // Background soft circle
+          Container(
+            width: 140,
+            height: 140,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withValues(alpha: 0.05),
+            ),
+          ),
           // Background ring
           SizedBox(
-            width: 160,
-            height: 160,
+            width: 164,
+            height: 164,
             child: CircularProgressIndicator(
               value: 1,
               strokeWidth: 12,
@@ -32,10 +41,10 @@ class ScoreCircle extends StatelessWidget {
           ),
           // Progress ring
           SizedBox(
-            width: 160,
-            height: 160,
+            width: 164,
+            height: 164,
             child: CircularProgressIndicator(
-              value: percent / 100,
+              value: percent.clamp(0, 100) / 100,
               strokeWidth: 12,
               backgroundColor: Colors.transparent,
               color: color,
@@ -46,16 +55,27 @@ class ScoreCircle extends StatelessWidget {
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Icon(
+                passed ? Icons.emoji_events_rounded : Icons.replay_rounded,
+                size: 24,
+                color: color,
+              ),
+              const SizedBox(height: 2),
               Text(
                 '$percent%',
-                style: tt.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
+                style: tt.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
                   color: color,
+                  height: 1.1,
                 ),
               ),
+              const SizedBox(height: 2),
               Text(
                 'Điểm số',
-                style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                style: tt.labelSmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),

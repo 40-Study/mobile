@@ -19,15 +19,15 @@ class MonthSummary extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 40,
-          height: 40,
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
             color: cs.primaryContainer,
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+            shape: BoxShape.circle,
           ),
           child: Icon(
             Icons.calendar_month_rounded,
-            color: cs.onPrimaryContainer,
+            color: cs.primary,
             size: 22,
           ),
         ),
@@ -38,11 +38,17 @@ class MonthSummary extends StatelessWidget {
             children: [
               Text(
                 'Tháng ${currentMonth.month}/${currentMonth.year}',
-                style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                style: tt.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: cs.slate900,
+                ),
               ),
+              const SizedBox(height: 2),
               Text(
-                '$eventCount ngày có lịch',
-                style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                '$eventCount ngày có lịch học',
+                style: tt.bodySmall?.copyWith(
+                  color: cs.slate500,
+                ),
               ),
             ],
           ),

@@ -43,6 +43,15 @@ final class QuizGoToQuestion extends QuizEvent {
   List<Object?> get props => [index];
 }
 
+final class QuizQuestionFlagToggled extends QuizEvent {
+  const QuizQuestionFlagToggled(this.questionIndex);
+
+  final int questionIndex;
+
+  @override
+  List<Object?> get props => [questionIndex];
+}
+
 final class QuizSubmitted extends QuizEvent {
   const QuizSubmitted();
 }

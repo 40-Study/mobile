@@ -35,18 +35,40 @@ class CourseContentTab extends StatelessWidget {
               style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
             ),
             const Spacer(),
-            TextButton(
-              onPressed: () {
-                for (final section in state.sections) {
-                  if (!state.expandedSections.contains(section.id)) {
-                    context.read<CourseDetailBloc>().add(
-                      CourseDetailSectionToggled(section.id),
-                    );
+            () {
+              final allExpanded = state.sections.isNotEmpty &&
+                  state.sections.every((s) => state.expandedSections.contains(s.id));
+              return TextButton.icon(
+                onPressed: () {
+                  final bloc = context.read<CourseDetailBloc>();
+                  if (allExpanded) {
+                    for (final section in state.sections) {
+                      if (state.expandedSections.contains(section.id)) {
+                        bloc.add(CourseDetailSectionToggled(section.id));
+                      }
+                    }
+                  } else {
+                    for (final section in state.sections) {
+                      if (!state.expandedSections.contains(section.id)) {
+                        bloc.add(CourseDetailSectionToggled(section.id));
+                      }
+                    }
                   }
-                }
-              },
-              child: Text('Mở tất cả', style: tt.labelMedium?.copyWith(color: cs.primary)),
-            ),
+                },
+                icon: Icon(
+                  allExpanded ? Icons.unfold_less_rounded : Icons.unfold_more_rounded,
+                  size: 16,
+                  color: cs.primary,
+                ),
+                label: Text(
+                  allExpanded ? 'Thu gọn tất cả' : 'Mở tất cả',
+                  style: tt.labelMedium?.copyWith(
+                    color: cs.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              );
+            }(),
           ],
         ),
         AppSpacing.vGap12,

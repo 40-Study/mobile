@@ -4,9 +4,8 @@ import 'package:study/features/student/bloc/achievement/achievement_bloc.dart';
 import 'package:study/features/student/bloc/achievement/achievement_event.dart';
 import 'package:study/features/student/bloc/achievement/achievement_state.dart';
 import 'package:study/features/student/presentation/achievement/widgets/widgets.dart';
-import 'package:study/l10n/app_localizations.dart';
+import 'package:study/features/student/presentation/widgets/widgets.dart';
 import 'package:study/theme/theme.dart';
-import 'package:study/widgets/tab_screen_header.dart';
 
 class AchievementScreen extends StatefulWidget {
   const AchievementScreen({super.key});
@@ -26,21 +25,39 @@ class _AchievementScreenState extends State<AchievementScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return Scaffold(
-      backgroundColor: cs.surface,
+      backgroundColor: context.surfaceBg,
       body: SafeArea(
-        child: BlocBuilder<AchievementBloc, AchievementState>(
-          builder: (context, state) {
-            return switch (state) {
-              AchievementInitial() || AchievementInProgress() => const Center(
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-              AchievementFailure(:final message) => _buildError(context, message),
-              AchievementSuccess() => _buildContent(context, state),
-            };
-          },
+        bottom: false,
+        child: Column(
+          children: [
+            const StudentAppHeader(
+              categoryLabel: 'BẢNG VÀNG THÀNH TÍCH',
+              title: 'Thành tích & Điểm thưởng',
+              icon: Icons.emoji_events_rounded,
+              iconBackgroundColor: Color(0xFFFEF3C7),
+              iconColor: Color(0xFFD97706),
+              iconBorderColor: Color(0xFFFDE68A),
+              showNotification: false,
+              showAvatar: false,
+            ),
+            Expanded(
+              child: BlocBuilder<AchievementBloc, AchievementState>(
+                builder: (context, state) {
+                  return switch (state) {
+                    AchievementInitial() ||
+                    AchievementInProgress() =>
+                      const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    AchievementFailure(:final message) =>
+                      _buildError(context, message),
+                    AchievementSuccess() => _buildContent(context, state),
+                  };
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -79,8 +96,9 @@ class _AchievementScreenState extends State<AchievementScreen> {
             ),
             AppSpacing.vGap16,
             FilledButton.icon(
-              onPressed: () =>
-                  context.read<AchievementBloc>().add(const AchievementStarted()),
+              onPressed: () => context
+                  .read<AchievementBloc>()
+                  .add(const AchievementStarted()),
               icon: const Icon(Icons.refresh),
               label: const Text('Thử lại'),
             ),
@@ -97,31 +115,25 @@ class _AchievementScreenState extends State<AchievementScreen> {
         await Future<void>.delayed(const Duration(milliseconds: 600));
       },
       child: ListView(
-        padding: EdgeInsets.zero,
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenPadding,
+          AppSpacing.md,
+          AppSpacing.screenPadding,
+          AppSpacing.xxl,
+        ),
         children: [
-          TabScreenHeader(
-            title: AppLocalizations.of(context)!.achievementTitle,
-            subtitle: 'Theo dõi thành tích của bạn.',
-          ),
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.screenPadding),
-            child: Column(
-              children: [
-                OverviewStatistics(stats: state.stats),
-                AppSpacing.vGap24,
-                RecentBadges(badges: state.earnedBadges),
-                AppSpacing.vGap24,
-                if (state.certificates.isNotEmpty) ...[
-                  CertificateCarousel(certificates: state.certificates),
-                  AppSpacing.vGap24,
-                ],
-                ContributionGrid(contributionData: state.contributions),
-                AppSpacing.vGap24,
-                LearningTrendChart(stats: state.stats),
-                const SizedBox(height: 100),
-              ],
-            ),
-          ),
+          OverviewStatistics(stats: state.stats),
+          AppSpacing.vGap24,
+          RecentBadges(badges: state.earnedBadges),
+          AppSpacing.vGap24,
+          if (state.certificates.isNotEmpty) ...[
+            CertificateCarousel(certificates: state.certificates),
+            AppSpacing.vGap24,
+          ],
+          ContributionGrid(contributionData: state.contributions),
+          AppSpacing.vGap24,
+          LearningTrendChart(stats: state.stats),
+          const SizedBox(height: 80),
         ],
       ),
     );

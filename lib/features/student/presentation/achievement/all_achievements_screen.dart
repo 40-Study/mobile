@@ -52,257 +52,341 @@ class AllAchievementsScreen extends StatefulWidget {
 }
 
 class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
-  BadgeCategory _selectedCategory = BadgeCategory.all;
+  static const _categories = [
+    BadgeCategory.all,
+    BadgeCategory.learning,
+    BadgeCategory.habit,
+    BadgeCategory.achievement,
+  ];
 
   late final List<AchievementBadgeData> _allBadges = _mapBadges(widget.badges);
+  late final PageController _pageController;
+  late final ScrollController _categoryScrollController;
+  final List<GlobalKey> _chipKeys = List.generate(4, (_) => GlobalKey());
 
-  List<AchievementBadgeData> get _filteredBadges {
-    if (_selectedCategory == BadgeCategory.all) return _allBadges;
-    return _allBadges.where((b) => b.category == _selectedCategory).toList();
+  int _selectedCategoryIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(initialPage: _selectedCategoryIndex);
+    _categoryScrollController = ScrollController();
   }
 
-  List<AchievementBadgeData> get _earnedBadges =>
-      _filteredBadges.where((b) => b.status == BadgeStatus.earned).toList();
-
-  List<AchievementBadgeData> get _inProgressBadges =>
-      _filteredBadges.where((b) => b.status == BadgeStatus.inProgress).toList();
-
-  List<AchievementBadgeData> get _lockedBadges =>
-      _filteredBadges.where((b) => b.status == BadgeStatus.locked).toList();
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _categoryScrollController.dispose();
+    super.dispose();
+  }
 
   int _countByCategory(BadgeCategory cat) {
     if (cat == BadgeCategory.all) return _allBadges.length;
     return _allBadges.where((b) => b.category == cat).length;
   }
 
+  void _onCategoryTapped(int index) {
+    if (_selectedCategoryIndex == index) return;
+    setState(() => _selectedCategoryIndex = index);
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOutCubic,
+    );
+    _scrollToSelectedChip(index);
+  }
+
+  void _onPageChanged(int index) {
+    if (_selectedCategoryIndex == index) return;
+    setState(() => _selectedCategoryIndex = index);
+    _scrollToSelectedChip(index);
+  }
+
+  void _scrollToSelectedChip(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final key = _chipKeys[index];
+      if (key.currentContext != null) {
+        Scrollable.ensureVisible(
+          key.currentContext!,
+          alignment: 0.5,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
 
     final totalBadges = _allBadges.length;
     final earnedCount =
         _allBadges.where((b) => b.status == BadgeStatus.earned).length;
-    final inProgressCount =
-        _allBadges.where((b) => b.status == BadgeStatus.inProgress).length;
-    final lockedCount =
-        _allBadges.where((b) => b.status == BadgeStatus.locked).length;
 
     return Scaffold(
       backgroundColor: cs.surface,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            // Header
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.lg, AppSpacing.md, AppSpacing.lg, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        AchievementBackButton(onTap: () => Navigator.pop(context)),
-                        const Spacer(),
-                        FilterButton(onTap: () => _showFilterSheet(context)),
-                      ],
-                    ),
-                    AppSpacing.vGap16,
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            style: tt.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: cs.onSurface,
-                            ),
-                            children: [
-                              TextSpan(text: l10n.allBadges),
-                              TextSpan(
-                                text: '.',
-                                style: TextStyle(color: cs.primary),
-                              ),
-                            ],
-                          ),
+        child: Column(
+          children: [
+            // Top App Bar (Always visible)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.xs),
+              child: Row(
+                children: [
+                  AchievementBackButton(onTap: () => Navigator.pop(context)),
+                  const Spacer(),
+                  FilterButton(onTap: () => _showFilterSheet(context)),
+                ],
+              ),
+            ),
+
+            // NestedScrollView: Hero Banner scrolls away, Category Tabs stay pinned, PageView swipes horizontally
+            Expanded(
+              child: NestedScrollView(
+                headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                  // Hero Trophy Showcase Header (Flat Light, No Gradient)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        top: AppSpacing.sm,
+                        bottom: AppSpacing.md,
+                      ),
+                      child: AchievementsHeroBanner(
+                        earnedCount: earnedCount,
+                        totalBadges: totalBadges,
+                        learningCount: _countByCategory(
+                          BadgeCategory.learning,
                         ),
-                        AppSpacing.vGap4,
-                        Row(
-                          children: [
-                            Icon(Icons.access_time_rounded,
-                                size: 14, color: cs.onSurfaceVariant),
-                            AppSpacing.hGap4,
-                            Text(
-                              l10n.badgesEarned(earnedCount, totalBadges),
-                              style: tt.bodySmall
-                                  ?.copyWith(color: cs.onSurfaceVariant),
-                            ),
-                          ],
+                        habitCount: _countByCategory(
+                          BadgeCategory.habit,
                         ),
-                      ],
+                        achievementCount: _countByCategory(
+                          BadgeCategory.achievement,
+                        ),
+                      ),
                     ),
-                  ],
+                  ),
+
+                  // Sticky Category Tabs
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: CategoryTabsHeaderDelegate(
+                      height: 52,
+                      child: _buildCategoryTabs(l10n),
+                    ),
+                  ),
+                ],
+                body: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: _onPageChanged,
+                  itemCount: _categories.length,
+                  itemBuilder: (context, index) {
+                    return _buildCategoryBadgeView(
+                      _categories[index],
+                      l10n,
+                      cs,
+                    );
+                  },
                 ),
               ),
             ),
-
-            // Overall Progress Card
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: OverallProgressCard(
-                  earnedCount: earnedCount,
-                  inProgressCount: inProgressCount,
-                  lockedCount: lockedCount,
-                  totalCount: totalBadges,
-                ),
-              ),
-            ),
-
-            // Category Tabs
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 44,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                  children: [
-                    CategoryChip(
-                      icon: Icons.grid_view_rounded,
-                      label: l10n.all,
-                      count: _countByCategory(BadgeCategory.all),
-                      isSelected: _selectedCategory == BadgeCategory.all,
-                      onTap: () =>
-                          setState(() => _selectedCategory = BadgeCategory.all),
-                    ),
-                    AppSpacing.hGap8,
-                    CategoryChip(
-                      icon: Icons.menu_book_rounded,
-                      label: l10n.learning,
-                      count: _countByCategory(BadgeCategory.learning),
-                      isSelected: _selectedCategory == BadgeCategory.learning,
-                      onTap: () => setState(
-                          () => _selectedCategory = BadgeCategory.learning),
-                    ),
-                    AppSpacing.hGap8,
-                    CategoryChip(
-                      icon: Icons.loop_rounded,
-                      label: l10n.habit,
-                      count: _countByCategory(BadgeCategory.habit),
-                      isSelected: _selectedCategory == BadgeCategory.habit,
-                      onTap: () =>
-                          setState(() => _selectedCategory = BadgeCategory.habit),
-                    ),
-                    AppSpacing.hGap8,
-                    CategoryChip(
-                      icon: Icons.emoji_events_rounded,
-                      label: l10n.achievement,
-                      count: _countByCategory(BadgeCategory.achievement),
-                      isSelected: _selectedCategory == BadgeCategory.achievement,
-                      onTap: () => setState(
-                          () => _selectedCategory = BadgeCategory.achievement),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SliverToBoxAdapter(child: AppSpacing.vGap24),
-
-            // Earned Badges Section
-            if (_earnedBadges.isNotEmpty) ...[
-              SliverToBoxAdapter(
-                child: SectionHeader(
-                  title: l10n.earned,
-                  count: _earnedBadges.length,
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 0.62,
-                  ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => BadgeCard(
-                      badge: _earnedBadges[index],
-                      onTap: () => _showBadgeDetail(context, _earnedBadges[index]),
-                    ),
-                    childCount: _earnedBadges.length,
-                  ),
-                ),
-              ),
-              const SliverToBoxAdapter(child: AppSpacing.vGap32),
-            ],
-
-            // In Progress Badges Section
-            if (_inProgressBadges.isNotEmpty) ...[
-              SliverToBoxAdapter(
-                child: SectionHeader(
-                  title: l10n.inProgress,
-                  count: _inProgressBadges.length,
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 0.55,
-                  ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => BadgeCard(
-                      badge: _inProgressBadges[index],
-                      onTap: () =>
-                          _showBadgeDetail(context, _inProgressBadges[index]),
-                    ),
-                    childCount: _inProgressBadges.length,
-                  ),
-                ),
-              ),
-              const SliverToBoxAdapter(child: AppSpacing.vGap32),
-            ],
-
-            // Locked Badges Section
-            if (_lockedBadges.isNotEmpty) ...[
-              SliverToBoxAdapter(
-                child: SectionHeader(
-                  title: l10n.notEarned,
-                  count: _lockedBadges.length,
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 8,
-                    childAspectRatio: 0.55,
-                  ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => BadgeCard(
-                      badge: _lockedBadges[index],
-                      onTap: () =>
-                          _showBadgeDetail(context, _lockedBadges[index]),
-                    ),
-                    childCount: _lockedBadges.length,
-                  ),
-                ),
-              ),
-            ],
-
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCategoryTabs(AppLocalizations l10n) {
+    final categoryIcons = [
+      Icons.grid_view_rounded,
+      Icons.menu_book_rounded,
+      Icons.loop_rounded,
+      Icons.emoji_events_rounded,
+    ];
+
+    final categoryLabels = [
+      l10n.all,
+      l10n.learning,
+      l10n.habit,
+      l10n.achievement,
+    ];
+
+    return SizedBox(
+      height: 44,
+      child: ListView.separated(
+        controller: _categoryScrollController,
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        itemCount: _categories.length,
+        separatorBuilder: (context, index) => AppSpacing.hGap8,
+        itemBuilder: (context, i) {
+          final cat = _categories[i];
+          return CategoryChip(
+            key: _chipKeys[i],
+            icon: categoryIcons[i],
+            label: categoryLabels[i],
+            count: _countByCategory(cat),
+            isSelected: _selectedCategoryIndex == i,
+            onTap: () => _onCategoryTapped(i),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCategoryBadgeView(
+    BadgeCategory cat,
+    AppLocalizations l10n,
+    ColorScheme cs,
+  ) {
+    final badges = cat == BadgeCategory.all
+        ? _allBadges
+        : _allBadges.where((b) => b.category == cat).toList();
+
+    final earned =
+        badges.where((b) => b.status == BadgeStatus.earned).toList();
+    final inProgress =
+        badges.where((b) => b.status == BadgeStatus.inProgress).toList();
+    final locked =
+        badges.where((b) => b.status == BadgeStatus.locked).toList();
+
+    if (badges.isEmpty) {
+      return _buildEmptyState(cs);
+    }
+
+    return Builder(
+      builder: (context) {
+        return CustomScrollView(
+          key: PageStorageKey<String>('achievements_page_${cat.name}'),
+          slivers: [
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+            // Earned Badges Section (Grid 3 Columns)
+            if (earned.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: SectionHeader(
+                  title: l10n.earned,
+                  count: earned.length,
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 0.72,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => BadgeCard(
+                      badge: earned[index],
+                      onTap: () => _showBadgeDetail(context, earned[index]),
+                    ),
+                    childCount: earned.length,
+                  ),
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            ],
+
+            // In Progress Badges Section
+            if (inProgress.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: SectionHeader(
+                  title: l10n.inProgress,
+                  count: inProgress.length,
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 0.72,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => BadgeCard(
+                      badge: inProgress[index],
+                      onTap: () =>
+                          _showBadgeDetail(context, inProgress[index]),
+                    ),
+                    childCount: inProgress.length,
+                  ),
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            ],
+
+            // Locked Badges Section
+            if (locked.isNotEmpty) ...[
+              SliverToBoxAdapter(
+                child: SectionHeader(
+                  title: l10n.notEarned,
+                  count: locked.length,
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 0.72,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => BadgeCard(
+                      badge: locked[index],
+                      onTap: () => _showBadgeDetail(context, locked[index]),
+                    ),
+                    childCount: locked.length,
+                  ),
+                ),
+              ),
+            ],
+
+            const SliverToBoxAdapter(child: SizedBox(height: 80)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyState(ColorScheme cs) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        Container(
+          margin: const EdgeInsets.all(AppSpacing.lg),
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(
+              color: cs.outlineVariant.withValues(alpha: 0.6),
+              width: 0.8,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(Icons.emoji_events_outlined, size: 48, color: cs.slate400),
+              const SizedBox(height: 12),
+              const Text(
+                'Chưa có huy hiệu nào trong danh mục này',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -329,10 +413,10 @@ class _AllAchievementsScreenState extends State<AllAchievementsScreen> {
 
   List<AchievementBadgeData> _mapBadges(List<BadgeModel> badges) {
     final colors = [
-      AchievementColors.purple,
       AchievementColors.orange,
-      AchievementColors.green,
       AchievementColors.blue,
+      AchievementColors.green,
+      AchievementColors.purple,
       AchievementColors.pink,
       AchievementColors.violet,
       AchievementColors.deepOrange,

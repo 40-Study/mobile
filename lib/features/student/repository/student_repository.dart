@@ -49,6 +49,16 @@ abstract class StudentRepository {
     String attemptId,
     List<Map<String, dynamic>> answers,
   );
+  Future<ApiResult<List<QuizReviewItemModel>>> getQuizAttemptReview(
+    String quizId,
+    String attemptId,
+    List<QuizQuestionModel> questions,
+  );
+  Future<ApiResult<List<QuizReviewItemModel>>> getQuizReviewDetails(
+    String quizId, {
+    String? attemptId,
+  });
+
 
   // Search
   Future<ApiResult<List<CourseModel>>> searchCourses(String query);

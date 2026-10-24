@@ -33,7 +33,7 @@ class RecentSearches extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Tim kiem khoa hoc, bai hoc',
+                'Tìm kiếm khóa học, bài học',
                 style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
               ),
             ],
@@ -51,13 +51,13 @@ class RecentSearches extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Tim kiem gan day',
+                'Tìm kiếm gần đây',
                 style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               ),
               TextButton(
                 onPressed: onClear,
                 child: Text(
-                  'Xoa tat ca',
+                  'Xóa tất cả',
                   style: tt.labelMedium?.copyWith(color: cs.primary),
                 ),
               ),

@@ -39,6 +39,9 @@ class QuizView extends StatelessWidget {
                     score: state.score,
                     quizId: quizId,
                     duration: state.timeLimitMinutes,
+                    questions: state.questions,
+                    userAnswers: state.userAnswers,
+                    reviewItems: state.reviewItems,
                   ),
                 ),
               );

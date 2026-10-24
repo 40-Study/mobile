@@ -17,31 +17,51 @@ class CourseEnrollmentBar extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: cs.surface,
-        border: Border(top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.3))),
+        border: Border(
+          top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.4)),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
             decoration: BoxDecoration(
               color: cs.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(AppRadius.sm),
-              border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(
+                color: cs.outlineVariant.withValues(alpha: 0.6),
+                width: 0.8,
+              ),
             ),
             child: IconButton(
               onPressed: () {},
-              icon: Icon(Icons.favorite_outline_rounded, color: cs.onSurfaceVariant),
+              icon: Icon(
+                Icons.favorite_outline_rounded,
+                color: cs.slate600,
+              ),
             ),
           ),
           AppSpacing.hGap12,
           Expanded(
             child: FilledButton.icon(
               onPressed: () {},
-              icon: const Icon(Icons.download_rounded),
-              label: const Text('Tải tài liệu khóa học'),
+              icon: const Icon(Icons.download_rounded, size: 20),
+              label: const Text(
+                'Tải tài liệu khóa học',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
               style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                backgroundColor: cs.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
               ),
             ),

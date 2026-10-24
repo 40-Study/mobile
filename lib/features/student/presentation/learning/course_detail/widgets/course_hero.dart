@@ -34,28 +34,42 @@ class CourseHero extends StatelessWidget {
             alignment: Alignment.center,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadius.md),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
                 child: SizedBox(
-                  width: 140,
-                  height: 100,
+                  width: 136,
+                  height: 104,
                   child: course?.thumbnailUrl != null
                       ? CachedNetworkImage(
                           imageUrl: course!.thumbnailUrl!,
                           fit: BoxFit.cover,
+                          memCacheWidth: 300,
+                          memCacheHeight: 220,
                           placeholder: (_, _) => ThumbnailPlaceholder(cs: cs),
-                          errorWidget: (_, _, _) => ThumbnailPlaceholder(cs: cs),
+                          errorWidget: (_, _, _) =>
+                              ThumbnailPlaceholder(cs: cs),
                         )
                       : ThumbnailPlaceholder(cs: cs),
                 ),
               ),
               Container(
-                width: 40,
-                height: 40,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  color: cs.surface.withValues(alpha: 0.9),
+                  color: Colors.white.withValues(alpha: 0.92),
                   shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-                child: Icon(Icons.play_arrow_rounded, color: cs.primary, size: 24),
+                child: Icon(
+                  Icons.play_arrow_rounded,
+                  color: cs.primary,
+                  size: 26,
+                ),
               ),
             ],
           ),
@@ -67,12 +81,13 @@ class CourseHero extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: isCompleted
-                        ? Colors.green.withValues(alpha: 0.1)
+                        ? const Color(0xFFECFDF5)
                         : isActive
-                            ? cs.primary.withValues(alpha: 0.1)
+                            ? cs.primaryContainer
                             : cs.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(AppRadius.full),
                   ),
@@ -84,20 +99,21 @@ class CourseHero extends StatelessWidget {
                             : 'Chưa bắt đầu',
                     style: tt.labelSmall?.copyWith(
                       color: isCompleted
-                          ? Colors.green
+                          ? const Color(0xFF059669)
                           : isActive
                               ? cs.primary
-                              : cs.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
+                              : cs.slate500,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
                 AppSpacing.vGap8,
                 Text(
                   course?.title ?? 'Khóa học',
-                  style: tt.titleLarge?.copyWith(
+                  style: tt.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    height: 1.2,
+                    color: cs.slate900,
+                    height: 1.25,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -113,16 +129,14 @@ class CourseHero extends StatelessWidget {
                     ),
                     AppSpacing.hGap8,
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            course?.instructorName ?? 'Giảng viên',
-                            style: tt.bodySmall?.copyWith(fontWeight: FontWeight.w500),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                      child: Text(
+                        course?.instructorName ?? 'Giảng viên',
+                        style: tt.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: cs.slate600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
