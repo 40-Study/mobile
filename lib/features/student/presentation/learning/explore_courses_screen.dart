@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/di/di_container.dart';
@@ -249,7 +249,7 @@ class _ExploreCoursesScreenState extends State<ExploreCoursesScreen> {
                         const SizedBox(height: 12),
 
                         // 2. Category Chips Bar
-                        _buildCategoryChips(categories),
+                        _buildCategoryChips(categories, cs),
                         const SizedBox(height: 12),
 
                         // 3. Quick Price Filters & Sort Bar
@@ -311,12 +311,12 @@ class _ExploreCoursesScreenState extends State<ExploreCoursesScreen> {
   Widget _buildSearchBar(ColorScheme cs, TextTheme tt) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(AppRadius.full),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 0.9),
+        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.7), width: 0.9),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.03),
+            color: cs.shadow.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -325,7 +325,7 @@ class _ExploreCoursesScreenState extends State<ExploreCoursesScreen> {
       child: TextField(
         controller: _searchController,
         onChanged: (val) => setState(() => _searchQuery = val),
-        style: const TextStyle(fontSize: 13.5, color: Color(0xFF1E293B)),
+        style: TextStyle(fontSize: 13.5, color: cs.onSurface),
         decoration: InputDecoration(
           hintText: 'Tìm khóa học, giảng viên, kỹ năng...',
           hintStyle: TextStyle(fontSize: 13, color: cs.slate400),
@@ -357,7 +357,7 @@ class _ExploreCoursesScreenState extends State<ExploreCoursesScreen> {
     );
   }
 
-  Widget _buildCategoryChips(List<String> categories) {
+  Widget _buildCategoryChips(List<String> categories, ColorScheme cs) {
     return SizedBox(
       height: 34,
       child: ListView.separated(
@@ -378,20 +378,18 @@ class _ExploreCoursesScreenState extends State<ExploreCoursesScreen> {
                 vertical: 6.5,
               ),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF3D5FC4) : Colors.white,
+                color: isSelected ? cs.primary : cs.surfaceContainerLowest,
                 borderRadius: BorderRadius.circular(AppRadius.full),
                 border: Border.all(
                   color: isSelected
-                      ? const Color(0xFF3D5FC4)
-                      : const Color(0xFFE2E8F0),
+                      ? cs.primary
+                      : cs.outlineVariant.withValues(alpha: 0.8),
                   width: 0.8,
                 ),
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: const Color(
-                            0xFF3D5FC4,
-                          ).withValues(alpha: 0.25),
+                          color: cs.primary.withValues(alpha: 0.25),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -401,7 +399,7 @@ class _ExploreCoursesScreenState extends State<ExploreCoursesScreen> {
               child: Text(
                 cat,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFF475569),
+                  color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
                   fontSize: 12,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 ),
@@ -428,13 +426,13 @@ class _ExploreCoursesScreenState extends State<ExploreCoursesScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color(0xFFEFF6FF)
+                      ? cs.primaryContainer
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(AppRadius.full),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFFBFDBFE)
-                        : const Color(0xFFE2E8F0),
+                        ? cs.primary
+                        : cs.outlineVariant.withValues(alpha: 0.8),
                     width: 0.8,
                   ),
                 ),
@@ -444,8 +442,8 @@ class _ExploreCoursesScreenState extends State<ExploreCoursesScreen> {
                     fontSize: 11,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     color: isSelected
-                        ? const Color(0xFF3D5FC4)
-                        : const Color(0xFF64748B),
+                        ? cs.onPrimaryContainer
+                        : cs.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -464,31 +462,31 @@ class _ExploreCoursesScreenState extends State<ExploreCoursesScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cs.surfaceContainerLowest,
               borderRadius: BorderRadius.circular(AppRadius.full),
-              border: Border.all(color: const Color(0xFFE2E8F0), width: 0.8),
+              border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.7), width: 0.8),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
+                Icon(
                   Icons.sort_rounded,
                   size: 14,
-                  color: Color(0xFF64748B),
+                  color: cs.onSurfaceVariant,
                 ),
                 const SizedBox(width: 4),
                 Text(
                   _sortOption.label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF334155),
+                    color: cs.onSurface,
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.keyboard_arrow_down_rounded,
                   size: 14,
-                  color: Color(0xFF64748B),
+                  color: cs.onSurfaceVariant,
                 ),
               ],
             ),
@@ -505,8 +503,8 @@ class _ExploreCoursesScreenState extends State<ExploreCoursesScreen> {
                         ? FontWeight.w700
                         : FontWeight.w500,
                     color: opt == _sortOption
-                        ? const Color(0xFF3D5FC4)
-                        : const Color(0xFF1E293B),
+                        ? cs.primary
+                        : cs.onSurface,
                   ),
                 ),
               );
@@ -665,8 +663,8 @@ class _ExploreCoursesScreenState extends State<ExploreCoursesScreen> {
           Container(
             width: 56,
             height: 56,
-            decoration: const BoxDecoration(
-              color: Color(0xFFEFF6FF),
+            decoration: BoxDecoration(
+              color: cs.primaryContainer,
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -810,12 +808,12 @@ class _ExploreCourseCard extends StatelessWidget {
     return RepaintBoundary(
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cs.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0), width: 0.8),
+          border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.7), width: 0.8),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0F172A).withValues(alpha: 0.03),
+              color: cs.shadow.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -903,17 +901,17 @@ class _ExploreCourseCard extends StatelessWidget {
                             Container(
                               width: 16,
                               height: 16,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFEFF6FF),
+                              decoration: BoxDecoration(
+                                color: cs.primaryContainer,
                                 shape: BoxShape.circle,
                               ),
                               alignment: Alignment.center,
                               child: Text(
                                 _getInstructorInitial(course.instructorName),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 9,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF3D5FC4),
+                                  color: cs.onPrimaryContainer,
                                 ),
                               ),
                             ),
@@ -944,10 +942,10 @@ class _ExploreCourseCard extends StatelessWidget {
                             const SizedBox(width: 2),
                             Text(
                               rating.toStringAsFixed(1),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF1E293B),
+                                color: cs.onSurface,
                               ),
                             ),
                             Text(
@@ -957,9 +955,9 @@ class _ExploreCourseCard extends StatelessWidget {
                                 color: cs.slate400,
                               ),
                             ),
-                            const Text(
+                            Text(
                               ' • ',
-                              style: TextStyle(color: Color(0xFFCBD5E1)),
+                              style: TextStyle(color: cs.outlineVariant),
                             ),
                             Icon(
                               Icons.play_circle_outline_rounded,

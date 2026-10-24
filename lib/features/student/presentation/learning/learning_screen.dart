@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/course/data/models/enrollment_model.dart';
@@ -57,9 +57,6 @@ class _LearningScreenState extends State<LearningScreen> {
               categoryLabel: 'HỌC PHẦN & KHÓA HỌC',
               title: 'Học tập của tôi',
               icon: Icons.school_rounded,
-              iconBackgroundColor: const Color(0xFFEEF2FF),
-              iconColor: const Color(0xFF4F46E5),
-              iconBorderColor: const Color(0xFFE0E7FF),
               showNotification: false,
               showAvatar: false,
               trailing: Material(
@@ -76,7 +73,7 @@ class _LearningScreenState extends State<LearningScreen> {
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cs.surfaceContainerLowest,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: cs.outlineVariant.withValues(alpha: 0.35),

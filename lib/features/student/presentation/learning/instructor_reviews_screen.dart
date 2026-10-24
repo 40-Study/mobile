@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:study/theme/theme.dart';
 
 import 'widgets/category_tabs_header_delegate.dart';
@@ -353,7 +353,7 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
           color: cs.outlineVariant.withValues(alpha: 0.45),
@@ -481,7 +481,7 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md + 2),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
           color: cs.outlineVariant.withValues(alpha: 0.45),
@@ -568,10 +568,10 @@ class _InstructorReviewsScreenState extends State<InstructorReviewsScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: cs.surfaceContainerLow,
               borderRadius: BorderRadius.circular(AppRadius.xs),
               border: Border.all(
-                color: const Color(0xFFE2E8F0),
+                color: cs.outlineVariant.withValues(alpha: 0.5),
                 width: 0.8,
               ),
             ),
