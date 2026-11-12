@@ -171,7 +171,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
 
     switch (result) {
       case Success(value: final submitResult):
-        List<QuizReviewItemModel> reviewItems = const [];
+        var reviewItems = const <QuizReviewItemModel>[];
         try {
           final reviewResult = await _repository.getQuizAttemptReview(
             current.quizId,
@@ -196,13 +196,14 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
               (submitResult.percentage * totalCount / 100).round();
         }
 
-        // Lưu kết quả vào local storage kèm attemptId
+        // Lưu kết quả vào local storage kèm attemptId và timeSpentSeconds
         await QuizResultStorage.saveResult(
           quizId: current.quizId,
           attemptId: current.attemptId,
           correctCount: correctCount,
           totalCount: totalCount,
           score: submitResult.percentage,
+          timeSpentSeconds: submitResult.timeSpentSeconds,
         );
 
         emit(
@@ -211,6 +212,7 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
             totalCount: totalCount,
             score: submitResult.percentage,
             timeLimitMinutes: current.timeLimitMinutes,
+            timeSpentSeconds: submitResult.timeSpentSeconds,
             questions: current.questions,
             userAnswers: current.answers,
             reviewItems: reviewItems,

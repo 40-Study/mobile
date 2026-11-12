@@ -150,7 +150,20 @@ class _QuizContentState extends State<QuizContent> {
         ),
 
         // Bottom Navigation Bar
-        QuizBottomBar(state: state),
+        QuizBottomBar(
+          state: state,
+          onOpenPalette: () => showQuestionPaletteBottomSheet(
+            context: context,
+            questionsCount: state.questions.length,
+            currentIndex: state.currentIndex,
+            answers: state.answers,
+            flaggedQuestions: state.flaggedQuestions,
+            onQuestionTap: (index) =>
+                context.read<QuizBloc>().add(QuizGoToQuestion(index)),
+            onSubmitQuiz: () =>
+                context.read<QuizBloc>().add(const QuizSubmitted()),
+          ),
+        ),
       ],
     );
   }

@@ -84,6 +84,7 @@ final class QuizCompleted extends QuizState {
     required this.totalCount,
     required this.score,
     required this.timeLimitMinutes,
+    this.timeSpentSeconds = 0,
     this.questions = const [],
     this.userAnswers = const {},
     this.reviewItems = const [],
@@ -93,6 +94,7 @@ final class QuizCompleted extends QuizState {
   final int totalCount;
   final double score;
   final int timeLimitMinutes;
+  final int timeSpentSeconds;
   final List<QuizQuestionModel> questions;
   final Map<int, Set<int>> userAnswers;
   final List<QuizReviewItemModel> reviewItems;
@@ -103,6 +105,7 @@ final class QuizCompleted extends QuizState {
         totalCount,
         score,
         timeLimitMinutes,
+        timeSpentSeconds,
         questions,
         userAnswers,
         reviewItems,

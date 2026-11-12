@@ -5,11 +5,17 @@ import 'package:study/features/student/bloc/quiz/quiz_event.dart';
 import 'package:study/features/student/bloc/quiz/quiz_state.dart';
 import 'package:study/theme/theme.dart';
 
-/// Bottom nav bar cho quiz (prev/next/submit) với điều hướng tự do và xác nhận nộp bài
+/// Bottom Nav Dock cho quiz (Câu trước / Palette Trigger / Câu tiếp / Nộp bài)
+/// Cân xứng, thanh thoát, màu sắc học thuật chuẩn mực
 class QuizBottomBar extends StatelessWidget {
-  const QuizBottomBar({super.key, required this.state});
+  const QuizBottomBar({
+    super.key,
+    required this.state,
+    this.onOpenPalette,
+  });
 
   final QuizReady state;
+  final VoidCallback? onOpenPalette;
 
   void _confirmSubmit(BuildContext context) {
     final unanswered = state.questions.length - state.answers.length;
@@ -20,36 +26,31 @@ class QuizBottomBar extends StatelessWidget {
         context: context,
         builder: (ctx) => AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
           ),
           title: const Row(
             children: [
               Icon(Icons.help_outline_rounded,
-                  color: Color(0xFFF59E0B), size: 24),
+                  color: Color(0xFFD97706), size: 22),
               SizedBox(width: 8),
               Text('Xác nhận nộp bài',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
             ],
           ),
           content: Text(
             unanswered > 0
-                ? 'Bạn còn $unanswered câu chưa trả lời${flagged > 0 ? " và $flagged câu đang đánh dấu xem lại" : ""}.\n\nBạn có chắc chắn muốn nộp bài ngay bây giờ?'
-                : 'Bạn đang có $flagged câu đánh dấu xem lại.\n\nBạn có chắc chắn muốn nộp bài ngay bây giờ?',
-            style: const TextStyle(height: 1.4, fontSize: 14.5),
+                ? 'Bạn còn $unanswered câu chưa trả lời${flagged > 0 ? " và $flagged câu đang đánh dấu xem lại" : ""}.\n\nBạn có chắc chắn muốn nộp bài thi ngay bây giờ?'
+                : 'Bạn đang có $flagged câu đánh dấu xem lại.\n\nBạn có chắc chắn muốn nộp bài thi ngay bây giờ?',
+            style: const TextStyle(height: 1.45, fontSize: 14),
           ),
           actions: [
-            OutlinedButton(
+            TextButton(
               onPressed: () => Navigator.of(ctx).pop(),
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
               child: const Text('Làm tiếp'),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF059669),
+                backgroundColor: const Color(0xFF2563EB),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -59,7 +60,7 @@ class QuizBottomBar extends StatelessWidget {
                 Navigator.of(ctx).pop();
                 context.read<QuizBloc>().add(const QuizSubmitted());
               },
-              child: const Text('Đồng ý nộp'),
+              child: const Text('Nộp bài ngay'),
             ),
           ],
         ),
@@ -76,88 +77,117 @@ class QuizBottomBar extends StatelessWidget {
     final bloc = context.read<QuizBloc>();
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.screenPadding,
-        AppSpacing.md,
-        AppSpacing.screenPadding,
-        AppSpacing.md,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(
-          top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.3)),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -3),
+          top: BorderSide(
+            color: cs.slate200.withValues(alpha: 0.8),
+            width: 0.8,
           ),
-        ],
+        ),
       ),
       child: Row(
         children: [
+          // Nút Câu trước
           if (!state.isFirstQuestion)
             OutlinedButton.icon(
               onPressed: () => bloc.add(const QuizPreviousQuestion()),
-              icon: const Icon(Icons.arrow_back_rounded, size: 18),
-              label: const Text('Câu trước'),
+              icon: const Icon(Icons.arrow_back_rounded, size: 16),
+              label: const Text('Trước'),
               style: OutlinedButton.styleFrom(
+                foregroundColor: cs.slate700,
+                side: BorderSide(color: cs.slate300, width: 0.8),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderRadius: BorderRadius.circular(8),
                 ),
+                textStyle:
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               ),
             )
           else
-            const SizedBox(width: 90),
+            const SizedBox(width: 80),
+
           const Spacer(),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(AppRadius.full),
-              border:
-                  Border.all(color: cs.outlineVariant.withValues(alpha: 0.4)),
-            ),
-            child: Text(
-              '${state.currentIndex + 1}/${state.questions.length}',
-              style: tt.labelMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: cs.onSurface,
+
+          // Nút giữa: [ ☷ 03/10 ] Trigger Palette
+          InkWell(
+            onTap: onOpenPalette,
+            borderRadius: BorderRadius.circular(6),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+              decoration: BoxDecoration(
+                color: cs.slate100,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: cs.slate200.withValues(alpha: 0.8),
+                  width: 0.8,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.grid_view_rounded, size: 13, color: cs.slate500),
+                  const SizedBox(width: 5),
+                  Text(
+                    '${state.currentIndex + 1}/${state.questions.length}',
+                    style: tt.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: cs.slate800,
+                      fontSize: 12,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
+
           const Spacer(),
+
+          // Nút Câu tiếp hoặc Nộp bài
           if (state.isLastQuestion)
             FilledButton.icon(
               onPressed: () => _confirmSubmit(context),
-              icon: const Icon(Icons.check_circle_rounded, size: 18),
+              icon: const Icon(Icons.check_circle_rounded, size: 16),
               label: const Text('Nộp bài'),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF059669),
+                backgroundColor: const Color(0xFF2563EB), // Academic Royal Blue
                 foregroundColor: Colors.white,
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderRadius: BorderRadius.circular(8),
                 ),
+                elevation: 0,
+                textStyle:
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
               ),
             )
           else
             FilledButton.icon(
               onPressed: () => bloc.add(const QuizNextQuestion()),
               label: Text(
-                state.currentAnswer != null ? 'Câu tiếp' : 'Bỏ qua',
+                state.currentAnswer != null ? 'Tiếp tục' : 'Bỏ qua',
               ),
-              icon: const Icon(Icons.arrow_forward_rounded, size: 18),
+              icon: const Icon(Icons.arrow_forward_rounded, size: 16),
               style: FilledButton.styleFrom(
+                backgroundColor: state.currentAnswer != null
+                    ? const Color(0xFF2563EB)
+                    : cs.slate100,
+                foregroundColor: state.currentAnswer != null
+                    ? Colors.white
+                    : cs.slate700,
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderRadius: BorderRadius.circular(8),
                 ),
+                elevation: 0,
+                textStyle:
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
               ),
             ),
         ],

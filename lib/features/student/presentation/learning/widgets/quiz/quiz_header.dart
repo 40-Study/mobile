@@ -1,10 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
 
-/// Quiz header với timer, Slim progress bar, và exit dialog
+/// Quiz Header tinh giản, Monospace Timer Capsule & Hairline Progress Bar
 class QuizHeader extends StatefulWidget {
   const QuizHeader({
     super.key,
@@ -69,13 +68,13 @@ class _QuizHeaderState extends State<QuizHeader> {
   Color _timerColor(ColorScheme cs) {
     if (_isCriticalTime) return const Color(0xFFDC2626);
     if (_isWarningTime) return const Color(0xFFD97706);
-    return cs.primary;
+    return cs.slate700;
   }
 
   Color _timerBgColor(ColorScheme cs) {
-    if (_isCriticalTime) return const Color(0xFFFEE2E2);
-    if (_isWarningTime) return const Color(0xFFFEF3C7);
-    return cs.primary.withValues(alpha: 0.1);
+    if (_isCriticalTime) return const Color(0xFFFEF2F2);
+    if (_isWarningTime) return const Color(0xFFFFFBEB);
+    return cs.slate100;
   }
 
   IconData get _timerIcon {
@@ -92,7 +91,7 @@ class _QuizHeaderState extends State<QuizHeader> {
     final timerBg = _timerBgColor(cs);
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(4, 6, 8, 0),
+      padding: const EdgeInsets.fromLTRB(4, 4, 10, 0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -100,7 +99,7 @@ class _QuizHeaderState extends State<QuizHeader> {
             children: [
               IconButton(
                 onPressed: () => _showExitDialog(context),
-                icon: const Icon(Icons.close_rounded),
+                icon: const Icon(Icons.close_rounded, size: 22),
                 tooltip: 'Thoát',
               ),
               Expanded(
@@ -109,74 +108,81 @@ class _QuizHeaderState extends State<QuizHeader> {
                   children: [
                     Text(
                       widget.title,
-                      style: tt.titleMedium?.copyWith(
+                      style: tt.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
-                        fontSize: 15.5,
+                        fontSize: 14.5,
+                        color: cs.slate900,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                     Text(
                       'Câu ${widget.currentIndex + 1}/${widget.totalQuestions} • Đã làm ${widget.answeredCount}/${widget.totalQuestions}',
                       style: tt.bodySmall?.copyWith(
-                        color: cs.onSurfaceVariant,
-                        fontSize: 12,
+                        color: cs.slate500,
+                        fontSize: 11.5,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
               ),
-              // Timer pill
+
+              // Monospace Timer Capsule
               AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
+                duration: const Duration(milliseconds: 250),
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                 decoration: BoxDecoration(
                   color: timerBg,
-                  borderRadius: BorderRadius.circular(AppRadius.full),
+                  borderRadius: BorderRadius.circular(6), // Squircle bo nhẹ 6px
                   border: Border.all(
-                    color: timerColor.withValues(alpha: 0.3),
-                    width: 1,
+                    color: timerColor.withValues(alpha: 0.25),
+                    width: 0.8,
                   ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(_timerIcon, size: 15, color: timerColor),
-                    const SizedBox(width: 5),
+                    Icon(_timerIcon, size: 14, color: timerColor),
+                    const SizedBox(width: 4),
                     Text(
                       _formattedTime,
                       style: tt.labelMedium?.copyWith(
                         color: timerColor,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 12.5,
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                   ],
                 ),
               ),
+
               if (widget.onOpenPalette != null) ...[
-                const SizedBox(width: 2),
+                const SizedBox(width: 4),
                 IconButton(
                   onPressed: widget.onOpenPalette,
-                  icon: const Icon(Icons.grid_view_rounded, size: 20),
+                  icon: const Icon(Icons.grid_view_rounded, size: 19),
                   tooltip: 'Ma trận câu hỏi',
-                  color: cs.onSurfaceVariant,
+                  color: cs.slate600,
                 ),
               ],
             ],
           ),
           const SizedBox(height: 6),
+
+          // Hairline Slim Progress Bar (2.5px)
           ClipRRect(
-            borderRadius: BorderRadius.circular(2),
+            borderRadius: BorderRadius.circular(1.5),
             child: LinearProgressIndicator(
               value: widget.totalQuestions > 0
                   ? widget.answeredCount / widget.totalQuestions
                   : 0.0,
-              minHeight: 3.5,
-              backgroundColor: cs.outlineVariant.withValues(alpha: 0.2),
-              valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
+              minHeight: 2.5,
+              backgroundColor: cs.slate200.withValues(alpha: 0.6),
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
             ),
           ),
         ],
@@ -192,15 +198,16 @@ class _QuizHeaderState extends State<QuizHeader> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg)),
+          borderRadius: BorderRadius.circular(12),
+        ),
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.orange),
-            AppSpacing.hGap8,
-            Text(l10n.quizExitTitle),
+            const Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706)),
+            const SizedBox(width: 8),
+            Text(l10n.quizExitTitle, style: const TextStyle(fontSize: 16.5)),
           ],
         ),
-        content: Text(l10n.quizExitContent),
+        content: Text(l10n.quizExitContent, style: const TextStyle(fontSize: 14)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),

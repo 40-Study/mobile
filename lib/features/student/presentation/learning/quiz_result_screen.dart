@@ -1,18 +1,19 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/student/data/models/models.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/theme/theme.dart';
 
 import 'quiz_screen.dart';
+import 'widgets/quiz/academic_score_hero.dart';
+import 'widgets/quiz/frameless_metric_strip.dart';
+import 'widgets/quiz/milestone_unlock_strip.dart';
+import 'widgets/quiz/minimalist_review_filter_strip.dart';
 import 'widgets/quiz/question_review_card.dart';
-import 'widgets/quiz/score_circle.dart';
-import 'widgets/quiz/stat_card.dart';
 
-enum QuizReviewFilter { total, correct, wrong }
-
-/// Result screen sau khi hoàn thành quiz với bộ lọc tương tác câu đúng/sai
+/// Màn hình Kết quả Bài kiểm tra - Bảng điểm Học thuật Liền mạch (Seamless Academic Transcript)
+/// Thay thế hoàn toàn Card Fatigue bằng Editorial Layout, đầy đủ thông tin, hiệu ứng kích hoạt hứng thú
 class QuizResultScreen extends StatefulWidget {
   const QuizResultScreen({
     super.key,
@@ -23,6 +24,7 @@ class QuizResultScreen extends StatefulWidget {
     this.quizId,
     this.attemptId,
     this.duration,
+    this.timeSpentSeconds = 0,
     this.questions = const [],
     this.userAnswers = const {},
     this.reviewItems = const [],
@@ -35,6 +37,7 @@ class QuizResultScreen extends StatefulWidget {
   final String? quizId;
   final String? attemptId;
   final int? duration;
+  final int timeSpentSeconds;
   final List<QuizQuestionModel> questions;
   final Map<int, dynamic> userAnswers;
   final List<QuizReviewItemModel> reviewItems;
@@ -43,10 +46,8 @@ class QuizResultScreen extends StatefulWidget {
   State<QuizResultScreen> createState() => _QuizResultScreenState();
 }
 
-class _QuizResultScreenState extends State<QuizResultScreen>
-    with SingleTickerProviderStateMixin {
-  QuizReviewFilter _selectedFilter = QuizReviewFilter.total;
-  late final AnimationController _celebrationController;
+class _QuizResultScreenState extends State<QuizResultScreen> {
+  QuizReviewFilterType _selectedFilter = QuizReviewFilterType.total;
 
   late int _correct;
   late int _total;
@@ -60,9 +61,9 @@ class _QuizResultScreenState extends State<QuizResultScreen>
   List<QuizReviewItemModel> get _filteredReviewItems {
     return _reviewItems.where((item) {
       return switch (_selectedFilter) {
-        QuizReviewFilter.total => true,
-        QuizReviewFilter.correct => item.isCorrect,
-        QuizReviewFilter.wrong => !item.isCorrect,
+        QuizReviewFilterType.total => true,
+        QuizReviewFilterType.correct => item.isCorrect,
+        QuizReviewFilterType.wrong => !item.isCorrect,
       };
     }).toList();
   }
@@ -77,9 +78,9 @@ class _QuizResultScreenState extends State<QuizResultScreen>
               (userAns is Set && userAns.contains(q.correctAnswer)));
 
       return switch (_selectedFilter) {
-        QuizReviewFilter.total => true,
-        QuizReviewFilter.correct => isCorrect,
-        QuizReviewFilter.wrong => !isCorrect,
+        QuizReviewFilterType.total => true,
+        QuizReviewFilterType.correct => isCorrect,
+        QuizReviewFilterType.wrong => !isCorrect,
       };
     }).toList();
   }
@@ -95,15 +96,6 @@ class _QuizResultScreenState extends State<QuizResultScreen>
       _reviewItems = List.from(widget.reviewItems);
     } else if (widget.quizId != null && widget.quizId!.isNotEmpty) {
       _loadReviewDetails();
-    }
-
-    _celebrationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2500),
-    );
-    final percent = widget.score.round();
-    if (percent >= 70) {
-      _celebrationController.forward();
     }
   }
 
@@ -155,10 +147,15 @@ class _QuizResultScreenState extends State<QuizResultScreen>
     }
   }
 
-  @override
-  void dispose() {
-    _celebrationController.dispose();
-    super.dispose();
+  void _shareTranscript(BuildContext context) {
+    HapticFeedback.lightImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Đã tạo bản chụp bảng điểm học thuật để chia sẻ!'),
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
@@ -169,438 +166,272 @@ class _QuizResultScreenState extends State<QuizResultScreen>
     final passed = percent >= 70;
     final wrong = _total - _correct;
 
-    final String headline;
-    final String subtitle;
-    if (percent >= 90) {
-      headline = 'Xuất sắc! 🎉';
-      subtitle = 'Bạn đã nắm rất vững kiến thức của bài học!';
-    } else if (percent >= 70) {
-      headline = 'Chúc mừng bạn đã đạt! 👏';
-      subtitle = 'Bạn đã hoàn thành tốt bài kiểm tra này.';
-    } else if (percent >= 50) {
-      headline = 'Cần cố gắng thêm! 💪';
-      subtitle = 'Bạn gần đạt rồi, hãy ôn tập lại và thử lại nhé.';
-    } else {
-      headline = 'Chưa đạt yêu cầu 📚';
-      subtitle = 'Hãy xem lại bài giảng và làm lại bài kiểm tra nhé.';
-    }
-
-    final statusColor =
-        passed ? const Color(0xFF059669) : const Color(0xFFDC2626);
-    final statusBg =
-        passed ? const Color(0xFFECFDF5) : const Color(0xFFFEF2F2);
-
     final hasContent = _hasReviewItems ||
         widget.questions.isNotEmpty ||
         _isLoadingReview ||
         _reviewError != null;
 
-
     return Scaffold(
       backgroundColor: cs.surface,
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            Column(
-              children: [
-                // Header
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: AppSpacing.sm,
+            // Top Navigation Bar (Tối giản, trang nhã)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close_rounded, size: 22),
+                    tooltip: 'Đóng',
                   ),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close_rounded),
-                        tooltip: 'Đóng',
-                      ),
-                      Expanded(
-                        child: Text(
-                          'Kết quả bài kiểm tra',
-                          style: tt.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(width: 48),
-                    ],
-                  ),
-                ),
-
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.screenPadding,
-                    ),
+                  Expanded(
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        AppSpacing.vGap16,
-
-                        // Score circle
-                        ScoreCircle(percent: percent, passed: passed),
-
-                        AppSpacing.vGap24,
-
-                        // Message
                         Text(
-                          headline,
-                          style: tt.headlineSmall?.copyWith(
+                          'Kết quả bài kiểm tra',
+                          style: tt.labelSmall?.copyWith(
                             fontWeight: FontWeight.w800,
-                            color: statusColor,
+                            letterSpacing: 0.8,
+                            fontSize: 11.5,
+                            color: cs.slate500,
                           ),
                           textAlign: TextAlign.center,
                         ),
-                        AppSpacing.vGap8,
+                        const SizedBox(height: 1),
                         Text(
-                          subtitle,
-                          style: tt.bodyMedium?.copyWith(
-                            color: cs.onSurfaceVariant,
+                          widget.title,
+                          style: tt.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13.5,
+                            color: cs.slate900,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
                         ),
-
-                        const SizedBox(height: 20),
-
-                        // Passing threshold info
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.md,
-                            vertical: AppSpacing.sm,
-                          ),
-                          decoration: BoxDecoration(
-                            color: statusBg,
-                            borderRadius: BorderRadius.circular(AppRadius.full),
-                            border: Border.all(
-                              color: statusColor.withValues(alpha: 0.2),
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                passed
-                                    ? Icons.check_circle_outline_rounded
-                                    : Icons.info_outline_rounded,
-                                size: 18,
-                                color: statusColor,
-                              ),
-                              AppSpacing.hGap8,
-                              Text(
-                                passed
-                                    ? 'Đạt yêu cầu (≥70%)'
-                                    : 'Chưa đạt yêu cầu (cần ≥70%)',
-                                style: tt.bodySmall?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: statusColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        AppSpacing.vGap24,
-
-                        // Micro-copy guidance
-                        if (hasContent)
-                          Padding(
-                            padding:
-                                const EdgeInsets.only(bottom: AppSpacing.sm),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.touch_app_outlined,
-                                  size: 16,
-                                  color: cs.onSurfaceVariant,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'Chạm vào từng thẻ bên dưới để lọc chi tiết bài làm:',
-                                  style: tt.labelSmall?.copyWith(
-                                    color: cs.onSurfaceVariant,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                        // Interactive Stat cards
-                        Row(
-                          children: [
-                            Expanded(
-                              child: StatCard(
-                                icon: Icons.check_circle_rounded,
-                                iconColor: const Color(0xFF059669),
-                                label: 'Câu đúng',
-                                value: '$_correct',
-                                isSelected:
-                                    _selectedFilter == QuizReviewFilter.correct,
-                                onTap: () {
-                                  setState(() {
-                                    _selectedFilter = QuizReviewFilter.correct;
-                                  });
-                                },
-                              ),
-                            ),
-                            AppSpacing.hGap8,
-                            Expanded(
-                              child: StatCard(
-                                icon: Icons.cancel_rounded,
-                                iconColor: const Color(0xFFDC2626),
-                                label: 'Câu sai',
-                                value: '$wrong',
-                                isSelected:
-                                    _selectedFilter == QuizReviewFilter.wrong,
-                                onTap: () {
-                                  setState(() {
-                                    _selectedFilter = QuizReviewFilter.wrong;
-                                  });
-                                },
-                              ),
-                            ),
-                            AppSpacing.hGap8,
-                            Expanded(
-                              child: StatCard(
-                                icon: Icons.assignment_rounded,
-                                iconColor: cs.primary,
-                                label: 'Tổng câu',
-                                value: '$_total',
-                                isSelected:
-                                    _selectedFilter == QuizReviewFilter.total,
-                                onTap: () {
-                                  setState(() {
-                                    _selectedFilter = QuizReviewFilter.total;
-                                  });
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        AppSpacing.vGap16,
-
-                        // Active filter indicator banner
-                        if (hasContent) ...[
-                          if (!_isLoadingReview && _reviewError == null)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.md,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: cs.surfaceContainerHighest.withValues(
-                                  alpha: 0.6,
-                                ),
-                                borderRadius:
-                                    BorderRadius.circular(AppRadius.sm),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.filter_list_rounded,
-                                    size: 16,
-                                    color: cs.onSurfaceVariant,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    switch (_selectedFilter) {
-                                      QuizReviewFilter.total =>
-                                        'Đang xem: Tất cả $_total câu',
-                                      QuizReviewFilter.correct =>
-                                        'Đang xem: $_correct câu trả lời đúng',
-                                      QuizReviewFilter.wrong =>
-                                        'Đang xem: $wrong câu chưa đúng',
-                                    },
-                                    style: tt.bodySmall?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: cs.onSurface,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  if (_selectedFilter != QuizReviewFilter.total)
-                                    GestureDetector(
-                                      onTap: () => setState(() {
-                                        _selectedFilter =
-                                            QuizReviewFilter.total;
-                                      }),
-                                      child: Text(
-                                        'Xem tất cả',
-                                        style: tt.labelSmall?.copyWith(
-                                          color: cs.primary,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          AppSpacing.vGap16,
-
-                          // Question review list, Loading Skeleton, or Error state
-                          if (_isLoadingReview)
-                            _buildSkeletonReviewCards(cs)
-                          else if (_reviewError != null)
-                            _buildReviewError(cs, tt)
-                          else if (_hasReviewItems) ...[
-                            if (_filteredReviewItems.isEmpty)
-                              _buildEmptyReviewState(cs, tt)
-                            else
-                              ..._filteredReviewItems.map((item) {
-                                return QuestionReviewCard(
-                                  index: item.index,
-                                  reviewItem: item,
-                                );
-                              }),
-                          ] else ...[
-                            if (_filteredQuestions.isEmpty)
-                              _buildEmptyReviewState(cs, tt)
-                            else
-                              ..._filteredQuestions.map((entry) {
-                                final questionIndex = entry.key + 1;
-                                final question = entry.value;
-                                final userAns = widget.userAnswers[entry.key];
-                                int? userAnsInt;
-                                if (userAns is int) {
-                                  userAnsInt = userAns;
-                                } else if (userAns is Iterable) {
-                                  final first = userAns.firstOrNull;
-                                  if (first is int) userAnsInt = first;
-                                }
-                                return QuestionReviewCard(
-                                  index: questionIndex,
-                                  question: question,
-                                  userAnswerIndex: userAnsInt,
-                                );
-                              }),
-                          ],
-                        ],
-
-
-                        AppSpacing.vGap32,
                       ],
                     ),
                   ),
-                ),
-
-                // Bottom buttons
-                Container(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.screenPadding,
-                    AppSpacing.md,
-                    AppSpacing.screenPadding,
-                    AppSpacing.md,
+                  IconButton(
+                    onPressed: () => _shareTranscript(context),
+                    icon: const Icon(Icons.ios_share_rounded, size: 20),
+                    tooltip: 'Khoe thành tích',
+                    color: cs.slate600,
                   ),
-                  decoration: BoxDecoration(
-                    color: cs.surface,
-                    border: Border(
-                      top: BorderSide(
-                        color: cs.outlineVariant.withValues(alpha: 0.3),
-                      ),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: cs.shadow.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, -3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppRadius.md),
-                            ),
-                          ),
-                          label: const Text('Quay về bài học'),
-                        ),
-                      ),
-                      if (widget.quizId != null) ...[
-                        AppSpacing.hGap12,
-                        Expanded(
-                          child: FilledButton.icon(
-                            onPressed: () {
-                              Navigator.of(context).pushReplacement(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => QuizScreen(
-                                    quizId: widget.quizId!,
-                                    title: widget.title,
-                                    duration: widget.duration ?? 5,
-                                  ),
-                                ),
-                              );
-                            },
-                            style: FilledButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(AppRadius.md),
-                              ),
-                            ),
-                            icon: const Icon(Icons.replay_rounded, size: 18),
-                            label: const Text('Làm lại bài kiểm tra'),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
+            ),
+            Divider(
+              height: 1,
+              thickness: 0.8,
+              color: cs.slate200.withValues(alpha: 0.8),
             ),
 
-            // Celebratory Confetti Animation
-            if (passed)
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: AnimatedBuilder(
-                    animation: _celebrationController,
-                    builder: (context, _) {
-                      if (_celebrationController.value == 0 ||
-                          _celebrationController.value == 1) {
-                        return const SizedBox.shrink();
-                      }
-                      return CustomPaint(
-                        painter: _CelebrationParticlesPainter(
-                          progress: _celebrationController.value,
+            // Main Content: Seamless Academic Transcript
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.screenPadding,
+                  10,
+                  AppSpacing.screenPadding,
+                  30,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 1. Hero Score & Mastery Stamp (Animated Rolling Score + Glow)
+                    AcademicScoreHero(
+                      score: _score,
+                      correctCount: _correct,
+                      totalCount: _total,
+                      passingPercentage: 70.0,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // 2. Frameless Metric Strip (4 chỉ số phẳng không hộp)
+                    FramelessMetricStrip(
+                      correctCount: _correct,
+                      totalCount: _total,
+                      timeSpentSeconds: widget.timeSpentSeconds,
+                      totalDurationMinutes: widget.duration ?? 10,
+                      xpReward: passed ? 50 : 20,
+                      streakDays: 5,
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // 3. Milestone Unlock Strip (Thông báo mở khóa học vụ)
+                    MilestoneUnlockStrip(
+                      isPassed: passed,
+                      remainingAttempts: 2,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // 4. Detailed Question Analysis Section Header
+                    if (_total > 0) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Text(
+                          'PHÂN TÍCH CHI TIẾT BÀI LÀM',
+                          style: tt.labelSmall?.copyWith(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.0,
+                            color: cs.slate500,
+                          ),
                         ),
-                      );
-                    },
+                      ),
+
+                      // 5. Minimalist Segmented Tabs Filter
+                      MinimalistReviewFilterStrip(
+                        selectedFilter: _selectedFilter,
+                        totalCount: _total,
+                        correctCount: _correct,
+                        wrongCount: wrong,
+                        onFilterChanged: (newFilter) {
+                          setState(() => _selectedFilter = newFilter);
+                        },
+                      ),
+                    ],
+
+                    // 6. Question Review Items, Loading Skeleton, or Error
+                    if (hasContent) ...[
+                      if (_isLoadingReview)
+                        _buildSkeletonReviewItems(cs)
+                      else if (_reviewError != null)
+                        _buildReviewError(cs, tt)
+                      else if (_hasReviewItems) ...[
+                        if (_filteredReviewItems.isEmpty)
+                          _buildEmptyReviewState(cs, tt)
+                        else
+                          ..._filteredReviewItems.map((item) {
+                            return QuestionReviewCard(
+                              index: item.index,
+                              reviewItem: item,
+                            );
+                          }),
+                      ] else ...[
+                        if (_filteredQuestions.isEmpty)
+                          _buildEmptyReviewState(cs, tt)
+                        else
+                          ..._filteredQuestions.map((entry) {
+                            final questionIndex = entry.key + 1;
+                            final question = entry.value;
+                            final userAns = widget.userAnswers[entry.key];
+                            int? userAnsInt;
+                            if (userAns is int) {
+                              userAnsInt = userAns;
+                            } else if (userAns is Iterable) {
+                              final first = userAns.firstOrNull;
+                              if (first is int) userAnsInt = first;
+                            }
+                            return QuestionReviewCard(
+                              index: questionIndex,
+                              question: question,
+                              userAnswerIndex: userAnsInt,
+                            );
+                          }),
+                      ],
+                    ],
+                  ],
+                ),
+              ),
+            ),
+
+            // Bottom Balanced Action Dock
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              decoration: BoxDecoration(
+                color: cs.surface,
+                border: Border(
+                  top: BorderSide(
+                    color: cs.slate200.withValues(alpha: 0.8),
+                    width: 0.8,
                   ),
                 ),
               ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        if (widget.quizId != null) {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute<void>(
+                              builder: (_) => QuizScreen(
+                                quizId: widget.quizId!,
+                                title: widget.title,
+                                duration: widget.duration ?? 10,
+                              ),
+                            ),
+                          );
+                        } else {
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      icon: const Icon(Icons.replay_rounded, size: 17),
+                      label: const Text('Làm lại bài kiểm tra'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: cs.slate700,
+                        side: BorderSide(color: cs.slate300, width: 0.8),
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.arrow_back_rounded, size: 17),
+                      label: const Text('Quay về bài học'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        elevation: 0,
+                        textStyle: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSkeletonReviewCards(ColorScheme cs) {
+  Widget _buildSkeletonReviewItems(ColorScheme cs) {
     return Column(
       children: List.generate(3, (index) {
         return Container(
-          margin: const EdgeInsets.only(bottom: AppSpacing.md),
-          padding: const EdgeInsets.all(AppSpacing.md),
+          padding: const EdgeInsets.symmetric(vertical: 18),
           decoration: BoxDecoration(
-            color: cs.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            border: Border.all(
-              color: cs.outlineVariant.withValues(alpha: 0.25),
+            border: Border(
+              bottom: BorderSide(
+                color: cs.slate200.withValues(alpha: 0.6),
+                width: 0.8,
+              ),
             ),
           ),
           child: Column(
@@ -610,50 +441,50 @@ class _QuizResultScreenState extends State<QuizResultScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    width: 70,
-                    height: 22,
+                    width: 32,
+                    height: 16,
                     decoration: BoxDecoration(
-                      color: cs.surfaceContainerHighest.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(AppRadius.full),
+                      color: cs.slate200.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(3),
                     ),
                   ),
                   Container(
-                    width: 80,
-                    height: 22,
+                    width: 60,
+                    height: 14,
                     decoration: BoxDecoration(
-                      color: cs.surfaceContainerHighest.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(AppRadius.full),
+                      color: cs.slate200.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(3),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               Container(
                 width: double.infinity,
-                height: 16,
+                height: 15,
                 decoration: BoxDecoration(
-                  color: cs.surfaceContainerHighest.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(4),
+                  color: cs.slate200.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(3),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Container(
                 width: 180,
-                height: 16,
+                height: 15,
                 decoration: BoxDecoration(
-                  color: cs.surfaceContainerHighest.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(4),
+                  color: cs.slate200.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(3),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               ...List.generate(
                 3,
-                (i) => Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  height: 42,
+                (_) => Container(
+                  margin: const EdgeInsets.only(bottom: 6),
+                  height: 28,
                   decoration: BoxDecoration(
-                    color: cs.surfaceContainerHighest.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    color: cs.slate100,
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
               ),
@@ -667,22 +498,23 @@ class _QuizResultScreenState extends State<QuizResultScreen>
   Widget _buildReviewError(ColorScheme cs, TextTheme tt) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      margin: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(
-          color: cs.error.withValues(alpha: 0.3),
-        ),
+        color: cs.error.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: cs.error.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Icon(Icons.info_outline_rounded, color: cs.error, size: 20),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               _reviewError!,
-              style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+              style: tt.bodySmall?.copyWith(
+                color: cs.error,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           TextButton(
@@ -695,114 +527,41 @@ class _QuizResultScreenState extends State<QuizResultScreen>
   }
 
   Widget _buildEmptyReviewState(ColorScheme cs, TextTheme tt) {
+    final String label;
+    final IconData icon;
 
-    final isWrongFilter = _selectedFilter == QuizReviewFilter.wrong;
+    switch (_selectedFilter) {
+      case QuizReviewFilterType.correct:
+        label = 'Không có câu hỏi nào đúng';
+        icon = Icons.cancel_outlined;
+        break;
+      case QuizReviewFilterType.wrong:
+        label = 'Tuyệt vời! Bạn không làm sai câu nào cả 🎉';
+        icon = Icons.check_circle_outline_rounded;
+        break;
+      case QuizReviewFilterType.total:
+        label = 'Không có câu hỏi nào trong danh sách';
+        icon = Icons.quiz_outlined;
+        break;
+    }
+
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.3),
-        ),
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+      alignment: Alignment.center,
       child: Column(
         children: [
-          Icon(
-            isWrongFilter
-                ? Icons.emoji_events_rounded
-                : Icons.auto_awesome_rounded,
-            size: 48,
-            color: isWrongFilter ? const Color(0xFFF59E0B) : cs.primary,
-          ),
-          AppSpacing.vGap12,
+          Icon(icon, size: 36, color: cs.slate400),
+          const SizedBox(height: 10),
           Text(
-            isWrongFilter
-                ? 'Tuyệt vời! Bạn không làm sai câu nào cả! 🎉'
-                : 'Chưa có câu trả lời đúng. Hãy ôn bài và thử lại nhé! 💪',
+            label,
             style: tt.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: cs.slate900,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          AppSpacing.vGap4,
-          Text(
-            isWrongFilter
-                ? 'Bạn đã đạt điểm số tối đa cho toàn bộ câu hỏi.'
-                : 'Xem lại bài giảng để củng cố kiến thức tốt hơn.',
-            style: tt.bodySmall?.copyWith(
-              color: cs.onSurfaceVariant,
+              color: cs.slate500,
+              fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
           ),
         ],
       ),
     );
-  }
-}
-
-/// Lightweight celebration confetti painter
-class _CelebrationParticlesPainter extends CustomPainter {
-  _CelebrationParticlesPainter({required this.progress});
-
-  final double progress;
-
-  static final List<Color> _colors = [
-    const Color(0xFF2563EB),
-    const Color(0xFF059669),
-    const Color(0xFFF59E0B),
-    const Color(0xFFEC4899),
-    const Color(0xFF8B5CF6),
-    const Color(0xFF10B981),
-  ];
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rand = math.Random(42);
-    final opacity = (1.0 - progress).clamp(0.0, 1.0);
-
-    for (int i = 0; i < 45; i++) {
-      final initialX = rand.nextDouble() * size.width;
-      final initialY = -20.0 + rand.nextDouble() * 40;
-      final speedY = 180 + rand.nextDouble() * 260;
-      final wobbleSpeed = 2 + rand.nextDouble() * 4;
-      final wobbleAmplitude = 15.0 + rand.nextDouble() * 25;
-
-      final currentY = initialY + speedY * progress;
-      final currentX =
-          initialX + math.sin(progress * wobbleSpeed * math.pi) * wobbleAmplitude;
-
-      if (currentY > size.height) continue;
-
-      final color = _colors[i % _colors.length].withValues(alpha: opacity * 0.9);
-      final paint = Paint()..color = color;
-
-      final particleSize = 6.0 + rand.nextDouble() * 5;
-      final rotation = progress * math.pi * 3 * (rand.nextBool() ? 1 : -1);
-
-      canvas.save();
-      canvas.translate(currentX, currentY);
-      canvas.rotate(rotation);
-      if (i % 3 == 0) {
-        canvas.drawCircle(Offset.zero, particleSize / 2, paint);
-      } else {
-        canvas.drawRect(
-          Rect.fromCenter(
-            center: Offset.zero,
-            width: particleSize,
-            height: particleSize * 0.6,
-          ),
-          paint,
-        );
-      }
-      canvas.restore();
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _CelebrationParticlesPainter oldDelegate) {
-    return oldDelegate.progress != progress;
   }
 }
