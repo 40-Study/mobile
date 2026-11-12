@@ -1,4 +1,4 @@
-﻿import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/di/di_container.dart';
@@ -738,6 +738,20 @@ class _ExploreCoursesScreenState extends State<ExploreCoursesScreen> {
   }
 }
 
+class _CourseLevelBadgeStyle {
+  const _CourseLevelBadgeStyle({
+    required this.label,
+    required this.textColor,
+    required this.backgroundColor,
+    required this.borderColor,
+  });
+
+  final String label;
+  final Color textColor;
+  final Color backgroundColor;
+  final Color borderColor;
+}
+
 class _ExploreCourseCard extends StatelessWidget {
   const _ExploreCourseCard({
     required this.course,
@@ -768,31 +782,36 @@ class _ExploreCourseCard extends StatelessWidget {
     return words.last.isNotEmpty ? words.last[0].toUpperCase() : 'T';
   }
 
-  String _formatLevel(String? level) {
-    if (level == null) return 'Mọi trình độ';
-    switch (level.toLowerCase()) {
+  static _CourseLevelBadgeStyle _resolveLevelStyle(String? level) {
+    switch (level?.toLowerCase()) {
       case 'beginner':
-        return 'Cơ bản';
+        return const _CourseLevelBadgeStyle(
+          label: 'Cơ bản',
+          textColor: Color(0xFF34D399),
+          backgroundColor: Color(0xDE062E25),
+          borderColor: Color(0x6634D399),
+        );
       case 'intermediate':
-        return 'Trung cấp';
+        return const _CourseLevelBadgeStyle(
+          label: 'Trung cấp',
+          textColor: Color(0xFF93C5FD),
+          backgroundColor: Color(0xDE0B1D3A),
+          borderColor: Color(0x6660A5FA),
+        );
       case 'advanced':
-        return 'Nâng cao';
+        return const _CourseLevelBadgeStyle(
+          label: 'Nâng cao',
+          textColor: Color(0xFFD8B4FE),
+          backgroundColor: Color(0xDE26113A),
+          borderColor: Color(0x66C084FC),
+        );
       default:
-        return level;
-    }
-  }
-
-  Color _levelColor(String? level) {
-    if (level == null) return const Color(0xFF3D5FC4);
-    switch (level.toLowerCase()) {
-      case 'beginner':
-        return const Color(0xFF059669);
-      case 'intermediate':
-        return const Color(0xFF2563EB);
-      case 'advanced':
-        return const Color(0xFFD97706);
-      default:
-        return const Color(0xFF3D5FC4);
+        return _CourseLevelBadgeStyle(
+          label: level ?? 'Mọi trình độ',
+          textColor: const Color(0xFFCBD5E1),
+          backgroundColor: const Color(0xDE1E293B),
+          borderColor: const Color(0x6694A3B8),
+        );
     }
   }
 
@@ -800,8 +819,7 @@ class _ExploreCourseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final levelText = _formatLevel(course.level);
-    final levelColor = _levelColor(course.level);
+    final levelStyle = _resolveLevelStyle(course.level);
     final rating = course.averageRating > 0 ? course.averageRating : 4.8;
     final ratingsCount = course.totalRatings > 0 ? course.totalRatings : 120;
 
@@ -852,23 +870,28 @@ class _ExploreCourseCard extends StatelessWidget {
                         ),
                       ),
                       Positioned(
-                        top: 4,
-                        left: 4,
+                        top: 5,
+                        left: 5,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 5,
-                            vertical: 1.5,
+                            horizontal: 6,
+                            vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.black87,
-                            borderRadius: BorderRadius.circular(4),
+                            color: levelStyle.backgroundColor,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: levelStyle.borderColor,
+                              width: 0.8,
+                            ),
                           ),
                           child: Text(
-                            levelText,
+                            levelStyle.label,
                             style: TextStyle(
-                              color: levelColor,
-                              fontSize: 9,
+                              color: levelStyle.textColor,
+                              fontSize: 9.5,
                               fontWeight: FontWeight.w700,
+                              letterSpacing: 0.2,
                             ),
                           ),
                         ),

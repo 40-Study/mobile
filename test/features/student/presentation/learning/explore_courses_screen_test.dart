@@ -217,5 +217,30 @@ void main() {
       expect(find.byIcon(Icons.bookmark_rounded), findsNothing);
       expect(find.byIcon(Icons.bookmark_border_rounded), findsWidgets);
     });
+
+    testWidgets('renders tinted level badges with distinct styling for each level', (
+      tester,
+    ) async {
+      when(
+        () => mockLearningBloc.state,
+      ).thenReturn(LearningSuccess(recommendedCourses: testCourses));
+
+      await tester.pumpWidget(buildTestWidget());
+      await tester.pumpAndSettle();
+
+      // Course 1 is beginner -> 'Cơ bản'
+      expect(find.text('Cơ bản'), findsWidgets);
+
+      // Course 2 is intermediate -> 'Trung cấp'
+      expect(find.text('Trung cấp'), findsOneWidget);
+
+      // Scroll to Course 3 (advanced -> 'Nâng cao')
+      await tester.scrollUntilVisible(
+        find.text('Nâng cao'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text('Nâng cao'), findsOneWidget);
+    });
   });
 }

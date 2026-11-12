@@ -69,10 +69,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
             'Bạn đã hoàn thành khóa học!\n\nChứng chỉ của bạn đã sẵn sàng.'),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(ctx),
             child: const Text('Đóng'),
           ),
           FilledButton(

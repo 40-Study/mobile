@@ -401,6 +401,7 @@ class _LessonExerciseSectionState extends State<LessonExerciseSection> {
                             quizId: quiz.id,
                             attemptId: result.attemptId,
                             duration: quiz.timeLimitMinutes ?? 10,
+                            timeSpentSeconds: result.timeSpentSeconds,
                           ),
 
                         ),
