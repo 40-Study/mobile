@@ -214,10 +214,12 @@ class ScheduleSingleCard extends StatelessWidget {
                       vertical: 7,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEFF6FF),
+                      color: isLight ? const Color(0xFFEFF6FF) : cs.surfaceContainerHigh,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: const Color(0xFFDBEAFE),
+                        color: isLight
+                            ? const Color(0xFFDBEAFE)
+                            : cs.outlineVariant.withValues(alpha: 0.4),
                         width: 0.8,
                       ),
                     ),
@@ -226,8 +228,8 @@ class ScheduleSingleCard extends StatelessWidget {
                       children: [
                         Text(
                           times.first,
-                          style: const TextStyle(
-                            color: Color(0xFF3D5FC4),
+                          style: TextStyle(
+                            color: isLight ? const Color(0xFF3D5FC4) : cs.primary,
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                           ),
@@ -236,8 +238,8 @@ class ScheduleSingleCard extends StatelessWidget {
                           const SizedBox(height: 1),
                           Text(
                             times.last,
-                            style: const TextStyle(
-                              color: Color(0xFF64748B),
+                            style: TextStyle(
+                              color: isLight ? const Color(0xFF64748B) : cs.slate400,
                               fontSize: 10.5,
                               fontWeight: FontWeight.w500,
                             ),

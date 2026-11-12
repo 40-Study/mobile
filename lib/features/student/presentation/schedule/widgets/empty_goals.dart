@@ -10,13 +10,14 @@ class EmptyGoals extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 20),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: isDark ? cs.surfaceContainerLow : const Color(0xFFF8FAFC),
         border: Border.all(
-          color: const Color(0xFFE2E8F0),
+          color: isDark ? cs.outlineVariant.withValues(alpha: 0.25) : const Color(0xFFE2E8F0),
           width: 0.8,
         ),
         borderRadius: BorderRadius.circular(AppRadius.md),
@@ -28,13 +29,13 @@ class EmptyGoals extends StatelessWidget {
               Container(
                 width: 40,
                 height: 40,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFEFF6FF),
+                decoration: BoxDecoration(
+                  color: isDark ? cs.primary.withValues(alpha: 0.15) : const Color(0xFFEFF6FF),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.track_changes_rounded,
-                  color: Color(0xFF3D5FC4),
+                  color: isDark ? cs.primary : const Color(0xFF3D5FC4),
                   size: 22,
                 ),
               ),
@@ -62,7 +63,7 @@ class EmptyGoals extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Material(
-            color: const Color(0xFFEFF6FF),
+            color: isDark ? cs.primary.withValues(alpha: 0.15) : const Color(0xFFEFF6FF),
             borderRadius: BorderRadius.circular(AppRadius.full),
             child: InkWell(
               onTap: onAdd,
@@ -72,19 +73,23 @@ class EmptyGoals extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(AppRadius.full),
                   border: Border.all(
-                    color: const Color(0xFFBFDBFE),
+                    color: isDark ? cs.primary.withValues(alpha: 0.3) : const Color(0xFFBFDBFE),
                     width: 0.8,
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.add_rounded, size: 16, color: Color(0xFF3D5FC4)),
-                    SizedBox(width: 6),
+                    Icon(
+                      Icons.add_rounded,
+                      size: 16,
+                      color: isDark ? cs.primary : const Color(0xFF3D5FC4),
+                    ),
+                    const SizedBox(width: 6),
                     Text(
                       'Thêm mục tiêu đầu tiên',
                       style: TextStyle(
-                        color: Color(0xFF3D5FC4),
+                        color: isDark ? cs.primary : const Color(0xFF3D5FC4),
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
                       ),

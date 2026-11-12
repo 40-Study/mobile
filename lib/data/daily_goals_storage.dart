@@ -50,12 +50,13 @@ class DailyGoalsStorage {
   List<DailyGoalItem> getGoals(DateTime date) =>
       List.unmodifiable(_goalsByDate[_dateKey(date)] ?? []);
 
-  void addGoal(DateTime date, String title) {
+  void addGoal(DateTime date, String title, {String category = 'Học tập'}) {
     final key = _dateKey(date);
     final goals = List<DailyGoalItem>.from(_goalsByDate[key] ?? []);
     goals.add(DailyGoalItem(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       title: title,
+      category: category,
     ));
     _goalsByDate[key] = goals;
     _saveToPrefs();
@@ -91,29 +92,39 @@ class DailyGoalItem {
   const DailyGoalItem({
     required this.id,
     required this.title,
+    this.category = 'Học tập',
     this.isCompleted = false,
   });
 
   final String id;
   final String title;
+  final String category;
   final bool isCompleted;
 
   factory DailyGoalItem.fromJson(Map<String, dynamic> json) => DailyGoalItem(
         id: json['id'] as String,
         title: json['title'] as String,
+        category: json['category'] as String? ?? 'Học tập',
         isCompleted: json['isCompleted'] as bool? ?? false,
       );
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,
+        'category': category,
         'isCompleted': isCompleted,
       };
 
-  DailyGoalItem copyWith({String? id, String? title, bool? isCompleted}) =>
+  DailyGoalItem copyWith({
+    String? id,
+    String? title,
+    String? category,
+    bool? isCompleted,
+  }) =>
       DailyGoalItem(
         id: id ?? this.id,
         title: title ?? this.title,
+        category: category ?? this.category,
         isCompleted: isCompleted ?? this.isCompleted,
       );
 }

@@ -17,7 +17,17 @@ class DailyGoalsSection extends StatefulWidget {
 class _DailyGoalsSectionState extends State<DailyGoalsSection> {
   final _storage = DailyGoalsStorage.instance;
   final _controller = TextEditingController();
+  final _customCategoryController = TextEditingController();
   bool _isAdding = false;
+  String _selectedCategory = 'Học tập';
+
+  static const _predefinedCategories = [
+    ('Học tập', Icons.auto_stories_rounded, Color(0xFF10B981)),
+    ('Bài tập', Icons.edit_note_rounded, Color(0xFFF59E0B)),
+    ('Khóa học', Icons.school_rounded, Color(0xFF3D5FC4)),
+    ('Ôn tập', Icons.restart_alt_rounded, Color(0xFF8B5CF6)),
+    ('Khác', Icons.label_outline_rounded, Color(0xFF6366F1)),
+  ];
 
   List<DailyGoalItem> get _goals => _storage.getGoals(widget.date);
 
@@ -27,12 +37,15 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
     if (widget.date != oldWidget.date) {
       _isAdding = false;
       _controller.clear();
+      _customCategoryController.clear();
+      _selectedCategory = 'Học tập';
     }
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _customCategoryController.dispose();
     super.dispose();
   }
 
@@ -40,9 +53,19 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
     final text = customText ?? _controller.text.trim();
     if (text.isEmpty) return;
 
+    final String effectiveCategory;
+    if (_selectedCategory == 'Khác') {
+      final customName = _customCategoryController.text.trim();
+      effectiveCategory = customName.isNotEmpty ? customName : 'Khác';
+    } else {
+      effectiveCategory = _selectedCategory;
+    }
+
     setState(() {
-      _storage.addGoal(widget.date, text);
+      _storage.addGoal(widget.date, text, category: effectiveCategory);
       _controller.clear();
+      _customCategoryController.clear();
+      _selectedCategory = 'Học tập';
       _isAdding = false;
     });
   }
@@ -111,12 +134,12 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
+                  color: !isLight ? cs.primary.withValues(alpha: 0.15) : const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.track_changes_rounded,
-                  color: Color(0xFF3D5FC4),
+                  color: !isLight ? cs.primary : const Color(0xFF3D5FC4),
                   size: 22,
                 ),
               ),
@@ -149,17 +172,17 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
+                  color: !isLight ? cs.primary.withValues(alpha: 0.15) : const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(AppRadius.full),
                   border: Border.all(
-                    color: const Color(0xFFBFDBFE),
+                    color: !isLight ? cs.primary.withValues(alpha: 0.3) : const Color(0xFFBFDBFE),
                     width: 0.8,
                   ),
                 ),
                 child: Text(
                   goals.isEmpty ? '0 mục tiêu' : 'Đã xong $completedCount/${goals.length}',
-                  style: const TextStyle(
-                    color: Color(0xFF3D5FC4),
+                  style: TextStyle(
+                    color: !isLight ? cs.primary : const Color(0xFF3D5FC4),
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                   ),
@@ -174,8 +197,10 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
             borderRadius: BorderRadius.circular(AppRadius.full),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: const Color(0xFFF1F5F9),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3D5FC4)),
+              backgroundColor: isLight ? const Color(0xFFF1F5F9) : cs.surfaceContainerHigh,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                isLight ? const Color(0xFF3D5FC4) : cs.primary,
+              ),
               minHeight: 7,
             ),
           ),
@@ -212,10 +237,14 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
   }
 
   Widget _buildAddInput(ColorScheme cs, TextTheme tt) {
+    final isCustomCategory = _selectedCategory == 'Khác';
+
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isLight ? Colors.white : cs.surfaceContainer,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(
           color: const Color(0xFF3D5FC4).withValues(alpha: 0.35),
@@ -251,7 +280,130 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
             ),
             onSubmitted: (_) => _addGoal(),
           ),
+          const SizedBox(height: 8),
+
+          // Category Selection Label & Chips
+          Row(
+            children: [
+              Text(
+                'Phân loại:',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: cs.slate500,
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 6),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _predefinedCategories.map((cat) {
+                final name = cat.$1;
+                final icon = cat.$2;
+                final color = cat.$3;
+                final isSelected = _selectedCategory == name;
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: InkWell(
+                    onTap: () => setState(() => _selectedCategory = name),
+                    borderRadius: BorderRadius.circular(AppRadius.full),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? color.withValues(alpha: isLight ? 0.12 : 0.22)
+                            : (isLight ? const Color(0xFFF8FAFC) : cs.surfaceContainerHigh),
+                        borderRadius: BorderRadius.circular(AppRadius.full),
+                        border: Border.all(
+                          color: isSelected
+                              ? color.withValues(alpha: isLight ? 0.7 : 0.85)
+                              : (isLight ? const Color(0xFFE2E8F0) : cs.outlineVariant.withValues(alpha: 0.4)),
+                          width: isSelected ? 1.2 : 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            icon,
+                            size: 13,
+                            color: isSelected
+                                ? color
+                                : (isLight ? cs.slate400 : cs.slate400),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            name,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                              color: isSelected
+                                  ? color
+                                  : (isLight ? cs.slate600 : cs.slate200),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+
+          // Custom Category Input (When 'Khác' is selected)
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOut,
+            child: isCustomCategory
+                ? Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isLight ? const Color(0xFFF8FAFC) : cs.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+                          width: 0.9,
+                        ),
+                      ),
+                      child: TextField(
+                        controller: _customCategoryController,
+                        maxLength: 20,
+                        style: tt.bodySmall?.copyWith(
+                          color: cs.slate900,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Nhập tên phân loại riêng (VD: Đọc sách, Dự án...)',
+                          hintStyle: tt.bodySmall?.copyWith(
+                            color: cs.slate400,
+                            fontSize: 11.5,
+                          ),
+                          counterText: '',
+                          isDense: true,
+                          border: InputBorder.none,
+                          icon: const Icon(
+                            Icons.edit_outlined,
+                            size: 14,
+                            color: Color(0xFF6366F1),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 6),
+                        ),
+                        onSubmitted: (_) => _addGoal(),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+
+          const SizedBox(height: 8),
 
           // Quick Suggestion Chips
           SingleChildScrollView(
@@ -267,15 +419,21 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
                   ),
                 ),
                 const SizedBox(width: 6),
-                _buildQuickChip('📖 Học 1 bài mới'),
+                _buildQuickChip('📖 Học 1 bài mới', 'Khóa học'),
                 const SizedBox(width: 6),
-                _buildQuickChip('✍️ Làm trắc nghiệm'),
+                _buildQuickChip('✍️ Làm trắc nghiệm', 'Bài tập'),
                 const SizedBox(width: 6),
-                _buildQuickChip('⏱ Ôn bài 30 phút'),
+                _buildQuickChip('⏱ Ôn bài 30 phút', 'Ôn tập'),
               ],
             ),
           ),
-          const Divider(height: 18, thickness: 0.6, color: Color(0xFFF1F5F9)),
+          Divider(
+            height: 18,
+            thickness: 0.6,
+            color: isLight
+                ? const Color(0xFFF1F5F9)
+                : cs.outlineVariant.withValues(alpha: 0.25),
+          ),
 
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -284,6 +442,8 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
                 onTap: () => setState(() {
                   _isAdding = false;
                   _controller.clear();
+                  _customCategoryController.clear();
+                  _selectedCategory = 'Học tập';
                 }),
                 borderRadius: BorderRadius.circular(AppRadius.full),
                 child: Padding(
@@ -335,7 +495,7 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
     );
   }
 
-  Widget _buildQuickChip(String label) {
+  Widget _buildQuickChip(String label, [String? suggestedCategory]) {
     return InkWell(
       onTap: () {
         final text = label.substring(label.indexOf(' ') + 1); // strip emoji
@@ -343,33 +503,47 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
         _controller.selection = TextSelection.fromPosition(
           TextPosition(offset: _controller.text.length),
         );
+        if (suggestedCategory != null) {
+          setState(() {
+            _selectedCategory = suggestedCategory;
+          });
+        }
       },
       borderRadius: BorderRadius.circular(AppRadius.full),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-        decoration: BoxDecoration(
-          color: const Color(0xFFEFF6FF),
-          borderRadius: BorderRadius.circular(AppRadius.full),
-          border: Border.all(
-            color: const Color(0xFFBFDBFE).withValues(alpha: 0.6),
-            width: 0.8,
-          ),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            fontSize: 11,
-            color: Color(0xFF3D5FC4),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+      child: Builder(
+        builder: (context) {
+          final cs = Theme.of(context).colorScheme;
+          final isLight = Theme.of(context).brightness == Brightness.light;
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+            decoration: BoxDecoration(
+              color: isLight ? const Color(0xFFEFF6FF) : cs.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(AppRadius.full),
+              border: Border.all(
+                color: isLight
+                    ? const Color(0xFFBFDBFE).withValues(alpha: 0.6)
+                    : cs.outlineVariant.withValues(alpha: 0.4),
+                width: 0.8,
+              ),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: isLight ? const Color(0xFF3D5FC4) : cs.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildAddButton(ColorScheme cs, TextTheme tt) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return Material(
-      color: const Color(0xFFF8FAFC),
+      color: isLight ? const Color(0xFFF8FAFC) : cs.surfaceContainerLow,
       borderRadius: BorderRadius.circular(AppRadius.md),
       child: InkWell(
         onTap: () => setState(() => _isAdding = true),
@@ -380,7 +554,7 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.md),
             border: Border.all(
-              color: const Color(0xFFE2E8F0),
+              color: isLight ? const Color(0xFFE2E8F0) : cs.outlineVariant.withValues(alpha: 0.3),
               width: 0.8,
             ),
           ),
@@ -390,21 +564,21 @@ class _DailyGoalsSectionState extends State<DailyGoalsSection> {
               Container(
                 width: 20,
                 height: 20,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFEFF6FF),
+                decoration: BoxDecoration(
+                  color: isLight ? const Color(0xFFEFF6FF) : cs.primary.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.add_rounded,
                   size: 14,
-                  color: Color(0xFF3D5FC4),
+                  color: isLight ? const Color(0xFF3D5FC4) : cs.primary,
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
+              Text(
                 'Thêm mục tiêu mới cho hôm nay',
                 style: TextStyle(
-                  color: Color(0xFF3D5FC4),
+                  color: isLight ? const Color(0xFF3D5FC4) : cs.primary,
                   fontWeight: FontWeight.w600,
                   fontSize: 12.5,
                 ),

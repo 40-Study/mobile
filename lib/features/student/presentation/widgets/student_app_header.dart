@@ -144,9 +144,9 @@ class StudentAppHeader extends StatelessWidget {
         final effectivePadding = isSeamless
             ? const EdgeInsets.fromLTRB(
                 AppSpacing.screenPadding,
-                AppSpacing.xs,
+                AppSpacing.md,
                 AppSpacing.screenPadding,
-                AppSpacing.sm,
+                AppSpacing.md,
               )
             : const EdgeInsets.fromLTRB(
                 AppSpacing.lg,

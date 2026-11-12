@@ -62,7 +62,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cs.surfaceContainerLowest,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: cs.outlineVariant.withValues(alpha: 0.35),

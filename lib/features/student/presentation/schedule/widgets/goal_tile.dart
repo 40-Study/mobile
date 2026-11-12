@@ -35,8 +35,11 @@ class GoalTile extends StatelessWidget {
       case 'Ôn tập':
         return const Color(0xFF8B5CF6);
       case 'Khóa học':
-      default:
         return const Color(0xFF3D5FC4);
+      case 'Học tập':
+        return const Color(0xFF059669);
+      default:
+        return const Color(0xFF6366F1); // Indigo cho các mục 'Khác' hoặc tự nhập
     }
   }
 
@@ -45,7 +48,10 @@ class GoalTile extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final isDone = goal.isCompleted;
-    final category = _deriveCategory(goal.title);
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final category = goal.category.trim().isNotEmpty
+        ? goal.category
+        : _deriveCategory(goal.title);
     final catColor = _categoryColor(category);
 
     return Dismissible(
@@ -79,11 +85,11 @@ class GoalTile extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
           color: isDone
-              ? const Color(0xFFF8FAFC)
+              ? (isLight ? const Color(0xFFF8FAFC) : cs.surfaceContainerLow)
               : cs.surfaceContainerLowest,
           border: Border.all(
             color: isDone
-                ? const Color(0xFFE2E8F0)
+                ? (isLight ? const Color(0xFFE2E8F0) : cs.outlineVariant.withValues(alpha: 0.3))
                 : cs.outlineVariant.withValues(alpha: 0.6),
             width: 0.8,
           ),
