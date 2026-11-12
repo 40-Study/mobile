@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:study/features/student/bloc/search/search_event.dart';
+import 'package:study/features/student/data/models/recommended_course_item.dart';
 
 class SearchResult {
   const SearchResult({
@@ -25,12 +26,46 @@ sealed class SearchState extends Equatable {
 }
 
 final class SearchInitial extends SearchState {
-  const SearchInitial({this.recentSearches = const []});
+  const SearchInitial({
+    this.recentSearches = const ['Flutter', 'Bloc', 'UI Design'],
+    this.recommendedCourses = const [],
+    this.trendingKeywords = const [
+      'React Native',
+      'Clean Architecture',
+      'Figma UI/UX',
+      'Python AI',
+      'DevOps Docker',
+    ],
+    this.isLoadingRecommendations = false,
+  });
 
   final List<String> recentSearches;
+  final List<RecommendedCourseItem> recommendedCourses;
+  final List<String> trendingKeywords;
+  final bool isLoadingRecommendations;
+
+  SearchInitial copyWith({
+    List<String>? recentSearches,
+    List<RecommendedCourseItem>? recommendedCourses,
+    List<String>? trendingKeywords,
+    bool? isLoadingRecommendations,
+  }) {
+    return SearchInitial(
+      recentSearches: recentSearches ?? this.recentSearches,
+      recommendedCourses: recommendedCourses ?? this.recommendedCourses,
+      trendingKeywords: trendingKeywords ?? this.trendingKeywords,
+      isLoadingRecommendations:
+          isLoadingRecommendations ?? this.isLoadingRecommendations,
+    );
+  }
 
   @override
-  List<Object?> get props => [recentSearches];
+  List<Object?> get props => [
+        recentSearches,
+        recommendedCourses,
+        trendingKeywords,
+        isLoadingRecommendations,
+      ];
 }
 
 final class SearchInProgress extends SearchState {

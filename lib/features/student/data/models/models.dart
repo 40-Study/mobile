@@ -7,5 +7,6 @@ export 'quiz_model.dart';
 export 'quiz_question_model.dart';
 export 'quiz_review_item_model.dart';
 export 'quiz_submit_result.dart';
+export 'recommended_course_item.dart';
 export 'schedule_item_model.dart';
 export 'student_stats_model.dart';

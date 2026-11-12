@@ -35,6 +35,11 @@ class _SearchViewState extends State<_SearchView> {
   void initState() {
     super.initState();
     _focusNode.requestFocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<SearchBloc>().add(const SearchInitRequested());
+      }
+    });
   }
 
   @override
@@ -53,6 +58,9 @@ class _SearchViewState extends State<_SearchView> {
       backgroundColor: cs.surface,
       appBar: AppBar(
         titleSpacing: 0,
+        backgroundColor: cs.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
         title: Container(
           height: 44,
           margin: const EdgeInsets.only(right: 16),
@@ -64,16 +72,16 @@ class _SearchViewState extends State<_SearchView> {
             controller: _controller,
             focusNode: _focusNode,
             textInputAction: TextInputAction.search,
-            style: tt.bodyMedium,
+            style: tt.bodyMedium?.copyWith(color: cs.slate900),
             decoration: InputDecoration(
               hintText: 'Tìm kiếm khóa học, bài học...',
-              hintStyle: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-              prefixIcon: Icon(Icons.search, color: cs.onSurfaceVariant, size: 20),
+              hintStyle: tt.bodyMedium?.copyWith(color: cs.slate400),
+              prefixIcon: Icon(Icons.search, color: cs.slate400, size: 20),
               suffixIcon: BlocBuilder<SearchBloc, SearchState>(
                 builder: (context, state) {
                   if (_controller.text.isNotEmpty) {
                     return IconButton(
-                      icon: Icon(Icons.close, color: cs.onSurfaceVariant, size: 20),
+                      icon: Icon(Icons.close, color: cs.slate400, size: 20),
                       onPressed: () {
                         _controller.clear();
                         context.read<SearchBloc>().add(const SearchCleared());
@@ -94,15 +102,60 @@ class _SearchViewState extends State<_SearchView> {
       body: BlocBuilder<SearchBloc, SearchState>(
         builder: (context, state) {
           if (state is SearchInitial) {
-            return RecentSearches(
-              searches: state.recentSearches,
-              onTap: (query) {
-                _controller.text = query;
-                context.read<SearchBloc>().add(SearchQueryChanged(query));
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<SearchBloc>().add(const SearchInitRequested());
               },
-              onClear: () {
-                // TODO: Clear recent searches
-              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(bottom: 40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 1. Recent Searches
+                    if (state.recentSearches.isNotEmpty)
+                      RecentSearches(
+                        searches: state.recentSearches,
+                        onTap: (query) {
+                          _controller.text = query;
+                          context
+                              .read<SearchBloc>()
+                              .add(SearchQueryChanged(query));
+                        },
+                        onClear: () {
+                          context
+                              .read<SearchBloc>()
+                              .add(const SearchRecentCleared());
+                        },
+                        onRemove: (query) {
+                          context
+                              .read<SearchBloc>()
+                              .add(SearchRecentRemoved(query));
+                        },
+                      ),
+
+                    // 2. Trending Keywords
+                    if (state.trendingKeywords.isNotEmpty)
+                      TrendingKeywordsSection(
+                        keywords: state.trendingKeywords,
+                        onTap: (keyword) {
+                          _controller.text = keyword;
+                          context
+                              .read<SearchBloc>()
+                              .add(SearchQueryChanged(keyword));
+                        },
+                      ),
+
+                    const SizedBox(height: 6),
+
+                    // 3. Recommended Courses Section (Smart Micro-RecSys)
+                    SearchRecommendationsSection(
+                      items: state.recommendedCourses,
+                      isLoading: state.isLoadingRecommendations,
+                    ),
+                  ],
+                ),
+              ),
             );
           }
 
