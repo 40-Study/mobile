@@ -17,15 +17,16 @@ class CertificatesHeroBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? cs.surfaceContainer : Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.6),
+          color: cs.outlineVariant.withValues(alpha: isDark ? 0.3 : 0.6),
           width: 0.8,
         ),
         boxShadow: [
@@ -46,16 +47,16 @@ class CertificatesHeroBanner extends StatelessWidget {
                 width: 42,
                 height: 42,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
+                  color: isDark ? cs.primary.withValues(alpha: 0.15) : const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: const Color(0xFFDBEAFE),
+                    color: isDark ? cs.primary.withValues(alpha: 0.3) : const Color(0xFFDBEAFE),
                     width: 0.8,
                   ),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.school_rounded,
-                  color: Color(0xFF2563EB),
+                  color: isDark ? cs.primary : const Color(0xFF2563EB),
                   size: 22,
                 ),
               ),
@@ -67,17 +68,17 @@ class CertificatesHeroBanner extends StatelessWidget {
                     Text(
                       'HỒ SƠ NĂNG LỰC HỌC THUẬT',
                       style: TextStyle(
-                        color: cs.brandBlueDark,
+                        color: isDark ? cs.primary : cs.brandBlueDark,
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.8,
                       ),
                     ),
                     const SizedBox(height: 2),
-                    const Text(
+                    Text(
                       'Chứng Chỉ & Văn Bằng ForteX',
                       style: TextStyle(
-                        color: Color(0xFF0F172A),
+                        color: cs.slate900,
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                       ),
@@ -91,26 +92,26 @@ class CertificatesHeroBanner extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFECFDF5),
+                  color: isDark ? const Color(0xFF064E3B).withValues(alpha: 0.4) : const Color(0xFFECFDF5),
                   borderRadius: BorderRadius.circular(AppRadius.full),
                   border: Border.all(
-                    color: const Color(0xFFA7F3D0),
+                    color: isDark ? const Color(0xFF059669).withValues(alpha: 0.5) : const Color(0xFFA7F3D0),
                     width: 0.8,
                   ),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       Icons.verified_rounded,
                       size: 13,
-                      color: Color(0xFF059669),
+                      color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669),
                     ),
-                    SizedBox(width: 3),
+                    const SizedBox(width: 3),
                     Text(
                       'Đã xác thực',
                       style: TextStyle(
-                        color: Color(0xFF059669),
+                        color: isDark ? const Color(0xFF34D399) : const Color(0xFF059669),
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                       ),
@@ -128,10 +129,10 @@ class CertificatesHeroBanner extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: isDark ? cs.surfaceContainerLow : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
-                color: const Color(0xFFE2E8F0),
+                color: isDark ? cs.outlineVariant.withValues(alpha: 0.25) : const Color(0xFFE2E8F0),
                 width: 0.8,
               ),
             ),
@@ -140,16 +141,16 @@ class CertificatesHeroBanner extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.workspace_premium_rounded,
                       size: 16,
-                      color: Color(0xFF2563EB),
+                      color: isDark ? cs.primary : const Color(0xFF2563EB),
                     ),
                     const SizedBox(width: 6),
                     Text(
                       '$completedCount đã cấp • $inProgressCount đang học',
-                      style: const TextStyle(
-                        color: Color(0xFF1E293B),
+                      style: TextStyle(
+                        color: cs.slate800,
                         fontWeight: FontWeight.w700,
                         fontSize: 12,
                       ),
@@ -157,10 +158,10 @@ class CertificatesHeroBanner extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'Mã định danh bảo mật điện tử tích hợp trên hệ thống ForteX',
                   style: TextStyle(
-                    color: Color(0xFF64748B),
+                    color: cs.slate500,
                     fontSize: 11,
                   ),
                 ),

@@ -122,7 +122,11 @@ class _AchievementScreenState extends State<AchievementScreen> {
           AppSpacing.xxl,
         ),
         children: [
-          OverviewStatistics(stats: state.stats),
+          AcademicLevelRoadmap(
+            stats: state.stats,
+            earnedBadgesCount: state.earnedBadges.length,
+            totalBadgesCount: state.badges.length,
+          ),
           AppSpacing.vGap24,
           RecentBadges(badges: state.earnedBadges),
           AppSpacing.vGap24,

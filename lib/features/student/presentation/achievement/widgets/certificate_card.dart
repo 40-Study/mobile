@@ -37,13 +37,18 @@ class CertificateListCard extends StatelessWidget {
         ? _formatDate(certificate.issueDate!)
         : '12 Tháng 10, 2026';
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return RepaintBoundary(
       child: Container(
         margin: const EdgeInsets.only(bottom: AppSpacing.md),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? cs.surfaceContainer : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0), width: 0.8),
+          border: Border.all(
+            color: isDark ? cs.outlineVariant.withValues(alpha: 0.3) : const Color(0xFFE2E8F0),
+            width: 0.8,
+          ),
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF0F172A).withValues(alpha: 0.04),
@@ -72,22 +77,23 @@ class CertificateListCard extends StatelessWidget {
                           vertical: 3.5,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF),
+                          color: isDark ? cs.primary.withValues(alpha: 0.15) : const Color(0xFFEFF6FF),
                           borderRadius: BorderRadius.circular(AppRadius.full),
+                          border: isDark ? Border.all(color: cs.primary.withValues(alpha: 0.3), width: 0.8) : null,
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
                               Icons.school_rounded,
                               size: 12,
-                              color: Color(0xFF3D5FC4),
+                              color: isDark ? cs.primary : const Color(0xFF3D5FC4),
                             ),
-                            SizedBox(width: 4),
+                            const SizedBox(width: 4),
                             Text(
                               'CHỨNG CHỈ TỐT NGHIỆP',
                               style: TextStyle(
-                                color: Color(0xFF3D5FC4),
+                                color: isDark ? cs.primary : const Color(0xFF3D5FC4),
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 0.6,
@@ -138,7 +144,7 @@ class CertificateListCard extends StatelessWidget {
                   Text(
                     certificate.courseTitle,
                     style: tt.titleSmall?.copyWith(
-                      color: const Color(0xFF0F172A),
+                      color: cs.slate900,
                       fontWeight: FontWeight.w700,
                       fontSize: 15.5,
                       height: 1.35,
@@ -155,7 +161,7 @@ class CertificateListCard extends StatelessWidget {
                       vertical: 9,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8FAFC),
+                      color: isDark ? cs.surfaceContainerLow : const Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -175,8 +181,8 @@ class CertificateListCard extends StatelessWidget {
                                   Expanded(
                                     child: Text(
                                       'Giảng viên: ${certificate.instructorName}',
-                                      style: const TextStyle(
-                                        color: Color(0xFF334155),
+                                      style: TextStyle(
+                                        color: cs.slate700,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -223,17 +229,17 @@ class CertificateListCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: isDark ? cs.surfaceContainerHigh : Colors.white,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: const Color(0xFFE2E8F0),
+                              color: isDark ? cs.outlineVariant.withValues(alpha: 0.3) : const Color(0xFFE2E8F0),
                               width: 0.8,
                             ),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.qr_code_2_rounded,
                             size: 22,
-                            color: Color(0xFF3D5FC4),
+                            color: isDark ? cs.primary : const Color(0xFF3D5FC4),
                           ),
                         ),
                       ],
@@ -246,7 +252,7 @@ class CertificateListCard extends StatelessWidget {
                     children: [
                       // Share icon button
                       Material(
-                        color: const Color(0xFFF8FAFC),
+                        color: isDark ? cs.surfaceContainerHigh : const Color(0xFFF8FAFC),
                         borderRadius: BorderRadius.circular(AppRadius.full),
                         child: InkWell(
                           onTap: () {
@@ -266,14 +272,14 @@ class CertificateListCard extends StatelessWidget {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: const Color(0xFFE2E8F0),
+                                color: isDark ? cs.outlineVariant.withValues(alpha: 0.3) : const Color(0xFFE2E8F0),
                                 width: 0.8,
                               ),
                             ),
-                            child: const Icon(
+                            child: Icon(
                               Icons.share_outlined,
                               size: 15,
-                              color: Color(0xFF64748B),
+                              color: cs.slate500,
                             ),
                           ),
                         ),
@@ -282,7 +288,9 @@ class CertificateListCard extends StatelessWidget {
 
                       // Details Tonal Pill
                       Material(
-                        color: const Color(0xFFEFF6FF),
+                        color: isDark
+                            ? cs.primary.withValues(alpha: 0.15)
+                            : const Color(0xFFEFF6FF),
                         borderRadius: BorderRadius.circular(AppRadius.full),
                         child: InkWell(
                           onTap: onTap,
@@ -295,23 +303,29 @@ class CertificateListCard extends StatelessWidget {
                                 AppRadius.full,
                               ),
                               border: Border.all(
-                                color: const Color(0xFFBFDBFE),
+                                color: isDark
+                                    ? cs.primary.withValues(alpha: 0.3)
+                                    : const Color(0xFFBFDBFE),
                                 width: 0.8,
                               ),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
                                   Icons.visibility_outlined,
                                   size: 14,
-                                  color: Color(0xFF3D5FC4),
+                                  color: isDark
+                                      ? cs.primary
+                                      : const Color(0xFF3D5FC4),
                                 ),
-                                SizedBox(width: 5),
+                                const SizedBox(width: 5),
                                 Text(
                                   'Chi tiết',
                                   style: TextStyle(
-                                    color: Color(0xFF3D5FC4),
+                                    color: isDark
+                                        ? cs.primary
+                                        : const Color(0xFF3D5FC4),
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -394,6 +408,7 @@ class CertificateListCard extends StatelessWidget {
     ColorScheme cs,
     TextTheme tt,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final remaining = certificate.totalLessons - certificate.completedLessons;
     final progressPercent = (certificate.progress * 100).round();
 
@@ -401,9 +416,12 @@ class CertificateListCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: AppSpacing.md),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? cs.surfaceContainer : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0), width: 0.8),
+          border: Border.all(
+            color: isDark ? cs.outlineVariant.withValues(alpha: 0.3) : const Color(0xFFE2E8F0),
+            width: 0.8,
+          ),
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF0F172A).withValues(alpha: 0.04),
@@ -428,12 +446,14 @@ class CertificateListCard extends StatelessWidget {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF3D5FC4).withValues(alpha: 0.1),
+                          color: isDark
+                              ? cs.primary.withValues(alpha: 0.15)
+                              : const Color(0xFF3D5FC4).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.school_rounded,
-                          color: Color(0xFF3D5FC4),
+                          color: isDark ? cs.primary : const Color(0xFF3D5FC4),
                           size: 22,
                         ),
                       ),
@@ -450,13 +470,13 @@ class CertificateListCard extends StatelessWidget {
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFF1F5F9),
+                                    color: isDark ? cs.surfaceContainerHigh : const Color(0xFFF1F5F9),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     'ĐANG THEO HỌC',
                                     style: TextStyle(
-                                      color: Color(0xFF64748B),
+                                      color: cs.slate500,
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -465,8 +485,8 @@ class CertificateListCard extends StatelessWidget {
                                 const Spacer(),
                                 Text(
                                   '$progressPercent%',
-                                  style: const TextStyle(
-                                    color: Color(0xFF3D5FC4),
+                                  style: TextStyle(
+                                    color: isDark ? cs.primary : const Color(0xFF3D5FC4),
                                     fontWeight: FontWeight.w700,
                                     fontSize: 13,
                                   ),
@@ -498,9 +518,9 @@ class CertificateListCard extends StatelessWidget {
                     child: LinearProgressIndicator(
                       value: certificate.progress,
                       minHeight: 6,
-                      backgroundColor: const Color(0xFFE2E8F0),
-                      valueColor: const AlwaysStoppedAnimation(
-                        Color(0xFF3D5FC4),
+                      backgroundColor: isDark ? cs.surfaceContainerHigh : const Color(0xFFE2E8F0),
+                      valueColor: AlwaysStoppedAnimation(
+                        isDark ? cs.primary : const Color(0xFF3D5FC4),
                       ),
                     ),
                   ),
@@ -510,17 +530,17 @@ class CertificateListCard extends StatelessWidget {
                     children: [
                       Text(
                         '${certificate.completedLessons}/${certificate.totalLessons} bài học hoàn thành',
-                        style: const TextStyle(
-                          color: Color(0xFF64748B),
+                        style: TextStyle(
+                          color: cs.slate500,
                           fontSize: 11,
                         ),
                       ),
                       Text(
                         remaining > 0
-                            ? 'Còn $remaining bài để nhận chứng chỉ'
+                            ? 'Còn ${remaining} bài để nhận chứng chỉ'
                             : 'Chuẩn bị cấp bằng',
-                        style: const TextStyle(
-                          color: Color(0xFF3D5FC4),
+                        style: TextStyle(
+                          color: isDark ? cs.primary : const Color(0xFF3D5FC4),
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),

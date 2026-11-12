@@ -1,4 +1,7 @@
 // Barrel export for achievement widgets
+export 'academic_honor_overview_card.dart';
+export 'academic_journey_timeline.dart';
+export 'academic_level_roadmap.dart';
 export 'achievements_hero_banner.dart';
 export 'badge_card.dart';
 export 'badge_detail_sheet.dart';
