@@ -99,3 +99,85 @@ Thư mục này lưu trữ toàn bộ tài liệu phân tích đối chiếu, ng
       * Sửa logic callback mở trực tiếp chứng chỉ khi đã có trong state; tái thiết kế Card chứng chỉ dạng Milestone Celebration Card sang trọng, phân tầng 2 lớp, chuẩn Design Tokens.
       * Tái cấu trúc linh hoạt hệ thống Slate Tokens tự động đảo màu theo `brightness == Brightness.dark` và thay thế các container `Colors.white` cứng.
     * **Lộ trình 4 giai đoạn & 5 tiêu chí nghiệm thu an toàn.**
+
+11. [**Phân tích UI Hiện tại & Đề xuất Tái thiết kế Giao diện Phân hệ Quiz: Giải pháp "Khử nhựa" & Nâng tầm Đẳng cấp Học thuật Tinh tế (Quiz UI De-plasticize & Redesign Proposal)**](file:///C:/ForteX/mobile/docs/insight_UI_student/QUIZ_UI_REDESIGN_ANALYSIS_AND_PROPOSAL.md)
+    * **Tôn vinh nền tảng UX:** Xác nhận luồng nghiệp vụ, tương tác PageView, cắm cờ xem lại, ma trận câu hỏi và persistent review chi tiết từ API đã hoàn thiện vững vàng.
+    * **Mổ xẻ 6 triệu chứng thẩm mỹ "UI nhựa":**
+      1. Hội chứng "Lạm dụng Pill" (Pill Overdose - 5-6 viên nhộng bo tròn 999px chen chúc).
+      2. Bảng màu xung đột & độ bão hòa ngây ngô (5 màu rực tranh nhau thị giác: tím, vàng, xanh lá, đỏ, xanh dương).
+      3. Viền dày 2.0px thô cứng & đổ bóng màu đục như khuôn nhựa đúc.
+      4. Hộp lồng trong hộp viền màu (Box-in-Box Container Fatigue) ngột ngạt ở màn hình kết quả.
+      5. Vòng tròn điểm số & Stat Cards phong cách 2018 lỗi thời.
+      6. Ma trận câu hỏi Question Palette sặc sỡ như bàn cờ lô tô.
+    * **Định hình phong cách mới: "Refined Academic Minimalism" (Tối giản Học thuật Tinh tế):**
+      * 3 Triết lý cốt lõi: *Calm Focus*, *Tactile Elegance*, *Academic Harmony*.
+      * Hệ thống Viền Hairline 0.8px - 1.0px siêu mảnh, bóng đa tầng khuếch tán mềm, góc bo Squircle hiện đại.
+      * Thẻ đáp án xúc giác với Squircle Letter Box 32px, hiệu ứng chạm haptic và scale 0.985 tinh xảo.
+      * Timer capsule Monospace chống giật số, thanh tiến độ siêu mỏng 2.5px gradient.
+      * Question Palette phong cách Clean Seat-Map với Indicator Dots thanh lịch.
+      * Màn hình kết quả với Hero Radial Score Gauge 8px, Segmented Metric Filter Strip và thẻ xem lại bài làm dùng Left Accent Stripe 3.5px + Callout giải thích phong cách Notion.
+    * **Ma trận đối chiếu Before vs. After & Lộ trình thực thi 4 giai đoạn an toàn 100% logic.**
+
+12. [**Kế hoạch Tái thiết kế Card Tổng quan Tab Thành tích: The Academic Honor Deck (Overview Statistics Card Redesign Plan)**](file:///C:/ForteX/mobile/docs/insight_UI_student/OVERVIEW_STATISTICS_CARD_REDESIGN_PLAN.md)
+    * **Bóc tách 4 điểm yếu chí mạng khiến Card Tổng quan bị chìm nghỉm:**
+      1. Thiếu tính chủ đạo và điểm rơi thị giác (No Visual Anchor / Lack of Dominance).
+      2. Dàn trải 4 cột cơ học và chật chội (Cramped 4-Column Layout, nhãn text bị co ép).
+      3. Bỏ quên yếu tố vinh danh cốt lõi: Cấp bậc học thuật (`stats.level`) & Điểm kinh nghiệm tích lũy (`stats.currentXp` / `nextLevelXp`).
+      4. Lỗi dữ liệu cứng: Hardcode `value: '18'` cho cột huy hiệu thay vì dùng dữ liệu thực từ state.
+    * **Ý tưởng đột phá "The Academic Honor Deck" (Bi-Level Prestige Canvas):**
+      * Triết lý thiết kế: *Flat Light Academic Luxury* - Tinh giản, sang trọng, tôn vinh đẳng cấp học thuật, nói không với card-fatigue và gradient tối nặng nề.
+      * **Tầng 1 (Upper Deck - Honor & Level Hero):** Squircle Emblem Huân chương vàng kim (48×48px), Bảng danh hiệu học thuật động (`Tân Khoa`, `Học Giả Tiến Bộ`, `Học Giả Tinh Hoa`...), Chip Cấp độ `[ ⭐ CẤP ĐỘ X ]`, và thanh tiến trình kinh nghiệm Slim Tech Bar 6px.
+      * **Tầng 2 (Lower Deck - Quad Micro-Stat Pods):** 4 khối thẻ vi mô nền pastel thanh khiết độc lập (🔥 Chuỗi học tập Streak, ⏱️ Giờ học tích lũy, 📚 Bài học hoàn tất, 🏅 Huy hiệu đạt được thực tế) với typography số lớn ấn tượng.
+    * **Ma trận đối chiếu Before vs. After, đặc tả Design Tokens & Lộ trình 4 giai đoạn triển khai.**
+
+13. [**Kế hoạch Đập đi Xây lại Phần Tổng quan: Dòng Thời Gian Hành Trình Học Tập (Academic Learning Journey Timeline & Zero-Card Redesign Plan)**](file:///C:/ForteX/mobile/docs/insight_UI_student/LEARNING_JOURNEY_TIMELINE_REDESIGN_PLAN.md)
+    * **Bóc tách 2 yêu cầu cốt lõi từ người dùng:**
+      1. Khắc phục triệt để lỗi "lạm dụng Card" (Card Fatigue / Box-in-Box): Bỏ hoàn toàn khung hộp bao bọc và 4 ô vuông con bên trong.
+      2. Tái hiện toàn bộ quá trình học tập (The Entire Learning Odyssey): Chuyển đổi con số tĩnh thành Dòng thời gian liên tục từ ngày đầu nhập môn đến đỉnh cao hiện tại và mục tiêu tương lai.
+    * **Ý tưởng đột phá "The Academic Chronicle" (Zero-Card Seamless Timeline):**
+      * **Trục đường ray ánh sáng (The Living Spine):** Đường ray chuyển màu gradient từ xanh hoàng gia đến ngọc lục bảo rồi nét đứt tương lai.
+      * **Mô hình 3 Pha Thời gian:**
+        - Trạm 1: Khởi nguyên tri thức (`⏱️ Giờ học` & `📚 Bài học hoàn thành` nhúng trực tiếp không đóng hộp).
+        - Trạm 2: Kỷ luật bền bỉ (`🔥 Chuỗi Streak` rực lửa).
+        - Trạm 3: Đỉnh cao hiện tại (Huân chương danh dự, Danh hiệu học thuật `Học Giả Tinh Hoa`, Cấp độ, Điểm XP và hiệu ứng hào quang thở nhịp nhàng `Breathing Beacon Glow`).
+        - Trạm 4: Chân trời kế tiếp (Cấp độ tiếp theo đang chờ đón với đường nét đứt).
+    * **Hiệu ứng Animation đánh thức cảm xúc:** Tia sáng chạy dọc đường ray (Flowing Trail Tracer), vầng sáng hào quang thở (Breathing Aura Pulse 2.2s), xuất hiện so le (Staggered Reveal) và rung phản hồi xúc giác (Micro-Haptic Waypoints).
+    * **Lộ trình 4 giai đoạn triển khai chi tiết (Chưa code).**
+
+14. [**Kế hoạch Tái thiết kế Phần Tổng quan: Bản đồ Tiến hóa Cấp bậc (The RPG Level Roadmap - Zero-Card Progression Canvas)**](file:///C:/ForteX/mobile/docs/insight_UI_student/RPG_LEVEL_ROADMAP_OVERVIEW_PLAN.md)
+    * **Bóc tách 5 điểm nghẽn thị giác từ ảnh chụp thực tế:**
+      1. Cảm giác "form stepper / tracking vận đơn bưu chính" khô cứng, hành chính.
+      2. Bội thực văn xuôi tự sự lê thê chiếm 50% diện tích mà không mang lại giá trị.
+      3. Điểm rơi Hero bị chìm, bị khối "Huy hiệu gần đây" to rực rỡ bên dưới nuốt chửng hoàn toàn.
+      4. Gộp thập cẩm thông tin (giờ học + streak + level) thay vì một Bản đồ Cấp bậc thực thụ (Lv.1 -> Lv.2 -> Lv.3 -> Lv.4 -> Lv.5).
+      5. Nghịch lý logic "Tiến trình thăng cấp 100%" nhưng vẫn ở Level 4 và chưa lên Level 5.
+    * **Ý tưởng đột phá "The RPG Level Roadmap" (Bản đồ Cấp độ Game-like):**
+      * **Tầng 1 (The Waypoint Path):** Trục tiến trình cấp bậc ngang/bậc thang (`[✓ Lv.1]` -> `[✓ Lv.2]` -> `[✓ Lv.3]` -> `[⭐ Lv.4 HERO]` -> `[🔒 Lv.5 NEXT]`).
+      * **Tầng 2 (The Hero Zenith Core):** Huy chương 3D mạ vàng 64px, vầng hào quang thở ánh kim (`Breathing Golden Aura 2.4s`), typography số lớn `1,850 XP` uy quyền, và thanh năng lượng thăng cấp chính xác.
+      * **Tầng 3 (The Satellite Metric Pods):** 3 Capsule Pods xúc giác thanh nhã bóc tách độc lập (🔥 Chuỗi kỷ luật 12 ngày, ⏱️ Giờ học tích lũy, 📚 Bài học hoàn tất).
+      * **Hệ thống Animation Ánh sáng & Dòng chảy:** Dòng sóng ánh sáng trôi trên đường ray (Flowing Energy Conduit), Hào quang thở 3 tầng (Multi-Layer Solar Corona), Thanh năng lượng thủy dịch XP lướt sáng (Liquid Shimmer Gauge), Hạt ngọc dẫn đường (Leading Energy Orb), và Hạt sao vinh danh lấp lánh (Twinkle Glints).
+    * **Chuẩn hóa công thức toán học XP/Level Client-side:** Phân rã `total_points` chuẩn 500 XP/level, hiển thị chính xác `350 / 500 XP (70%)` và số XP còn thiếu để lên Cấp 5, triệt tiêu 100% bug hiển thị.
+    * **Trạng thái:** Đã triển khai thành công 100% (Hoàn thành canvas gradient, color grading WCAG AAA, test suite PASS 100%).
+
+15. [**Kế hoạch Thiết kế Hệ thống Đề xuất Thông minh cho Màn hình Tìm kiếm (Search Micro-Recommendation System Plan)**](file:///C:/ForteX/mobile/docs/insight_UI_student/SEARCH_RECOMMENDATION_SYSTEM_PLAN.md)
+    * **Phân tích hiện trạng từ ảnh chụp thực tế:** Màn hình tìm kiếm khi chưa gõ chữ (Zero-query state) bị lãng phí hơn 80% diện tích trắng trống; thiếu khả năng khám phá chủ động.
+    * **Mục tiêu:** Biến trang Search thành Cổng khám phá cá nhân hóa (Smart Discovery Portal), cung cấp gợi ý khóa học phù hợp ngay khi chạm vào ô tìm kiếm.
+    * **Thuật toán Đề xuất Hybrid Heuristic Scoring:** Tính điểm đa tiêu chí $Score = 0.35 \times S_{\text{learning}} + 0.25 \times S_{\text{search}} + 0.25 \times S_{\text{quality}} + 0.15 \times S_{\text{trend}} - P_{\text{enrolled}}$.
+    * **Bố cục giao diện 4 tầng:**
+      1. Tìm kiếm gần đây (Recent Searches) dạng chip ngang thu gọn.
+      2. Xu hướng tìm kiếm (Trending Keywords Pills 🔥).
+      3. Gợi ý riêng cho bạn (Personalized Recommendations) kèm huy hiệu minh bạch lý do (`💡 Dựa trên khóa Flutter đang học`).
+      4. Khóa học thịnh hành cộng đồng (Top Rated & Trending Courses).
+    * **Đặc tả Dark Mode & Kiến trúc kỹ thuật BLoC/Service chi tiết.**
+
+16. [**Kế hoạch Nâng cấp Hiển thị Light Mode cho Bản đồ Cấp bậc: Khay Nền Gradient Khí Quyển & Cân Chỉnh Độ Tương Phản Màu Sắc (The Ambient Honor Canvas & Contrast Grading Plan)**](file:///C:/ForteX/mobile/docs/insight_UI_student/LIGHT_MODE_AMBIENT_CANVAS_PLAN.md)
+    * **Phân tích đối chiếu từ ảnh chụp thực tế:** Dark Mode rực rỡ nhờ độ tương phản phát quang cao (> 12:1), trong khi Light Mode bị mờ nhạt do ánh hào quang vàng hòa tan vào nền trắng và thiếu bề mặt nâng đỡ (Visual Grounding).
+    * **Giải pháp kết hợp Phương án 1 + Phương án 3:**
+      * **Khay Nền Khí Quyển Mở (The Ambient Honor Canvas):** Chuyển màu gradient đa tầng từ Trắng tinh khôi $\rightarrow$ Vàng ngà hoàng gia $\rightarrow$ Xanh ngọc dịu mắt, viền hairline $0.8\text{px}$ mạ vàng hổ phách nhạt bo cong $22\text{px}$, đổ bóng đa tầng khuếch tán $24\text{px}$.
+      * **Bảo tồn Dark Mode 100%:** Trong Dark Mode, khay nền tự động chuyển sang bán trong suốt `slate900` $35\%$ viền `slate800`, giữ nguyên vẻ đẹp huyền bí hiện tại.
+      * **Cân chỉnh màu sắc đạt chuẩn WCAG AAA:** Chữ mốc cấp độ `Lv.1` - `Lv.3` nâng lên màu nâu hổ phách sẫm `Color(0xFF92400E)` sắc nét; vầng hào quang bổ sung lớp bóng hổ phách ấm; 3 Pods bên dưới nâng cấp thành dạng viên nhộng trắng sứ nổi nhẹ (Elevated Pure-White Pills).
+    * **Trạng thái:** Đã triển khai thành công 100% (Hoàn thành canvas gradient, color grading WCAG AAA, test suite PASS 100%).
+
+
+
+
