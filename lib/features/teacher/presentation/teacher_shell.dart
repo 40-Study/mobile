@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/features/teacher/data/teacher_preview_api.dart';
 import 'package:study/features/teacher/data/teacher_preview_workplace.dart';
 import 'package:flutter/services.dart';
@@ -8,13 +6,12 @@ import 'package:study/features/auth/data/models/organization_model.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/data/teacher_workplace_controller.dart';
 import 'package:study/features/teacher/presentation/classes/teacher_classes_screen.dart';
-import 'package:study/features/teacher/presentation/courses/teacher_courses_screen.dart';
-import 'package:study/features/teacher/presentation/home/teacher_home_screen.dart';
 import 'package:study/features/teacher/presentation/profile/teacher_profile_screen.dart';
+import 'package:study/features/teacher/presentation/report/teacher_report_screen.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_schedule_screen.dart';
+import 'package:study/features/teacher/presentation/widgets/teacher_app_header.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
 import 'package:study/theme/theme.dart';
-import 'package:study/widgets/role_app_header.dart';
 
 class TeacherShell extends StatefulWidget {
   const TeacherShell({super.key, this.api, this.workplace, this.onAdvanced});
@@ -38,25 +35,19 @@ class _TeacherShellState extends State<TeacherShell> {
   final Set<int> _visited = {0};
   int _seenRevision = 0;
   bool _scopeLoaded = false;
-  static const _labels = [
-    'Hôm nay',
-    'Lịch dạy',
-    'Lớp học',
-    'Khóa học',
-    'Tài khoản',
-  ];
+
+  // Spec mốc 1a: 4 tabs - Lịch, Lớp, Báo cáo, Hồ sơ
+  static const _labels = ['Lịch', 'Lớp', 'Báo cáo', 'Hồ sơ'];
   static const _icons = [
-    Icons.today_outlined,
-    Icons.calendar_month_outlined,
-    Icons.groups_outlined,
-    Icons.menu_book_outlined,
+    Icons.calendar_today_outlined,
+    Icons.school_outlined,
+    Icons.bar_chart_outlined,
     Icons.person_outline,
   ];
   static const _selectedIcons = [
-    Icons.today_rounded,
-    Icons.calendar_month_rounded,
-    Icons.groups_rounded,
-    Icons.menu_book_rounded,
+    Icons.calendar_today_rounded,
+    Icons.school_rounded,
+    Icons.bar_chart_rounded,
     Icons.person_rounded,
   ];
   @override
@@ -194,7 +185,7 @@ class _TeacherShellState extends State<TeacherShell> {
               child: const Text('Chọn lại nơi làm việc'),
             ),
           const Text(
-            'Bạn vẫn có thể quản lý thông tin cá nhân, đổi vai trò hoặc đăng xuất trong Tài khoản.',
+            'Bạn vẫn có thể quản lý thông tin cá nhân, đổi vai trò hoặc đăng xuất trong Hồ sơ.',
             textAlign: TextAlign.center,
           ),
         ],
@@ -202,31 +193,17 @@ class _TeacherShellState extends State<TeacherShell> {
     }
     if (_seenRevision != _workplace.revision) {
       _seenRevision = _workplace.revision;
-      _visited.removeWhere((tab) => tab < 4);
-      _visited.add(_index < 4 ? _index : 0);
+      // Keep profile tab (3) if visited, reset scoped tabs (0-2)
+      _visited.removeWhere((tab) => tab < 3);
+      _visited.add(_index < 3 ? _index : 0);
     }
     return KeyedSubtree(
       key: ValueKey(_workplace.revision),
       child: IndexedStack(
-        index: _index < 4 ? _index : 0,
+        index: _index < 3 ? _index : 0,
         children: [
+          // Tab 0: Lịch
           if (_visited.contains(0))
-            BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, auth) => TeacherHomeScreen(
-                api: _api,
-                organizationId: organizationId,
-                workplaceLabel: label,
-                greetingName: auth is AuthAuthenticated
-                    ? auth.user.fullName ?? auth.user.username
-                    : null,
-                onSchedule: () => _tab(1),
-                onClasses: () => _tab(2),
-                onCourses: () => _tab(3),
-              ),
-            )
-          else
-            const SizedBox.shrink(),
-          if (_visited.contains(1))
             TeacherScheduleScreen(
               api: _api,
               organizationId: organizationId,
@@ -234,7 +211,8 @@ class _TeacherShellState extends State<TeacherShell> {
             )
           else
             const SizedBox.shrink(),
-          if (_visited.contains(2))
+          // Tab 1: Lớp
+          if (_visited.contains(1))
             TeacherClassesScreen(
               api: _api,
               organizationId: organizationId,
@@ -242,8 +220,13 @@ class _TeacherShellState extends State<TeacherShell> {
             )
           else
             const SizedBox.shrink(),
-          if (_visited.contains(3))
-            TeacherCoursesScreen(api: _api)
+          // Tab 2: Báo cáo
+          if (_visited.contains(2))
+            TeacherReportScreen(
+              api: _api,
+              organizationId: organizationId,
+              workplaceLabel: label,
+            )
           else
             const SizedBox.shrink(),
         ],
@@ -256,10 +239,9 @@ class _TeacherShellState extends State<TeacherShell> {
     animation: _workplace,
     builder: (context, _) {
       final label = _workplace.activeOrg?.name ?? 'Cá nhân';
-      // The account subtree has a stable position outside organization revision:
-      // scope changes never recreate ProfileCubit or reset account scroll.
+      // Profile tab (3) stays outside organization revision to preserve state
       final content = IndexedStack(
-        index: _index == 4 ? 1 : 0,
+        index: _index == 3 ? 1 : 0,
         children: [
           Column(
             children: [
@@ -272,7 +254,7 @@ class _TeacherShellState extends State<TeacherShell> {
               ),
             ],
           ),
-          if (_visited.contains(4))
+          if (_visited.contains(3))
             const TeacherProfileScreen()
           else
             const SizedBox.shrink(),
@@ -288,14 +270,12 @@ class _TeacherShellState extends State<TeacherShell> {
             bottom: wide,
             child: Column(
               children: [
-                RoleAppHeader(
+                TeacherAppHeader(
                   icon: _selectedIcons[_index],
-                  categoryLabel: 'GIÁO VIÊN 40STUDY',
                   title: _labels[_index],
-                  showNotification: false,
-                  onAvatarTap: () => _tab(4),
+                  onAvatarTap: () => _tab(3),
                 ),
-                if (_api is TeacherPreviewApi && _index != 4)
+                if (_api is TeacherPreviewApi && _index != 3)
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       vertical: 6,
@@ -324,6 +304,7 @@ class _TeacherShellState extends State<TeacherShell> {
                       ],
                     ),
                   ),
+                // Workplace selector: show on tabs 0-2 (Lịch, Lớp, Báo cáo)
                 if (_index < 3)
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -378,7 +359,7 @@ class _TeacherShellState extends State<TeacherShell> {
                               labelType: NavigationRailLabelType.all,
                               onDestinationSelected: _tab,
                               destinations: List.generate(
-                                5,
+                                4,
                                 (i) => NavigationRailDestination(
                                   icon: Icon(_icons[i]),
                                   selectedIcon: Icon(_selectedIcons[i]),
@@ -401,7 +382,7 @@ class _TeacherShellState extends State<TeacherShell> {
                   selectedIndex: _index,
                   onDestinationSelected: _tab,
                   destinations: List.generate(
-                    5,
+                    4,
                     (i) => NavigationDestination(
                       icon: Icon(_icons[i]),
                       selectedIcon: Icon(_selectedIcons[i]),
