@@ -1,0 +1,661 @@
+import 'package:flutter/material.dart';
+import 'package:study/features/teacher/data/teacher_api.dart';
+import 'package:study/features/teacher/data/teacher_core.dart';
+import 'package:study/features/teacher/presentation/report/teacher_report_list_screen.dart';
+import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
+import 'package:study/theme/theme.dart';
+
+/// Báo cáo giờ dạy theo spec mốc 1a (T10).
+/// Hiển thị tổng buổi hoàn tất, giờ dạy, nhóm theo trạng thái xác nhận.
+class TeacherReportScreen extends StatefulWidget {
+  const TeacherReportScreen({
+    super.key,
+    required this.api,
+    required this.organizationId,
+    required this.workplaceLabel,
+  });
+
+  final TeacherApi api;
+  final String? organizationId;
+  final String workplaceLabel;
+
+  @override
+  State<TeacherReportScreen> createState() => _TeacherReportScreenState();
+}
+
+class _TeacherReportScreenState extends State<TeacherReportScreen> {
+  late DateTime _month;
+  late Future<TeacherReportData> _future;
+  String? _classId;
+  final _classNames = <String, String>{};
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _month = DateTime(now.year, now.month);
+    _future = _load();
+  }
+
+  Future<TeacherReportData> _load() async {
+    final from = _month;
+    final to = DateTime(_month.year, _month.month + 1, 0);
+
+    // Load timetable để lấy buổi hoàn tất
+    final classes = await teacherAssignedClasses(widget.api);
+    final inScope = classes
+        .where((c) => c.inScope(widget.organizationId))
+        .toList();
+
+    // Load all sessions cho tháng này
+    final raw = teacherPayload(
+      await widget.api.get(
+        '/me/timetable',
+        query: {
+          'sessions_from': teacherDate(from),
+          'sessions_to': teacherDate(to),
+        },
+      ),
+    );
+
+    final entries = teacherList(raw, keys: const ['entries'])
+        .map(teacherMap)
+        .toList();
+
+    // Filter chỉ buổi có session_id và trong phạm vi nơi làm việc
+    final classIds = inScope.map((c) => c.id).toSet();
+    final sessions = entries.where((e) {
+      final classId = e['class_id']?.toString();
+      final sessionId = e['session_id'];
+      final date = DateTime.tryParse('${e['date']}');
+      if (classId == null || sessionId == null || date == null) return false;
+      if (!classIds.contains(classId)) return false;
+      if (_classId != null && classId != _classId) return false;
+      return !date.isBefore(from) && !date.isAfter(to);
+    }).toList();
+
+    // Update class names for filter
+    for (final c in inScope) {
+      _classNames[c.id] = c.name;
+    }
+
+    // Calculate stats
+    int totalSessions = 0;
+    int totalMinutes = 0;
+    int confirmedMinutes = 0;
+    int pendingMinutes = 0;
+    int needsInfoMinutes = 0;
+    final confirmedSessions = <Map<String, dynamic>>[];
+    final pendingSessions = <Map<String, dynamic>>[];
+    final needsInfoSessions = <Map<String, dynamic>>[];
+
+    for (final session in sessions) {
+      if (session['status'] != 'completed') continue;
+
+      totalSessions++;
+      final duration = _durationMinutes(session);
+      totalMinutes += duration;
+
+      // Trạng thái xác nhận giờ: confirmed, pending, needs_info
+      final confirmStatus = session['hour_confirmation_status']?.toString() ?? 'pending';
+
+      switch (confirmStatus) {
+        case 'confirmed':
+          confirmedMinutes += duration;
+          confirmedSessions.add(session);
+        case 'needs_info':
+          needsInfoMinutes += duration;
+          needsInfoSessions.add(session);
+        default: // pending hoặc không có
+          pendingMinutes += duration;
+          pendingSessions.add(session);
+      }
+    }
+
+    return TeacherReportData(
+      totalSessions: totalSessions,
+      totalMinutes: totalMinutes,
+      confirmedMinutes: confirmedMinutes,
+      pendingMinutes: pendingMinutes,
+      needsInfoMinutes: needsInfoMinutes,
+      confirmedSessions: confirmedSessions,
+      pendingSessions: pendingSessions,
+      needsInfoSessions: needsInfoSessions,
+      classes: inScope,
+    );
+  }
+
+  int _durationMinutes(Map<String, dynamic> session) {
+    final start = session['start_time']?.toString() ?? '00:00';
+    final end = session['end_time']?.toString() ?? '00:00';
+    final startParts = start.split(':');
+    final endParts = end.split(':');
+    final startMin = (int.tryParse(startParts.first) ?? 0) * 60 +
+        (int.tryParse(startParts.length > 1 ? startParts[1] : '0') ?? 0);
+    final endMin = (int.tryParse(endParts.first) ?? 0) * 60 +
+        (int.tryParse(endParts.length > 1 ? endParts[1] : '0') ?? 0);
+    return endMin > startMin ? endMin - startMin : 0;
+  }
+
+  void _reload() => setState(() => _future = _load());
+
+  void _changeMonth(int delta) => setState(() {
+    _month = DateTime(_month.year, _month.month + delta);
+    _future = _load();
+  });
+
+  Future<void> _filter() async {
+    final selection = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) => SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * .7,
+          ),
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              Padding(
+                padding: AppSpacing.paddingScreenAll,
+                child: Text(
+                  'Lọc theo lớp',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              ListTile(
+                title: const Text('Tất cả lớp'),
+                selected: _classId == null,
+                trailing: _classId == null ? const Icon(Icons.check) : null,
+                onTap: () => Navigator.pop(context, ''),
+              ),
+              for (final entry in _classNames.entries)
+                ListTile(
+                  title: Text(entry.value),
+                  selected: _classId == entry.key,
+                  trailing: _classId == entry.key
+                      ? const Icon(Icons.check)
+                      : null,
+                  onTap: () => Navigator.pop(context, entry.key),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (selection != null && mounted) {
+      setState(() {
+        _classId = selection.isEmpty ? null : selection;
+        _future = _load();
+      });
+    }
+  }
+
+  void _openGroup(
+    BuildContext context,
+    String title,
+    List<Map<String, dynamic>> sessions,
+    List<TeacherClassData> classes,
+  ) {
+    teacherPush<void>(
+      context,
+      TeacherReportListScreen(
+        api: widget.api,
+        title: title,
+        sessions: sessions,
+        classes: classes,
+        workplaceLabel: widget.workplaceLabel,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screenPadding,
+            AppSpacing.md,
+            AppSpacing.screenPadding,
+            0,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => _changeMonth(-1),
+                    icon: const Icon(Icons.chevron_left),
+                    tooltip: 'Tháng trước',
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Tháng ${_month.month}/${_month.year}',
+                      textAlign: TextAlign.center,
+                      style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => _changeMonth(1),
+                    icon: const Icon(Icons.chevron_right),
+                    tooltip: 'Tháng sau',
+                  ),
+                ],
+              ),
+              AppSpacing.vGap8,
+              OutlinedButton.icon(
+                onPressed: _filter,
+                icon: const Icon(Icons.filter_list),
+                label: Text(
+                  _classId == null
+                      ? 'Tất cả lớp'
+                      : _classNames[_classId] ?? 'Lớp đã chọn',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: FutureBuilder<TeacherReportData>(
+            future: _future,
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return TeacherErrorView(error: snapshot.error!, onRetry: _reload);
+              }
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final data = snapshot.data!;
+              final hasReviewProcess = data.confirmedMinutes > 0 ||
+                  data.needsInfoMinutes > 0 ||
+                  data.pendingSessions.isNotEmpty;
+
+              return RefreshIndicator(
+                onRefresh: () async {
+                  _reload();
+                  await _future;
+                },
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: AppSpacing.paddingScreenAll,
+                  children: [
+                    // Summary card
+                    _SummaryCard(
+                      totalSessions: data.totalSessions,
+                      totalMinutes: data.totalMinutes,
+                      onTap: data.totalSessions > 0
+                          ? () => _openGroup(
+                              context,
+                              'Tất cả buổi hoàn tất',
+                              [
+                                ...data.confirmedSessions,
+                                ...data.pendingSessions,
+                                ...data.needsInfoSessions,
+                              ],
+                              data.classes,
+                            )
+                          : null,
+                    ),
+                    if (data.totalSessions == 0) ...[
+                      AppSpacing.vGap24,
+                      _EmptyState(month: _month, classId: _classId),
+                    ] else if (hasReviewProcess) ...[
+                      AppSpacing.vGap24,
+                      Text(
+                        'Chi tiết theo trạng thái',
+                        style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                      AppSpacing.vGap12,
+                      if (data.confirmedSessions.isNotEmpty)
+                        _StatusCard(
+                          icon: Icons.check_circle_outline,
+                          iconColor: AchievementColors.green,
+                          title: 'Đã xác nhận',
+                          sessions: data.confirmedSessions.length,
+                          minutes: data.confirmedMinutes,
+                          onTap: () => _openGroup(
+                            context,
+                            'Giờ đã xác nhận',
+                            data.confirmedSessions,
+                            data.classes,
+                          ),
+                        ),
+                      if (data.pendingSessions.isNotEmpty)
+                        _StatusCard(
+                          icon: Icons.hourglass_empty,
+                          iconColor: AchievementColors.yellow,
+                          title: 'Chờ xác nhận',
+                          sessions: data.pendingSessions.length,
+                          minutes: data.pendingMinutes,
+                          onTap: () => _openGroup(
+                            context,
+                            'Giờ chờ xác nhận',
+                            data.pendingSessions,
+                            data.classes,
+                          ),
+                        ),
+                      if (data.needsInfoSessions.isNotEmpty)
+                        _StatusCard(
+                          icon: Icons.info_outline,
+                          iconColor: AchievementColors.red,
+                          title: 'Cần bổ sung',
+                          sessions: data.needsInfoSessions.length,
+                          minutes: data.needsInfoMinutes,
+                          onTap: () => _openGroup(
+                            context,
+                            'Giờ cần bổ sung',
+                            data.needsInfoSessions,
+                            data.classes,
+                          ),
+                        ),
+                    ],
+                    AppSpacing.vGap24,
+                    // Trung tâm đã rời - chỉ hiện khi có nhiều trung tâm
+                    OutlinedButton.icon(
+                      onPressed: () => _showLeftOrganizations(context),
+                      icon: const Icon(Icons.history),
+                      label: const Text('Trung tâm đã rời'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showLeftOrganizations(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: AppSpacing.paddingScreenAll,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Trung tâm đã rời',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              AppSpacing.vGap8,
+              Text(
+                'Lịch sử giờ dạy tại các trung tâm bạn đã rời sẽ hiển thị ở đây. '
+                'Dữ liệu chỉ bao gồm ngày, tên lớp, số phút và trạng thái xác nhận.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              AppSpacing.vGap16,
+              const Center(
+                child: Text('Chưa có trung tâm đã rời'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class TeacherReportData {
+  const TeacherReportData({
+    required this.totalSessions,
+    required this.totalMinutes,
+    required this.confirmedMinutes,
+    required this.pendingMinutes,
+    required this.needsInfoMinutes,
+    required this.confirmedSessions,
+    required this.pendingSessions,
+    required this.needsInfoSessions,
+    required this.classes,
+  });
+
+  final int totalSessions;
+  final int totalMinutes;
+  final int confirmedMinutes;
+  final int pendingMinutes;
+  final int needsInfoMinutes;
+  final List<Map<String, dynamic>> confirmedSessions;
+  final List<Map<String, dynamic>> pendingSessions;
+  final List<Map<String, dynamic>> needsInfoSessions;
+  final List<TeacherClassData> classes;
+}
+
+class _SummaryCard extends StatelessWidget {
+  const _SummaryCard({
+    required this.totalSessions,
+    required this.totalMinutes,
+    this.onTap,
+  });
+
+  final int totalSessions;
+  final int totalMinutes;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final hours = totalMinutes ~/ 60;
+    final mins = totalMinutes % 60;
+    final hoursText = hours > 0
+        ? '$hours giờ${mins > 0 ? ' $mins phút' : ''}'
+        : '$mins phút';
+
+    return Material(
+      color: cs.primaryContainer,
+      borderRadius: AppRadius.borderLg,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: AppSpacing.paddingXl,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.school, color: cs.onPrimaryContainer),
+                  AppSpacing.hGap8,
+                  Text(
+                    'Tổng kết tháng',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: cs.onPrimaryContainer,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (onTap != null)
+                    Icon(
+                      Icons.chevron_right,
+                      color: cs.onPrimaryContainer,
+                      size: 20,
+                    ),
+                ],
+              ),
+              AppSpacing.vGap16,
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$totalSessions',
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: cs.onPrimaryContainer,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          'buổi hoàn tất',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: cs.onPrimaryContainer.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          hoursText,
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: cs.onPrimaryContainer,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          'giờ dạy',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: cs.onPrimaryContainer.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StatusCard extends StatelessWidget {
+  const _StatusCard({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.sessions,
+    required this.minutes,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final int sessions;
+  final int minutes;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final hours = minutes ~/ 60;
+    final mins = minutes % 60;
+    final hoursText = hours > 0
+        ? '$hours giờ${mins > 0 ? ' $mins phút' : ''}'
+        : '$mins phút';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Material(
+        color: cs.surfaceContainerLowest,
+        borderRadius: AppRadius.borderMd,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: AppSpacing.paddingLg,
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.15),
+                    borderRadius: AppRadius.borderSm,
+                  ),
+                  child: Icon(icon, color: iconColor, size: 20),
+                ),
+                AppSpacing.hGap12,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '$sessions buổi · $hoursText',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: cs.onSurfaceVariant, size: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.month, this.classId});
+
+  final DateTime month;
+  final String? classId;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: AppSpacing.paddingXl,
+        child: Column(
+          children: [
+            Icon(
+              Icons.bar_chart_outlined,
+              size: 48,
+              color: cs.onSurfaceVariant.withValues(alpha: 0.5),
+            ),
+            AppSpacing.vGap12,
+            Text(
+              classId != null
+                  ? 'Không có buổi hoàn tất cho lớp này trong tháng ${month.month}/${month.year}'
+                  : 'Không có buổi hoàn tất trong tháng ${month.month}/${month.year}',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+            if (classId != null) ...[
+              AppSpacing.vGap8,
+              Text(
+                'Thử xóa bộ lọc hoặc chọn tháng khác.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
