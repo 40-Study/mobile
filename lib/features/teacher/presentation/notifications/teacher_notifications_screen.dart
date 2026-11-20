@@ -4,7 +4,7 @@ import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_session_screen.dart';
 import 'package:study/features/teacher/presentation/leave/teacher_leave_list_screen.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
-import 'package:study/theme/app_spacing.dart';
+import 'package:study/theme/theme.dart';
 
 class TeacherNotificationsScreen extends StatefulWidget {
   const TeacherNotificationsScreen({super.key, required this.api});
@@ -137,24 +137,10 @@ class _TeacherNotificationsScreenState
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.notifications_none_outlined,
-            size: 64,
-            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Chưa có thông báo',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-          ),
-        ],
-      ),
+    return const TeacherEmptyState(
+      icon: Icons.notifications_none_outlined,
+      title: 'Chưa có thông báo',
+      subtitle: 'Thông báo về lịch dạy và cập nhật sẽ hiện ở đây.',
     );
   }
 
@@ -227,7 +213,7 @@ class _NotificationItem extends StatelessWidget {
       case 'needs_completion':
         return cs.error;
       case 'confirmation_feedback':
-        return Colors.green;
+        return AchievementColors.green;
       default:
         return cs.primary;
     }

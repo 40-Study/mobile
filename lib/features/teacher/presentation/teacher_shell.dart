@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:study/features/teacher/data/teacher_preview_api.dart';
 import 'package:study/features/teacher/data/teacher_preview_workplace.dart';
-import 'package:flutter/services.dart';
+import 'package:study/theme/theme.dart';
 import 'package:study/features/auth/data/models/organization_model.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/data/teacher_workplace_controller.dart';
@@ -12,7 +13,6 @@ import 'package:study/features/teacher/presentation/notifications/teacher_notifi
 import 'package:study/features/teacher/presentation/schedule/teacher_schedule_screen.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_app_header.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
-import 'package:study/theme/theme.dart';
 
 class TeacherShell extends StatefulWidget {
   const TeacherShell({super.key, this.api, this.workplace, this.onAdvanced});
@@ -301,11 +301,18 @@ class _TeacherShellState extends State<TeacherShell> {
         ],
       );
       final wide = MediaQuery.sizeOf(context).width >= 840;
+      final cs = Theme.of(context).colorScheme;
+      // Tinted surface cho body background - tạo depth
+      final surfaceBg = Color.alphaBlend(
+        RoleColors.teacherPrimary.withValues(alpha: 0.045),
+        cs.surfaceContainer,
+      );
       return AnnotatedRegion<SystemUiOverlayStyle>(
         value: Theme.of(context).brightness == Brightness.dark
             ? SystemUiOverlayStyle.light
             : SystemUiOverlayStyle.dark,
         child: Scaffold(
+          backgroundColor: surfaceBg,
           body: SafeArea(
             bottom: wide,
             child: Column(
@@ -456,7 +463,7 @@ class _NeedsAttentionBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: Colors.red,
+        color: AchievementColors.red,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(

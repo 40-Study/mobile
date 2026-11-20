@@ -3,7 +3,7 @@ import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/data/teacher_core.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_session_screen.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
-import 'package:study/theme/app_spacing.dart';
+import 'package:study/theme/theme.dart';
 
 String teacherSessionStateLabel(TeacherOccurrence session, {DateTime? now}) {
   final clock = now ?? DateTime.now();
@@ -66,14 +66,28 @@ class TeacherSessionRow extends StatelessWidget {
     final largeText = MediaQuery.textScalerOf(context).scale(14) > 20;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Material(
-        color: cs.surfaceContainerLowest,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: cs.outlineVariant),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerLowest,
+          borderRadius: AppRadius.borderLg,
+          border: Border.all(
+            color: cs.outlineVariant.withValues(alpha: 0.5),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF010120).withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: AppRadius.borderLg,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
           onTap: () async {
             await teacherPush<Object?>(
               context,
@@ -145,6 +159,7 @@ class TeacherSessionRow extends StatelessWidget {
           ),
         ),
       ),
+      ),
     );
   }
 }
@@ -163,26 +178,30 @@ class TeacherSessionStatusLabel extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final (background, foreground) = switch (status) {
       'in_progress' => (cs.primaryContainer, cs.onPrimaryContainer),
-      'completed' => (cs.secondaryContainer, cs.onSecondaryContainer),
+      'completed' => (
+        AchievementColors.green.withValues(alpha: 0.15),
+        AchievementColors.green,
+      ),
       'cancelled' => (cs.errorContainer, cs.onErrorContainer),
       _ when label.startsWith('Quá giờ') => (
-        cs.tertiaryContainer,
-        cs.onTertiaryContainer,
+        AchievementColors.yellow.withValues(alpha: 0.15),
+        AchievementColors.yellow,
       ),
       _ => (cs.surfaceContainerHigh, cs.onSurfaceVariant),
     };
-    return DecoratedBox(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(6),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Text(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.labelSmall?.copyWith(color: foreground),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: foreground,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

@@ -6,8 +6,8 @@ import 'package:study/features/teacher/presentation/schedule/teacher_session_row
 import 'package:study/features/teacher/presentation/profile/teacher_reminders_screen.dart';
 import 'package:study/features/teacher/presentation/leave/teacher_leave_list_screen.dart';
 import 'package:study/features/teacher/presentation/widgets/session_card.dart';
-import 'package:study/theme/app_spacing.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
+import 'package:study/theme/theme.dart';
 
 class TeacherScheduleScreen extends StatefulWidget {
   const TeacherScheduleScreen({
@@ -502,69 +502,20 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
 
   /// State 01: Chưa được giao lớp
   Widget _buildNoClassState(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Center(
-      child: Padding(
-        padding: AppSpacing.paddingXl,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.school_outlined,
-              size: 64,
-              color: cs.onSurfaceVariant.withValues(alpha: 0.5),
-            ),
-            AppSpacing.vGap16,
-            Text(
-              'Lịch sẽ hiện khi bạn được phân công lớp',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-            AppSpacing.vGap8,
-            Text(
-              'Liên hệ trung tâm nếu bạn cần được phân công.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return const TeacherEmptyState(
+      icon: Icons.school_outlined,
+      title: 'Chưa có lịch dạy',
+      subtitle: 'Lịch sẽ hiện khi bạn được phân công lớp.\nLiên hệ trung tâm nếu bạn cần được phân công.',
     );
   }
 
   /// State 02: Hôm nay không có lịch
   Widget _buildEmptyDayState(BuildContext context, _ScheduleData data) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          Icon(
-            Icons.event_available_outlined,
-            size: 36,
-            color: cs.primary,
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Không có buổi dạy trong ngày này.',
-            textAlign: TextAlign.center,
-          ),
-          if (data.nextSession != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Buổi tiếp theo: ${DateFormat('dd/MM').format(data.nextSession!.date)} lúc ${data.nextSession!.start}',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ],
-      ),
+    return TeacherEmptyStateInline(
+      icon: Icons.event_available_outlined,
+      message: data.nextSession != null
+          ? 'Không có buổi dạy trong ngày này.\nBuổi tiếp theo: ${DateFormat('dd/MM').format(data.nextSession!.date)} lúc ${data.nextSession!.start}'
+          : 'Không có buổi dạy trong ngày này.',
     );
   }
 

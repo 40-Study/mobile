@@ -2,27 +2,47 @@ import 'package:flutter/material.dart';
 import 'package:study/theme/theme.dart';
 
 /// The same quiet surface and rounded rows used by Student/Parent task cards.
+/// Upgraded with shadows and proper visual hierarchy.
 class TeacherSurface extends StatelessWidget {
   const TeacherSurface({
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(AppSpacing.lg),
+    this.showShadow = true,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
+  final bool showShadow;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Material(
-      color: cs.surfaceContainerLowest,
-      shape: RoundedRectangleBorder(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
         borderRadius: AppRadius.borderLg,
-        side: BorderSide(color: cs.outlineVariant),
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.5),
+        ),
+        boxShadow: showShadow
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF010120).withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ]
+            : null,
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Padding(padding: padding, child: child),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: AppRadius.borderLg,
+        clipBehavior: Clip.antiAlias,
+        child: Padding(padding: padding, child: child),
+      ),
     );
   }
 }

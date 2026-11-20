@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/data/teacher_core.dart';
-import 'package:study/theme/app_spacing.dart';
+import 'package:study/theme/theme.dart';
 
 class TeacherLeaveCreateScreen extends StatefulWidget {
   const TeacherLeaveCreateScreen({
@@ -187,7 +187,7 @@ class _TeacherLeaveCreateScreenState extends State<TeacherLeaveCreateScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.check_circle_outline, color: Colors.green, size: 20),
+                    Icon(Icons.check_circle_outline, color: AchievementColors.green, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(

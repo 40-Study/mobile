@@ -4,7 +4,7 @@ import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/presentation/leave/teacher_leave_create_screen.dart';
 import 'package:study/features/teacher/presentation/leave/teacher_leave_detail_screen.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
-import 'package:study/theme/app_spacing.dart';
+import 'package:study/theme/theme.dart';
 
 class TeacherLeaveListScreen extends StatefulWidget {
   const TeacherLeaveListScreen({
@@ -134,30 +134,12 @@ class _TeacherLeaveListScreenState extends State<TeacherLeaveListScreen>
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.event_busy_outlined,
-            size: 64,
-            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Chưa có đơn xin nghỉ',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-          ),
-          const SizedBox(height: 8),
-          FilledButton.icon(
-            onPressed: _createLeave,
-            icon: const Icon(Icons.add),
-            label: const Text('Tạo đơn mới'),
-          ),
-        ],
-      ),
+    return TeacherEmptyState(
+      icon: Icons.event_busy_outlined,
+      title: 'Chưa có đơn xin nghỉ',
+      subtitle: 'Đơn xin nghỉ sẽ hiện ở đây khi bạn tạo.',
+      actionLabel: 'Tạo đơn mới',
+      onAction: _createLeave,
     );
   }
 }
@@ -171,9 +153,9 @@ class _LeaveRequestItem extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     switch (request.status) {
       case 'pending':
-        return Colors.orange;
+        return AchievementColors.yellow;
       case 'approved':
-        return Colors.green;
+        return AchievementColors.green;
       case 'rejected':
         return cs.error;
       case 'withdrawn':

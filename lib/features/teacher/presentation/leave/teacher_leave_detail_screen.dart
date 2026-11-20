@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/presentation/leave/teacher_leave_list_screen.dart';
-import 'package:study/theme/app_spacing.dart';
+import 'package:study/theme/theme.dart';
 
 class TeacherLeaveDetailScreen extends StatefulWidget {
   const TeacherLeaveDetailScreen({
@@ -64,9 +64,9 @@ class _TeacherLeaveDetailScreenState extends State<TeacherLeaveDetailScreen> {
     final cs = Theme.of(context).colorScheme;
     switch (widget.request.status) {
       case 'pending':
-        return Colors.orange;
+        return AchievementColors.yellow;
       case 'approved':
-        return Colors.green;
+        return AchievementColors.green;
       case 'rejected':
         return cs.error;
       case 'withdrawn':

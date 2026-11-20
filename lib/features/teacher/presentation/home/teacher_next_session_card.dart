@@ -19,11 +19,19 @@ class TeacherNextSessionCard extends StatelessWidget {
     final date =
         '${session.date.day.toString().padLeft(2, '0')}/'
         '${session.date.month.toString().padLeft(2, '0')}/${session.date.year}';
-    return Material(
-      color: cs.primary,
-      borderRadius: AppRadius.borderLg,
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        color: cs.primary,
+        borderRadius: AppRadius.borderLg,
+        boxShadow: AppShadows.layeredCard,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: AppRadius.borderLg,
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
         padding: AppSpacing.paddingXl,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -117,6 +125,7 @@ class TeacherNextSessionCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

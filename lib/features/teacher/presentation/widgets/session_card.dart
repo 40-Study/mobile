@@ -43,7 +43,9 @@ class NextSessionCard extends StatelessWidget {
     final roomLink = session.json['room_link']?.toString();
     final hasRoom = roomLink != null && roomLink.isNotEmpty;
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -54,6 +56,7 @@ class NextSessionCard extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
         borderRadius: AppRadius.borderLg,
+        boxShadow: AppShadows.layeredCard,
       ),
       child: Padding(
         padding: AppSpacing.paddingLg,
