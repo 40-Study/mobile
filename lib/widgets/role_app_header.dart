@@ -20,6 +20,9 @@ class RoleAppHeader extends StatelessWidget {
     this.backgroundColor,
     this.showNotification = true,
     this.showAvatar = true,
+    this.iconBackgroundColor,
+    this.iconColor,
+    this.iconBorderColor,
   });
 
   /// Icon tròn đại diện của role
@@ -57,6 +60,15 @@ class RoleAppHeader extends StatelessWidget {
 
   /// Có hiển thị avatar hay không
   final bool showAvatar;
+
+  /// Màu nền cho icon tròn
+  final Color? iconBackgroundColor;
+
+  /// Màu của icon
+  final Color? iconColor;
+
+  /// Màu viền của icon
+  final Color? iconBorderColor;
 
   @override
   Widget build(BuildContext context) {
@@ -97,10 +109,17 @@ class RoleAppHeader extends StatelessWidget {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: cs.primaryContainer,
+                        color: iconBackgroundColor ?? cs.primaryContainer,
                         shape: BoxShape.circle,
+                        border: iconBorderColor != null
+                            ? Border.all(color: iconBorderColor!)
+                            : null,
                       ),
-                      child: Icon(effectiveIcon, color: cs.primary, size: 24),
+                      child: Icon(
+                        effectiveIcon,
+                        color: iconColor ?? cs.primary,
+                        size: 24,
+                      ),
                     ),
                   ),
                 ),

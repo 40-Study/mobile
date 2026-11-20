@@ -16,5 +16,8 @@ class StudentAppHeader extends RoleAppHeader {
     super.backgroundColor,
     super.showNotification,
     super.showAvatar,
+    super.iconBackgroundColor,
+    super.iconColor,
+    super.iconBorderColor,
   });
 }
