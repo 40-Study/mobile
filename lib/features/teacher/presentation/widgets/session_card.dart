@@ -4,6 +4,7 @@ import 'package:study/features/teacher/data/teacher_core.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_session_screen.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
 import 'package:study/theme/theme.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Card buổi dạy tiếp theo (T01+T03 theo spec).
 /// Hiển thị thông tin buổi học sắp tới với nút Vào lớp và Chi tiết.
@@ -267,9 +268,23 @@ class NeedsAttentionCard extends StatelessWidget {
   }
 }
 
-/// Mở URL bằng trình duyệt hệ thống
-void launchTeacherUrl(String url) {
-  // TODO: Implement using url_launcher package
-  // For now, this is a placeholder
-  debugPrint('Opening URL: $url');
+/// Mở URL bằng trình duyệt in-app (Custom Tabs / SFSafariViewController).
+/// Theo spec: KHÔNG gắn token của app vào URL.
+Future<void> launchTeacherUrl(String url) async {
+  final uri = Uri.tryParse(url);
+  if (uri == null) {
+    debugPrint('Invalid URL: $url');
+    return;
+  }
+  try {
+    // Dùng inAppBrowserView cho Android Custom Tabs / iOS SFSafariViewController
+    await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+  } catch (e) {
+    // Fallback: mở bằng trình duyệt hệ thống
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      debugPrint('Cannot open URL: $url - $e');
+    }
+  }
 }

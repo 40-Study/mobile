@@ -4,6 +4,8 @@ import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/data/teacher_core.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_session_row.dart';
 import 'package:study/features/teacher/presentation/profile/teacher_reminders_screen.dart';
+import 'package:study/features/teacher/presentation/leave/teacher_leave_list_screen.dart';
+import 'package:study/features/teacher/presentation/widgets/session_card.dart';
 import 'package:study/theme/app_spacing.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
 
@@ -13,20 +15,31 @@ class TeacherScheduleScreen extends StatefulWidget {
     required this.api,
     required this.organizationId,
     required this.workplaceLabel,
+    this.onNavigateToReport,
+    this.onNeedsAttentionCountChanged,
   });
   final TeacherApi api;
   final String? organizationId;
   final String workplaceLabel;
+
+  /// Callback để chuyển sang tab Báo cáo (tap vào dòng tổng tháng)
+  final VoidCallback? onNavigateToReport;
+
+  /// Callback để sync số buổi cần xử lý lên WorkplaceController
+  final void Function(int count)? onNeedsAttentionCountChanged;
+
   @override
   State<TeacherScheduleScreen> createState() => _TeacherScheduleScreenState();
 }
 
 class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   late DateTime _selected;
-  late Future<List<TeacherOccurrence>> _future;
+  late Future<_ScheduleData> _future;
   String? _classId;
   bool _month = false;
   final _classNames = <String, String>{};
+  bool _showOnlyNeedsAttention = false;
+
   @override
   void initState() {
     super.initState();
@@ -40,17 +53,113 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
     _selected.month,
     _selected.day - _selected.weekday + 1,
   );
-  Future<List<TeacherOccurrence>> _load() => teacherLoadTimetable(
-    widget.api,
-    widget.organizationId,
-    _month ? DateTime(_selected.year, _selected.month) : _weekStart,
-    _month
-        ? DateTime(_selected.year, _selected.month + 1, 0)
-        : DateTime(_weekStart.year, _weekStart.month, _weekStart.day + 6),
-  );
+
+  Future<_ScheduleData> _load() async {
+    // Luôn load cả tháng để tránh call API 2 lần
+    final monthStart = DateTime(_selected.year, _selected.month);
+    final monthEnd = DateTime(_selected.year, _selected.month + 1, 0);
+
+    final monthSessions = await teacherLoadTimetable(
+      widget.api,
+      widget.organizationId,
+      monthStart,
+      monthEnd,
+    );
+
+    // Filter cho tuần nếu ở week mode
+    final weekEnd = DateTime(_weekStart.year, _weekStart.month, _weekStart.day + 6);
+    final sessions = _month
+        ? monthSessions
+        : monthSessions.where((s) {
+            return !s.date.isBefore(_weekStart) && !s.date.isAfter(weekEnd);
+          }).toList();
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Tìm buổi cần xử lý: quá giờ chưa hoàn tất hoặc cần bổ sung
+    final needsAttention = <TeacherOccurrence>[];
+    for (final s in monthSessions) {
+      final role = s.json['teacher_role']?.toString();
+      final confirmStatus = s.json['hour_confirmation_status']?.toString();
+
+      // Cần bổ sung (returned by center)
+      if (confirmStatus == 'needs_info') {
+        needsAttention.add(s);
+        continue;
+      }
+
+      // Quá giờ chưa hoàn tất (chỉ cho giáo viên chính/dạy thay)
+      if (role != 'assistant' &&
+          s.status == 'scheduled' &&
+          s.sessionId != null) {
+        final endParts = s.end.split(':');
+        final endTime = DateTime(
+          s.date.year,
+          s.date.month,
+          s.date.day,
+          int.tryParse(endParts.first) ?? 23,
+          int.tryParse(endParts.last) ?? 59,
+        );
+        if (endTime.isBefore(now)) {
+          needsAttention.add(s);
+        }
+      }
+    }
+
+    // Tìm buổi tiếp theo (chưa kết thúc hoặc sắp bắt đầu)
+    TeacherOccurrence? nextSession;
+    for (final s in sessions) {
+      if (s.status == 'cancelled') continue;
+      final endParts = s.end.split(':');
+      final endTime = DateTime(
+        s.date.year,
+        s.date.month,
+        s.date.day,
+        int.tryParse(endParts.first) ?? 23,
+        int.tryParse(endParts.last) ?? 59,
+      );
+      // Hiện buổi đang diễn ra hoặc sắp bắt đầu
+      if (endTime.isAfter(now)) {
+        nextSession = s;
+        break;
+      }
+    }
+
+    // Tính tổng tháng (chỉ buổi hoàn tất)
+    var monthCompletedSessions = 0;
+    var monthMinutes = 0;
+    for (final s in monthSessions) {
+      if (s.status == 'completed' || s.json['status'] == 'completed') {
+        monthCompletedSessions++;
+        final startTime = s.json['start_time']?.toString() ?? '00:00';
+        final endTime = s.json['end_time']?.toString() ?? '00:00';
+        final startParts = startTime.split(':');
+        final endParts = endTime.split(':');
+        final startMin = (int.tryParse(startParts.first) ?? 0) * 60 +
+            (int.tryParse(startParts.length > 1 ? startParts[1] : '0') ?? 0);
+        final endMin = (int.tryParse(endParts.first) ?? 0) * 60 +
+            (int.tryParse(endParts.length > 1 ? endParts[1] : '0') ?? 0);
+        if (endMin > startMin) monthMinutes += endMin - startMin;
+      }
+    }
+
+    // Sync needsAttention count lên WorkplaceController
+    widget.onNeedsAttentionCountChanged?.call(needsAttention.length);
+
+    return _ScheduleData(
+      sessions: sessions,
+      needsAttention: needsAttention,
+      nextSession: nextSession,
+      monthCompletedSessions: monthCompletedSessions,
+      monthMinutes: monthMinutes,
+    );
+  }
+
   void _reload() => setState(() {
     _future = _load();
   });
+
   void _move(int direction) => setState(() {
     _selected = _month
         ? _inMonth(_selected.month + direction)
@@ -61,6 +170,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
           );
     _future = _load();
   });
+
   DateTime _inMonth(int month) {
     final start = DateTime(_selected.year, month);
     final last = DateTime(start.year, start.month + 1, 0).day;
@@ -139,6 +249,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                     selected: {_month},
                     onSelectionChanged: (value) => setState(() {
                       _month = value.first;
+                      _showOnlyNeedsAttention = false;
                       _future = _load();
                     }),
                   ),
@@ -146,6 +257,14 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                 PopupMenuButton<String>(
                   tooltip: 'Tùy chọn lịch dạy',
                   onSelected: (value) {
+                    if (value == 'leave')
+                      teacherPush<Object?>(
+                        context,
+                        TeacherLeaveListScreen(
+                          api: widget.api,
+                          organizationId: widget.organizationId,
+                        ),
+                      );
                     if (value == 'reminders')
                       teacherPush<Object?>(
                         context,
@@ -154,6 +273,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                     if (value == 'refresh') _reload();
                   },
                   itemBuilder: (_) => const [
+                    PopupMenuItem(value: 'leave', child: Text('Xin nghỉ')),
                     PopupMenuItem(value: 'reminders', child: Text('Nhắc lịch')),
                     PopupMenuItem(value: 'refresh', child: Text('Tải lại')),
                   ],
@@ -189,6 +309,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                     final now = DateTime.now();
                     setState(() {
                       _selected = DateTime(now.year, now.month, now.day);
+                      _showOnlyNeedsAttention = false;
                       _future = _load();
                     });
                   },
@@ -200,28 +321,43 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
         ),
       ),
       Expanded(
-        child: FutureBuilder<List<TeacherOccurrence>>(
+        child: FutureBuilder<_ScheduleData>(
           future: _future,
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              return TeacherErrorView(error: snapshot.error!, onRetry: _reload);
+              return _buildErrorState(context, snapshot.error!);
             }
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
             }
-            final sessions = snapshot.data!;
+            final data = snapshot.data!;
+            final sessions = data.sessions;
+
+            // State 01: Chưa được giao lớp
+            if (sessions.isEmpty && data.monthCompletedSessions == 0) {
+              return _buildNoClassState(context);
+            }
+
             final classes = {
               for (final session in sessions)
                 session.classId: session.classData.name,
             };
             _classNames.addAll(classes);
-            final rows = sessions
-                .where(
-                  (s) =>
-                      teacherDate(s.date) == teacherDate(_selected) &&
-                      (_classId == null || s.classId == _classId),
-                )
-                .toList();
+
+            // Filter rows dựa trên mode
+            List<TeacherOccurrence> rows;
+            if (_showOnlyNeedsAttention) {
+              rows = data.needsAttention;
+            } else {
+              rows = sessions
+                  .where(
+                    (s) =>
+                        teacherDate(s.date) == teacherDate(_selected) &&
+                        (_classId == null || s.classId == _classId),
+                  )
+                  .toList();
+            }
+
             return RefreshIndicator(
               onRefresh: () async {
                 _reload();
@@ -230,185 +366,115 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  if (_month)
+                  // Mục "Cần xử lý" (hiện khi có buổi quá giờ/cần bổ sung)
+                  if (data.needsAttention.isNotEmpty && !_showOnlyNeedsAttention)
                     Padding(
                       padding: AppSpacing.paddingHorizontalXl,
-                      child: Material(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainerLowest,
-                        borderRadius: BorderRadius.circular(12),
-                        child: CalendarDatePicker(
-                          key: ValueKey('${_selected.year}-${_selected.month}'),
-                          initialDate: _selected,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
-                          onDateChanged: (date) =>
-                              setState(() => _selected = date),
-                          onDisplayedMonthChanged: (date) => setState(() {
-                            _selected = _inMonth(
-                              date.month + (date.year - _selected.year) * 12,
-                            );
-                            _future = _load();
-                          }),
-                        ),
+                      child: NeedsAttentionCard(
+                        count: data.needsAttention.length,
+                        label: 'buổi cần xử lý',
+                        onTap: () => setState(() {
+                          _showOnlyNeedsAttention = true;
+                        }),
                       ),
-                    )
-                  else
+                    ),
+                  if (_showOnlyNeedsAttention)
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            for (var i = 0; i < 7; i++)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 8),
-                                child: Builder(
-                                  builder: (context) {
-                                    final day = DateTime(
-                                      _weekStart.year,
-                                      _weekStart.month,
-                                      _weekStart.day + i,
-                                    );
-                                    final count = sessions
-                                        .where(
-                                          (s) =>
-                                              teacherDate(s.date) ==
-                                                  teacherDate(day) &&
-                                              (_classId == null ||
-                                                  s.classId == _classId),
-                                        )
-                                        .length;
-                                    final selected =
-                                        teacherDate(day) ==
-                                        teacherDate(_selected);
-                                    final cs = Theme.of(context).colorScheme;
-                                    final today =
-                                        teacherDate(day) ==
-                                        teacherDate(DateTime.now());
-                                    return ChoiceChip(
-                                      showCheckmark: false,
-                                      selectedColor: cs.primary,
-                                      backgroundColor:
-                                          cs.surfaceContainerLowest,
-                                      side: BorderSide(
-                                        color: today && !selected
-                                            ? cs.primary
-                                            : cs.outlineVariant,
-                                      ),
-                                      label: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 6,
-                                          horizontal: 3,
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            Text(
-                                              today
-                                                  ? 'Hôm nay'
-                                                  : const [
-                                                      'T2',
-                                                      'T3',
-                                                      'T4',
-                                                      'T5',
-                                                      'T6',
-                                                      'T7',
-                                                      'CN',
-                                                    ][i],
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .labelSmall
-                                                  ?.copyWith(
-                                                    color: selected
-                                                        ? cs.onPrimary
-                                                        : cs.onSurfaceVariant,
-                                                  ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              DateFormat('dd').format(day),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .titleLarge
-                                                  ?.copyWith(
-                                                    color: selected
-                                                        ? cs.onPrimary
-                                                        : cs.onSurface,
-                                                    fontWeight: FontWeight.w700,
-                                                  ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              '$count buổi',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .labelSmall
-                                                  ?.copyWith(
-                                                    color: selected
-                                                        ? cs.onPrimary
-                                                        : cs.onSurfaceVariant,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      selected: selected,
-                                      onSelected: (_) =>
-                                          setState(() => _selected = day),
-                                    );
-                                  },
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  Padding(
-                    padding: AppSpacing.paddingHorizontalXl,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: OutlinedButton.icon(
-                        onPressed: _filter,
-                        icon: const Icon(Icons.filter_list),
-                        label: Text(
-                          _classId == null
-                              ? 'Tất cả lớp'
-                              : _classNames[_classId] ?? 'Lớp đã chọn',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: AppSpacing.paddingScreenAll,
-                    child: Text(
-                      '${rows.length} buổi dạy · ${DateFormat('dd/MM/yyyy').format(_selected)}',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  if (rows.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
+                      padding: AppSpacing.paddingHorizontalXl,
+                      child: Row(
                         children: [
-                          Icon(
-                            Icons.event_available_outlined,
-                            size: 36,
-                            color: Theme.of(context).colorScheme.primary,
+                          Expanded(
+                            child: Text(
+                              '${data.needsAttention.length} buổi cần xử lý',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'Không có buổi dạy phù hợp trong ngày này.',
-                            textAlign: TextAlign.center,
+                          TextButton(
+                            onPressed: () => setState(() {
+                              _showOnlyNeedsAttention = false;
+                            }),
+                            child: const Text('Xem lịch'),
                           ),
                         ],
                       ),
                     ),
+
+                  // Thẻ "Buổi tiếp theo" (hiện ngay sau Cần xử lý)
+                  if (!_showOnlyNeedsAttention && data.nextSession != null)
+                    Padding(
+                      padding: AppSpacing.paddingHorizontalXl.copyWith(
+                        top: AppSpacing.md,
+                        bottom: AppSpacing.md,
+                      ),
+                      child: NextSessionCard(
+                        session: data.nextSession!,
+                        api: widget.api,
+                        workplaceLabel: widget.workplaceLabel,
+                        onChanged: _reload,
+                      ),
+                    ),
+
+                  if (!_showOnlyNeedsAttention) ...[
+                    if (_month)
+                      Padding(
+                        padding: AppSpacing.paddingHorizontalXl,
+                        child: Material(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerLowest,
+                          borderRadius: BorderRadius.circular(12),
+                          child: CalendarDatePicker(
+                            key: ValueKey('${_selected.year}-${_selected.month}'),
+                            initialDate: _selected,
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2100),
+                            onDateChanged: (date) =>
+                                setState(() => _selected = date),
+                            onDisplayedMonthChanged: (date) => setState(() {
+                              _selected = _inMonth(
+                                date.month + (date.year - _selected.year) * 12,
+                              );
+                              _future = _load();
+                            }),
+                          ),
+                        ),
+                      )
+                    else
+                      _buildWeekStrip(context, sessions),
+                    Padding(
+                      padding: AppSpacing.paddingHorizontalXl,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: OutlinedButton.icon(
+                          onPressed: _filter,
+                          icon: const Icon(Icons.filter_list),
+                          label: Text(
+                            _classId == null
+                                ? 'Tất cả lớp'
+                                : _classNames[_classId] ?? 'Lớp đã chọn',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: AppSpacing.paddingScreenAll,
+                      child: Text(
+                        '${rows.length} buổi dạy · ${DateFormat('dd/MM/yyyy').format(_selected)}',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // State 02: Hôm nay không có lịch
+                  if (rows.isEmpty && !_showOnlyNeedsAttention)
+                    _buildEmptyDayState(context, data),
+
                   for (final session in rows)
                     Padding(
                       padding: AppSpacing.paddingHorizontalXl,
@@ -419,6 +485,12 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                         workplaceLabel: widget.workplaceLabel,
                       ),
                     ),
+
+                  // Dòng tổng tháng cuối danh sách
+                  if (!_showOnlyNeedsAttention && data.monthCompletedSessions > 0)
+                    _buildMonthlySummary(context, data),
+
+                  const SizedBox(height: 24),
                 ],
               ),
             );
@@ -427,4 +499,280 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
       ),
     ],
   );
+
+  /// State 01: Chưa được giao lớp
+  Widget _buildNoClassState(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: AppSpacing.paddingXl,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.school_outlined,
+              size: 64,
+              color: cs.onSurfaceVariant.withValues(alpha: 0.5),
+            ),
+            AppSpacing.vGap16,
+            Text(
+              'Lịch sẽ hiện khi bạn được phân công lớp',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+            AppSpacing.vGap8,
+            Text(
+              'Liên hệ trung tâm nếu bạn cần được phân công.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// State 02: Hôm nay không có lịch
+  Widget _buildEmptyDayState(BuildContext context, _ScheduleData data) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          Icon(
+            Icons.event_available_outlined,
+            size: 36,
+            color: cs.primary,
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Không có buổi dạy trong ngày này.',
+            textAlign: TextAlign.center,
+          ),
+          if (data.nextSession != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Buổi tiếp theo: ${DateFormat('dd/MM').format(data.nextSession!.date)} lúc ${data.nextSession!.start}',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// State 04: Lỗi mạng
+  Widget _buildErrorState(BuildContext context, Object error) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.wifi_off_outlined,
+              size: 48,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              teacherErrorMessage(error),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: _reload,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Thử lại'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Dòng tổng tháng cuối danh sách
+  Widget _buildMonthlySummary(BuildContext context, _ScheduleData data) {
+    final cs = Theme.of(context).colorScheme;
+    final hours = data.monthMinutes ~/ 60;
+    final mins = data.monthMinutes % 60;
+    final hoursText = hours > 0
+        ? '$hours giờ${mins > 0 ? ' $mins phút' : ''}'
+        : '$mins phút';
+
+    return Padding(
+      padding: AppSpacing.paddingHorizontalXl.copyWith(top: AppSpacing.lg),
+      child: Material(
+        color: cs.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(12),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: widget.onNavigateToReport,
+          child: Padding(
+            padding: AppSpacing.paddingMd,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.bar_chart_outlined,
+                  color: cs.primary,
+                  size: 20,
+                ),
+                AppSpacing.hGap8,
+                Expanded(
+                  child: Text(
+                    '${data.monthCompletedSessions} buổi · $hoursText tháng này',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: cs.onSurface,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: cs.onSurfaceVariant,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWeekStrip(BuildContext context, List<TeacherOccurrence> sessions) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            for (var i = 0; i < 7; i++)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Builder(
+                  builder: (context) {
+                    final day = DateTime(
+                      _weekStart.year,
+                      _weekStart.month,
+                      _weekStart.day + i,
+                    );
+                    final count = sessions
+                        .where(
+                          (s) =>
+                              teacherDate(s.date) ==
+                                  teacherDate(day) &&
+                              (_classId == null ||
+                                  s.classId == _classId),
+                        )
+                        .length;
+                    final selected =
+                        teacherDate(day) ==
+                        teacherDate(_selected);
+                    final cs = Theme.of(context).colorScheme;
+                    final today =
+                        teacherDate(day) ==
+                        teacherDate(DateTime.now());
+                    return ChoiceChip(
+                      showCheckmark: false,
+                      selectedColor: cs.primary,
+                      backgroundColor:
+                          cs.surfaceContainerLowest,
+                      side: BorderSide(
+                        color: today && !selected
+                            ? cs.primary
+                            : cs.outlineVariant,
+                      ),
+                      label: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 6,
+                          horizontal: 3,
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              today
+                                  ? 'Hôm nay'
+                                  : const [
+                                      'T2',
+                                      'T3',
+                                      'T4',
+                                      'T5',
+                                      'T6',
+                                      'T7',
+                                      'CN',
+                                    ][i],
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(
+                                    color: selected
+                                        ? cs.onPrimary
+                                        : cs.onSurfaceVariant,
+                                  ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              DateFormat('dd').format(day),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
+                                    color: selected
+                                        ? cs.onPrimary
+                                        : cs.onSurface,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '$count buổi',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelSmall
+                                  ?.copyWith(
+                                    color: selected
+                                        ? cs.onPrimary
+                                        : cs.onSurfaceVariant,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      selected: selected,
+                      onSelected: (_) =>
+                          setState(() => _selected = day),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Data class chứa tất cả dữ liệu cần thiết cho ScheduleScreen
+class _ScheduleData {
+  const _ScheduleData({
+    required this.sessions,
+    required this.needsAttention,
+    required this.nextSession,
+    required this.monthCompletedSessions,
+    required this.monthMinutes,
+  });
+
+  final List<TeacherOccurrence> sessions;
+  final List<TeacherOccurrence> needsAttention;
+  final TeacherOccurrence? nextSession;
+  final int monthCompletedSessions;
+  final int monthMinutes;
 }

@@ -26,6 +26,20 @@ class TeacherWorkplaceController extends ChangeNotifier {
   int revision = 0;
   bool _disposed = false;
 
+  /// Số buổi "Cần xử lý" theo từng trung tâm (org_id -> count)
+  Map<String, int> needsAttentionCounts = {};
+
+  /// Tổng số buổi cần xử lý ở các nơi khác (không tính nơi hiện tại)
+  int get otherOrgNeedsAttention {
+    var total = 0;
+    for (final entry in needsAttentionCounts.entries) {
+      if (entry.key != activeOrg?.id) {
+        total += entry.value;
+      }
+    }
+    return total;
+  }
+
   Future<void> initialize() async {
     try {
       final saved = await _storage.getActiveOrg();
@@ -64,6 +78,8 @@ class TeacherWorkplaceController extends ChangeNotifier {
         );
       }
       error = null;
+      // Load needs attention counts sau khi có danh sách organizations
+      await _loadNeedsAttentionCounts();
     } catch (e) {
       if (_disposed) return;
       // Do not silently fall back to personal data if org discovery failed.
@@ -71,6 +87,38 @@ class TeacherWorkplaceController extends ChangeNotifier {
     }
     if (_disposed) return;
     initialized = true;
+    notifyListeners();
+  }
+
+  /// Load số buổi "Cần xử lý" từ BE (nếu API hỗ trợ)
+  Future<void> _loadNeedsAttentionCounts() async {
+    try {
+      // Thử gọi API để lấy counts nếu BE hỗ trợ
+      final raw = await _api.get('/me/needs-attention-counts');
+      if (_disposed) return;
+
+      final counts = teacherMap(raw);
+      needsAttentionCounts = {};
+      for (final org in organizations) {
+        final count = counts[org.id];
+        if (count is int && count > 0) {
+          needsAttentionCounts[org.id] = count;
+        }
+      }
+    } catch (_) {
+      // API không hỗ trợ hoặc lỗi - bỏ qua, counts sẽ là empty
+      needsAttentionCounts = {};
+    }
+  }
+
+  /// Update needs attention count cho một org cụ thể (gọi từ ScheduleScreen)
+  void updateNeedsAttentionCount(String? orgId, int count) {
+    if (orgId == null) return;
+    if (count > 0) {
+      needsAttentionCounts[orgId] = count;
+    } else {
+      needsAttentionCounts.remove(orgId);
+    }
     notifyListeners();
   }
 

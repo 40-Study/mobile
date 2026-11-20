@@ -8,6 +8,7 @@ import 'package:study/features/teacher/data/teacher_workplace_controller.dart';
 import 'package:study/features/teacher/presentation/classes/teacher_classes_screen.dart';
 import 'package:study/features/teacher/presentation/profile/teacher_profile_screen.dart';
 import 'package:study/features/teacher/presentation/report/teacher_report_screen.dart';
+import 'package:study/features/teacher/presentation/notifications/teacher_notifications_screen.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_schedule_screen.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_app_header.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
@@ -35,6 +36,7 @@ class _TeacherShellState extends State<TeacherShell> {
   final Set<int> _visited = {0};
   int _seenRevision = 0;
   bool _scopeLoaded = false;
+  int _unreadNotifications = 0;
 
   // Spec mốc 1a: 4 tabs - Lịch, Lớp, Báo cáo, Hồ sơ
   static const _labels = ['Lịch', 'Lớp', 'Báo cáo', 'Hồ sơ'];
@@ -61,6 +63,27 @@ class _TeacherShellState extends State<TeacherShell> {
     if (mounted && _workplace.error == null) {
       setState(() => _scopeLoaded = true);
     }
+    _loadUnreadNotifications();
+  }
+
+  Future<void> _loadUnreadNotifications() async {
+    try {
+      final raw = await _api.get('/me/notifications/unread-count');
+      final count = (raw['data']?['count'] ?? 0) as int;
+      if (mounted) setState(() => _unreadNotifications = count);
+    } catch (_) {
+      // API không hỗ trợ hoặc lỗi - bỏ qua
+    }
+  }
+
+  Future<void> _openNotifications() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => TeacherNotificationsScreen(api: _api),
+      ),
+    );
+    // Reload unread count sau khi quay lại
+    _loadUnreadNotifications();
   }
 
   @override
@@ -132,9 +155,22 @@ class _TeacherShellState extends State<TeacherShell> {
                         ListTile(
                           title: Text(org.name),
                           leading: const Icon(Icons.business_outlined),
-                          trailing: _workplace.activeOrg?.id == org.id
-                              ? const Icon(Icons.check)
-                              : null,
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Badge số buổi cần xử lý cho từng trung tâm
+                              if (_workplace.needsAttentionCounts[org.id] != null &&
+                                  _workplace.needsAttentionCounts[org.id]! > 0)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: _NeedsAttentionBadge(
+                                    count: _workplace.needsAttentionCounts[org.id]!,
+                                  ),
+                                ),
+                              if (_workplace.activeOrg?.id == org.id)
+                                const Icon(Icons.check),
+                            ],
+                          ),
                           onTap: () => Navigator.pop(context, (org,)),
                         ),
                     ],
@@ -208,6 +244,10 @@ class _TeacherShellState extends State<TeacherShell> {
               api: _api,
               organizationId: organizationId,
               workplaceLabel: label,
+              onNavigateToReport: () => _tab(2),
+              onNeedsAttentionCountChanged: (count) {
+                _workplace.updateNeedsAttentionCount(organizationId, count);
+              },
             )
           else
             const SizedBox.shrink(),
@@ -274,6 +314,8 @@ class _TeacherShellState extends State<TeacherShell> {
                   icon: _selectedIcons[_index],
                   title: _labels[_index],
                   onAvatarTap: () => _tab(3),
+                  onNotificationTap: _openNotifications,
+                  showNotification: _unreadNotifications > 0,
                 ),
                 if (_api is TeacherPreviewApi && _index != 3)
                   Padding(
@@ -339,6 +381,13 @@ class _TeacherShellState extends State<TeacherShell> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
+                              // Badge số buổi "Cần xử lý" ở các nơi khác
+                              if (_workplace.otherOrgNeedsAttention > 0) ...[
+                                AppSpacing.hGap8,
+                                _NeedsAttentionBadge(
+                                  count: _workplace.otherOrgNeedsAttention,
+                                ),
+                              ],
                               AppSpacing.hGap8,
                               const Icon(
                                 Icons.keyboard_arrow_down_rounded,
@@ -394,4 +443,29 @@ class _TeacherShellState extends State<TeacherShell> {
       );
     },
   );
+}
+
+/// Badge đỏ hiển thị số buổi "Cần xử lý"
+class _NeedsAttentionBadge extends StatelessWidget {
+  const _NeedsAttentionBadge({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.red,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        '$count',
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
 }

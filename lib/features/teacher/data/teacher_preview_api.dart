@@ -118,6 +118,94 @@ class TeacherPreviewApi extends TeacherApi {
       },
   ];
 
+  // V3: Notifications mock data
+  List<Map<String, dynamic>> get _notifications {
+    final now = DateTime.now();
+    final today = now.toIso8601String().substring(0, 10);
+    final yesterday = now.subtract(const Duration(days: 1)).toIso8601String().substring(0, 10);
+    final twoDaysAgo = now.subtract(const Duration(days: 2)).toIso8601String().substring(0, 10);
+    return [
+      {
+        'id': 'notif-1',
+        'type': 'upcoming_session',
+        'title': 'Buổi học sắp bắt đầu',
+        'body': 'Python cơ bản · PY26A bắt đầu lúc 09:00',
+        'created_at': '${today}T08:45:00+07:00',
+        'is_read': false,
+        'payload': {'session_id': 'session-python', 'class_id': 'python'},
+      },
+      {
+        'id': 'notif-2',
+        'type': 'needs_completion',
+        'title': 'Buổi cần hoàn tất',
+        'body': 'Thiết kế Web · WEB26B hôm qua chưa được hoàn tất',
+        'created_at': '${today}T07:00:00+07:00',
+        'is_read': false,
+        'payload': {'session_id': 'session-web', 'class_id': 'web'},
+      },
+      {
+        'id': 'notif-3',
+        'type': 'schedule_changed',
+        'title': 'Lịch học thay đổi',
+        'body': 'Scratch · SC26 đổi sang 19:30 thay vì 19:00',
+        'created_at': '${yesterday}T14:00:00+07:00',
+        'is_read': true,
+        'payload': {'session_id': 'session-scratch', 'class_id': 'scratch'},
+      },
+      {
+        'id': 'notif-4',
+        'type': 'leave_result',
+        'title': 'Đơn xin nghỉ được duyệt',
+        'body': 'Đơn xin nghỉ ngày 25/11 đã được chấp nhận',
+        'created_at': '${yesterday}T10:00:00+07:00',
+        'is_read': true,
+        'payload': {'leave_id': 'leave-1'},
+      },
+      {
+        'id': 'notif-5',
+        'type': 'confirmation_feedback',
+        'title': 'Giờ dạy đã xác nhận',
+        'body': 'Python cơ bản ngày 18/11 đã được xác nhận',
+        'created_at': '${twoDaysAgo}T09:00:00+07:00',
+        'is_read': true,
+        'payload': {'session_id': 'session-python'},
+      },
+    ];
+  }
+
+  // V3: Leave requests mock data
+  List<Map<String, dynamic>> get _leaveRequests {
+    final now = DateTime.now();
+    return [
+      {
+        'id': 'leave-1',
+        'organization_id': null,
+        'from_date': now.add(const Duration(days: 5)).toIso8601String().substring(0, 10),
+        'to_date': now.add(const Duration(days: 5)).toIso8601String().substring(0, 10),
+        'reason': 'Có việc gia đình cần giải quyết',
+        'status': 'approved',
+        'feedback': 'Đã sắp xếp giáo viên dạy thay',
+        'created_at': now.subtract(const Duration(days: 2)).toIso8601String(),
+        'affected_sessions': [
+          {'id': 'session-python', 'class_name': 'Python cơ bản', 'date': now.add(const Duration(days: 5)).toIso8601String().substring(0, 10), 'time': '09:00 - 10:30'},
+        ],
+      },
+      {
+        'id': 'leave-2',
+        'organization_id': null,
+        'from_date': now.add(const Duration(days: 10)).toIso8601String().substring(0, 10),
+        'to_date': now.add(const Duration(days: 10)).toIso8601String().substring(0, 10),
+        'reason': 'Khám sức khỏe định kỳ',
+        'status': 'pending',
+        'feedback': null,
+        'created_at': now.subtract(const Duration(days: 1)).toIso8601String(),
+        'affected_sessions': [
+          {'id': 'session-web', 'class_name': 'Thiết kế Web', 'date': now.add(const Duration(days: 10)).toIso8601String().substring(0, 10), 'time': '14:00 - 15:30'},
+        ],
+      },
+    ];
+  }
+
   dynamic _data(dynamic data) => {'data': data};
   dynamic _page(
     List<Map<String, dynamic>> items,
@@ -434,6 +522,14 @@ class TeacherPreviewApi extends TeacherApi {
           'is_enabled': true,
         },
       ]);
+    // V3: Notifications
+    if (route == '/me/notifications')
+      return _page(_notifications, 'notifications', query);
+    if (route == '/me/notifications/unread-count')
+      return _data({'count': _notifications.where((n) => n['is_read'] != true).length});
+    // V3: Leave requests
+    if (route == '/me/leave-requests')
+      return _page(_leaveRequests, 'leave_requests', query);
     if (route == '/me/permissions')
       return _data({
         'permissions': ['COURSES_UPDATE_OWN', 'COURSES_CREATE'],

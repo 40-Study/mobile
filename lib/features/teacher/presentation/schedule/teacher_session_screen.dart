@@ -4,11 +4,15 @@ import 'package:study/features/teacher/data/teacher_core.dart';
 import 'package:study/features/teacher/presentation/advanced/teacher_live_sessions_screen.dart';
 import 'package:study/features/teacher/presentation/classes/teacher_class_screen.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_attendance_screen.dart';
+import 'package:study/features/teacher/presentation/schedule/teacher_complete_session_screen.dart';
+import 'package:study/features/teacher/presentation/schedule/teacher_needs_info_screen.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_schedule_editor.dart';
+import 'package:study/features/teacher/presentation/widgets/session_card.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_surface.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_session_row.dart';
 import 'package:study/theme/app_spacing.dart';
+import 'package:study/theme/theme.dart';
 
 class TeacherSessionScreen extends StatefulWidget {
   const TeacherSessionScreen({
@@ -117,6 +121,34 @@ class _TeacherSessionScreenState extends State<TeacherSessionScreen> {
             ? teacherDate(widget.occurrence!.date)
             : '${session['date']}';
         final cancelled = session['status'] == 'cancelled';
+        final completed = session['status'] == 'completed';
+
+        // Vai trò của người dạy: main, substitute, assistant
+        final role = session['teacher_role']?.toString();
+        final isAssistant = role == 'assistant';
+        final isMainOrSubstitute = role == 'main' || role == 'substitute';
+        final roleLabel = switch (role) {
+          'main' => 'Chính',
+          'substitute' => 'Dạy thay',
+          'assistant' => 'Trợ giảng',
+          _ => null,
+        };
+
+        // Trạng thái xác nhận giờ: pending, confirmed, needs_info
+        final confirmStatus = session['hour_confirmation_status']?.toString();
+        final needsInfo = confirmStatus == 'needs_info';
+
+        // Link phòng học
+        final roomLink = session['room_link']?.toString();
+        final hasRoomLink = roomLink != null && roomLink.isNotEmpty;
+
+        // Có thể hoàn tất: buổi đã tạo, chưa hoàn tất, là giáo viên chính/dạy thay
+        final canComplete = !projected &&
+            !cancelled &&
+            !completed &&
+            isMainOrSubstitute &&
+            _sessionId != null;
+
         return RefreshIndicator(
           onRefresh: () async {
             _reload();
@@ -129,10 +161,20 @@ class _TeacherSessionScreenState extends State<TeacherSessionScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      detail.name,
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.w700),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            detail.name,
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        // Badge vai trò
+                        if (roleLabel != null)
+                          _RoleBadge(role: role!, label: roleLabel),
+                      ],
                     ),
                     const SizedBox(height: 6),
                     Text(
@@ -175,15 +217,60 @@ class _TeacherSessionScreenState extends State<TeacherSessionScreen> {
                       ],
                     ),
                     const SizedBox(height: 14),
-                    TeacherSessionStatusLabel(
-                      label: projected
-                          ? 'Lịch dự kiến · chưa tạo buổi'
-                          : teacherStatus(session['status']),
-                      status: session['status']?.toString() ?? 'scheduled',
+                    Row(
+                      children: [
+                        TeacherSessionStatusLabel(
+                          label: projected
+                              ? 'Lịch dự kiến · chưa tạo buổi'
+                              : teacherStatus(session['status']),
+                          status: session['status']?.toString() ?? 'scheduled',
+                        ),
+                        if (needsInfo) ...[
+                          AppSpacing.hGap8,
+                          _ConfirmStatusBadge(status: 'needs_info'),
+                        ] else if (confirmStatus == 'confirmed') ...[
+                          AppSpacing.hGap8,
+                          _ConfirmStatusBadge(status: 'confirmed'),
+                        ] else if (completed && confirmStatus == 'pending') ...[
+                          AppSpacing.hGap8,
+                          _ConfirmStatusBadge(status: 'pending'),
+                        ],
+                      ],
                     ),
                   ],
                 ),
               ),
+              // Nút "Vào lớp" - mở link phòng
+              if (!cancelled && hasRoomLink) ...[
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () => launchTeacherUrl(roomLink),
+                    icon: const Icon(Icons.videocam_outlined),
+                    label: const Text('Vào lớp'),
+                  ),
+                ),
+              ],
+              // Nút "Vào lớp" bị tắt khi buổi đã hủy (K12)
+              if (cancelled && hasRoomLink) ...[
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: null,
+                    icon: const Icon(Icons.videocam_off_outlined),
+                    label: const Text('Vào lớp'),
+                  ),
+                ),
+                Text(
+                  'Buổi đã hủy, không thể vào lớp',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+
               if ('${session['topic'] ?? ''}'.isNotEmpty) ...[
                 const SizedBox(height: 24),
                 Text(
@@ -230,6 +317,73 @@ class _TeacherSessionScreenState extends State<TeacherSessionScreen> {
                   child: Text('Lớp đã lưu trữ, hiện chỉ được xem.'),
                 ),
               const SizedBox(height: 24),
+
+              // Nút Hoàn tất hoặc Cần bổ sung (cho giáo viên chính/dạy thay)
+              if (canComplete && !needsInfo)
+                FilledButton.icon(
+                  icon: const Icon(Icons.check_circle_outline),
+                  onPressed: _saving
+                      ? null
+                      : () async {
+                          final result = await teacherPush<bool>(
+                            context,
+                            TeacherCompleteSessionScreen(
+                              api: widget.api,
+                              classId: detail.id,
+                              sessionId: _sessionId!,
+                              className: detail.name,
+                              date: date,
+                            ),
+                          );
+                          if (result == true && mounted) _reload();
+                        },
+                  label: const Text('Hoàn tất buổi dạy'),
+                ),
+
+              // Nút mở Cần bổ sung (giờ bị trả về)
+              if (needsInfo && isMainOrSubstitute) ...[
+                _NeedsInfoCard(
+                  rejectionReason: session['rejection_reason']?.toString(),
+                  onTap: () async {
+                    final result = await teacherPush<bool>(
+                      context,
+                      TeacherNeedsInfoScreen(
+                        api: widget.api,
+                        classId: detail.id,
+                        sessionId: _sessionId!,
+                        className: detail.name,
+                        date: date,
+                        isAssistant: false,
+                      ),
+                    );
+                    if (result == true && mounted) _reload();
+                  },
+                ),
+              ],
+
+              // Trợ giảng với buổi cần bổ sung: chỉ xem lý do
+              if (needsInfo && isAssistant) ...[
+                _NeedsInfoCard(
+                  rejectionReason: session['rejection_reason']?.toString(),
+                  onTap: () => teacherPush<void>(
+                    context,
+                    TeacherNeedsInfoScreen(
+                      api: widget.api,
+                      classId: detail.id,
+                      sessionId: _sessionId!,
+                      className: detail.name,
+                      date: date,
+                      isAssistant: true,
+                    ),
+                  ),
+                ),
+              ],
+
+              // Trợ giảng: thông báo chờ giáo viên chính hoàn tất (K15)
+              if (!projected && !cancelled && !completed && isAssistant)
+                _AssistantWaitingCard(),
+
+              const SizedBox(height: 12),
               if (!projected && !cancelled && detail.canManage)
                 FilledButton.icon(
                   icon: const Icon(Icons.fact_check_outlined),
@@ -266,17 +420,26 @@ class _TeacherSessionScreenState extends State<TeacherSessionScreen> {
                   child: const Text('Tạo buổi học để điểm danh'),
                 ),
               const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: () => teacherPush<Object?>(
-                  context,
-                  TeacherClassScreen(
-                    api: widget.api,
-                    classId: detail.id,
-                    workplaceLabel: widget.workplaceLabel,
+              // Người dạy thay chỉ thấy buổi được giao, không mở được lớp (K5)
+              if (role != 'substitute')
+                OutlinedButton(
+                  onPressed: () => teacherPush<Object?>(
+                    context,
+                    TeacherClassScreen(
+                      api: widget.api,
+                      classId: detail.id,
+                      workplaceLabel: widget.workplaceLabel,
+                    ),
+                  ),
+                  child: const Text('Xem lớp và học viên'),
+                ),
+              if (role == 'substitute')
+                Text(
+                  'Người dạy thay chỉ xem được buổi được giao.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
-                child: const Text('Xem lớp và học viên'),
-              ),
               if (!projected && detail.canManage && !cancelled) ...[
                 const SizedBox(height: 16),
                 Text(
@@ -347,4 +510,175 @@ class _TeacherSessionScreenState extends State<TeacherSessionScreen> {
       },
     ),
   );
+}
+
+/// Badge hiển thị vai trò của giáo viên trên buổi dạy
+class _RoleBadge extends StatelessWidget {
+  const _RoleBadge({required this.role, required this.label});
+
+  final String role;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final (bg, fg) = switch (role) {
+      'main' => (cs.primaryContainer, cs.onPrimaryContainer),
+      'substitute' => (cs.tertiaryContainer, cs.onTertiaryContainer),
+      'assistant' => (cs.secondaryContainer, cs.onSecondaryContainer),
+      _ => (cs.surfaceContainerHigh, cs.onSurfaceVariant),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: fg,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+/// Badge hiển thị trạng thái xác nhận giờ
+class _ConfirmStatusBadge extends StatelessWidget {
+  const _ConfirmStatusBadge({required this.status});
+
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, color) = switch (status) {
+      'confirmed' => ('Đã xác nhận', AchievementColors.green),
+      'needs_info' => ('Cần bổ sung', AchievementColors.red),
+      'pending' => ('Chờ xác nhận', AchievementColors.yellow),
+      _ => ('', Colors.grey),
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: color,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+/// Card hiển thị thông báo cần bổ sung với lý do từ trung tâm
+class _NeedsInfoCard extends StatelessWidget {
+  const _NeedsInfoCard({this.rejectionReason, required this.onTap});
+
+  final String? rejectionReason;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Material(
+        color: AchievementColors.red.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: AppSpacing.paddingLg,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: AchievementColors.red,
+                  size: 24,
+                ),
+                AppSpacing.hGap12,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Cần bổ sung thông tin',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: AchievementColors.red,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (rejectionReason != null && rejectionReason!.isNotEmpty)
+                        Text(
+                          rejectionReason!,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: cs.onSurface,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: AchievementColors.red,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Card thông báo cho trợ giảng khi buổi chưa được hoàn tất
+class _AssistantWaitingCard extends StatelessWidget {
+  const _AssistantWaitingCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Container(
+        padding: AppSpacing.paddingMd,
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: cs.outlineVariant),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.hourglass_empty,
+              color: cs.onSurfaceVariant,
+              size: 20,
+            ),
+            AppSpacing.hGap8,
+            Expanded(
+              child: Text(
+                'Chờ giáo viên chính hoàn tất',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

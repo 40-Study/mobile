@@ -89,12 +89,28 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
     final pendingSessions = <Map<String, dynamic>>[];
     final needsInfoSessions = <Map<String, dynamic>>[];
 
+    // Stats theo vai trò
+    int mainSessions = 0;
+    int substituteSessions = 0;
+    int assistantSessions = 0;
+
     for (final session in sessions) {
       if (session['status'] != 'completed') continue;
 
       totalSessions++;
       final duration = _durationMinutes(session);
       totalMinutes += duration;
+
+      // Vai trò: main, substitute, assistant
+      final role = session['teacher_role']?.toString();
+      switch (role) {
+        case 'main':
+          mainSessions++;
+        case 'substitute':
+          substituteSessions++;
+        case 'assistant':
+          assistantSessions++;
+      }
 
       // Trạng thái xác nhận giờ: confirmed, pending, needs_info
       final confirmStatus = session['hour_confirmation_status']?.toString() ?? 'pending';
@@ -122,6 +138,9 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
       pendingSessions: pendingSessions,
       needsInfoSessions: needsInfoSessions,
       classes: inScope,
+      mainSessions: mainSessions,
+      substituteSessions: substituteSessions,
+      assistantSessions: assistantSessions,
     );
   }
 
@@ -304,6 +323,17 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
                             )
                           : null,
                     ),
+
+                    // Breakdown theo vai trò (nếu có nhiều vai trò)
+                    if (data.hasRoleBreakdown) ...[
+                      AppSpacing.vGap12,
+                      _RoleBreakdownRow(
+                        mainSessions: data.mainSessions,
+                        substituteSessions: data.substituteSessions,
+                        assistantSessions: data.assistantSessions,
+                      ),
+                    ],
+
                     if (data.totalSessions == 0) ...[
                       AppSpacing.vGap24,
                       _EmptyState(month: _month, classId: _classId),
@@ -420,6 +450,9 @@ class TeacherReportData {
     required this.pendingSessions,
     required this.needsInfoSessions,
     required this.classes,
+    this.mainSessions = 0,
+    this.substituteSessions = 0,
+    this.assistantSessions = 0,
   });
 
   final int totalSessions;
@@ -431,6 +464,18 @@ class TeacherReportData {
   final List<Map<String, dynamic>> pendingSessions;
   final List<Map<String, dynamic>> needsInfoSessions;
   final List<TeacherClassData> classes;
+
+  /// Stats theo vai trò
+  final int mainSessions;
+  final int substituteSessions;
+  final int assistantSessions;
+
+  /// Có hiển thị breakdown theo vai trò không (khi có nhiều hơn một vai trò)
+  bool get hasRoleBreakdown =>
+      (mainSessions > 0 ? 1 : 0) +
+          (substituteSessions > 0 ? 1 : 0) +
+          (assistantSessions > 0 ? 1 : 0) >
+      1;
 }
 
 class _SummaryCard extends StatelessWidget {
@@ -655,6 +700,57 @@ class _EmptyState extends StatelessWidget {
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Hiển thị breakdown theo vai trò
+class _RoleBreakdownRow extends StatelessWidget {
+  const _RoleBreakdownRow({
+    required this.mainSessions,
+    required this.substituteSessions,
+    required this.assistantSessions,
+  });
+
+  final int mainSessions;
+  final int substituteSessions;
+  final int assistantSessions;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final parts = <String>[];
+
+    if (mainSessions > 0) parts.add('$mainSessions buổi Chính');
+    if (substituteSessions > 0) parts.add('$substituteSessions buổi Dạy thay');
+    if (assistantSessions > 0) parts.add('$assistantSessions buổi Trợ giảng');
+
+    if (parts.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: AppSpacing.paddingMd,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLow,
+        borderRadius: AppRadius.borderMd,
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.person_outline,
+            size: 18,
+            color: cs.onSurfaceVariant,
+          ),
+          AppSpacing.hGap8,
+          Expanded(
+            child: Text(
+              parts.join(' · '),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
