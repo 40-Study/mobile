@@ -8,12 +8,26 @@ import 'package:network_image_mock/network_image_mock.dart';
 import 'package:study/features/student/presentation/learning/all_courses_screen.dart';
 import 'package:study/features/student/presentation/learning/explore_courses_screen.dart';
 import 'package:study/features/student/presentation/schedule/daily_goals_screen.dart';
+import 'package:study/features/student/presentation/learning/instructor_reviews_screen.dart';
+import 'package:study/features/student/presentation/learning/instructor_courses_screen.dart';
 
 import '../support/screen_fixtures.dart';
+import '../support/teacher_screen_fixtures.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  final screens = createScreenFixtures();
+  final screens = [
+    ...createScreenFixtures(),
+    ...createTeacherScreenFixtures(),
+    const InstructorReviewsScreen(
+      instructorId: 'instructor',
+      instructorName: 'Nguyễn Thu',
+    ),
+    const InstructorCoursesScreen(
+      instructorId: 'instructor',
+      instructorName: 'Nguyễn Thu',
+    ),
+  ];
   setUpAll(() async {
     final font = FontLoader('Roboto')
       ..addFont(rootBundle.load('google_fonts/Roboto-Medium.ttf'));
@@ -45,7 +59,17 @@ void main() {
         '${screen.runtimeType} renders and disposes at ${size.width.toInt()}px',
         (tester) async {
           await mockNetworkImagesFor(() async {
-            await pumpScreenFixture(tester, screen, size: size);
+            final embeddedTeacherTab = const {
+              'TeacherHomeScreen',
+              'TeacherScheduleScreen',
+              'TeacherClassesScreen',
+              'TeacherProfileScreen',
+            }.contains(screen.runtimeType.toString());
+            await pumpScreenFixture(
+              tester,
+              embeddedTeacherTab ? Scaffold(body: screen) : screen,
+              size: size,
+            );
             expect(find.byType(screen.runtimeType), findsOneWidget);
             expect(find.byType(Scaffold), findsWidgets);
             final exception = tester.takeException();

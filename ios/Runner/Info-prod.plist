@@ -48,7 +48,9 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSCameraUsageDescription</key>
-	<string>Ứng dụng cần quyền truy cập camera để chụp ảnh đại diện</string>
+	<string>Ứng dụng sử dụng camera để chụp ảnh đại diện và tham gia lớp học trực tuyến.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Ứng dụng sử dụng micro để trao đổi trong lớp học trực tuyến.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Ứng dụng cần quyền truy cập thư viện ảnh để chọn ảnh đại diện</string>
 </dict>

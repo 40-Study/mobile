@@ -96,16 +96,14 @@ void main() {
     },
   );
 
-  test(
-    'profile report preserves entry and scrolling metrics and fails either phase',
-    () {
-      final c = _case()
-        ..['scroll_exercised'] = true
-        ..['scroll'] = _metrics(misses: 6);
-      final report = buildScreensPerformanceMarkdown(_data(c));
-      expect(report, contains('result: **FAIL**'));
-      expect(report, contains('scroll: build misses > 5%'));
-      expect(report, contains('| 100 / 100 | FAIL |'));
-    },
-  );
+  test('profile report preserves entry and scrolling metrics '
+      'and fails either phase', () {
+    final c = _case()
+      ..['scroll_exercised'] = true
+      ..['scroll'] = _metrics(misses: 6);
+    final report = buildScreensPerformanceMarkdown(_data(c));
+    expect(report, contains('result: **FAIL**'));
+    expect(report, contains('scroll: build misses > 5%'));
+    expect(report, contains('| 100 / 100 | FAIL |'));
+  });
 }

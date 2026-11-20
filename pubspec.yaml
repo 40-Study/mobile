@@ -42,6 +42,8 @@ dependencies:
   video_player: ^2.11.1
   chewie: ^1.13.1
   image_picker: ^1.2.3
+  livekit_client: ^2.13.1
+  file_picker: ^11.0.3
 
 dev_dependencies:
   flutter_test:

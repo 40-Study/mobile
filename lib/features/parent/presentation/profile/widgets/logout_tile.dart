@@ -13,7 +13,8 @@ class LogoutTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final tt = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
-    final errorColor = TogetherSemanticColors.error;
+    final cs = Theme.of(context).colorScheme;
+    final errorColor = cs.onErrorContainer;
 
     return InkWell(
       onTap: onTap,
@@ -24,9 +25,9 @@ class LogoutTile extends StatelessWidget {
           vertical: AppSpacing.md,
         ),
         decoration: BoxDecoration(
-          color: errorColor.withValues(alpha: 0.05),
+          color: cs.errorContainer,
           borderRadius: AppRadius.borderLg,
-          border: Border.all(color: errorColor.withValues(alpha: 0.2)),
+          border: Border.all(color: cs.error.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -34,7 +35,7 @@ class LogoutTile extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: errorColor.withValues(alpha: 0.1),
+                color: cs.errorContainer,
                 borderRadius: AppRadius.borderSm,
               ),
               child: Icon(Icons.logout_rounded, size: 20, color: errorColor),
@@ -53,9 +54,7 @@ class LogoutTile extends StatelessWidget {
                   ),
                   Text(
                     l10n.signOutHint,
-                    style: tt.bodySmall?.copyWith(
-                      color: errorColor.withValues(alpha: 0.7),
-                    ),
+                    style: tt.bodySmall?.copyWith(color: errorColor),
                   ),
                 ],
               ),
@@ -92,11 +91,7 @@ void showLogoutConfirmation(BuildContext context) {
             ),
           ),
           AppSpacing.vGap24,
-          const Icon(
-            Icons.logout_rounded,
-            size: 48,
-            color: TogetherSemanticColors.error,
-          ),
+          Icon(Icons.logout_rounded, size: 48, color: cs.error),
           AppSpacing.vGap16,
           Text(
             l10n.logout,
@@ -125,7 +120,8 @@ void showLogoutConfirmation(BuildContext context) {
                     context.read<AuthBloc>().add(AuthLoggedOut());
                   },
                   style: FilledButton.styleFrom(
-                    backgroundColor: TogetherSemanticColors.error,
+                    backgroundColor: cs.error,
+                    foregroundColor: cs.onError,
                   ),
                   child: Text(l10n.logout),
                 ),

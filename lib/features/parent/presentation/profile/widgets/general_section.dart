@@ -58,7 +58,7 @@ class GeneralSection extends StatelessWidget {
                   icon: Icons.info_outline_rounded,
                   iconColor: cs.slate400,
                   title: l10n.aboutSettingsItem,
-                  value: l10n.version('1.2.0'),
+                  value: '40Study',
                   onTap: onAboutTap,
                   showDivider: false,
                 ),
