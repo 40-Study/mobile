@@ -5,6 +5,7 @@ abstract class AchievementColors {
   // Badge colors
   static const purple = Color(0xFF7C3AED);
   static const orange = Color(0xFFF59E0B);
+  static const yellow = Color(0xFFF59E0B); // Alias for orange/amber
   static const deepOrange = Color(0xFFEA580C);
   static const green = Color(0xFF10B981);
   static const blue = Color(0xFF3B82F6);
