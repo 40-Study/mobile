@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/teacher/data/teacher_core.dart';
-import 'package:study/theme/app_spacing.dart';
+import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
+import 'package:study/theme/theme.dart';
 
 class TeacherClassCard extends StatelessWidget {
   const TeacherClassCard({
@@ -21,168 +22,186 @@ class TeacherClassCard extends StatelessWidget {
         '${row.json['description'] ?? row.json['course_name'] ?? ''}'.trim();
     final startDate = DateTime.tryParse('${row.json['start_date']}');
     final status = row.json['status']?.toString() ?? '';
+    final studentCount = row.json['student_count'] as int? ?? 0;
+
     final (statusBg, statusFg) = switch (status) {
-      'active' => (cs.primaryContainer, cs.onPrimaryContainer),
-      'draft' => (cs.tertiaryContainer, cs.onTertiaryContainer),
+      'active' => (AchievementColors.green.withValues(alpha: 0.15), AchievementColors.green),
+      'draft' => (AchievementColors.yellow.withValues(alpha: 0.15), AchievementColors.yellow),
       _ => (cs.surfaceContainerHigh, cs.onSurfaceVariant),
     };
-    return Material(
-      color: cs.surfaceContainerLowest,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: cs.outlineVariant),
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLowest,
+        borderRadius: AppRadius.borderLg,
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.5),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF010120).withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Wrap(
-                spacing: 10,
-                runSpacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  if (status.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: statusBg,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        teacherStatus(status),
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: statusFg,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  if (code.isNotEmpty)
-                    Text(
-                      code,
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
-                ],
-              ),
-              AppSpacing.vGap16,
-              Text(
-                row.name,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: cs.onSurface,
-                  height: 1.25,
-                ),
-              ),
-              if (description.isNotEmpty) ...[
-                AppSpacing.vGap8,
-                Text(
-                  description,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
-                ),
-              ],
-              AppSpacing.vGap16,
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    row.organizationId == null
-                        ? Icons.person_outline
-                        : Icons.business_outlined,
-                    size: 18,
-                    color: cs.onSurfaceVariant,
-                  ),
-                  AppSpacing.hGap8,
-                  Expanded(
-                    child: Text(
-                      workplaceLabel,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (row.json['student_count'] != null || startDate != null) ...[
-                AppSpacing.vGap12,
-                Wrap(
-                  spacing: 18,
-                  runSpacing: 10,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: AppRadius.borderLg,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: AppSpacing.paddingLg,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Header row with avatar and status
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (row.json['student_count'] != null)
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
+                    TeacherClassAvatar(
+                      className: row.name,
+                      size: 52,
+                    ),
+                    AppSpacing.hGap12,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.groups_outlined,
-                            size: 19,
-                            color: cs.primary,
+                          Row(
+                            children: [
+                              if (status.isNotEmpty)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: statusBg,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    teacherStatus(status),
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: statusFg,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ),
+                              if (code.isNotEmpty) ...[
+                                AppSpacing.hGap8,
+                                Text(
+                                  code,
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: cs.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
-                          AppSpacing.hGap8,
+                          AppSpacing.vGap4,
                           Text(
-                            '${row.json['student_count']} học viên',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
+                            row.name,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: cs.onSurface,
                             ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: cs.onSurfaceVariant,
+                      size: 20,
+                    ),
+                  ],
+                ),
+                if (description.isNotEmpty) ...[
+                  AppSpacing.vGap12,
+                  Text(
+                    description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+                AppSpacing.vGap16,
+                // Info chips row
+                Wrap(
+                  spacing: AppSpacing.md,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    if (studentCount > 0)
+                      _InfoChip(
+                        icon: Icons.people_outline,
+                        label: '$studentCount học viên',
+                        color: cs.primary,
                       ),
                     if (startDate != null)
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.calendar_today_outlined,
-                            size: 17,
-                            color: cs.primary,
-                          ),
-                          AppSpacing.hGap8,
-                          Text(
-                            '${startDate.day.toString().padLeft(2, '0')}/${startDate.month.toString().padLeft(2, '0')}/${startDate.year}',
-                            style: theme.textTheme.bodyMedium,
-                          ),
-                        ],
+                      _InfoChip(
+                        icon: Icons.calendar_today_outlined,
+                        label: '${startDate.day.toString().padLeft(2, '0')}/${startDate.month.toString().padLeft(2, '0')}/${startDate.year}',
+                        color: cs.onSurfaceVariant,
                       ),
+                    _InfoChip(
+                      icon: row.organizationId == null
+                          ? Icons.person_outline
+                          : Icons.business_outlined,
+                      label: workplaceLabel,
+                      color: cs.onSurfaceVariant,
+                    ),
                   ],
                 ),
               ],
-              AppSpacing.vGap16,
-              Divider(height: 1, color: cs.outlineVariant),
-              AppSpacing.vGap12,
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Xem lớp',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: cs.primary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 20,
-                    color: cs.primary,
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _InfoChip extends StatelessWidget {
+  const _InfoChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: color),
+        AppSpacing.hGap4,
+        Flexible(
+          child: Text(
+            label,
+            style: tt.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 }

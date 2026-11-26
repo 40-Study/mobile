@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/data/teacher_core.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_session_screen.dart';
@@ -22,19 +23,25 @@ class NextSessionCard extends StatelessWidget {
   final String workplaceLabel;
   final VoidCallback? onChanged;
 
+  DateTime get _sessionStartTime {
+    final parts = session.start.split(':');
+    return DateTime(
+      session.date.year,
+      session.date.month,
+      session.date.day,
+      int.tryParse(parts.first) ?? 0,
+      int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     // Vai trò của người dạy
     final role = session.json['teacher_role']?.toString();
-    final roleLabel = switch (role) {
-      'main' => 'Chính',
-      'substitute' => 'Dạy thay',
-      'assistant' => 'Trợ giảng',
-      _ => null,
-    };
 
     // Sĩ số
     final studentCount = session.json['student_count'] ?? 0;
@@ -43,14 +50,20 @@ class NextSessionCard extends StatelessWidget {
     final roomLink = session.json['room_link']?.toString();
     final hasRoom = roomLink != null && roomLink.isNotEmpty;
 
+    // Check if session is today
+    final now = DateTime.now();
+    final isToday = session.date.year == now.year &&
+        session.date.month == now.month &&
+        session.date.day == now.day;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       curve: Curves.easeOutCubic,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            cs.primaryContainer,
-            cs.primaryContainer.withValues(alpha: 0.7),
+            cs.primary,
+            cs.primary.withValues(alpha: 0.85),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -58,126 +71,165 @@ class NextSessionCard extends StatelessWidget {
         borderRadius: AppRadius.borderLg,
         boxShadow: AppShadows.layeredCard,
       ),
-      child: Padding(
-        padding: AppSpacing.paddingLg,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      child: Stack(
+        children: [
+          // Decorative circle
+          Positioned(
+            top: -20,
+            right: -20,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: (isLight ? Colors.white : cs.onPrimary)
+                    .withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          Padding(
+            padding: AppSpacing.paddingLg,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.play_circle_outline,
-                  color: cs.onPrimaryContainer,
-                  size: 20,
-                ),
-                AppSpacing.hGap8,
-                Text(
-                  'Buổi tiếp theo',
-                  style: tt.labelMedium?.copyWith(
-                    color: cs.onPrimaryContainer,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const Spacer(),
-                if (roleLabel != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
+                Row(
+                  children: [
+                    // Class avatar
+                    TeacherClassAvatar(
+                      className: session.classData.name,
+                      size: 44,
+                      color: cs.onPrimary,
                     ),
-                    decoration: BoxDecoration(
-                      color: cs.surface.withValues(alpha: 0.5),
-                      borderRadius: AppRadius.borderSm,
-                    ),
-                    child: Text(
-                      roleLabel,
-                      style: tt.labelSmall?.copyWith(
-                        color: cs.onPrimaryContainer,
+                    AppSpacing.hGap12,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'Buổi tiếp theo',
+                                style: tt.labelMedium?.copyWith(
+                                  color: cs.onPrimary.withValues(alpha: 0.85),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              if (role != null) ...[
+                                AppSpacing.hGap8,
+                                TeacherRoleBadge(role: role),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            session.classData.name,
+                            style: tt.titleMedium?.copyWith(
+                              color: cs.onPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
+                  ],
+                ),
+                AppSpacing.vGap16,
+                // Time and countdown row
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
                   ),
-              ],
-            ),
-            AppSpacing.vGap12,
-            Text(
-              session.classData.name,
-              style: tt.titleMedium?.copyWith(
-                color: cs.onPrimaryContainer,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            AppSpacing.vGap4,
-            Row(
-              children: [
-                Icon(
-                  Icons.schedule_outlined,
-                  size: 16,
-                  color: cs.onPrimaryContainer.withValues(alpha: 0.8),
-                ),
-                AppSpacing.hGap4,
-                Text(
-                  '${session.start}–${session.end}',
-                  style: tt.bodyMedium?.copyWith(
-                    color: cs.onPrimaryContainer.withValues(alpha: 0.8),
+                  decoration: BoxDecoration(
+                    color: cs.onPrimary.withValues(alpha: 0.12),
+                    borderRadius: AppRadius.borderMd,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.schedule_outlined,
+                        size: 18,
+                        color: cs.onPrimary,
+                      ),
+                      AppSpacing.hGap8,
+                      Expanded(
+                        child: Text(
+                          isToday
+                              ? '${session.start} – ${session.end}'
+                              : '${DateFormat('dd/MM').format(session.date)} · ${session.start}',
+                          style: tt.titleSmall?.copyWith(
+                            color: cs.onPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      TeacherCountdownBadge(
+                        targetTime: _sessionStartTime,
+                      ),
+                    ],
                   ),
                 ),
-                AppSpacing.hGap16,
-                Icon(
-                  Icons.people_outline,
-                  size: 16,
-                  color: cs.onPrimaryContainer.withValues(alpha: 0.8),
-                ),
-                AppSpacing.hGap4,
-                Text(
-                  '$studentCount học viên',
-                  style: tt.bodyMedium?.copyWith(
-                    color: cs.onPrimaryContainer.withValues(alpha: 0.8),
-                  ),
-                ),
-              ],
-            ),
-            if (session.topic.isNotEmpty) ...[
-              AppSpacing.vGap8,
-              Text(
-                session.topic,
-                style: tt.bodySmall?.copyWith(
-                  color: cs.onPrimaryContainer.withValues(alpha: 0.7),
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-            AppSpacing.vGap16,
-            Row(
-              children: [
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: hasRoom
-                        ? () => _openRoom(context, roomLink)
-                        : null,
-                    icon: const Icon(Icons.videocam_outlined),
-                    label: const Text('Vào lớp'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: cs.primary,
-                      foregroundColor: cs.onPrimary,
+                AppSpacing.vGap12,
+                // Info chips row
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    _InfoChip(
+                      icon: Icons.people_outline,
+                      label: '$studentCount học viên',
+                      color: cs.onPrimary,
                     ),
-                  ),
+                    if (session.topic.isNotEmpty)
+                      _InfoChip(
+                        icon: Icons.topic_outlined,
+                        label: session.topic,
+                        color: cs.onPrimary,
+                        maxWidth: 160,
+                      ),
+                  ],
                 ),
-                AppSpacing.hGap12,
-                OutlinedButton(
-                  onPressed: () => _openDetail(context),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: cs.onPrimaryContainer,
-                    side: BorderSide(
-                      color: cs.onPrimaryContainer.withValues(alpha: 0.5),
+                AppSpacing.vGap16,
+                // Action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: hasRoom
+                            ? () => _openRoom(context, roomLink)
+                            : null,
+                        icon: const Icon(Icons.videocam_outlined, size: 18),
+                        label: const Text('Vào lớp'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: cs.surface,
+                          foregroundColor: cs.primary,
+                          disabledBackgroundColor:
+                              cs.surface.withValues(alpha: 0.5),
+                          disabledForegroundColor:
+                              cs.onSurface.withValues(alpha: 0.38),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: const Text('Chi tiết'),
+                    AppSpacing.hGap12,
+                    OutlinedButton.icon(
+                      onPressed: () => _openDetail(context),
+                      icon: const Icon(Icons.arrow_forward, size: 18),
+                      label: const Text('Chi tiết'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: cs.onPrimary,
+                        side: BorderSide(
+                          color: cs.onPrimary.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -200,6 +252,53 @@ class NextSessionCard extends StatelessWidget {
       ),
     );
     onChanged?.call();
+  }
+}
+
+/// Info chip trong NextSessionCard
+class _InfoChip extends StatelessWidget {
+  const _InfoChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+    this.maxWidth,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+  final double? maxWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    final tt = Theme.of(context).textTheme;
+
+    return Container(
+      constraints: maxWidth != null
+          ? BoxConstraints(maxWidth: maxWidth!)
+          : null,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 14,
+            color: color.withValues(alpha: 0.8),
+          ),
+          AppSpacing.hGap4,
+          Flexible(
+            child: Text(
+              label,
+              style: tt.labelSmall?.copyWith(
+                color: color.withValues(alpha: 0.85),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

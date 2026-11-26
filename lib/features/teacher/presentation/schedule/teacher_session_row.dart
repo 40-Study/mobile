@@ -36,19 +36,38 @@ class TeacherSessionRow extends StatelessWidget {
   final String workplaceLabel;
   final bool compact;
   final VoidCallback? onChanged;
+
+  String _getStatusForDot() {
+    final label = teacherSessionStateLabel(session);
+    if (label.startsWith('Quá giờ')) return 'overdue';
+    final confirmStatus = session.json['hour_confirmation_status']?.toString();
+    if (confirmStatus == 'needs_info') return 'needs_info';
+    return session.status;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final label = teacherSessionStateLabel(session);
+    final role = session.json['teacher_role']?.toString();
+    final studentCount = (session.json['student_count'] as int?) ?? 0;
+
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          session.classData.name,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                session.classData.name,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            if (role != null) TeacherRoleBadge(role: role),
+          ],
         ),
         if (!compact && session.topic.isNotEmpty) ...[
           AppSpacing.vGap4,
@@ -57,10 +76,20 @@ class TeacherSessionRow extends StatelessWidget {
             style: theme.textTheme.bodyMedium?.copyWith(
               color: cs.onSurfaceVariant,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
         AppSpacing.vGap8,
-        TeacherSessionStatusLabel(label: label, status: session.status),
+        Row(
+          children: [
+            TeacherSessionStatusLabel(label: label, status: session.status),
+            if (studentCount > 0) ...[
+              AppSpacing.hGap12,
+              TeacherStudentCountBadge(count: studentCount),
+            ],
+          ],
+        ),
       ],
     );
     final largeText = MediaQuery.textScalerOf(context).scale(14) > 20;
@@ -107,11 +136,17 @@ class TeacherSessionRow extends StatelessWidget {
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '${session.start}–${session.end}',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: cs.primary,
-                        ),
+                      Row(
+                        children: [
+                          TeacherStatusDot(status: _getStatusForDot()),
+                          AppSpacing.hGap8,
+                          Text(
+                            '${session.start}–${session.end}',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              color: cs.primary,
+                            ),
+                          ),
+                        ],
                       ),
                       AppSpacing.vGap8,
                       content,
@@ -120,23 +155,38 @@ class TeacherSessionRow extends StatelessWidget {
                 : Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Time column with status dot
                       SizedBox(
-                        width: 62,
+                        width: 68,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              session.start,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                color: cs.primary,
-                                fontWeight: FontWeight.w700,
-                              ),
+                            Row(
+                              children: [
+                                TeacherStatusDot(
+                                  status: _getStatusForDot(),
+                                  size: 8,
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    session.start,
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      color: cs.primary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             if (!compact)
-                              Text(
-                                session.end,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: cs.onSurfaceVariant,
+                              Padding(
+                                padding: const EdgeInsets.only(left: 14),
+                                child: Text(
+                                  session.end,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: cs.onSurfaceVariant,
+                                  ),
                                 ),
                               ),
                           ],
@@ -144,9 +194,19 @@ class TeacherSessionRow extends StatelessWidget {
                       ),
                       Container(
                         width: 2,
-                        height: compact ? 44 : 64,
+                        height: compact ? 44 : 68,
                         margin: const EdgeInsets.only(right: AppSpacing.md),
-                        color: cs.primaryContainer,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              cs.primary,
+                              cs.primaryContainer,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(1),
+                        ),
                       ),
                       Expanded(child: content),
                       Icon(

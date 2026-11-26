@@ -15,12 +15,14 @@ class TeacherScheduleScreen extends StatefulWidget {
     required this.api,
     required this.organizationId,
     required this.workplaceLabel,
+    this.teacherName,
     this.onNavigateToReport,
     this.onNeedsAttentionCountChanged,
   });
   final TeacherApi api;
   final String? organizationId;
   final String workplaceLabel;
+  final String? teacherName;
 
   /// Callback để chuyển sang tab Báo cáo (tap vào dòng tổng tháng)
   final VoidCallback? onNavigateToReport;
@@ -53,6 +55,19 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
     _selected.month,
     _selected.day - _selected.weekday + 1,
   );
+
+  String _formatSelectedDate() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final selected = DateTime(_selected.year, _selected.month, _selected.day);
+
+    if (selected == today) return 'Hôm nay';
+    if (selected == today.add(const Duration(days: 1))) return 'Ngày mai';
+    if (selected == today.subtract(const Duration(days: 1))) return 'Hôm qua';
+
+    final weekdays = ['', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+    return '${weekdays[_selected.weekday]}, ${DateFormat('dd/MM').format(_selected)}';
+  }
 
   Future<_ScheduleData> _load() async {
     // Luôn load cả tháng để tránh call API 2 lần
@@ -226,19 +241,63 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.screenPadding,
-          AppSpacing.screenPadding,
-          AppSpacing.screenPadding,
-          0,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final topSurfaceColor = isLight ? Colors.white : cs.surface;
+
+    return Scaffold(
+      backgroundColor: topSurfaceColor,
+      body: Column(
+        children: [
+          // Hero Section
+          TeacherHeroSection(
+            greeting: TeacherHeroSection.getGreeting(),
+            name: TeacherHeroSection.getFirstName(widget.teacherName),
+            chips: [
+              TeacherSummaryChip(
+                icon: Icons.calendar_today_outlined,
+                label: _formatSelectedDate(),
+                onTap: () {
+                  final now = DateTime.now();
+                  setState(() {
+                    _selected = DateTime(now.year, now.month, now.day);
+                    _showOnlyNeedsAttention = false;
+                    _future = _load();
+                  });
+                },
+              ),
+            ],
+            trailing: PopupMenuButton<String>(
+              tooltip: 'Tùy chọn lịch dạy',
+              icon: const Icon(Icons.more_vert),
+              onSelected: (value) {
+                if (value == 'leave')
+                  teacherPush<Object?>(
+                    context,
+                    TeacherLeaveListScreen(
+                      api: widget.api,
+                      organizationId: widget.organizationId,
+                    ),
+                  );
+                if (value == 'reminders')
+                  teacherPush<Object?>(
+                    context,
+                    TeacherRemindersScreen(api: widget.api),
+                  );
+                if (value == 'refresh') _reload();
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: 'leave', child: Text('Xin nghỉ')),
+                PopupMenuItem(value: 'reminders', child: Text('Nhắc lịch')),
+                PopupMenuItem(value: 'refresh', child: Text('Tải lại')),
+              ],
+            ),
+          ),
+          // View toggle
+          Padding(
+            padding: AppSpacing.paddingHorizontalXl,
+            child: Row(
               children: [
                 Expanded(
                   child: SegmentedButton<bool>(
@@ -254,73 +313,36 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                     }),
                   ),
                 ),
-                PopupMenuButton<String>(
-                  tooltip: 'Tùy chọn lịch dạy',
-                  onSelected: (value) {
-                    if (value == 'leave')
-                      teacherPush<Object?>(
-                        context,
-                        TeacherLeaveListScreen(
-                          api: widget.api,
-                          organizationId: widget.organizationId,
-                        ),
-                      );
-                    if (value == 'reminders')
-                      teacherPush<Object?>(
-                        context,
-                        TeacherRemindersScreen(api: widget.api),
-                      );
-                    if (value == 'refresh') _reload();
-                  },
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'leave', child: Text('Xin nghỉ')),
-                    PopupMenuItem(value: 'reminders', child: Text('Nhắc lịch')),
-                    PopupMenuItem(value: 'refresh', child: Text('Tải lại')),
-                  ],
-                ),
               ],
             ),
-            Row(
-              children: [
-                if (!_month)
+          ),
+          // Week navigation (only show in week mode)
+          if (!_month)
+            Padding(
+              padding: AppSpacing.paddingHorizontalXl,
+              child: Row(
+                children: [
                   IconButton(
                     onPressed: () => _move(-1),
                     tooltip: 'Kỳ trước',
                     icon: const Icon(Icons.chevron_left),
                   ),
-                if (!_month)
                   Expanded(
                     child: Text(
-                      _month
-                          ? DateFormat('MM/yyyy').format(_selected)
-                          : '${DateFormat('dd/MM').format(_weekStart)} – ${DateFormat('dd/MM').format(_weekStart.add(const Duration(days: 6)))}',
+                      '${DateFormat('dd/MM').format(_weekStart)} – ${DateFormat('dd/MM').format(_weekStart.add(const Duration(days: 6)))}',
                       textAlign: TextAlign.center,
                     ),
                   ),
-                if (!_month)
                   IconButton(
                     onPressed: () => _move(1),
                     tooltip: 'Kỳ sau',
                     icon: const Icon(Icons.chevron_right),
                   ),
-                if (_month) const Spacer(),
-                TextButton(
-                  onPressed: () {
-                    final now = DateTime.now();
-                    setState(() {
-                      _selected = DateTime(now.year, now.month, now.day);
-                      _showOnlyNeedsAttention = false;
-                      _future = _load();
-                    });
-                  },
-                  child: const Text('Hôm nay'),
-                ),
-              ],
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
-      Expanded(
+          AppSpacing.vGap8,
+          Expanded(
         child: FutureBuilder<_ScheduleData>(
           future: _future,
           builder: (context, snapshot) {
@@ -498,7 +520,9 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
         ),
       ),
     ],
-  );
+      ),
+    );
+  }
 
   /// State 01: Chưa được giao lớp
   Widget _buildNoClassState(BuildContext context) {

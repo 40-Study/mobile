@@ -7,6 +7,9 @@ export 'teacher_card.dart';
 export 'teacher_status_badge.dart';
 export 'teacher_empty_state.dart';
 export 'teacher_surface.dart';
+export 'teacher_hero_section.dart';
+export 'teacher_curved_surface_tray.dart';
+export 'teacher_visual_elements.dart';
 
 Future<T?> teacherPush<T>(BuildContext context, Widget screen) =>
     Navigator.of(context).push<T>(MaterialPageRoute<T>(builder: (_) => screen));

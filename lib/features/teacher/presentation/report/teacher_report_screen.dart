@@ -492,91 +492,186 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final hours = totalMinutes ~/ 60;
     final mins = totalMinutes % 60;
-    final hoursText = hours > 0
-        ? '$hours giờ${mins > 0 ? ' $mins phút' : ''}'
-        : '$mins phút';
 
-    return Material(
-      color: cs.primaryContainer,
-      borderRadius: AppRadius.borderLg,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: AppSpacing.paddingXl,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.school, color: cs.onPrimaryContainer),
-                  AppSpacing.hGap8,
-                  Text(
-                    'Tổng kết tháng',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: cs.onPrimaryContainer,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (onTap != null)
-                    Icon(
-                      Icons.chevron_right,
-                      color: cs.onPrimaryContainer,
-                      size: 20,
-                    ),
-                ],
-              ),
-              AppSpacing.vGap16,
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '$totalSessions',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: cs.onPrimaryContainer,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          'buổi hoàn tất',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: cs.onPrimaryContainer.withValues(alpha: 0.8),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          hoursText,
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: cs.onPrimaryContainer,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          'giờ dạy',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: cs.onPrimaryContainer.withValues(alpha: 0.8),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            cs.primary,
+            cs.primary.withValues(alpha: 0.85),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        borderRadius: AppRadius.borderLg,
+        boxShadow: AppShadows.layeredCard,
+      ),
+      child: Stack(
+        children: [
+          // Decorative circles
+          Positioned(
+            top: -30,
+            right: -30,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -20,
+            left: -20,
+            child: Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.05),
+              ),
+            ),
+          ),
+          Material(
+            color: Colors.transparent,
+            borderRadius: AppRadius.borderLg,
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onTap,
+              child: Padding(
+                padding: AppSpacing.paddingXl,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: cs.onPrimary.withValues(alpha: 0.15),
+                            borderRadius: AppRadius.borderSm,
+                          ),
+                          child: Icon(
+                            Icons.school_outlined,
+                            color: cs.onPrimary,
+                            size: 20,
+                          ),
+                        ),
+                        AppSpacing.hGap12,
+                        Text(
+                          'Tổng kết tháng',
+                          style: tt.titleSmall?.copyWith(
+                            color: cs.onPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Spacer(),
+                        if (onTap != null)
+                          Icon(
+                            Icons.arrow_forward,
+                            color: cs.onPrimary,
+                            size: 20,
+                          ),
+                      ],
+                    ),
+                    AppSpacing.vGap24,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '$totalSessions',
+                                style: tt.displaySmall?.copyWith(
+                                  color: cs.onPrimary,
+                                  fontWeight: FontWeight.w700,
+                                  height: 1,
+                                ),
+                              ),
+                              AppSpacing.vGap4,
+                              Text(
+                                'buổi hoàn tất',
+                                style: tt.labelMedium?.copyWith(
+                                  color: cs.onPrimary.withValues(alpha: 0.85),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: 1,
+                          height: 48,
+                          color: cs.onPrimary.withValues(alpha: 0.2),
+                        ),
+                        AppSpacing.hGap16,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
+                                children: [
+                                  Text(
+                                    '$hours',
+                                    style: tt.displaySmall?.copyWith(
+                                      color: cs.onPrimary,
+                                      fontWeight: FontWeight.w700,
+                                      height: 1,
+                                    ),
+                                  ),
+                                  Text(
+                                    'h',
+                                    style: tt.titleLarge?.copyWith(
+                                      color: cs.onPrimary.withValues(alpha: 0.85),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  if (mins > 0) ...[
+                                    AppSpacing.hGap4,
+                                    Text(
+                                      '$mins',
+                                      style: tt.headlineSmall?.copyWith(
+                                        color: cs.onPrimary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Text(
+                                      'p',
+                                      style: tt.titleMedium?.copyWith(
+                                        color: cs.onPrimary.withValues(alpha: 0.85),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              AppSpacing.vGap4,
+                              Text(
+                                'giờ dạy',
+                                style: tt.labelMedium?.copyWith(
+                                  color: cs.onPrimary.withValues(alpha: 0.85),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -602,6 +697,7 @@ class _StatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final hours = minutes ~/ 60;
     final mins = minutes % 60;
     final hoursText = hours > 0
@@ -609,48 +705,85 @@ class _StatusCard extends StatelessWidget {
         : '$mins phút';
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Material(
-        color: cs.surfaceContainerLowest,
-        borderRadius: AppRadius.borderMd,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: AppSpacing.paddingLg,
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: 0.15),
-                    borderRadius: AppRadius.borderSm,
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerLowest,
+          borderRadius: AppRadius.borderMd,
+          border: Border.all(
+            color: cs.outlineVariant.withValues(alpha: 0.5),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF010120).withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: AppRadius.borderMd,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: AppSpacing.paddingLg,
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: iconColor.withValues(alpha: 0.12),
+                      borderRadius: AppRadius.borderSm,
+                    ),
+                    child: Icon(icon, color: iconColor, size: 22),
                   ),
-                  child: Icon(icon, color: iconColor, size: 20),
-                ),
-                AppSpacing.hGap12,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
+                  AppSpacing.hGap12,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: tt.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      Text(
-                        '$sessions buổi · $hoursText',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: cs.onSurfaceVariant,
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Text(
+                              '$sessions',
+                              style: tt.labelLarge?.copyWith(
+                                color: iconColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Text(
+                              ' buổi · ',
+                              style: tt.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
+                            Text(
+                              hoursText,
+                              style: tt.bodySmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                Icon(Icons.chevron_right, color: cs.onSurfaceVariant, size: 20),
-              ],
+                  Icon(Icons.chevron_right, color: cs.onSurfaceVariant, size: 20),
+                ],
+              ),
             ),
           ),
         ),
