@@ -183,84 +183,155 @@ class _LeaveRequestItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final dateFormat = DateFormat('dd/MM/yyyy');
+    final statusColor = _statusColor(context);
 
     final dateRange = request.fromDate == request.toDate
         ? dateFormat.format(request.fromDate)
         : '${dateFormat.format(request.fromDate)} - ${dateFormat.format(request.toDate)}';
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerLowest,
+          borderRadius: AppRadius.borderLg,
+          border: Border.all(
+            color: cs.outlineVariant.withValues(alpha: 0.5),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF010120).withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: AppRadius.borderLg,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: AppSpacing.paddingLg,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.calendar_today_outlined, size: 16, color: cs.primary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      dateRange,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.12),
+                          borderRadius: AppRadius.borderSm,
+                        ),
+                        child: Icon(
+                          _statusIcon,
+                          size: 20,
+                          color: statusColor,
+                        ),
+                      ),
+                      AppSpacing.hGap12,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              dateRange,
+                              style: tt.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${request.affectedSessions.length} buổi bị ảnh hưởng',
+                              style: tt.labelSmall?.copyWith(
+                                color: cs.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          _statusLabel,
+                          style: tt.labelSmall?.copyWith(
+                            color: statusColor,
                             fontWeight: FontWeight.w600,
                           ),
-                    ),
+                        ),
+                      ),
+                    ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _statusColor(context).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(4),
+                  if (request.reason.isNotEmpty) ...[
+                    AppSpacing.vGap12,
+                    Text(
+                      request.reason,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: tt.bodySmall?.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
                     ),
-                    child: Text(
-                      _statusLabel,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: _statusColor(context),
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
+                  ],
+                  AppSpacing.vGap12,
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 12,
+                        color: cs.onSurfaceVariant.withValues(alpha: 0.7),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Tạo ${DateFormat('dd/MM/yyyy').format(request.createdAt)}',
+                        style: tt.labelSmall?.copyWith(
+                          color: cs.onSurfaceVariant.withValues(alpha: 0.7),
+                        ),
+                      ),
+                      const Spacer(),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 20,
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                request.reason,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.school_outlined, size: 14, color: cs.onSurfaceVariant),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${request.affectedSessions.length} buổi bị ảnh hưởng',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    'Tạo ${DateFormat('dd/MM').format(request.createdAt)}',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  IconData get _statusIcon {
+    switch (request.status) {
+      case 'pending':
+        return Icons.hourglass_empty;
+      case 'approved':
+        return Icons.check_circle_outline;
+      case 'rejected':
+        return Icons.cancel_outlined;
+      case 'withdrawn':
+        return Icons.undo;
+      default:
+        return Icons.event_busy_outlined;
+    }
   }
 }
 

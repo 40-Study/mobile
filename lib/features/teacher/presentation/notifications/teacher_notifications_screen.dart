@@ -211,9 +211,11 @@ class _NotificationItem extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     switch (notification.type) {
       case 'needs_completion':
-        return cs.error;
+        return AchievementColors.red;
       case 'confirmation_feedback':
         return AchievementColors.green;
+      case 'leave_result':
+        return AchievementColors.yellow;
       default:
         return cs.primary;
     }
@@ -222,71 +224,114 @@ class _NotificationItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     final isUnread = !notification.isRead;
+    final iconColor = _iconColor(context);
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      color: isUnread ? cs.primaryContainer.withValues(alpha: 0.3) : null,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: _iconColor(context).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(_icon, size: 20, color: _iconColor(context)),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        decoration: BoxDecoration(
+          color: isUnread
+              ? cs.primaryContainer.withValues(alpha: 0.15)
+              : cs.surfaceContainerLowest,
+          borderRadius: AppRadius.borderMd,
+          border: Border.all(
+            color: isUnread
+                ? cs.primary.withValues(alpha: 0.3)
+                : cs.outlineVariant.withValues(alpha: 0.5),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF010120).withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: AppRadius.borderMd,
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            child: Padding(
+              padding: AppSpacing.paddingMd,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: iconColor.withValues(alpha: 0.12),
+                      borderRadius: AppRadius.borderSm,
+                    ),
+                    child: Icon(_icon, size: 20, color: iconColor),
+                  ),
+                  AppSpacing.hGap12,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            notification.title,
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                  fontWeight: isUnread ? FontWeight.w700 : FontWeight.w500,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                notification.title,
+                                style: tt.titleSmall?.copyWith(
+                                  fontWeight:
+                                      isUnread ? FontWeight.w700 : FontWeight.w500,
                                 ),
+                              ),
+                            ),
+                            if (isUnread)
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: cs.primary,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: cs.primary.withValues(alpha: 0.4),
+                                      blurRadius: 4,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                        AppSpacing.vGap4,
+                        Text(
+                          notification.body,
+                          style: tt.bodySmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        AppSpacing.vGap4,
+                        Text(
+                          DateFormat('HH:mm').format(notification.createdAt),
+                          style: tt.labelSmall?.copyWith(
+                            color: cs.onSurfaceVariant.withValues(alpha: 0.7),
                           ),
                         ),
-                        if (isUnread)
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: cs.primary,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      notification.body,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      DateFormat('HH:mm').format(notification.createdAt),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
-                    ),
-                  ],
-                ),
+                  ),
+                  Icon(
+                    Icons.chevron_right,
+                    size: 20,
+                    color: cs.onSurfaceVariant,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

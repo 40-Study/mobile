@@ -622,16 +622,19 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   }
 
   Widget _buildWeekStrip(BuildContext context, List<TeacherOccurrence> sessions) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: AppSpacing.paddingHorizontalXl,
         child: Row(
           children: [
             for (var i = 0; i < 7; i++)
               Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.only(right: AppSpacing.sm),
                 child: Builder(
                   builder: (context) {
                     final day = DateTime(
@@ -639,91 +642,117 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                       _weekStart.month,
                       _weekStart.day + i,
                     );
-                    final count = sessions
+                    final daySessions = sessions
                         .where(
                           (s) =>
-                              teacherDate(s.date) ==
-                                  teacherDate(day) &&
-                              (_classId == null ||
-                                  s.classId == _classId),
+                              teacherDate(s.date) == teacherDate(day) &&
+                              (_classId == null || s.classId == _classId),
                         )
-                        .length;
-                    final selected =
-                        teacherDate(day) ==
-                        teacherDate(_selected);
-                    final cs = Theme.of(context).colorScheme;
-                    final today =
-                        teacherDate(day) ==
-                        teacherDate(DateTime.now());
-                    return ChoiceChip(
-                      showCheckmark: false,
-                      selectedColor: cs.primary,
-                      backgroundColor:
-                          cs.surfaceContainerLowest,
-                      side: BorderSide(
-                        color: today && !selected
-                            ? cs.primary
-                            : cs.outlineVariant,
-                      ),
-                      label: Padding(
+                        .toList();
+                    final count = daySessions.length;
+                    final hasNeedsAttention = daySessions.any((s) {
+                      final confirmStatus =
+                          s.json['hour_confirmation_status']?.toString();
+                      return confirmStatus == 'needs_info';
+                    });
+                    final selected = teacherDate(day) == teacherDate(_selected);
+                    final today = teacherDate(day) == teacherDate(DateTime.now());
+
+                    return GestureDetector(
+                      onTap: () => setState(() => _selected = day),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOutCubic,
+                        width: today ? 72 : 56,
                         padding: const EdgeInsets.symmetric(
-                          vertical: 6,
-                          horizontal: 3,
+                          vertical: AppSpacing.sm,
+                          horizontal: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? cs.primary
+                              : cs.surfaceContainerLowest,
+                          borderRadius: AppRadius.borderMd,
+                          border: Border.all(
+                            color: selected
+                                ? cs.primary
+                                : today
+                                    ? cs.primary
+                                    : cs.outlineVariant.withValues(alpha: 0.5),
+                            width: today && !selected ? 2 : 1,
+                          ),
+                          boxShadow: selected
+                              ? [
+                                  BoxShadow(
+                                    color: cs.primary.withValues(alpha: 0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ]
+                              : null,
                         ),
                         child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               today
                                   ? 'Hôm nay'
-                                  : const [
-                                      'T2',
-                                      'T3',
-                                      'T4',
-                                      'T5',
-                                      'T6',
-                                      'T7',
-                                      'CN',
-                                    ][i],
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall
-                                  ?.copyWith(
-                                    color: selected
-                                        ? cs.onPrimary
-                                        : cs.onSurfaceVariant,
-                                  ),
+                                  : const ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'][i],
+                              style: tt.labelSmall?.copyWith(
+                                color: selected
+                                    ? cs.onPrimary
+                                    : cs.onSurfaceVariant,
+                                fontSize: today ? 10 : 11,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               DateFormat('dd').format(day),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    color: selected
-                                        ? cs.onPrimary
-                                        : cs.onSurface,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                              style: tt.titleLarge?.copyWith(
+                                color: selected ? cs.onPrimary : cs.onSurface,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              '$count buổi',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelSmall
-                                  ?.copyWith(
-                                    color: selected
-                                        ? cs.onPrimary
-                                        : cs.onSurfaceVariant,
+                            if (count > 0)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (hasNeedsAttention)
+                                    Container(
+                                      width: 6,
+                                      height: 6,
+                                      margin: const EdgeInsets.only(right: 4),
+                                      decoration: BoxDecoration(
+                                        color: selected
+                                            ? cs.onPrimary
+                                            : AchievementColors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  Text(
+                                    '$count',
+                                    style: tt.labelMedium?.copyWith(
+                                      color: selected
+                                          ? cs.onPrimary
+                                          : cs.primary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
-                            ),
+                                ],
+                              )
+                            else
+                              Text(
+                                '—',
+                                style: tt.labelSmall?.copyWith(
+                                  color: selected
+                                      ? cs.onPrimary.withValues(alpha: 0.5)
+                                      : cs.onSurfaceVariant.withValues(alpha: 0.5),
+                                ),
+                              ),
                           ],
                         ),
                       ),
-                      selected: selected,
-                      onSelected: (_) =>
-                          setState(() => _selected = day),
                     );
                   },
                 ),
