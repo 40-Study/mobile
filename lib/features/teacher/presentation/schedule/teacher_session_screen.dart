@@ -523,14 +523,16 @@ class _RoleBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final (bg, fg) = switch (role) {
-      'main' => (cs.primaryContainer, cs.onPrimaryContainer),
-      'substitute' => (cs.tertiaryContainer, cs.onTertiaryContainer),
-      'assistant' => (cs.secondaryContainer, cs.onSecondaryContainer),
+      'main' => (cs.primary.withValues(alpha: 0.12), cs.primary),
+      'substitute' => (AchievementColors.orange.withValues(alpha: 0.12), AchievementColors.orange),
+      'assistant' => (AchievementColors.blue.withValues(alpha: 0.12), AchievementColors.blue),
       _ => (cs.surfaceContainerHigh, cs.onSurfaceVariant),
     };
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(6),
