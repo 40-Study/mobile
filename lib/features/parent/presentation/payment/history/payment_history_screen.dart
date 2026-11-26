@@ -30,6 +30,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
   String? _selectedChildId;
   int _selectedYear = 2026;
   bool _isLoading = true;
+  Object? _error;
   List<ParentInvoiceModel> _historyInvoices = [];
 
   @override
@@ -42,13 +43,15 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                 apiClient: diContainer.isRegistered<ParentHomeApiClient>()
                     ? diContainer<ParentHomeApiClient>()
                     : null,
-                enablePreviewFallback: true,
               ));
     _loadHistory();
   }
 
   Future<void> _loadHistory() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
     try {
       if (_children.isEmpty) {
         _children = await _repository.getChildren();
@@ -62,9 +65,12 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
         _historyInvoices = list;
         _isLoading = false;
       });
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      setState(() => _isLoading = false);
+      setState(() {
+        _error = e;
+        _isLoading = false;
+      });
     }
   }
 
@@ -299,6 +305,25 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
+                : _error != null
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _error is PaymentUnavailableException
+                              ? '$_error'
+                              : 'Không tải được lịch sử thanh toán.',
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        FilledButton(
+                          onPressed: _loadHistory,
+                          child: const Text('Thử lại'),
+                        ),
+                      ],
+                    ),
+                  )
                 : _historyInvoices.isEmpty
                     ? Center(
                         child: Padding(

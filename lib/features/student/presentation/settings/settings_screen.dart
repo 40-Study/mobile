@@ -47,7 +47,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _SettingsTile(
                 icon: Icons.language,
                 title: l10n.settingsLanguage,
-                trailing: Text(l10n.settingsLanguageVietnamese, style: tt.bodySmall),
+                trailing: Text(
+                  l10n.settingsLanguageVietnamese,
+                  style: tt.bodySmall,
+                ),
                 onTap: () {},
               ),
             ],
@@ -176,7 +179,13 @@ class _SettingsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(color: cs.outline),
       ),
-      child: Column(children: children),
+      // Material trong suốt để ink splash của ListTile không bị nền che
+      child: Material(
+        type: MaterialType.transparency,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        clipBehavior: Clip.antiAlias,
+        child: Column(children: children),
+      ),
     );
   }
 }

@@ -72,15 +72,13 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
     return widget.questions.asMap().entries.where((entry) {
       final index = entry.key;
       final q = entry.value;
-      final userAns = widget.userAnswers[index];
-      final isCorrect = userAns != null &&
-          (userAns == q.correctAnswer ||
-              (userAns is Set && userAns.contains(q.correctAnswer)));
+      // null = chưa biết đúng/sai → không xếp vào Đúng hay Sai
+      final isCorrect = q.isAnsweredCorrectly(widget.userAnswers[index]);
 
       return switch (_selectedFilter) {
         QuizReviewFilterType.total => true,
-        QuizReviewFilterType.correct => isCorrect,
-        QuizReviewFilterType.wrong => !isCorrect,
+        QuizReviewFilterType.correct => isCorrect == true,
+        QuizReviewFilterType.wrong => isCorrect == false,
       };
     }).toList();
   }
@@ -323,18 +321,11 @@ class _QuizResultScreenState extends State<QuizResultScreen> {
                           ..._filteredQuestions.map((entry) {
                             final questionIndex = entry.key + 1;
                             final question = entry.value;
-                            final userAns = widget.userAnswers[entry.key];
-                            int? userAnsInt;
-                            if (userAns is int) {
-                              userAnsInt = userAns;
-                            } else if (userAns is Iterable) {
-                              final first = userAns.firstOrNull;
-                              if (first is int) userAnsInt = first;
-                            }
+                            // Truyền đủ tập đáp án cho câu nhiều lựa chọn
                             return QuestionReviewCard(
                               index: questionIndex,
                               question: question,
-                              userAnswerIndex: userAnsInt,
+                              userAnswer: widget.userAnswers[entry.key],
                             );
                           }),
                       ],

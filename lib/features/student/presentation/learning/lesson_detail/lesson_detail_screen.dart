@@ -173,9 +173,19 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
       body: BlocConsumer<LessonBloc, LessonState>(
         listenWhen: (prev, curr) =>
             curr is LessonSuccess &&
-            curr.courseCompleted &&
-            (prev is! LessonSuccess || !prev.courseCompleted),
-        listener: (context, state) => _showCourseCompletedDialog(),
+            (curr.completionError != null ||
+                (curr.courseCompleted &&
+                    (prev is! LessonSuccess || !prev.courseCompleted))),
+        listener: (context, state) {
+          final error = state is LessonSuccess ? state.completionError : null;
+          if (error != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(error)),
+            );
+            return;
+          }
+          _showCourseCompletedDialog();
+        },
         builder: (context, state) {
           return switch (state) {
             LessonInitial() || LessonInProgress() => const Center(

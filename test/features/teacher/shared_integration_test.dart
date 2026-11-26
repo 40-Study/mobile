@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:study/features/auth/data/auth_interceptor.dart';
@@ -33,6 +34,7 @@ class _UploadApi extends TeacherApi {
   final calls = <String>[];
   final chunks = <int>[];
   bool mismatch = false;
+  String storageBase = 'https://storage.example.test';
   @override
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) async {
     calls.add(path);
@@ -62,8 +64,7 @@ class _UploadApi extends TeacherApi {
           'urls': [
             {
               'chunk_number': data['chunk_numbers'][0],
-              'url':
-                  'https://storage.example.test/chunk/${data['chunk_numbers'][0]}',
+              'url': '$storageBase/chunk/${data['chunk_numbers'][0]}',
             },
           ],
         },
@@ -137,6 +138,7 @@ void main() {
   );
   test('select-org carries bearer while public login does not', () async {
     SharedPreferences.setMockInitialValues({});
+    FlutterSecureStorage.setMockInitialValues({});
     final storage = SharedPreferencesAuthStorage(
       await SharedPreferences.getInstance(),
     );
@@ -286,4 +288,55 @@ void main() {
       await directory.delete(recursive: true);
     },
   );
+  for (final (base, allowed) in [
+    ('http://storage.example.com', false),
+    ('http://localhost:9000', true),
+    ('http://192.168.1.20:9000', true),
+  ]) {
+    test(
+      allowed
+          ? 'should allow http for local host $base'
+          : 'should reject http signed url',
+      () async {
+        final directory = await Directory.systemTemp.createTemp(
+          'teacher-upload-',
+        );
+        final file = await File(
+          '${directory.path}/lesson.mp4',
+        ).writeAsBytes([1, 2, 3, 4, 5, 6]);
+        final api = _UploadApi()..storageBase = base;
+        var puts = 0;
+        final storage = Dio()
+          ..httpClientAdapter = _Adapter((options, stream) async {
+            puts++;
+            await stream?.drain<void>();
+            return ResponseBody.fromString(
+              '',
+              200,
+              headers: {
+                'etag': ['"chunk-etag"'],
+              },
+            );
+          });
+        final upload = TeacherVideoUploadController(
+          api: api,
+          storageClient: storage,
+        );
+        await upload.upload(
+          file: file,
+          fileName: 'lesson.mp4',
+          resourceId: 'course',
+        );
+        if (allowed) {
+          expect(upload.error, isNull);
+          expect(puts, 2);
+        } else {
+          expect(upload.error, isA<FormatException>());
+          expect(puts, 0);
+        }
+        upload.dispose();
+        await directory.delete(recursive: true);
+      },
+    );
+  }
 }

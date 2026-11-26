@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/config/preview_flags.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/parent/data/models/family_scope_child.dart';
 import 'package:study/features/parent/data/models/parent_payment_model.dart';
@@ -47,6 +48,7 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
   String? _selectedChildId; // null = Tất cả học sinh
   bool _forceActionableDueMode = false; // Toggle demo giữa All-Clear và Có nợ
   bool _isLoading = true;
+  Object? _error;
 
   PaymentSummaryOverviewModel? _overview;
   List<ParentInvoiceModel> _allInvoices = [];
@@ -61,15 +63,26 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
                 apiClient: diContainer.isRegistered<ParentHomeApiClient>()
                     ? diContainer<ParentHomeApiClient>()
                     : null,
-                enablePreviewFallback: true,
               ));
     _loadData();
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
     try {
       final children = await _repository.getChildren();
+      // Chưa có con → hiện prompt liên kết, không gọi payment
+      if (children.isEmpty) {
+        if (!mounted) return;
+        setState(() {
+          _children = children;
+          _isLoading = false;
+        });
+        return;
+      }
       final overview = await _repository.getPaymentSummary(
         childId: _selectedChildId,
         mockAllPaid: !_forceActionableDueMode,
@@ -84,9 +97,12 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
         _allInvoices = invoices;
         _isLoading = false;
       });
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
-      setState(() => _isLoading = false);
+      setState(() {
+        _error = e;
+        _isLoading = false;
+      });
     }
   }
 
@@ -274,8 +290,14 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
       );
     }
 
+    // Hiện lỗi thật thay vì fallback "đã đóng hết"
+    final overview = _overview;
+    if (_error != null || (_children.isNotEmpty && overview == null)) {
+      return _buildErrorView(context, surfaceBg);
+    }
+
     // Trường hợp phụ huynh chưa liên kết tài khoản con
-    if (_children.isEmpty) {
+    if (_children.isEmpty || overview == null) {
       return Scaffold(
         backgroundColor: surfaceBg,
         body: SafeArea(
@@ -306,15 +328,6 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
         ),
       );
     }
-
-    final overview = _overview ??
-        const PaymentSummaryOverviewModel(
-          totalDueAmount: 0,
-          totalDueCount: 0,
-          totalPaidAmount: 0,
-          isAllPaid: true,
-          allPaidMessage: 'Học sinh hiện không có khoản học phí nào cần đóng.',
-        );
 
     final showActionableDue = _forceActionableDueMode ||
         (!overview.isAllPaid && _dueInvoices.isNotEmpty);
@@ -509,6 +522,48 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
   }
 
   /// Thanh tác vụ phụ gồm xem lịch sử thanh toán và nút chuyển đổi demo All-Clear / Có nợ
+  Widget _buildErrorView(BuildContext context, Color surfaceBg) {
+    return Scaffold(
+      backgroundColor: surfaceBg,
+      body: SafeArea(
+        child: Column(
+          children: [
+            ParentAppHeader(
+              icon: Icons.account_balance_wallet_rounded,
+              categoryLabel: 'HỌC VỤ & TÀI CHÍNH',
+              title: 'Học phí & Thanh toán',
+              onNotificationTap: () => _openNotifications(context),
+              onAvatarTap: widget.onNavigateToProfile,
+            ),
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _error is PaymentUnavailableException
+                            ? '$_error'
+                            : 'Không tải được dữ liệu học phí.',
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      FilledButton(
+                        onPressed: _loadData,
+                        child: const Text('Thử lại'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSubToolbar(BuildContext context, ColorScheme cs) {
     return Row(
       children: [
@@ -550,6 +605,7 @@ class _ParentPaymentScreenState extends State<ParentPaymentScreen> {
         const Spacer(),
 
         // Nút toggle chuyển chế độ demo All-Clear ↔ Có nợ quá hạn
+        if (kPreviewDataEnabled)
         InkWell(
           onTap: () {
             setState(() {

@@ -17,6 +17,19 @@ class TeacherVideoUploadController extends ChangeNotifier {
   Object? error;
   CancelToken? _cancel;
   bool _disposed = false;
+  // localhost/loopback hoặc IP LAN private (MinIO dev trên máy thật)
+  static bool _isLocalHost(String host) {
+    if (host == 'localhost') return true;
+    final ip = InternetAddress.tryParse(host);
+    if (ip == null) return false;
+    if (ip.isLoopback) return true;
+    if (ip.type != InternetAddressType.IPv4) return false;
+    final b = ip.rawAddress;
+    return b[0] == 10 ||
+        (b[0] == 192 && b[1] == 168) ||
+        (b[0] == 172 && b[1] >= 16 && b[1] <= 31);
+  }
+
   void _notify() {
     if (!_disposed) notifyListeners();
   }
@@ -88,7 +101,10 @@ class TeacherVideoUploadController extends ChangeNotifier {
         );
         final entry = teacherList(urls, keys: const ['urls']).first;
         final url = Uri.parse('${entry['url']}');
-        if (!['http', 'https'].contains(url.scheme))
+        // Chỉ upload qua HTTPS, http chỉ cho MinIO local/LAN ở build không phải release
+        final isLocalDev =
+            !kReleaseMode && url.scheme == 'http' && _isLocalHost(url.host);
+        if (url.scheme != 'https' && !isLocalDev)
           throw const FormatException('Địa chỉ lưu trữ không hợp lệ.');
         final start = (chunk - 1) * chunkSize;
         final end = (start + chunkSize).clamp(0, size);

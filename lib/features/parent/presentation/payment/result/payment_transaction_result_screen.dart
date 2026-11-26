@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:study/config/preview_flags.dart';
 import 'package:study/features/parent/data/models/parent_payment_model.dart';
 import 'package:study/features/parent/repository/parent_payment_repository.dart';
 import 'package:study/features/parent/repository/parent_payment_repository_impl.dart';
@@ -41,19 +42,33 @@ class _PaymentTransactionResultScreenState
 
   Future<void> _handleCheckStatus() async {
     setState(() => _isChecking = true);
-    final updated =
-        await _repository.checkPaymentStatus(_currentResult.transactionId);
-    if (!mounted) return;
-    setState(() {
-      _currentResult = updated;
-      _isChecking = false;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Cập nhật trạng thái: ${_currentResult.statusTitle}'),
-      ),
-    );
+    try {
+      final updated =
+          await _repository.checkPaymentStatus(_currentResult.transactionId);
+      if (!mounted) return;
+      setState(() {
+        _currentResult = updated;
+        _isChecking = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Cập nhật trạng thái: ${_currentResult.statusTitle}'),
+        ),
+      );
+    } catch (e) {
+      // Tránh loading mãi khi check status lỗi
+      if (!mounted) return;
+      setState(() => _isChecking = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e is PaymentUnavailableException
+                ? '$e'
+                : 'Không kiểm tra được trạng thái giao dịch.',
+          ),
+        ),
+      );
+    }
   }
 
   void _handleContactSupport() {
@@ -174,7 +189,8 @@ class _PaymentTransactionResultScreenState
           ),
         ),
         actions: [
-          // Demo Switcher cho 4 trạng thái
+          // Demo Switcher cho 4 trạng thái, chỉ khi bật preview
+          if (kPreviewDataEnabled)
           PopupMenuButton<PaymentTransactionStatus>(
             tooltip: 'Đổi trạng thái mẫu kết quả',
             icon: const Icon(Icons.tune_rounded),

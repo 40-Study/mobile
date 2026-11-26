@@ -5,6 +5,9 @@ import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/student/data/models/models.dart';
 
 /// Repository cho Student feature — schedule, assignments, enrollments
+/// Kết quả gửi tiến độ: bài đã được server chốt completed chưa, khoá học xong chưa
+typedef LessonCompletionResult = ({bool lessonCompleted, bool courseCompleted});
+
 abstract class StudentRepository {
   // Schedule
   Future<ApiResult<List<ScheduleItemModel>>> getTodaySchedule();
@@ -22,8 +25,8 @@ abstract class StudentRepository {
 
   // Lesson
   Future<ApiResult<LessonModel>> getLessonDetail(String lessonId);
-  /// Returns true if course is completed after this lesson
-  Future<ApiResult<bool>> markLessonComplete(
+  /// Gửi tiến độ xem; server tự chốt completed khi đủ watched_pct
+  Future<ApiResult<LessonCompletionResult>> markLessonComplete(
     String lessonId, {
     List<List<int>>? playedRanges,
     int? durationSeconds,

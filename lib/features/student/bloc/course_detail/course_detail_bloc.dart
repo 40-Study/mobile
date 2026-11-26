@@ -1,12 +1,13 @@
-﻿import 'package:study/features/student/data/mock/mock_course_detail_data.dart';
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/config/preview_flags.dart';
 import 'package:study/data/bookmark_storage.dart';
 import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/course/repository/course_repository.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_event.dart';
 import 'package:study/features/student/bloc/course_detail/course_detail_state.dart';
+import 'package:study/features/student/data/mock/mock_course_detail_data.dart';
 import 'package:study/features/student/data/models/bookmark_model.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 
@@ -56,12 +57,17 @@ class CourseDetailBloc extends Bloc<CourseDetailEvent, CourseDetailState> {
   }
 
   Future<void> _loadEnrollment(Emitter<CourseDetailState> emit) async {
-    if (MockCourseDetailData.isMockId(_id)) {
-      emit(MockCourseDetailData.getMockCourseDetail(_id!, isEnrollment: true));
+    final id = _id;
+    if (kPreviewDataEnabled && MockCourseDetailData.isMockId(id)) {
+      emit(MockCourseDetailData.getMockCourseDetail(id ?? '', isEnrollment: true));
+      return;
+    }
+    if (id == null || id.isEmpty) {
+      emit(const CourseDetailFailure('Không tìm thấy khóa học'));
       return;
     }
 
-    final result = await _repository.getCourseDetail(_id!);
+    final result = await _repository.getCourseDetail(id);
 
     await result.when(
       success: (enrollment) async {
@@ -79,19 +85,23 @@ class CourseDetailBloc extends Bloc<CourseDetailEvent, CourseDetailState> {
         ));
       },
       failure: (error) {
-        // Fallback to mock data to prevent UI failure in development
-        emit(MockCourseDetailData.getMockCourseDetail(_id ?? 'course_1', isEnrollment: true));
+        emit(CourseDetailFailure(error.message ?? 'Không tải được khóa học'));
       },
     );
   }
 
   Future<void> _loadCourse(Emitter<CourseDetailState> emit) async {
-    if (MockCourseDetailData.isMockId(_id)) {
-      emit(MockCourseDetailData.getMockCourseDetail(_id!, isEnrollment: false));
+    final id = _id;
+    if (kPreviewDataEnabled && MockCourseDetailData.isMockId(id)) {
+      emit(MockCourseDetailData.getMockCourseDetail(id ?? '', isEnrollment: false));
+      return;
+    }
+    if (id == null || id.isEmpty) {
+      emit(const CourseDetailFailure('Không tìm thấy khóa học'));
       return;
     }
 
-    final result = await _repository.getCourseById(_id!);
+    final result = await _repository.getCourseById(id);
 
     await result.when(
       success: (course) async {
@@ -112,8 +122,7 @@ class CourseDetailBloc extends Bloc<CourseDetailEvent, CourseDetailState> {
         ));
       },
       failure: (error) {
-        // Fallback to mock data to prevent UI failure in development
-        emit(MockCourseDetailData.getMockCourseDetail(_id ?? 'course_1', isEnrollment: false));
+        emit(CourseDetailFailure(error.message ?? 'Không tải được khóa học'));
       },
     );
   }
@@ -181,7 +190,8 @@ class CourseDetailBloc extends Bloc<CourseDetailEvent, CourseDetailState> {
     final courseId = currentState.course?.id;
     if (courseId == null) return;
 
-    if (MockCourseDetailData.isMockId(courseId) || currentState.certificate != null) {
+    final isMock = kPreviewDataEnabled && MockCourseDetailData.isMockId(courseId);
+    if (isMock || currentState.certificate != null) {
       final cert = currentState.certificate ??
           MockCourseDetailData.createMockCertificate(
             courseId,

@@ -12,7 +12,8 @@ abstract class ParentHomeApiClient {
   @GET('/api/me/children')
   Future<HttpResponse<dynamic>> getChildren({
     @Query('page') int page = 1,
-    @Query('page_size') int pageSize = 10,
+    // Backend đọc `pageSize`; 50 đủ cho số con thực tế của 1 phụ huynh
+    @Query('pageSize') int pageSize = 50,
   });
 
   /// Tổng quan học tập của 1 con.

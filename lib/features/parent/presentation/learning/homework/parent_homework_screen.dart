@@ -51,7 +51,6 @@ class _ParentHomeworkScreenState extends State<ParentHomeworkScreen> {
                 apiClient: diContainer.isRegistered<ParentHomeApiClient>()
                     ? diContainer<ParentHomeApiClient>()
                     : null,
-                enablePreviewFallback: true,
               ));
     _currentFilterKey = widget.initialFilterKey;
     _selectedChildId = widget.initialChildId;

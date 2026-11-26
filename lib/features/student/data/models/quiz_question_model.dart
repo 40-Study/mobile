@@ -45,6 +45,22 @@ abstract class QuizQuestionModel with _$QuizQuestionModel {
       .map((e) => e.key)
       .toList();
 
+  /// So đáp án user: int (1 lựa chọn) hoặc Iterable<int> (nhiều lựa chọn).
+  /// null = chưa biết (API không trả is_correct)
+  bool? isAnsweredCorrectly(Object? userAnswer) {
+    final correct = correctAnswers.toSet();
+    if (correct.isEmpty) return null;
+    if (userAnswer == null) return false;
+    if (userAnswer is int) {
+      return correct.length == 1 && correct.contains(userAnswer);
+    }
+    if (userAnswer is Iterable) {
+      final picked = userAnswer.whereType<int>().toSet();
+      return picked.length == correct.length && picked.containsAll(correct);
+    }
+    return false;
+  }
+
   /// Kiểm tra loại câu hỏi
   bool get isMultipleChoice => questionType == 'multiple_choice';
   bool get isSingleChoice =>

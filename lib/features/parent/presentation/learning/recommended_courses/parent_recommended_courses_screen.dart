@@ -49,7 +49,6 @@ class _ParentRecommendedCoursesScreenState
             apiClient: diContainer.isRegistered<ParentHomeApiClient>()
                 ? diContainer<ParentHomeApiClient>()
                 : null,
-            enablePreviewFallback: true,
           );
     _fetchCourses();
   }

@@ -40,7 +40,6 @@ class _ParentCourseDetailScreenState extends State<ParentCourseDetailScreen> {
             apiClient: diContainer.isRegistered<ParentHomeApiClient>()
                 ? diContainer<ParentHomeApiClient>()
                 : null,
-            enablePreviewFallback: true,
           );
     _fetchDetail();
   }

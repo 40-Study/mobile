@@ -296,7 +296,7 @@ class StudentRepositoryImpl implements StudentRepository {
   }
 
   @override
-  Future<ApiResult<bool>> markLessonComplete(
+  Future<ApiResult<LessonCompletionResult>> markLessonComplete(
     String lessonId, {
     List<List<int>>? playedRanges,
     int? durationSeconds,
@@ -309,8 +309,12 @@ class StudentRepositoryImpl implements StudentRepository {
       if (playedRanges != null) body['played_ranges'] = playedRanges;
       if (durationSeconds != null) body['duration_seconds'] = durationSeconds;
       final response = await _courseApi.updateLessonProgress(lessonId, body);
-      final courseCompleted = response.data['data']?['course_completed'] == true;
-      return Result.success(courseCompleted);
+      final data = response.data['data'];
+      // Server bỏ qua status client gửi, chỉ tin status trả về
+      return Result.success((
+        lessonCompleted: data?['status'] == 'completed',
+        courseCompleted: data?['course_completed'] == true,
+      ));
     } catch (e) {
       return Result.failure(ServerFailure(message: e.toString()));
     }

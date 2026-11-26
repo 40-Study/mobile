@@ -59,7 +59,6 @@ class _ParentClassDetailScreenState extends State<ParentClassDetailScreen> {
               apiClient: diContainer.isRegistered<ParentHomeApiClient>()
                   ? diContainer<ParentHomeApiClient>()
                   : null,
-              enablePreviewFallback: true,
             );
 
       final detail = await repo.getClassDetail(

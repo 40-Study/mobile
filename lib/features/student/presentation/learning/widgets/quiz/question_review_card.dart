@@ -10,28 +10,28 @@ class QuestionReviewCard extends StatelessWidget {
     required this.index,
     this.reviewItem,
     this.question,
-    this.userAnswerIndex,
+    this.userAnswer,
   });
 
   final int index;
   final QuizReviewItemModel? reviewItem;
   final QuizQuestionModel? question;
-  final int? userAnswerIndex;
+  /// int (1 lựa chọn) hoặc Iterable<int> (nhiều lựa chọn)
+  final Object? userAnswer;
 
   bool get isSkipped {
     if (reviewItem != null) {
       return reviewItem!.isSkipped || reviewItem!.selectedAnswerIds.isEmpty;
     }
-    return userAnswerIndex == null;
+    final answer = userAnswer;
+    return answer == null || (answer is Iterable && answer.isEmpty);
   }
 
   bool get isCorrect {
     if (reviewItem != null) {
       return reviewItem!.isCorrect;
     }
-    return userAnswerIndex != null &&
-        question != null &&
-        userAnswerIndex == question!.correctAnswer;
+    return question?.isAnsweredCorrectly(userAnswer) ?? false;
   }
 
   String get questionTitle =>
@@ -59,14 +59,16 @@ class QuestionReviewCard extends StatelessWidget {
     if (reviewItem != null) {
       return reviewItem!.correctAnswerIds.contains(answer.id);
     }
-    return question != null && optIndex == question!.correctAnswer;
+    return question?.correctAnswers.contains(optIndex) ?? false;
   }
 
   bool _isAnswerSelected(QuizAnswerModel answer, int optIndex) {
     if (reviewItem != null) {
       return reviewItem!.selectedAnswerIds.contains(answer.id);
     }
-    return optIndex == userAnswerIndex;
+    final selected = userAnswer;
+    if (selected is Iterable) return selected.contains(optIndex);
+    return optIndex == selected;
   }
 
   @override

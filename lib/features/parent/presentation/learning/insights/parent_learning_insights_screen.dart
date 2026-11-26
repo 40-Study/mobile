@@ -49,7 +49,6 @@ class _ParentLearningInsightsScreenState
             apiClient: diContainer.isRegistered<ParentHomeApiClient>()
                 ? diContainer<ParentHomeApiClient>()
                 : null,
-            enablePreviewFallback: true,
           );
     _fetchInsights();
   }

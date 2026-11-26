@@ -25,6 +25,7 @@ final class LessonSuccess extends LessonState {
     this.isCompleted = false,
     this.quizzes = const [],
     this.courseCompleted = false,
+    this.completionError,
   });
 
   final LessonModel lesson;
@@ -32,19 +33,28 @@ final class LessonSuccess extends LessonState {
   final bool isCompleted;
   final List<QuizModel> quizzes;
   final bool courseCompleted;
+  final String? completionError;
 
   String? get videoUrl {
     final videoContent = lesson.contents?.firstWhere(
       (c) => c.type == 'video',
       orElse: () => const LessonContentModel(id: '', type: '', title: ''),
     );
-    return videoContent?.videoUrl;
+    // Ưu tiên HLS đã ký; video_url gốc chỉ trả cho chủ khoá/admin
+    return videoContent?.videoHlsUrl ?? videoContent?.videoUrl;
   }
 
   double get progressPercentage => lesson.progress?.progressPercentage ?? 0;
 
   @override
-  List<Object?> get props => [lesson, selectedTab, isCompleted, quizzes, courseCompleted];
+  List<Object?> get props => [
+    lesson,
+    selectedTab,
+    isCompleted,
+    quizzes,
+    courseCompleted,
+    completionError,
+  ];
 
   LessonSuccess copyWith({
     LessonModel? lesson,
@@ -52,6 +62,7 @@ final class LessonSuccess extends LessonState {
     bool? isCompleted,
     List<QuizModel>? quizzes,
     bool? courseCompleted,
+    String? completionError,
   }) {
     return LessonSuccess(
       lesson: lesson ?? this.lesson,
@@ -59,6 +70,8 @@ final class LessonSuccess extends LessonState {
       isCompleted: isCompleted ?? this.isCompleted,
       quizzes: quizzes ?? this.quizzes,
       courseCompleted: courseCompleted ?? this.courseCompleted,
+      // Không giữ lỗi cũ: error chỉ dùng cho 1 lần show SnackBar
+      completionError: completionError,
     );
   }
 }

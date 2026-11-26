@@ -1,6 +1,14 @@
 import 'package:study/features/parent/data/models/family_scope_child.dart';
 import 'package:study/features/parent/data/models/parent_payment_model.dart';
 
+/// Throw khi chưa có API payment thật (preview tắt)
+class PaymentUnavailableException implements Exception {
+  const PaymentUnavailableException();
+
+  @override
+  String toString() => 'Thanh toán trực tuyến chưa khả dụng.';
+}
+
 /// Interface quản lý dữ liệu và luồng giao dịch cho phân hệ Học phí (Payment)
 abstract class ParentPaymentRepository {
   /// Lấy danh sách học sinh của phụ huynh

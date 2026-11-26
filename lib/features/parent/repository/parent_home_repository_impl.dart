@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:study/config/preview_flags.dart';
 import 'package:study/core/logger/app_logger.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/parent/data/models/models.dart';
@@ -10,7 +11,7 @@ import 'package:study/features/parent/repository/parent_home_repository.dart';
 class ParentHomeRepositoryImpl implements ParentHomeRepository {
   ParentHomeRepositoryImpl({
     ParentHomeApiClient? apiClient,
-    this.enablePreviewFallback = true,
+    this.enablePreviewFallback = kPreviewDataEnabled,
   }) : _api = apiClient;
 
   final ParentHomeApiClient? _api;

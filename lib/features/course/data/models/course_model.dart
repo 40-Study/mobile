@@ -96,6 +96,8 @@ abstract class LessonContentModel with _$LessonContentModel {
     required String type,
     required String title,
     @JsonKey(name: 'video_url') String? videoUrl,
+    // URL HLS đã ký (tương đối, vd /api/hls/...); học viên chỉ nhận field này
+    @JsonKey(name: 'video_hls_url') String? videoHlsUrl,
     @StringToIntConverter() @Default(0) int duration,
     @JsonKey(name: 'exercise_id') String? exerciseId,
     @JsonKey(name: 'is_mandatory') @Default(true) bool isMandatory,

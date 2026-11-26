@@ -1,11 +1,12 @@
 import 'dart:async';
 
+import 'package:study/config/preview_flags.dart';
 import 'package:study/features/parent/data/models/models.dart';
 import 'package:study/features/parent/repository/family_insights_repository.dart';
 
 class FamilyInsightsRepositoryImpl implements FamilyInsightsRepository {
   FamilyInsightsRepositoryImpl({
-    this.enablePreviewFallback = true,
+    this.enablePreviewFallback = kPreviewDataEnabled,
   });
 
   final bool enablePreviewFallback;
@@ -18,6 +19,9 @@ class FamilyInsightsRepositoryImpl implements FamilyInsightsRepository {
 
   @override
   Future<List<FamilyInsightItem>> getInsights({String? childId}) async {
+    // Chưa có API thật, chỉ trả sample khi bật preview
+    if (!enablePreviewFallback) return const [];
+
     // Giả lập độ trễ mạng nhẹ nhàng
     await Future<void>.delayed(const Duration(milliseconds: 300));
 
@@ -38,6 +42,9 @@ class FamilyInsightsRepositoryImpl implements FamilyInsightsRepository {
 
   @override
   Future<void> sendEncouragement(String insightId) async {
+    if (!enablePreviewFallback) {
+      throw UnsupportedError('Tính năng chưa khả dụng');
+    }
     await Future<void>.delayed(const Duration(milliseconds: 200));
     _encouragedIds.add(insightId);
   }

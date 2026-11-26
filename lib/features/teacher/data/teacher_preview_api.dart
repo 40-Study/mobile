@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:study/config/preview_flags.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
 
 /// Temporary dev preview, enabled by default while the Teacher UI is reviewed.
@@ -11,8 +12,7 @@ class TeacherPreviewApi extends TeacherApi {
       !kReleaseMode &&
       bool.fromEnvironment(
         'TEACHER_UI_PREVIEW',
-        defaultValue:
-            String.fromEnvironment('ENV', defaultValue: 'dev') == 'dev',
+        defaultValue: kPreviewDataEnabled,
       );
   static const _writeError = FormatException(
     'Dữ liệu mẫu chỉ dùng để xem giao diện, không lưu thay đổi.',

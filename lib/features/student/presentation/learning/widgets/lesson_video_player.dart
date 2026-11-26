@@ -1,5 +1,7 @@
 import 'package:chewie/chewie.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:study/core/network/api_origin.dart';
 import 'package:study/di/di_container.dart';
 import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/theme/theme.dart';
@@ -10,7 +12,8 @@ class LessonVideoPlayer extends StatefulWidget {
     super.key,
     this.videoUrl,
     this.onProgressThreshold,
-    this.progressThreshold = 0.8,
+    // Backend mặc định chốt bài ở watched_pct >= 90
+    this.progressThreshold = 0.9,
   });
   final String? videoUrl;
   /// Called when threshold reached. Params: playedRanges, durationSeconds
@@ -28,6 +31,7 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
   String? _error;
   bool _usedFallback = false;
   bool _thresholdTriggered = false;
+  bool _endTriggered = false;
 
   // Track played ranges
   final List<List<int>> _playedRanges = [];
@@ -52,20 +56,16 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
           ? _fallbackVideoUrl
           : (widget.videoUrl ?? _fallbackVideoUrl);
 
-      // Only add auth headers for our API domain
-      final headers = <String, String>{};
-      final uri = Uri.parse(url);
-      final isOurApi = uri.host.contains('40study') ||
-          uri.host.contains('api.') ||
-          uri.host.contains('localhost');
-
-      if (isOurApi) {
-        final authStorage = diContainer<AuthStorage>();
-        final token = await authStorage.getAccessToken();
-        if (token != null) {
-          headers['Authorization'] = 'Bearer $token';
-        }
-      }
+      final apiBase = Uri.parse(diContainer<Dio>().options.baseUrl);
+      // Backend trả URL HLS tương đối → resolve theo API base
+      final uri = apiBase.resolve(url);
+      final headers = isSameOrigin(uri, apiBase)
+          ? videoAuthHeaders(
+              uri,
+              apiBase: apiBase,
+              token: await diContainer<AuthStorage>().getAccessToken(),
+            )
+          : const <String, String>{};
 
       final controller = VideoPlayerController.networkUrl(
         uri,
@@ -151,15 +151,29 @@ class _LessonVideoPlayerState extends State<LessonVideoPlayer> {
     }
     _wasPlaying = isPlaying;
 
-    // Check threshold
-    if (_thresholdTriggered) return;
+    // Clip fallback không tính tiến độ bài học
+    if (_usedFallback || widget.videoUrl == null) return;
     final progress = positionMs / durationMs;
-    if (progress >= widget.progressThreshold) {
+    // Báo 2 mốc: threshold và cuối video
+    final reachedThreshold =
+        !_thresholdTriggered && progress >= widget.progressThreshold;
+    // Mốc cuối: video thực sự phát hết (course có thể yêu cầu min_video_pct = 100)
+    final reachedEnd = !_endTriggered && positionMs >= durationMs - 300;
+    if (reachedThreshold || reachedEnd) {
       _thresholdTriggered = true;
-      // Close current range nếu đang play
+      if (reachedEnd) _endTriggered = true;
+      // Close current range, mở range mới nếu vẫn đang play
+      // Ở mốc cuối, đóng range tại duration để không bị cắt xuống giây trước đó
+      final endSec =
+          reachedEnd ? controller.value.duration.inSeconds : positionSec;
       if (_currentRangeStart != null) {
-        _playedRanges.add([_currentRangeStart!, positionSec]);
-        _currentRangeStart = null;
+        _playedRanges.add([_currentRangeStart!, endSec]);
+        _currentRangeStart = isPlaying ? endSec : null;
+      } else if (reachedEnd &&
+          _playedRanges.isNotEmpty &&
+          _playedRanges.last[1] >= positionSec) {
+        // Vừa pause sát cuối (range đã đóng ở giây trước) → kéo tới duration
+        _playedRanges.last[1] = endSec;
       }
       widget.onProgressThreshold?.call(
         List.from(_playedRanges),

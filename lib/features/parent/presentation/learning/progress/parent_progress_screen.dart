@@ -45,7 +45,6 @@ class _ParentProgressScreenState extends State<ParentProgressScreen> {
                 apiClient: diContainer.isRegistered<ParentHomeApiClient>()
                     ? diContainer<ParentHomeApiClient>()
                     : null,
-                enablePreviewFallback: true,
               ));
     _selectedChildId = widget.initialChildId;
     _loadInitialData();

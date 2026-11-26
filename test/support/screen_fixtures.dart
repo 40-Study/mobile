@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
@@ -231,11 +232,13 @@ late SharedPreferences prefs;
 
 Future<void> setUpScreenFixtures({int itemCount = 0}) async {
   SharedPreferences.setMockInitialValues({});
+  FlutterSecureStorage.setMockInitialValues({});
   prefs = await SharedPreferences.getInstance();
   auth = _AuthRepository();
   student = _StudentRepository();
   when(() => auth.getSavedUser()).thenAnswer((_) async => _user);
   when(() => auth.getSavedProfile()).thenAnswer((_) async => null);
+  when(() => auth.getSavedRole()).thenAnswer((_) async => null);
   when(() => auth.getMe()).thenAnswer((_) async => _user);
   when(() => auth.getProfiles()).thenAnswer((_) async => []);
   when(() => auth.getSystemRoles()).thenAnswer((_) async => [_role]);
@@ -406,7 +409,13 @@ Future<void> pumpScreenFixture(
         providers: [
           BlocProvider(
             create: (_) =>
-                AuthBloc(auth)..emit(const AuthAuthenticated(user: _user)),
+                AuthBloc(auth)..emit(
+                  // MainScreen cần profile, không còn default StudentShell
+                  const AuthAuthenticated(
+                    user: _user,
+                    activeProfile: ProfileModel(id: 'p', roleName: 'student'),
+                  ),
+                ),
           ),
           BlocProvider(
             create: (_) => ThemeCubit(

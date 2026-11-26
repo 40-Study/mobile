@@ -73,7 +73,11 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
       setState(() => _isSubmitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Lỗi xử lý giao dịch: $e'),
+          content: Text(
+            e is PaymentUnavailableException
+                ? '$e'
+                : 'Lỗi xử lý giao dịch, vui lòng thử lại.',
+          ),
           backgroundColor: const Color(0xFFDC2626),
         ),
       );
