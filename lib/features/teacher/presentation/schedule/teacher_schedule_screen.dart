@@ -625,13 +625,24 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: AppSpacing.paddingHorizontalXl,
-        child: Row(
-          children: [
+    return GestureDetector(
+      // Swipe horizontal để chuyển tuần
+      onHorizontalDragEnd: (details) {
+        final velocity = details.primaryVelocity ?? 0;
+        // Swipe phải → tuần trước, swipe trái → tuần sau
+        if (velocity > 300) {
+          _move(-1);
+        } else if (velocity < -300) {
+          _move(1);
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: AppSpacing.paddingHorizontalXl,
+          child: Row(
+            children: [
             for (var i = 0; i < 7; i++)
               Padding(
                 padding: const EdgeInsets.only(right: AppSpacing.sm),
@@ -757,7 +768,8 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                   },
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     );

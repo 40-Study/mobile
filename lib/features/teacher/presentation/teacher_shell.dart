@@ -38,6 +38,9 @@ class _TeacherShellState extends State<TeacherShell> {
   bool _scopeLoaded = false;
   int _unreadNotifications = 0;
 
+  // PageController cho swipe navigation
+  late final PageController _pageController = PageController();
+
   // Spec mốc 1a: 4 tabs - Lịch, Lớp, Báo cáo, Hồ sơ
   static const _labels = ['Lịch', 'Lớp', 'Báo cáo', 'Hồ sơ'];
   static const _icons = [
@@ -88,14 +91,43 @@ class _TeacherShellState extends State<TeacherShell> {
 
   @override
   void dispose() {
+    _pageController.dispose();
     if (widget.workplace == null) _workplace.dispose();
     super.dispose();
   }
 
-  void _tab(int value) => setState(() {
-    _index = value;
-    _visited.add(value);
-  });
+  void _tab(int value) {
+    setState(() {
+      _index = value;
+      _visited.add(value);
+    });
+    // Animate PageView khi tap tab
+    if (_pageController.hasClients) {
+      _pageController.animateToPage(
+        value,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _onPageChanged(int page) {
+    if (_index != page) {
+      setState(() {
+        _index = page;
+        _visited.add(page);
+      });
+    }
+  }
+
+  /// Sync PageController khi workplace thay đổi
+  void _syncPageController() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_pageController.hasClients && _pageController.page?.round() != _index) {
+        _pageController.jumpToPage(_index);
+      }
+    });
+  }
 
   Future<void> _selectWorkplace() async {
     if (_workplace.busy) return;
@@ -201,7 +233,8 @@ class _TeacherShellState extends State<TeacherShell> {
     }
   }
 
-  Widget _scopeBody(String label, String? organizationId) {
+  /// Trả về error/loading state nếu chưa load xong workplace
+  Widget? _scopeErrorOrLoading() {
     if (!_workplace.initialized) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -227,51 +260,62 @@ class _TeacherShellState extends State<TeacherShell> {
         ],
       );
     }
+    return null;
+  }
+
+  /// Build các screens cho PageView
+  List<Widget> _buildScreens(String label, String? organizationId) {
+    // Check revision change để reset visited và sync PageController
     if (_seenRevision != _workplace.revision) {
       _seenRevision = _workplace.revision;
-      // Keep profile tab (3) if visited, reset scoped tabs (0-2)
       _visited.removeWhere((tab) => tab < 3);
       _visited.add(_index < 3 ? _index : 0);
+      _syncPageController();
     }
-    return KeyedSubtree(
-      key: ValueKey(_workplace.revision),
-      child: IndexedStack(
-        index: _index < 3 ? _index : 0,
-        children: [
-          // Tab 0: Lịch
-          if (_visited.contains(0))
-            TeacherScheduleScreen(
-              api: _api,
-              organizationId: organizationId,
-              workplaceLabel: label,
-              onNavigateToReport: () => _tab(2),
-              onNeedsAttentionCountChanged: (count) {
-                _workplace.updateNeedsAttentionCount(organizationId, count);
-              },
-            )
-          else
-            const SizedBox.shrink(),
-          // Tab 1: Lớp
-          if (_visited.contains(1))
-            TeacherClassesScreen(
-              api: _api,
-              organizationId: organizationId,
-              workplaceLabel: label,
-            )
-          else
-            const SizedBox.shrink(),
-          // Tab 2: Báo cáo
-          if (_visited.contains(2))
-            TeacherReportScreen(
-              api: _api,
-              organizationId: organizationId,
-              workplaceLabel: label,
-            )
-          else
-            const SizedBox.shrink(),
-        ],
+
+    return [
+      // Tab 0: Lịch
+      KeyedSubtree(
+        key: ValueKey('schedule_${_workplace.revision}'),
+        child: _visited.contains(0)
+            ? TeacherScheduleScreen(
+                api: _api,
+                organizationId: organizationId,
+                workplaceLabel: label,
+                onNavigateToReport: () => _tab(2),
+                onNeedsAttentionCountChanged: (count) {
+                  _workplace.updateNeedsAttentionCount(organizationId, count);
+                },
+              )
+            : const SizedBox.shrink(),
       ),
-    );
+      // Tab 1: Lớp
+      KeyedSubtree(
+        key: ValueKey('classes_${_workplace.revision}'),
+        child: _visited.contains(1)
+            ? TeacherClassesScreen(
+                api: _api,
+                organizationId: organizationId,
+                workplaceLabel: label,
+              )
+            : const SizedBox.shrink(),
+      ),
+      // Tab 2: Báo cáo
+      KeyedSubtree(
+        key: ValueKey('report_${_workplace.revision}'),
+        child: _visited.contains(2)
+            ? TeacherReportScreen(
+                api: _api,
+                organizationId: organizationId,
+                workplaceLabel: label,
+              )
+            : const SizedBox.shrink(),
+      ),
+      // Tab 3: Hồ sơ (không phụ thuộc workplace revision)
+      _visited.contains(3)
+          ? const TeacherProfileScreen()
+          : const SizedBox.shrink(),
+    ];
   }
 
   @override
@@ -279,27 +323,30 @@ class _TeacherShellState extends State<TeacherShell> {
     animation: _workplace,
     builder: (context, _) {
       final label = _workplace.activeOrg?.name ?? 'Cá nhân';
-      // Profile tab (3) stays outside organization revision to preserve state
-      final content = IndexedStack(
-        index: _index == 3 ? 1 : 0,
-        children: [
-          Column(
-            children: [
-              if (_workplace.busy) const LinearProgressIndicator(),
-              Expanded(
-                child: AbsorbPointer(
-                  absorbing: _workplace.busy,
-                  child: _scopeBody(label, _workplace.activeOrg?.id),
+      final organizationId = _workplace.activeOrg?.id;
+
+      // Check error/loading state
+      final errorOrLoading = _scopeErrorOrLoading();
+
+      // Build PageView content với swipe navigation
+      final content = errorOrLoading != null
+          ? errorOrLoading
+          : Column(
+              children: [
+                if (_workplace.busy) const LinearProgressIndicator(),
+                Expanded(
+                  child: AbsorbPointer(
+                    absorbing: _workplace.busy,
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: _onPageChanged,
+                      children: _buildScreens(label, organizationId),
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          if (_visited.contains(3))
-            const TeacherProfileScreen()
-          else
-            const SizedBox.shrink(),
-        ],
-      );
+              ],
+            );
+
       final wide = MediaQuery.sizeOf(context).width >= 840;
       final cs = Theme.of(context).colorScheme;
       // Tinted surface cho body background - tạo depth
