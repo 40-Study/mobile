@@ -494,7 +494,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                       padding: AppSpacing.paddingHorizontalXl,
                       child: _buildNeedsAttentionSection(context, data),
                     ),
-                  if (_showOnlyNeedsAttention)
+                  if (_showOnlyNeedsAttention) ...[
                     Padding(
                       padding: AppSpacing.paddingHorizontalXl,
                       child: Row(
@@ -516,6 +516,13 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                         ],
                       ),
                     ),
+                    // Empty state khi không còn buổi cần xử lý
+                    if (data.needsAttention.isEmpty)
+                      const TeacherEmptyStateInline(
+                        icon: Icons.check_circle_outline,
+                        message: 'Không còn buổi nào cần xử lý.\nTất cả đã hoàn tất!',
+                      ),
+                  ],
 
                   // Thẻ "Buổi tiếp theo" (hiện ngay sau Cần xử lý)
                   if (!_showOnlyNeedsAttention && data.nextSession != null)
@@ -549,32 +556,36 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                       onWeekChanged: (delta) => _move(delta),
                     ),
                     AppSpacing.vGap12,
-                    Padding(
-                      padding: AppSpacing.paddingHorizontalXl,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: OutlinedButton.icon(
-                          onPressed: _filter,
-                          icon: const Icon(Icons.filter_list),
-                          label: Text(
-                            _classId == null
-                                ? 'Tất cả lớp'
-                                : _classNames[_classId] ?? 'Lớp đã chọn',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                    // Filter button - chỉ hiện khi có nhiều hơn 1 lớp
+                    if (_classNames.length > 1)
+                      Padding(
+                        padding: AppSpacing.paddingHorizontalXl,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: OutlinedButton.icon(
+                            onPressed: _filter,
+                            icon: const Icon(Icons.filter_list),
+                            label: Text(
+                              _classId == null
+                                  ? 'Tất cả lớp'
+                                  : _classNames[_classId] ?? 'Lớp đã chọn',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: AppSpacing.paddingScreenAll,
-                      child: Text(
-                        '${rows.length} buổi dạy · ${DateFormat('dd/MM/yyyy').format(_selected)}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
+                    // Header count - chỉ hiện khi có sessions
+                    if (rows.isNotEmpty)
+                      Padding(
+                        padding: AppSpacing.paddingScreenAll,
+                        child: Text(
+                          '${rows.length} buổi dạy · ${_formatSelectedDate()}',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
-                    ),
                   ],
 
                   // State 02: Hôm nay không có lịch
