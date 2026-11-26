@@ -33,6 +33,27 @@ class _TeacherNotificationsScreenState
 
   void _reload() => setState(() => _future = _load());
 
+  /// Mark notification as read via swipe
+  Future<bool> _markAsRead(TeacherNotification notif) async {
+    try {
+      await widget.api.post('/me/notifications/${notif.id}/read');
+      _reload();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã đánh dấu đã đọc'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return false; // Không dismiss item, chỉ reload
+    } catch (_) {
+      // Mock API không hỗ trợ - vẫn reload UI
+      _reload();
+      return false;
+    }
+  }
+
   Future<void> _onTap(TeacherNotification notif) async {
     // Mark as read (nếu API hỗ trợ)
     try {
@@ -122,9 +143,17 @@ class _TeacherNotificationsScreenState
                     ),
                     const SizedBox(height: 8),
                     for (final notif in group.notifications)
-                      _NotificationItem(
-                        notification: notif,
-                        onTap: () => _onTap(notif),
+                      TeacherSwipeToAction(
+                        itemKey: Key('notif_${notif.id}'),
+                        icon: Icons.mark_email_read_outlined,
+                        label: 'Đã đọc',
+                        color: AchievementColors.green,
+                        enabled: !notif.isRead,
+                        onAction: () => _markAsRead(notif),
+                        child: _NotificationItem(
+                          notification: notif,
+                          onTap: () => _onTap(notif),
+                        ),
                       ),
                   ],
                 );

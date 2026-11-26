@@ -48,6 +48,33 @@ class _TeacherLeaveListScreenState extends State<TeacherLeaveListScreen>
 
   void _reload() => setState(() => _future = _load());
 
+  /// Withdraw leave request via swipe
+  Future<bool> _withdrawRequest(TeacherLeaveRequest request) async {
+    try {
+      await widget.api.post('/me/leave-requests/${request.id}/withdraw');
+      _reload();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã rút đơn xin nghỉ'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return false; // Không dismiss, reload list
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Không thể rút đơn: ${teacherErrorMessage(e)}'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+      return false;
+    }
+  }
+
   Future<void> _createLeave() async {
     final result = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
@@ -116,9 +143,19 @@ class _TeacherLeaveListScreenState extends State<TeacherLeaveListScreen>
               itemCount: requests.length,
               itemBuilder: (context, index) {
                 final request = requests[index];
-                return _LeaveRequestItem(
-                  request: request,
-                  onTap: () => _openDetail(request),
+                final canWithdraw = request.status == 'pending';
+                return TeacherSwipeToAction(
+                  itemKey: Key('leave_${request.id}'),
+                  icon: Icons.undo,
+                  label: 'Rút đơn',
+                  color: AchievementColors.yellow,
+                  enabled: canWithdraw,
+                  confirmMessage: 'Bạn có chắc muốn rút đơn xin nghỉ này?',
+                  onAction: () => _withdrawRequest(request),
+                  child: _LeaveRequestItem(
+                    request: request,
+                    onTap: () => _openDetail(request),
+                  ),
                 );
               },
             ),

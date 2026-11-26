@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/data/teacher_core.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_session_row.dart';
+import 'package:study/features/teacher/presentation/schedule/teacher_session_screen.dart';
 import 'package:study/features/teacher/presentation/profile/teacher_reminders_screen.dart';
 import 'package:study/features/teacher/presentation/leave/teacher_leave_list_screen.dart';
 import 'package:study/features/teacher/presentation/widgets/session_card.dart';
@@ -175,6 +176,42 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   void _reload() => setState(() {
     _future = _load();
   });
+
+  /// Check if session is overdue and can be quick-started
+  bool _isOverdue(TeacherOccurrence session) {
+    if (session.status != 'scheduled') return false;
+    if (session.sessionId == null) return false;
+    final role = session.json['teacher_role']?.toString();
+    if (role == 'assistant') return false; // Trợ giảng không cần hoàn tất
+
+    final now = DateTime.now();
+    final endParts = session.end.split(':');
+    final endTime = DateTime(
+      session.date.year,
+      session.date.month,
+      session.date.day,
+      int.tryParse(endParts.first) ?? 23,
+      int.tryParse(endParts.last) ?? 59,
+    );
+    return endTime.isBefore(now);
+  }
+
+  /// Quick start session via swipe (navigate to complete screen)
+  Future<bool> _quickStartSession(TeacherOccurrence session) async {
+    // Navigate to session screen để hoàn tất
+    final result = await teacherPush<bool>(
+      context,
+      TeacherSessionScreen(
+        api: widget.api,
+        classId: session.classId,
+        sessionId: session.sessionId,
+        occurrence: session,
+        workplaceLabel: widget.workplaceLabel,
+      ),
+    );
+    if (result == true) _reload();
+    return false; // Không dismiss item
+  }
 
   void _move(int direction) => setState(() {
     _selected = _month
@@ -495,11 +532,20 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                   for (final session in rows)
                     Padding(
                       padding: AppSpacing.paddingHorizontalXl,
-                      child: TeacherSessionRow(
-                        onChanged: _reload,
-                        session: session,
-                        api: widget.api,
-                        workplaceLabel: widget.workplaceLabel,
+                      child: TeacherSwipeToAction(
+                        itemKey: Key('session_${session.sessionId ?? session.classId}_${session.date}'),
+                        icon: Icons.play_arrow_rounded,
+                        label: 'Hoàn tất',
+                        color: AchievementColors.green,
+                        enabled: _isOverdue(session),
+                        direction: DismissDirection.startToEnd,
+                        onAction: () => _quickStartSession(session),
+                        child: TeacherSessionRow(
+                          onChanged: _reload,
+                          session: session,
+                          api: widget.api,
+                          workplaceLabel: widget.workplaceLabel,
+                        ),
                       ),
                     ),
 
