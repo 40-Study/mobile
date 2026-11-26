@@ -28,6 +28,7 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
   late Future<TeacherReportData> _future;
   String? _classId;
   final _classNames = <String, String>{};
+  bool _statusSectionExpanded = true; // Cho collapsible "Chi tiết theo trạng thái"
 
   @override
   void initState() {
@@ -339,53 +340,62 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
                       _EmptyState(month: _month, classId: _classId),
                     ] else if (hasReviewProcess) ...[
                       AppSpacing.vGap24,
-                      Text(
-                        'Chi tiết theo trạng thái',
-                        style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                      // Collapsible section cho chi tiết theo trạng thái
+                      TeacherCollapsibleSection(
+                        title: 'Chi tiết theo trạng thái',
+                        icon: Icons.pie_chart_outline,
+                        initiallyExpanded: _statusSectionExpanded,
+                        onExpansionChanged: (expanded) {
+                          setState(() => _statusSectionExpanded = expanded);
+                        },
+                        child: Column(
+                          children: [
+                            AppSpacing.vGap8,
+                            if (data.confirmedSessions.isNotEmpty)
+                              _StatusCard(
+                                icon: Icons.check_circle_outline,
+                                iconColor: AchievementColors.green,
+                                title: 'Đã xác nhận',
+                                sessions: data.confirmedSessions.length,
+                                minutes: data.confirmedMinutes,
+                                onTap: () => _openGroup(
+                                  context,
+                                  'Giờ đã xác nhận',
+                                  data.confirmedSessions,
+                                  data.classes,
+                                ),
+                              ),
+                            if (data.pendingSessions.isNotEmpty)
+                              _StatusCard(
+                                icon: Icons.hourglass_empty,
+                                iconColor: AchievementColors.yellow,
+                                title: 'Chờ xác nhận',
+                                sessions: data.pendingSessions.length,
+                                minutes: data.pendingMinutes,
+                                onTap: () => _openGroup(
+                                  context,
+                                  'Giờ chờ xác nhận',
+                                  data.pendingSessions,
+                                  data.classes,
+                                ),
+                              ),
+                            if (data.needsInfoSessions.isNotEmpty)
+                              _StatusCard(
+                                icon: Icons.info_outline,
+                                iconColor: AchievementColors.red,
+                                title: 'Cần bổ sung',
+                                sessions: data.needsInfoSessions.length,
+                                minutes: data.needsInfoMinutes,
+                                onTap: () => _openGroup(
+                                  context,
+                                  'Giờ cần bổ sung',
+                                  data.needsInfoSessions,
+                                  data.classes,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                      AppSpacing.vGap12,
-                      if (data.confirmedSessions.isNotEmpty)
-                        _StatusCard(
-                          icon: Icons.check_circle_outline,
-                          iconColor: AchievementColors.green,
-                          title: 'Đã xác nhận',
-                          sessions: data.confirmedSessions.length,
-                          minutes: data.confirmedMinutes,
-                          onTap: () => _openGroup(
-                            context,
-                            'Giờ đã xác nhận',
-                            data.confirmedSessions,
-                            data.classes,
-                          ),
-                        ),
-                      if (data.pendingSessions.isNotEmpty)
-                        _StatusCard(
-                          icon: Icons.hourglass_empty,
-                          iconColor: AchievementColors.yellow,
-                          title: 'Chờ xác nhận',
-                          sessions: data.pendingSessions.length,
-                          minutes: data.pendingMinutes,
-                          onTap: () => _openGroup(
-                            context,
-                            'Giờ chờ xác nhận',
-                            data.pendingSessions,
-                            data.classes,
-                          ),
-                        ),
-                      if (data.needsInfoSessions.isNotEmpty)
-                        _StatusCard(
-                          icon: Icons.info_outline,
-                          iconColor: AchievementColors.red,
-                          title: 'Cần bổ sung',
-                          sessions: data.needsInfoSessions.length,
-                          minutes: data.needsInfoMinutes,
-                          onTap: () => _openGroup(
-                            context,
-                            'Giờ cần bổ sung',
-                            data.needsInfoSessions,
-                            data.classes,
-                          ),
-                        ),
                     ],
                     AppSpacing.vGap24,
                     // Trung tâm đã rời - chỉ hiện khi có nhiều trung tâm

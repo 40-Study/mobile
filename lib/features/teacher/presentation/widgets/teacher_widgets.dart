@@ -4,6 +4,7 @@ import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/widgets/section_header.dart';
 
 export 'teacher_card.dart';
+export 'teacher_collapsible_section.dart';
 export 'teacher_status_badge.dart';
 export 'teacher_empty_state.dart';
 export 'teacher_surface.dart';

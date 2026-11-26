@@ -41,6 +41,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   bool _month = false;
   final _classNames = <String, String>{};
   bool _showOnlyNeedsAttention = false;
+  bool _needsAttentionExpanded = false; // Cho collapsible section
 
   @override
   void initState() {
@@ -388,17 +389,11 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  // Mục "Cần xử lý" (hiện khi có buổi quá giờ/cần bổ sung)
+                  // Mục "Cần xử lý" - collapsible section
                   if (data.needsAttention.isNotEmpty && !_showOnlyNeedsAttention)
                     Padding(
                       padding: AppSpacing.paddingHorizontalXl,
-                      child: NeedsAttentionCard(
-                        count: data.needsAttention.length,
-                        label: 'buổi cần xử lý',
-                        onTap: () => setState(() {
-                          _showOnlyNeedsAttention = true;
-                        }),
-                      ),
+                      child: _buildNeedsAttentionSection(context, data),
                     ),
                   if (_showOnlyNeedsAttention)
                     Padding(
@@ -540,6 +535,57 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
       message: data.nextSession != null
           ? 'Không có buổi dạy trong ngày này.\nBuổi tiếp theo: ${DateFormat('dd/MM').format(data.nextSession!.date)} lúc ${data.nextSession!.start}'
           : 'Không có buổi dạy trong ngày này.',
+    );
+  }
+
+  /// Section "Cần xử lý" collapsible
+  Widget _buildNeedsAttentionSection(BuildContext context, _ScheduleData data) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return TeacherCollapsibleCard(
+      title: 'Cần xử lý',
+      subtitle: 'Buổi quá giờ hoặc cần bổ sung thông tin',
+      icon: Icons.warning_amber_outlined,
+      iconColor: AchievementColors.red,
+      badgeCount: data.needsAttention.length,
+      badgeColor: AchievementColors.red,
+      initiallyExpanded: _needsAttentionExpanded,
+      onExpansionChanged: (expanded) {
+        setState(() => _needsAttentionExpanded = expanded);
+      },
+      child: Column(
+        children: [
+          for (var i = 0; i < data.needsAttention.length; i++) ...[
+            if (i > 0)
+              Divider(
+                height: 1,
+                color: cs.outlineVariant.withValues(alpha: 0.3),
+              ),
+            _NeedsAttentionItem(
+              session: data.needsAttention[i],
+              onTap: () {
+                // Navigate to session detail
+                setState(() => _showOnlyNeedsAttention = true);
+              },
+            ),
+          ],
+          // Link xem tất cả nếu có nhiều items
+          if (data.needsAttention.length > 3) ...[
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => setState(() => _showOnlyNeedsAttention = true),
+              child: Text(
+                'Xem tất cả ${data.needsAttention.length} buổi',
+                style: tt.labelMedium?.copyWith(
+                  color: cs.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -791,4 +837,94 @@ class _ScheduleData {
   final TeacherOccurrence? nextSession;
   final int monthCompletedSessions;
   final int monthMinutes;
+}
+
+/// Item trong collapsible "Cần xử lý" section
+class _NeedsAttentionItem extends StatelessWidget {
+  const _NeedsAttentionItem({
+    required this.session,
+    required this.onTap,
+  });
+
+  final TeacherOccurrence session;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    final confirmStatus = session.json['hour_confirmation_status']?.toString();
+    final isNeedsInfo = confirmStatus == 'needs_info';
+
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.sm,
+        ),
+        child: Row(
+          children: [
+            // Status indicator
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: isNeedsInfo
+                    ? AchievementColors.yellow
+                    : AchievementColors.red,
+                shape: BoxShape.circle,
+              ),
+            ),
+            AppSpacing.hGap12,
+            // Session info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    session.classData.name,
+                    style: tt.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    '${DateFormat('dd/MM').format(session.date)} · ${session.start} - ${session.end}',
+                    style: tt.bodySmall?.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Status label
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8,
+                vertical: 4,
+              ),
+              decoration: BoxDecoration(
+                color: (isNeedsInfo
+                        ? AchievementColors.yellow
+                        : AchievementColors.red)
+                    .withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                isNeedsInfo ? 'Cần bổ sung' : 'Quá giờ',
+                style: tt.labelSmall?.copyWith(
+                  color: isNeedsInfo
+                      ? AchievementColors.yellow
+                      : AchievementColors.red,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
