@@ -75,7 +75,8 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
       return !date.isBefore(from) && !date.isAfter(to);
     }).toList();
 
-    // Update class names for filter
+    // Clear và rebuild class names để tránh stale data
+    _classNames.clear();
     for (final c in inScope) {
       _classNames[c.id] = c.name;
     }
