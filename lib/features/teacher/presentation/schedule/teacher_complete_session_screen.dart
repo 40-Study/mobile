@@ -438,7 +438,6 @@ class _AttendanceSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
 
     return Container(
       padding: AppSpacing.paddingLg,

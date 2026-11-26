@@ -80,8 +80,8 @@ class _TeacherShellState extends State<TeacherShell> {
   }
 
   Future<void> _openNotifications() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
         builder: (_) => TeacherNotificationsScreen(api: _api),
       ),
     );
