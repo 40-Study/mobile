@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/presentation/widgets/security/linked_account_item.dart';
+import 'package:study/features/auth/presentation/widgets/security/settings_card.dart';
 import 'package:study/theme/theme.dart';
 
 class LinkedAccountsList extends StatelessWidget {
@@ -37,50 +38,38 @@ class LinkedAccountsList extends StatelessWidget {
       );
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: AppRadius.borderLg,
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: _providers.asMap().entries.map((entry) {
-          final index = entry.key;
-          final provider = entry.value;
-          final linkedAccount = linkedAccounts
-              .cast<LinkedAccountModel?>()
-              .firstWhere(
-                (a) => a?.provider.toLowerCase() == provider,
-                orElse: () => null,
-              );
-          final isLinked = linkedAccount != null;
-          final isUnlinking = unlinkingProvider == provider;
+    // Dùng chung SettingsCard (có Material cho ink splash của ListTile)
+    return SettingsCard(
+      children: _providers.asMap().entries.map((entry) {
+        final index = entry.key;
+        final provider = entry.value;
+        final linkedAccount = linkedAccounts
+            .cast<LinkedAccountModel?>()
+            .firstWhere(
+              (a) => a?.provider.toLowerCase() == provider,
+              orElse: () => null,
+            );
+        final isLinked = linkedAccount != null;
+        final isUnlinking = unlinkingProvider == provider;
 
-          return Column(
-            children: [
-              LinkedAccountItem(
-                provider: provider,
-                email: linkedAccount?.email,
-                isLinked: isLinked,
-                isLoading: isUnlinking,
-                onTap: () => isLinked ? onUnlink(provider) : onLink(provider),
+        return Column(
+          children: [
+            LinkedAccountItem(
+              provider: provider,
+              email: linkedAccount?.email,
+              isLinked: isLinked,
+              isLoading: isUnlinking,
+              onTap: () => isLinked ? onUnlink(provider) : onLink(provider),
+            ),
+            if (index < _providers.length - 1)
+              Divider(
+                height: 1,
+                indent: 72,
+                color: cs.outlineVariant.withValues(alpha: 0.5),
               ),
-              if (index < _providers.length - 1)
-                Divider(
-                  height: 1,
-                  indent: 72,
-                  color: cs.outlineVariant.withValues(alpha: 0.5),
-                ),
-            ],
-          );
-        }).toList(),
-      ),
+          ],
+        );
+      }).toList(),
     );
   }
 }

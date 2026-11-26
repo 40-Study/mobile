@@ -181,7 +181,8 @@ abstract class AuthApiClient {
   @GET('/api/me/children')
   Future<HttpResponse<dynamic>> getChildren({
     @Query('page') int page = 1,
-    @Query('page_size') int pageSize = 10,
+    // Backend đọc `pageSize`
+    @Query('pageSize') int pageSize = 50,
   });
 
   /// Lấy danh sách organizations của user

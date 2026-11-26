@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:injectable/injectable.dart' hide Environment;
 import 'package:study/config/app_config.dart';
 import 'package:study/config/environment.dart';
@@ -11,6 +12,18 @@ import 'package:study/features/auth/data/session_expired_notifier.dart';
 import 'package:study/features/course/data/course_api_client.dart';
 import 'package:talker_dio_logger/talker_dio_logger_interceptor.dart';
 import 'package:talker_dio_logger/talker_dio_logger_settings.dart';
+
+// Logger debug-only, không log header (Bearer) và request body (password)
+TalkerDioLogger _debugLogger() => TalkerDioLogger(
+  settings: const TalkerDioLoggerSettings(
+    printRequestHeaders: false,
+    printResponseHeaders: false,
+    printRequestData: false,
+    // Response login/refresh chứa token
+    printResponseData: false,
+    printResponseMessage: true,
+  ),
+);
 
 @module
 abstract class NetworkModule {
@@ -32,23 +45,21 @@ abstract class NetworkModule {
       ),
     );
 
+    // Dio riêng cho refresh/retry, không gắn AuthInterceptor
+    final retryDio = Dio(dio.options.copyWith());
+    if (kDebugMode) retryDio.interceptors.add(_debugLogger());
+    retryDio.interceptors.add(NetworkErrorInterceptor());
+
     dio.interceptors.add(
       AuthInterceptor(
         authStorage: diContainer.get<AuthStorage>(),
         dio: dio,
         sessionNotifier: diContainer.get<SessionExpiredNotifier>(),
+        retryDio: retryDio,
       ),
     );
 
-    dio.interceptors.add(
-      TalkerDioLogger(
-        settings: const TalkerDioLoggerSettings(
-          printRequestHeaders: true,
-          printResponseHeaders: true,
-          printResponseMessage: true,
-        ),
-      ),
-    );
+    if (kDebugMode) dio.interceptors.add(_debugLogger());
 
     dio.interceptors.add(NetworkErrorInterceptor());
 

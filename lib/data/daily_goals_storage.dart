@@ -45,6 +45,12 @@ class DailyGoalsStorage {
     _prefs!.setString(_storageKey, jsonEncode(map));
   }
 
+  /// Xoá goals của user khi logout (cả memory lẫn prefs)
+  Future<void> clear() async {
+    _goalsByDate.clear();
+    await _prefs?.remove(_storageKey);
+  }
+
   String _dateKey(DateTime date) => '${date.year}-${date.month}-${date.day}';
 
   List<DailyGoalItem> getGoals(DateTime date) =>

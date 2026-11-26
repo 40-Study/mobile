@@ -20,10 +20,11 @@ class MainScreen extends StatelessWidget {
           );
         }
 
-        final roleName = state.activeProfile?.roleName ?? 'student';
+        final profile = state.activeProfile;
+        if (profile == null) return const _InvalidSessionView();
 
-        // Route theo role
-        switch (roleName.toLowerCase()) {
+        // Route theo role, role lạ → không default về StudentShell
+        switch (profile.roleName.toLowerCase()) {
           case 'student':
             return const StudentShell();
           case 'parent':
@@ -42,9 +43,39 @@ class MainScreen extends StatelessWidget {
               ),
             );
           default:
-            return const StudentShell();
+            return const _InvalidSessionView();
         }
       },
+    );
+  }
+}
+
+/// Session không xác định được role → cho user đăng xuất để login lại
+class _InvalidSessionView extends StatelessWidget {
+  const _InvalidSessionView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Không xác định được vai trò của tài khoản.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: () => context.read<AuthBloc>().add(AuthLoggedOut()),
+                child: const Text('Đăng xuất'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

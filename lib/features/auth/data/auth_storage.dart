@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:study/features/auth/data/models/models.dart';
 
@@ -40,9 +41,19 @@ abstract class AuthStorage {
 }
 
 class SharedPreferencesAuthStorage implements AuthStorage {
-  SharedPreferencesAuthStorage(this._prefs);
+  SharedPreferencesAuthStorage(
+    this._prefs, {
+    FlutterSecureStorage secure = const FlutterSecureStorage(
+      aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    ),
+  }) : _secure = secure;
 
   final SharedPreferences _prefs;
+  // Token nằm trong Keystore/Keychain, phần còn lại ở prefs
+  final FlutterSecureStorage _secure;
+  Future<void>? _migration;
+  // true khi migrate fail → tạm đọc cặp token cũ từ prefs
+  bool _useLegacy = false;
 
   static const _keyAccessToken = 'auth_access_token';
   static const _keyRefreshToken = 'auth_refresh_token';
@@ -53,25 +64,100 @@ class SharedPreferencesAuthStorage implements AuthStorage {
   static const _keyEntryContext = 'auth_entry_context';
   static const _keyDeviceId = 'auth_device_id';
 
+  // Migrate token cũ từ prefs 1 lần; chỉ xoá prefs khi ghi secure thành công cả cặp
+  Future<void> _migrateLegacyTokens() => _migration ??= () async {
+    final access = _prefs.getString(_keyAccessToken);
+    final refresh = _prefs.getString(_keyRefreshToken);
+    if (access == null && refresh == null) return;
+    try {
+      // Secure đã có đủ cặp token (mới hơn) → không ghi đè bằng token legacy
+      final hasSecurePair =
+          await _secure.read(key: _keyAccessToken) != null &&
+          await _secure.read(key: _keyRefreshToken) != null;
+      if (!hasSecurePair) {
+        if (access != null) {
+          await _secure.write(key: _keyAccessToken, value: access);
+        }
+        if (refresh != null) {
+          await _secure.write(key: _keyRefreshToken, value: refresh);
+        }
+      }
+      _useLegacy = false;
+    } catch (_) {
+      // Giữ prefs làm fallback, lần sau thử lại
+      _useLegacy = true;
+      _migration = null;
+      return;
+    }
+    // Dọn prefs best-effort; lỗi thì lần sau dọn tiếp, không ảnh hưởng đọc token
+    try {
+      await _prefs.remove(_keyAccessToken);
+      await _prefs.remove(_keyRefreshToken);
+    } catch (_) {
+      _migration = null;
+    }
+  }();
+
+  Future<String?> _readToken(String key) async {
+    await _migrateLegacyTokens();
+    // Migrate fail → đọc fallback từ prefs để user không bị logout
+    if (_useLegacy) return _prefs.getString(key);
+    try {
+      return await _secure.read(key: key);
+    } catch (_) {
+      // Keystore hỏng (vd restore backup) → buộc login lại, không crash
+      try {
+        await _secure.deleteAll();
+      } catch (_) {}
+      return null;
+    }
+  }
+
+  Future<void> _deleteSecureTokens() async {
+    await _secure.delete(key: _keyAccessToken);
+    await _secure.delete(key: _keyRefreshToken);
+  }
+
   @override
   Future<void> saveTokens({
     required String accessToken,
     required String refreshToken,
   }) async {
-    await _prefs.setString(_keyAccessToken, accessToken);
-    await _prefs.setString(_keyRefreshToken, refreshToken);
+    await _migration;
+    await _secure.write(key: _keyAccessToken, value: accessToken);
+    try {
+      await _secure.write(key: _keyRefreshToken, value: refreshToken);
+    } catch (_) {
+      // Không để cặp token lệch nhau
+      await _deleteSecureTokens();
+      rethrow;
+    }
+    _useLegacy = false;
+    // Bỏ token legacy, best-effort
+    try {
+      await _prefs.remove(_keyAccessToken);
+      await _prefs.remove(_keyRefreshToken);
+    } catch (_) {}
   }
 
   @override
-  Future<String?> getAccessToken() async => _prefs.getString(_keyAccessToken);
+  Future<String?> getAccessToken() => _readToken(_keyAccessToken);
 
   @override
-  Future<String?> getRefreshToken() async => _prefs.getString(_keyRefreshToken);
+  Future<String?> getRefreshToken() => _readToken(_keyRefreshToken);
 
   @override
   Future<void> clearTokens() async {
-    await _prefs.remove(_keyAccessToken);
-    await _prefs.remove(_keyRefreshToken);
+    // Chờ migration đang chạy xong để nó không ghi lại token sau khi xoá
+    await _migration;
+    _useLegacy = false;
+    // Xoá legacy trước để logout không bị migrate ngược token cũ
+    try {
+      await _prefs.remove(_keyAccessToken);
+      await _prefs.remove(_keyRefreshToken);
+    } finally {
+      await _deleteSecureTokens();
+    }
   }
 
   @override
@@ -147,12 +233,11 @@ class SharedPreferencesAuthStorage implements AuthStorage {
   Future<String?> getDeviceId() async => _prefs.getString(_keyDeviceId);
 
   @override
-  Future<bool> hasToken() async => _prefs.containsKey(_keyAccessToken);
+  Future<bool> hasToken() async => await getAccessToken() != null;
 
   @override
   Future<void> clearAll() async {
-    await _prefs.remove(_keyAccessToken);
-    await _prefs.remove(_keyRefreshToken);
+    await clearTokens();
     await _prefs.remove(_keyUser);
     await _prefs.remove(_keyActiveRole);
     await _prefs.remove(_keyActiveProfile);

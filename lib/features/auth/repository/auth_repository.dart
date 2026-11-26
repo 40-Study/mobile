@@ -141,7 +141,7 @@ abstract class AuthRepository {
   });
 
   /// Lấy danh sách con của phụ huynh
-  Future<List<UserModel>> getChildren({int page = 1, int pageSize = 10});
+  Future<List<UserModel>> getChildren({int page = 1, int pageSize = 50});
 
   /// Lấy danh sách organizations của user
   Future<List<OrganizationModel>> getMyOrganizations({

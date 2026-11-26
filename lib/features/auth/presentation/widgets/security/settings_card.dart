@@ -22,7 +22,13 @@ class SettingsCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(children: children),
+      // Material trong suốt để ink splash của ListTile không bị nền che
+      child: Material(
+        type: MaterialType.transparency,
+        borderRadius: AppRadius.borderLg,
+        clipBehavior: Clip.antiAlias,
+        child: Column(children: children),
+      ),
     );
   }
 }

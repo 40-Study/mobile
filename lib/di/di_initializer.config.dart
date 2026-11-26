@@ -124,21 +124,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i1065.CourseRepository>(
       () => _i38.CourseRepositoryImpl(gh<_i511.CourseApiClient>()),
     );
-    gh.factory<_i584.AuthRepository>(
-      () => repositoryModule.provideAuthRepository(
-        gh<_i384.AuthApiClient>(),
-        gh<_i450.AuthStorage>(),
-        gh<_i361.Dio>(),
-      ),
-    );
-    gh.lazySingleton<_i962.StudentRepository>(
-      () => repositoryModule.provideStudentRepository(
-        gh<_i583.StudentApiClient>(),
-        gh<_i511.CourseApiClient>(),
-        gh<_i584.AuthRepository>(),
-        gh<_i340.LastAccessedCourseStorage>(),
-      ),
-    );
     gh.lazySingleton<_i90.ParentHomeRepository>(
       () => repositoryModule.provideParentHomeRepository(
         gh<_i933.ParentHomeApiClient>(),
@@ -162,10 +147,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i510.ParentLearningBloc>(
       () => blocModule.parentLearningBloc(gh<_i385.ParentLearningRepository>()),
     );
-    gh.factory<_i885.AchievementBloc>(
-      () => blocModule.achievementBloc(
-        gh<_i962.StudentRepository>(),
-        gh<_i584.AuthRepository>(),
+    gh.factory<_i584.AuthRepository>(
+      () => repositoryModule.provideAuthRepository(
+        gh<_i384.AuthApiClient>(),
+        gh<_i450.AuthStorage>(),
+        gh<_i361.Dio>(),
+        gh<_i830.BookmarkStorage>(),
+        gh<_i340.LastAccessedCourseStorage>(),
       ),
     );
     gh.factory<_i812.OnboardingRepository>(
@@ -175,6 +163,26 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i600.BookmarkBloc>(
       () => blocModule.bookmarkBloc(gh<_i830.BookmarkStorage>()),
+    );
+    gh.factory<_i661.ParentHomeBloc>(
+      () => blocModule.parentHomeBloc(gh<_i90.ParentHomeRepository>()),
+    );
+    gh.lazySingleton<_i962.StudentRepository>(
+      () => repositoryModule.provideStudentRepository(
+        gh<_i583.StudentApiClient>(),
+        gh<_i511.CourseApiClient>(),
+        gh<_i584.AuthRepository>(),
+        gh<_i340.LastAccessedCourseStorage>(),
+      ),
+    );
+    gh.factory<_i574.ParentScheduleBloc>(
+      () => blocModule.parentScheduleBloc(gh<_i87.ParentScheduleRepository>()),
+    );
+    gh.factory<_i885.AchievementBloc>(
+      () => blocModule.achievementBloc(
+        gh<_i962.StudentRepository>(),
+        gh<_i584.AuthRepository>(),
+      ),
     );
     gh.factory<_i144.HomeBloc>(
       () => blocModule.homeBloc(gh<_i962.StudentRepository>()),
@@ -203,12 +211,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i1065.CourseRepository>(),
         gh<_i830.BookmarkStorage>(),
       ),
-    );
-    gh.factory<_i661.ParentHomeBloc>(
-      () => blocModule.parentHomeBloc(gh<_i90.ParentHomeRepository>()),
-    );
-    gh.factory<_i574.ParentScheduleBloc>(
-      () => blocModule.parentScheduleBloc(gh<_i87.ParentScheduleRepository>()),
     );
     return this;
   }

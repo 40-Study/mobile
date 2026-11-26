@@ -1,5 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:study/core/logger/app_logger.dart';
+import 'package:study/data/bookmark_storage.dart';
+import 'package:study/data/daily_goals_storage.dart';
+import 'package:study/data/last_accessed_course_storage.dart';
 import 'package:study/features/auth/data/auth_api_client.dart';
 import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/features/auth/data/dto/dto.dart';
@@ -11,13 +14,39 @@ class AuthRepositoryImpl implements AuthRepository {
     required AuthApiClient apiClient,
     required AuthStorage authStorage,
     required Dio dio,
+    required BookmarkStorage bookmarkStorage,
+    required LastAccessedCourseStorage lastAccessedStorage,
+    required DailyGoalsStorage dailyGoalsStorage,
   }) : _api = apiClient,
        _storage = authStorage,
-       _dio = dio;
+       _dio = dio,
+       _bookmarkStorage = bookmarkStorage,
+       _lastAccessedStorage = lastAccessedStorage,
+       _dailyGoalsStorage = dailyGoalsStorage;
 
   final AuthApiClient _api;
   final AuthStorage _storage;
   final Dio _dio;
+  final BookmarkStorage _bookmarkStorage;
+  final LastAccessedCourseStorage _lastAccessedStorage;
+  final DailyGoalsStorage _dailyGoalsStorage;
+
+  // Xoá session + data local của user; mỗi storage try/catch riêng để không chặn nhau
+  Future<void> _clearLocalUserData() async {
+    final steps = <String, Future<void> Function()>{
+      'auth': _storage.clearAll,
+      'bookmarks': _bookmarkStorage.clear,
+      'lastAccessed': _lastAccessedStorage.clear,
+      'dailyGoals': _dailyGoalsStorage.clear,
+    };
+    for (final step in steps.entries) {
+      try {
+        await step.value();
+      } catch (e) {
+        AppLogger.w('Clear ${step.key} storage failed', e);
+      }
+    }
+  }
 
   // API có thể trả về { data: {...} } hoặc trực tiếp {...}
 
@@ -105,7 +134,6 @@ class AuthRepositoryImpl implements AuthRepository {
     );
 
     final data = _extractData(response.data) as Map<String, dynamic>;
-    AppLogger.auth('Login raw data: $data');
     final loginResponse = LoginResponse.fromJson(data);
     AppLogger.auth('Login completed=${loginResponse.completed}, hasToken=${loginResponse.accessToken != null}');
 
@@ -387,7 +415,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await _api.logout();
     } finally {
-      await _storage.clearAll();
+      await _clearLocalUserData();
     }
   }
 
@@ -396,7 +424,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await _api.logoutAll();
     } finally {
-      await _storage.clearAll();
+      await _clearLocalUserData();
     }
   }
 
@@ -420,7 +448,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> deleteAccount({required String password}) async {
     await _api.deleteAccount({'password': password});
-    await _storage.clearAll();
+    await _clearLocalUserData();
   }
 
   @override
@@ -441,7 +469,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<List<UserModel>> getChildren({int page = 1, int pageSize = 10}) async {
+  Future<List<UserModel>> getChildren({int page = 1, int pageSize = 50}) async {
     final response = await _api.getChildren(page: page, pageSize: pageSize);
     final data = _extractData(response.data);
 
@@ -544,6 +572,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<RoleModel?> getSavedRole() => _storage.getActiveRole();
 
   @override
+  // Session hết hạn: chỉ xoá auth, giữ bookmark/goals local của user
   Future<void> clearSession() => _storage.clearAll();
 
   @override

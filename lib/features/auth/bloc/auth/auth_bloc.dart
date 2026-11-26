@@ -27,7 +27,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
     final user = await _authRepository.getSavedUser();
     if (user != null) {
-      final profile = await _authRepository.getSavedProfile();
+      // Session cũ có thể thiếu profile → thử resolve lại thay vì kẹt màn lỗi
+      final profile =
+          await _authRepository.getSavedProfile() ??
+          await _resolveProfile(
+            user,
+            await _authRepository.getSavedRole(),
+            // Không saveSession ở đây vì nó ghi đè activeOrg đã lưu
+            persist: false,
+          );
       emit(AuthAuthenticated(user: user, activeProfile: profile));
     } else {
       emit(AuthUnauthenticated());
@@ -35,59 +43,55 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onLoggedIn(AuthLoggedIn event, Emitter<AuthState> emit) async {
-    if (event.response.user != null) {
-      var activeProfile = event.response.activeProfile;
-      final activeRole = event.response.activeRole;
+    final user = event.response.user;
+    if (user == null) {
+      // Token có thể đã được lưu → xoá để không kẹt session nửa vời
+      AppLogger.auth('Login response has no user, clearing session');
+      await _authRepository.clearSession();
+      emit(AuthUnauthenticated());
+      return;
+    }
 
-      // If no activeProfile in response, try to fetch from profiles API
-      if (activeProfile == null) {
-        try {
-          final profiles = await _authRepository.getProfiles();
-          AppLogger.auth('Fetched ${profiles.length} profiles after login');
-          for (final p in profiles) {
-            AppLogger.auth(
-              'Profile: ${p.roleName} - ${p.type} - '
-              'systemRoleId: ${p.systemRoleId}',
-            );
-          }
+    final activeProfile =
+        event.response.activeProfile ??
+        await _resolveProfile(user, event.response.activeRole);
 
-          if (profiles.isNotEmpty) {
-            // Tìm profile khớp với activeRole (nếu có)
-            if (activeRole != null) {
-              AppLogger.auth(
-                'Looking for profile matching activeRole: '
-                '${activeRole.name} (id: ${activeRole.id})',
-              );
-              activeProfile = profiles.firstWhere(
-                (p) =>
-                    p.systemRoleId == activeRole.id ||
-                    p.roleName.toUpperCase() == activeRole.name.toUpperCase(),
-                orElse: () => profiles.first,
-              );
-            } else {
-              activeProfile = profiles.first;
-            }
-            AppLogger.auth('Selected profile: ${activeProfile.roleName}');
-            // Save the profile to storage
-            await _authRepository.saveSession(
-              AuthResponse(
-                user: event.response.user,
-                activeProfile: activeProfile,
-                activeRole: activeRole,
-              ),
-            );
-          }
-        } catch (e) {
-          AppLogger.w('Error fetching profiles after login', e);
-        }
+    emit(AuthAuthenticated(user: user, activeProfile: activeProfile));
+  }
+
+  // Fetch profiles, chọn theo activeRole hoặc profile duy nhất; không đoán khi không khớp
+  Future<ProfileModel?> _resolveProfile(
+    UserModel user,
+    RoleModel? activeRole, {
+    bool persist = true,
+  }) async {
+    try {
+      final profiles = await _authRepository.getProfiles();
+      AppLogger.auth('Fetched ${profiles.length} profiles');
+
+      final ProfileModel? profile;
+      if (activeRole != null) {
+        profile = profiles
+            .where(
+              (p) =>
+                  p.systemRoleId == activeRole.id ||
+                  p.roleName.toUpperCase() == activeRole.name.toUpperCase(),
+            )
+            .firstOrNull;
+      } else {
+        profile = profiles.length == 1 ? profiles.single : null;
       }
 
-      emit(
-        AuthAuthenticated(
-          user: event.response.user!,
-          activeProfile: activeProfile,
-        ),
-      );
+      if (profile != null && persist) {
+        AppLogger.auth('Selected profile: ${profile.roleName}');
+        await _authRepository.saveSession(
+          AuthResponse(user: user, activeProfile: profile, activeRole: activeRole),
+        );
+      }
+      return profile;
+    } catch (e) {
+      AppLogger.w('Error fetching profiles', e);
+      return null;
     }
   }
 
@@ -109,8 +113,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     AppLogger.auth('ProfileSwitched event received');
-    AppLogger.auth('response.user = ${event.response.user}');
-    AppLogger.auth('activeProfile = ${event.response.activeProfile?.toJson()}');
 
     final currentState = state;
     final user =

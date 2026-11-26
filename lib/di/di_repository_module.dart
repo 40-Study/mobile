@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:study/data/bookmark_storage.dart';
+import 'package:study/data/daily_goals_storage.dart';
 import 'package:study/data/last_accessed_course_storage.dart';
 import 'package:study/data/onboarding_storage.dart';
 import 'package:study/data/theme_storage.dart';
@@ -44,11 +45,16 @@ abstract class RepositoryModule {
     AuthApiClient apiClient,
     AuthStorage authStorage,
     Dio dio,
+    BookmarkStorage bookmarkStorage,
+    LastAccessedCourseStorage lastAccessedStorage,
   ) =>
       AuthRepositoryImpl(
         apiClient: apiClient,
         authStorage: authStorage,
         dio: dio,
+        bookmarkStorage: bookmarkStorage,
+        lastAccessedStorage: lastAccessedStorage,
+        dailyGoalsStorage: DailyGoalsStorage.instance,
       );
 
   @factoryMethod
@@ -81,7 +87,6 @@ abstract class RepositoryModule {
   ) =>
       ParentHomeRepositoryImpl(
         apiClient: apiClient,
-        enablePreviewFallback: true,
       );
 
   @lazySingleton
@@ -90,13 +95,11 @@ abstract class RepositoryModule {
   ) =>
       ParentScheduleRepositoryImpl(
         apiClient: apiClient,
-        enablePreviewFallback: true,
       );
 
   @lazySingleton
   FamilyInsightsRepository provideFamilyInsightsRepository() =>
       FamilyInsightsRepositoryImpl(
-        enablePreviewFallback: true,
       );
 
   @lazySingleton
@@ -105,7 +108,6 @@ abstract class RepositoryModule {
   ) =>
       ParentLearningRepositoryImpl(
         apiClient: apiClient,
-        enablePreviewFallback: true,
       );
 
   @lazySingleton
@@ -114,6 +116,5 @@ abstract class RepositoryModule {
   ) =>
       ParentPaymentRepositoryImpl(
         apiClient: apiClient,
-        enablePreviewFallback: true,
       );
 }
