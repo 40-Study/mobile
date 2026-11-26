@@ -1,12 +1,17 @@
 import 'dart:convert';
 
+import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Lưu kết quả quiz vào local storage
+/// Lưu kết quả quiz vào local storage, keyed by userId
+@lazySingleton
 class QuizResultStorage {
   static const _prefix = 'quiz_result_';
 
-  static Future<void> saveResult({
+  String _key(String userId, String quizId) => '$_prefix${userId}_$quizId';
+
+  Future<void> saveResult({
+    required String userId,
     required String quizId,
     required int correctCount,
     required int totalCount,
@@ -23,12 +28,12 @@ class QuizResultStorage {
       'timeSpentSeconds': timeSpentSeconds,
       'completedAt': DateTime.now().toIso8601String(),
     };
-    await prefs.setString('$_prefix$quizId', jsonEncode(data));
+    await prefs.setString(_key(userId, quizId), jsonEncode(data));
   }
 
-  static Future<QuizResultData?> getResult(String quizId) async {
+  Future<QuizResultData?> getResult(String userId, String quizId) async {
     final prefs = await SharedPreferences.getInstance();
-    final json = prefs.getString('$_prefix$quizId');
+    final json = prefs.getString(_key(userId, quizId));
     if (json == null) return null;
 
     final data = jsonDecode(json) as Map<String, dynamic>;
@@ -41,10 +46,35 @@ class QuizResultStorage {
     );
   }
 
-  static Future<bool> hasResult(String quizId) async {
+  Future<bool> hasResult(String userId, String quizId) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.containsKey('$_prefix$quizId');
+    return prefs.containsKey(_key(userId, quizId));
   }
+
+  /// Xóa tất cả quiz results - gọi khi logout/clear session
+  Future<void> clear() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys().where((k) => k.startsWith(_prefix)).toList();
+    for (final key in keys) {
+      await prefs.remove(key);
+    }
+  }
+
+  /// Xóa legacy keys không có userId (migration)
+  Future<void> clearLegacyKeys() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys().where((k) {
+      if (!k.startsWith(_prefix)) return false;
+      // Legacy key: quiz_result_<quizId> - không có underscore sau prefix
+      final suffix = k.substring(_prefix.length);
+      // New key format: quiz_result_<userId>_<quizId> - có underscore
+      return !suffix.contains('_');
+    }).toList();
+    for (final key in keys) {
+      await prefs.remove(key);
+    }
+  }
+
 }
 
 class QuizResultData {

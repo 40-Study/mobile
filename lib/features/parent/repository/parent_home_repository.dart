@@ -20,5 +20,12 @@ abstract class ParentHomeRepository {
 
   /// Lấy danh sách phân tích học tập (nhiều con nếu [childId] là null)
   Future<List<ParentAnalyticsData>> getAnalyticsList({String? childId});
+
+  /// Gửi yêu cầu liên kết con bằng email
+  Future<void> sendLinkRequest({
+    required String studentEmail,
+    required String relationship,
+    String? message,
+  });
 }
 

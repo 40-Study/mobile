@@ -1,5 +1,6 @@
 export 'assignment_model.dart';
 export 'badge_model.dart';
+export 'family_link_model.dart';
 export 'bookmark_model.dart';
 export 'contribution_model.dart';
 export 'notification_model.dart';

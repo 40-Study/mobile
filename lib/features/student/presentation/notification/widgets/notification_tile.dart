@@ -6,9 +6,10 @@ import 'package:study/features/student/data/models/models.dart';
 import 'package:study/theme/theme.dart';
 
 class NotificationTile extends StatelessWidget {
-  const NotificationTile({super.key, required this.notification});
+  const NotificationTile({super.key, required this.notification, this.isPending = false});
 
   final NotificationModel notification;
+  final bool isPending;
 
   @override
   Widget build(BuildContext context) {
@@ -29,14 +30,16 @@ class NotificationTile extends StatelessWidget {
         // TODO: Add delete notification event
       },
       child: InkWell(
-        onTap: () {
-          if (!notification.isRead) {
-            context
-                .read<NotificationBloc>()
-                .add(NotificationMarkedRead(notification.id));
-          }
-          // TODO: Navigate based on actionUrl
-        },
+        onTap: isPending
+            ? null
+            : () {
+                if (!notification.isRead) {
+                  context
+                      .read<NotificationBloc>()
+                      .add(NotificationMarkedRead(notification.id));
+                }
+                // TODO: Navigate based on actionUrl
+              },
         child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.screenPadding,
@@ -92,7 +95,17 @@ class NotificationTile extends StatelessWidget {
                             color: cs.onSurfaceVariant,
                           ),
                         ),
-                        if (!notification.isRead) ...[
+                        if (isPending) ...[
+                          const SizedBox(width: 6),
+                          SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 1.5,
+                              color: cs.primary,
+                            ),
+                          ),
+                        ] else if (!notification.isRead) ...[
                           const SizedBox(width: 6),
                           Container(
                             width: 8,
@@ -143,6 +156,10 @@ class NotificationTile extends StatelessWidget {
       NotificationType.livestream => Icons.videocam_rounded,
       NotificationType.system => Icons.info_rounded,
       NotificationType.achievement => Icons.emoji_events_rounded,
+      NotificationType.reminder => Icons.alarm_rounded,
+      NotificationType.payment => Icons.payment_rounded,
+      NotificationType.enrollment => Icons.how_to_reg_rounded,
+      NotificationType.unknown => Icons.notifications_rounded,
     };
   }
 
@@ -153,6 +170,10 @@ class NotificationTile extends StatelessWidget {
       NotificationType.livestream => cs.secondary,
       NotificationType.system => cs.onSurfaceVariant,
       NotificationType.achievement => Colors.amber.shade700,
+      NotificationType.reminder => cs.error,
+      NotificationType.payment => Colors.green.shade700,
+      NotificationType.enrollment => cs.primary,
+      NotificationType.unknown => cs.onSurfaceVariant,
     };
   }
 }

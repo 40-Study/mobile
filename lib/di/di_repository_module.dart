@@ -23,6 +23,7 @@ import 'package:study/features/parent/repository/parent_payment_repository.dart'
 import 'package:study/features/parent/repository/parent_payment_repository_impl.dart';
 import 'package:study/features/parent/repository/parent_schedule_repository.dart';
 import 'package:study/features/parent/repository/parent_schedule_repository_impl.dart';
+import 'package:study/features/student/data/quiz_result_storage.dart';
 import 'package:study/features/student/data/student_api_client.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/features/student/repository/student_repository_impl.dart';
@@ -47,6 +48,7 @@ abstract class RepositoryModule {
     Dio dio,
     BookmarkStorage bookmarkStorage,
     LastAccessedCourseStorage lastAccessedStorage,
+    QuizResultStorage quizResultStorage,
   ) =>
       AuthRepositoryImpl(
         apiClient: apiClient,
@@ -55,6 +57,7 @@ abstract class RepositoryModule {
         bookmarkStorage: bookmarkStorage,
         lastAccessedStorage: lastAccessedStorage,
         dailyGoalsStorage: DailyGoalsStorage.instance,
+        quizResultStorage: quizResultStorage,
       );
 
   @factoryMethod
@@ -66,11 +69,13 @@ abstract class RepositoryModule {
     CourseApiClient courseApi,
     AuthRepository authRepository,
     LastAccessedCourseStorage lastAccessedStorage,
+    QuizResultStorage quizResultStorage,
   ) => StudentRepositoryImpl(
         studentApi: studentApi,
         courseApi: courseApi,
         authRepository: authRepository,
         lastAccessedStorage: lastAccessedStorage,
+        quizResultStorage: quizResultStorage,
       );
 
   @lazySingleton

@@ -3,6 +3,7 @@ import 'package:study/features/course/data/models/certificate_model.dart';
 import 'package:study/features/course/data/models/course_model.dart';
 import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/student/data/models/models.dart';
+import 'package:study/features/student/data/quiz_result_storage.dart';
 
 /// Repository cho Student feature — schedule, assignments, enrollments
 /// Kết quả gửi tiến độ: bài đã được server chốt completed chưa, khoá học xong chưa
@@ -33,7 +34,7 @@ abstract class StudentRepository {
   });
 
   // Notifications
-  Future<ApiResult<List<NotificationModel>>> getNotifications();
+  Future<ApiResult<({List<NotificationModel> items, bool hasMore})>> getNotifications({int page = 1});
   Future<ApiResult<int>> getUnreadNotificationCount();
   Future<ApiResult<void>> markNotificationRead(String id);
   Future<ApiResult<void>> markAllNotificationsRead();
@@ -62,6 +63,9 @@ abstract class StudentRepository {
     String? attemptId,
   });
 
+  // Quiz local results (userId-scoped)
+  Future<bool> hasCompletedQuiz(String quizId);
+  Future<QuizResultData?> getQuizResult(String quizId);
 
   // Search
   Future<ApiResult<List<CourseModel>>> searchCourses(String query);
@@ -75,4 +79,10 @@ abstract class StudentRepository {
 
   // Class
   Future<ApiResult<String?>> getCourseIdFromClass(String classId);
+
+  // Family Link (Student side)
+  Future<ApiResult<List<ParentLinkRequestModel>>> getIncomingLinkRequests();
+  Future<ApiResult<void>> respondLinkRequest(String id, {required bool accept});
+  Future<ApiResult<List<LinkedParentModel>>> getLinkedParents();
+  Future<ApiResult<void>> unlinkParent(String id);
 }

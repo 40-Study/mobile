@@ -18,8 +18,7 @@ class CourseRepositoryImpl implements CourseRepository {
     int pageSize = 20,
     String? categoryId,
     String? level,
-    String? search,
-    String? sortBy,
+    String? keyword,
     bool? isFree,
   }) async {
     final response = await _apiClient.getCourses(
@@ -27,8 +26,7 @@ class CourseRepositoryImpl implements CourseRepository {
       pageSize: pageSize,
       categoryId: categoryId,
       level: level,
-      search: search,
-      sortBy: sortBy,
+      keyword: keyword,
       isFree: isFree,
     );
     final data = response.data['data'] as List?;

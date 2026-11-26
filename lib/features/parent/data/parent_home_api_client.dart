@@ -31,4 +31,22 @@ abstract class ParentHomeApiClient {
   /// Điểm số của 1 con.
   @GET('/api/parent/children/{childId}/grades')
   Future<HttpResponse<dynamic>> getGrades(@Path('childId') String childId);
+
+  // === Family Link Requests ===
+
+  /// Gửi yêu cầu liên kết con.
+  @POST('/api/family/link-requests')
+  Future<HttpResponse<dynamic>> createLinkRequest(@Body() Map<String, dynamic> body);
+
+  /// Danh sách yêu cầu đã gửi.
+  @GET('/api/family/link-requests/sent')
+  Future<HttpResponse<dynamic>> getSentLinkRequests();
+
+  /// Hủy yêu cầu liên kết.
+  @POST('/api/family/link-requests/{id}/cancel')
+  Future<HttpResponse<dynamic>> cancelLinkRequest(@Path('id') String id);
+
+  /// Hủy liên kết con.
+  @DELETE('/api/family/children/{id}')
+  Future<HttpResponse<dynamic>> unlinkChild(@Path('id') String id);
 }

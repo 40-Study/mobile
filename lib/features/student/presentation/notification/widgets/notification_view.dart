@@ -26,14 +26,28 @@ class NotificationView extends StatelessWidget {
           BlocBuilder<NotificationBloc, NotificationState>(
             builder: (context, state) {
               if (state is NotificationSuccess && state.unreadCount > 0) {
+                final disabled = state.isMarkAllPending;
                 return TextButton.icon(
-                  onPressed: () => context
-                      .read<NotificationBloc>()
-                      .add(const NotificationMarkedAllRead()),
-                  icon: Icon(Icons.done_all, size: 18, color: cs.primary),
+                  onPressed: disabled
+                      ? null
+                      : () => context
+                          .read<NotificationBloc>()
+                          .add(const NotificationMarkedAllRead()),
+                  icon: disabled
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: cs.primary,
+                          ),
+                        )
+                      : Icon(Icons.done_all, size: 18, color: cs.primary),
                   label: Text(
                     'Đọc tất cả',
-                    style: tt.labelMedium?.copyWith(color: cs.primary),
+                    style: tt.labelMedium?.copyWith(
+                      color: disabled ? cs.onSurface.withValues(alpha: 0.38) : cs.primary,
+                    ),
                   ),
                 );
               }
@@ -78,21 +92,30 @@ class NotificationView extends StatelessWidget {
                       title: 'Hôm nay',
                       count: state.todayList.where((n) => !n.isRead).length,
                     ),
-                    ...state.todayList.map((n) => NotificationTile(notification: n)),
+                    ...state.todayList.map((n) => NotificationTile(
+                      notification: n,
+                      isPending: state.pendingIds.contains(n.id),
+                    )),
                   ],
                   if (state.yesterdayList.isNotEmpty) ...[
                     SectionHeader(
                       title: 'Hôm qua',
                       count: state.yesterdayList.where((n) => !n.isRead).length,
                     ),
-                    ...state.yesterdayList.map((n) => NotificationTile(notification: n)),
+                    ...state.yesterdayList.map((n) => NotificationTile(
+                      notification: n,
+                      isPending: state.pendingIds.contains(n.id),
+                    )),
                   ],
                   if (state.olderList.isNotEmpty) ...[
                     SectionHeader(
                       title: 'Trước đó',
                       count: state.olderList.where((n) => !n.isRead).length,
                     ),
-                    ...state.olderList.map((n) => NotificationTile(notification: n)),
+                    ...state.olderList.map((n) => NotificationTile(
+                      notification: n,
+                      isPending: state.pendingIds.contains(n.id),
+                    )),
                   ],
                 ],
               ),

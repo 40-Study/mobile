@@ -4,6 +4,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:study/core/error/failures.dart';
 import 'package:study/core/error/result.dart';
+import 'package:study/features/auth/data/models/user_model.dart';
+import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/student/bloc/quiz/quiz_bloc.dart';
 import 'package:study/features/student/bloc/quiz/quiz_event.dart';
 import 'package:study/features/student/bloc/quiz/quiz_state.dart';
@@ -14,6 +16,10 @@ import 'package:study/features/student/data/quiz_result_storage.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 
 class _StudentRepository extends Mock implements StudentRepository {}
+
+class _AuthRepository extends Mock implements AuthRepository {}
+
+class _QuizStorage extends Mock implements QuizResultStorage {}
 
 const _questions = [
   QuizQuestionModel(
@@ -33,10 +39,29 @@ const _startedQuiz = (
 
 void main() {
   late _StudentRepository repository;
+  late _AuthRepository authRepository;
+  late _QuizStorage quizStorage;
 
   setUp(() {
     repository = _StudentRepository();
+    authRepository = _AuthRepository();
+    quizStorage = _QuizStorage();
     SharedPreferences.setMockInitialValues({});
+
+    // Default mock: return test user
+    when(() => authRepository.getSavedUser()).thenAnswer(
+      (_) async => const UserModel(id: 'test-user'),
+    );
+    // Default mock: saveResult succeeds
+    when(() => quizStorage.saveResult(
+          userId: any(named: 'userId'),
+          quizId: any(named: 'quizId'),
+          attemptId: any(named: 'attemptId'),
+          correctCount: any(named: 'correctCount'),
+          totalCount: any(named: 'totalCount'),
+          score: any(named: 'score'),
+          timeSpentSeconds: any(named: 'timeSpentSeconds'),
+        )).thenAnswer((_) async {});
   });
 
   blocTest<QuizBloc, QuizState>(
@@ -49,7 +74,7 @@ void main() {
           timeLimitMinutes: 0,
         )),
       );
-      return QuizBloc(repository);
+      return QuizBloc(repository, authRepository, quizStorage);
     },
     act: (bloc) => bloc.add(const QuizStarted('quiz')),
     expect: () => [const QuizLoading(), const QuizFailure('Không có câu hỏi')],
@@ -62,7 +87,7 @@ void main() {
         (_) async =>
             const Result.failure(ServerFailure(message: 'Quiz unavailable')),
       );
-      return QuizBloc(repository);
+      return QuizBloc(repository, authRepository, quizStorage);
     },
     act: (bloc) => bloc.add(const QuizStarted('quiz')),
     expect: () => [const QuizLoading(), const QuizFailure('Quiz unavailable')],
@@ -74,7 +99,7 @@ void main() {
       when(
         () => repository.startQuiz('quiz'),
       ).thenAnswer((_) async => const Result.success(_startedQuiz));
-      return QuizBloc(repository);
+      return QuizBloc(repository, authRepository, quizStorage);
     },
     act: (bloc) async {
       bloc.add(const QuizStarted('quiz'));
@@ -97,7 +122,7 @@ void main() {
       when(
         () => repository.startQuiz('quiz'),
       ).thenAnswer((_) async => const Result.success(_startedQuiz));
-      return QuizBloc(repository);
+      return QuizBloc(repository, authRepository, quizStorage);
     },
     act: (bloc) async {
       bloc.add(const QuizStarted('quiz'));
@@ -141,7 +166,7 @@ void main() {
       when(() => repository.submitQuiz('quiz', 'attempt', any())).thenAnswer(
         (_) async => const Result.success(QuizSubmitResult(percentage: 50)),
       );
-      return QuizBloc(repository);
+      return QuizBloc(repository, authRepository, quizStorage);
     },
     act: (bloc) async {
       bloc.add(const QuizStarted('quiz'));
@@ -180,11 +205,16 @@ void main() {
           'selected_answer_ids': ['a1'],
         },
       ]);
-      final saved = await QuizResultStorage.getResult('quiz');
-      expect(saved?.correctCount, 1);
-      expect(saved?.totalCount, 2);
-      expect(saved?.score, 50);
-      expect(saved?.attemptId, 'attempt');
+      // Verify quizStorage.saveResult called with correct params
+      verify(() => quizStorage.saveResult(
+            userId: 'test-user',
+            quizId: 'quiz',
+            attemptId: 'attempt',
+            correctCount: 1,
+            totalCount: 2,
+            score: 50,
+            timeSpentSeconds: any(named: 'timeSpentSeconds'),
+          )).called(1);
     },
   );
 
@@ -198,7 +228,7 @@ void main() {
       when(() => repository.submitQuiz('quiz', 'attempt', any())).thenAnswer(
         (_) async => const Result.failure(ServerFailure(message: 'Try again')),
       );
-      return QuizBloc(repository);
+      return QuizBloc(repository, authRepository, quizStorage);
     },
     act: (bloc) async {
       bloc.add(const QuizStarted('quiz'));
@@ -211,8 +241,15 @@ void main() {
       const QuizSubmitting(),
       const QuizFailure('Try again'),
     ],
-    verify: (_) async =>
-        expect(await QuizResultStorage.hasResult('quiz'), isFalse),
+    verify: (_) => verifyNever(() => quizStorage.saveResult(
+          userId: any(named: 'userId'),
+          quizId: any(named: 'quizId'),
+          attemptId: any(named: 'attemptId'),
+          correctCount: any(named: 'correctCount'),
+          totalCount: any(named: 'totalCount'),
+          score: any(named: 'score'),
+          timeSpentSeconds: any(named: 'timeSpentSeconds'),
+        )),
   );
 
   blocTest<QuizBloc, QuizState>(
@@ -221,7 +258,7 @@ void main() {
       when(
         () => repository.startQuiz('quiz'),
       ).thenAnswer((_) async => const Result.success(_startedQuiz));
-      return QuizBloc(repository);
+      return QuizBloc(repository, authRepository, quizStorage);
     },
     act: (bloc) async {
       bloc.add(const QuizStarted('quiz'));
@@ -278,7 +315,7 @@ void main() {
           ),
         ]),
       );
-      return QuizBloc(repository);
+      return QuizBloc(repository, authRepository, quizStorage);
     },
     act: (bloc) async {
       bloc.add(const QuizStarted('quiz'));
@@ -323,7 +360,7 @@ void main() {
           .thenAnswer(
         (_) async => const Result.success(QuizSubmitResult(percentage: 100)),
       );
-      return QuizBloc(repository);
+      return QuizBloc(repository, authRepository, quizStorage);
     },
     act: (bloc) async {
       bloc.add(const QuizStarted('quiz_multi'));

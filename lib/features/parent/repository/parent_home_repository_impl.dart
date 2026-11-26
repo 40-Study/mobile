@@ -491,38 +491,29 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   static const String studentLanId = 'a0f88b81-94ca-4328-b46a-b61a1a53a9ad';
 
   List<FamilyScopeChild> _mergeWithMockChildren(List<FamilyScopeChild> real) {
-    final list = <FamilyScopeChild>[];
-
-    // 1. Luôn giữ nguyên tài khoản con thật ở đầu danh sách
+    // Nếu có con thật, dùng danh sách thật - không thêm mock
     if (real.isNotEmpty) {
-      list.addAll(real);
-    } else {
-      list.add(
-        FamilyScopeChild.sample(
-          id: studentTungId,
-          name: 'Mai Hoàng Tùng',
-          className: '12A',
-        ),
-      );
+      return real;
     }
 
-    // 2. Bổ sung Minh & Lan vào danh sách để trải nghiệm đầy đủ Family Scope
-    if (!list.any((c) => c.id == studentMinhId)) {
-      list.add(
-        FamilyScopeChild.sample(
-          id: studentMinhId,
-          name: 'Minh',
-          className: '10A1',
-        ),
-      );
-    }
-    if (!list.any((c) => c.id == studentLanId)) {
-      list.add(
-        FamilyScopeChild.sample(id: studentLanId, name: 'Lan', className: '7B'),
-      );
-    }
-
-    return list;
+    // Không có con thật: trả về mock children để demo UI
+    return [
+      FamilyScopeChild.sample(
+        id: studentTungId,
+        name: 'Mai Hoàng Tùng',
+        className: '12A',
+      ),
+      FamilyScopeChild.sample(
+        id: studentMinhId,
+        name: 'Minh',
+        className: '10A1',
+      ),
+      FamilyScopeChild.sample(
+        id: studentLanId,
+        name: 'Lan',
+        className: '7B',
+      ),
+    ];
   }
 
   List<ParentAlertItem> _filterFallbackAlerts(String? childId) {
@@ -686,4 +677,26 @@ class ParentHomeRepositoryImpl implements ParentHomeRepository {
   static const _fallbackInsightText =
       'Cải thiện rõ ở dạng Đọc hiểu so với 3 buổi gần đây. '
       'Tốc độ làm bài trắc nghiệm nhanh hơn 22%.';
+
+  @override
+  Future<void> sendLinkRequest({
+    required String studentEmail,
+    required String relationship,
+    String? message,
+  }) async {
+    final api = _api;
+    if (api == null) throw Exception('API client not available');
+
+    final body = <String, dynamic>{
+      'student_email': studentEmail,
+      'relationship': relationship,
+      if (message != null && message.isNotEmpty) 'message': message,
+    };
+
+    final response = await api.createLinkRequest(body);
+    if (response.response.statusCode != 200 && response.response.statusCode != 201) {
+      final data = response.data as Map<String, dynamic>?;
+      throw Exception(data?['message'] ?? 'Không thể gửi yêu cầu liên kết');
+    }
+  }
 }

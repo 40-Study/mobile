@@ -4,7 +4,7 @@ import 'package:study/features/student/bloc/lesson/lesson_bloc.dart';
 import 'package:study/features/student/bloc/lesson/lesson_event.dart';
 import 'package:study/features/student/bloc/lesson/lesson_state.dart';
 import 'package:study/features/student/data/models/models.dart';
-import 'package:study/features/student/data/quiz_result_storage.dart';
+import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/features/student/presentation/learning/lesson_detail/widgets/widgets.dart';
 import 'package:study/features/student/presentation/learning/widgets/lesson_video_player.dart';
 import 'package:study/theme/theme.dart';
@@ -75,8 +75,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              Navigator.pop(context);
-              // TODO: Navigate to certificate screen
+              Navigator.pop(context, true); // Báo course_detail mở certificate
             },
             child: const Text('Xem chứng chỉ'),
           ),
@@ -85,17 +84,18 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
     );
   }
 
-  Future<int> _countCompletedQuizzes(List<QuizModel> quizzes) async {
+  Future<int> _countCompletedQuizzes(BuildContext context, List<QuizModel> quizzes) async {
+    final repo = context.read<StudentRepository>();
     var count = 0;
     for (final quiz in quizzes) {
-      if (await QuizResultStorage.hasResult(quiz.id)) count++;
+      if (await repo.hasCompletedQuiz(quiz.id)) count++;
     }
     return count;
   }
 
   Future<void> _checkAllQuizzesComplete(BuildContext context, String lessonId, List<QuizModel> quizzes) async {
     if (quizzes.isEmpty) return;
-    final completed = await _countCompletedQuizzes(quizzes);
+    final completed = await _countCompletedQuizzes(context, quizzes);
     if (completed >= quizzes.length) _markComplete(context, lessonId);
   }
 
@@ -107,7 +107,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen>
 
     final quizzes = state.quizzes;
     if (quizzes.isNotEmpty) {
-      final completed = await _countCompletedQuizzes(quizzes);
+      final completed = await _countCompletedQuizzes(context, quizzes);
       if (completed < quizzes.length) {
         final confirm = await _showSkipQuizDialog(quizzes.length - completed);
         if (confirm != true) return;

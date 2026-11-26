@@ -42,3 +42,7 @@ final class CourseDetailCertificateRequested extends CourseDetailEvent {
   @override
   List<Object?> get props => [enrollmentId];
 }
+
+final class CourseDetailEnrollRequested extends CourseDetailEvent {
+  const CourseDetailEnrollRequested();
+}

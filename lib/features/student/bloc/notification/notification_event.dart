@@ -23,3 +23,7 @@ final class NotificationMarkedRead extends NotificationEvent {
 final class NotificationMarkedAllRead extends NotificationEvent {
   const NotificationMarkedAllRead();
 }
+
+final class NotificationLoadMore extends NotificationEvent {
+  const NotificationLoadMore();
+}

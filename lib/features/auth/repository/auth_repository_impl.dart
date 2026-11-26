@@ -8,6 +8,7 @@ import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/features/auth/data/dto/dto.dart';
 import 'package:study/features/auth/data/models/models.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
+import 'package:study/features/student/data/quiz_result_storage.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
@@ -17,17 +18,20 @@ class AuthRepositoryImpl implements AuthRepository {
     required BookmarkStorage bookmarkStorage,
     required LastAccessedCourseStorage lastAccessedStorage,
     required DailyGoalsStorage dailyGoalsStorage,
+    required QuizResultStorage quizResultStorage,
   }) : _api = apiClient,
        _storage = authStorage,
        _dio = dio,
        _bookmarkStorage = bookmarkStorage,
        _lastAccessedStorage = lastAccessedStorage,
-       _dailyGoalsStorage = dailyGoalsStorage;
+       _dailyGoalsStorage = dailyGoalsStorage,
+       _quizResultStorage = quizResultStorage;
 
   final AuthApiClient _api;
   final AuthStorage _storage;
   final Dio _dio;
   final BookmarkStorage _bookmarkStorage;
+  final QuizResultStorage _quizResultStorage;
   final LastAccessedCourseStorage _lastAccessedStorage;
   final DailyGoalsStorage _dailyGoalsStorage;
 
@@ -38,6 +42,7 @@ class AuthRepositoryImpl implements AuthRepository {
       'bookmarks': _bookmarkStorage.clear,
       'lastAccessed': _lastAccessedStorage.clear,
       'dailyGoals': _dailyGoalsStorage.clear,
+      'quizResults': _quizResultStorage.clear,
     };
     for (final step in steps.entries) {
       try {
@@ -572,8 +577,21 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<RoleModel?> getSavedRole() => _storage.getActiveRole();
 
   @override
-  // Session hết hạn: chỉ xoá auth, giữ bookmark/goals local của user
-  Future<void> clearSession() => _storage.clearAll();
+  // Session hết hạn: xoá auth + quiz results (sensitive), giữ bookmark/goals
+  Future<void> clearSession() async {
+    // Clear cả hai độc lập, không để một cái fail chặn cái kia
+    final steps = <String, Future<void> Function()>{
+      'auth': _storage.clearAll,
+      'quizResults': _quizResultStorage.clear,
+    };
+    for (final step in steps.entries) {
+      try {
+        await step.value();
+      } catch (e) {
+        AppLogger.w('Clear ${step.key} on session expiry failed', e);
+      }
+    }
+  }
 
   @override
   Future<String> uploadFile(String filePath) async {

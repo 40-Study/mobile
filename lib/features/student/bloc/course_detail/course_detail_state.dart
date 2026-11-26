@@ -24,30 +24,38 @@ final class CourseDetailSuccess extends CourseDetailState {
     this.expandedSections = const {},
     this.isBookmarked = false,
     this.certificate,
+    this.isEnrolling = false,
+    this.enrollError,
   });
 
   final EnrollmentModel enrollment;
   final Set<String> expandedSections;
   final bool isBookmarked;
   final CertificateModel? certificate;
+  final bool isEnrolling;
+  final String? enrollError;
 
   CourseModel? get course => enrollment.course;
   List<SectionModel> get sections => course?.sections ?? [];
 
   @override
-  List<Object?> get props => [enrollment, expandedSections, isBookmarked, certificate];
+  List<Object?> get props => [enrollment, expandedSections, isBookmarked, certificate, isEnrolling, enrollError];
 
   CourseDetailSuccess copyWith({
     EnrollmentModel? enrollment,
     Set<String>? expandedSections,
     bool? isBookmarked,
     CertificateModel? certificate,
+    bool? isEnrolling,
+    String? enrollError,
   }) {
     return CourseDetailSuccess(
       enrollment: enrollment ?? this.enrollment,
       expandedSections: expandedSections ?? this.expandedSections,
       isBookmarked: isBookmarked ?? this.isBookmarked,
       certificate: certificate ?? this.certificate,
+      isEnrolling: isEnrolling ?? this.isEnrolling,
+      enrollError: enrollError,
     );
   }
 }

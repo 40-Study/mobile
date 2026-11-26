@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/student/bloc/lesson/lesson_state.dart';
 import 'package:study/features/student/data/models/models.dart';
 import 'package:study/features/student/data/quiz_result_storage.dart';
+import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/features/student/presentation/learning/quiz_screen.dart';
 import 'package:study/features/student/presentation/learning/quiz_result_screen.dart';
 import 'package:study/theme/theme.dart';
@@ -26,9 +28,9 @@ class _LessonExerciseSectionState extends State<LessonExerciseSection> {
   bool _isLoading = true;
 
   @override
-  void initState() {
-    super.initState();
-    _loadAllResults();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isLoading) _loadAllResults();
   }
 
   @override
@@ -40,10 +42,11 @@ class _LessonExerciseSectionState extends State<LessonExerciseSection> {
   }
 
   Future<void> _loadAllResults() async {
+    final repo = context.read<StudentRepository>();
     final quizzes = widget.state.quizzes;
     final map = <String, QuizResultData?>{};
     for (final q in quizzes) {
-      map[q.id] = await QuizResultStorage.getResult(q.id);
+      map[q.id] = await repo.getQuizResult(q.id);
     }
     if (mounted) {
       setState(() {

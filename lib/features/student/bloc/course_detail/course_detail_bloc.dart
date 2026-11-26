@@ -22,6 +22,7 @@ class CourseDetailBloc extends Bloc<CourseDetailEvent, CourseDetailState> {
     on<CourseDetailSectionToggled>(_onSectionToggled);
     on<CourseDetailBookmarkToggled>(_onBookmarkToggled);
     on<CourseDetailCertificateRequested>(_onCertificateRequested);
+    on<CourseDetailEnrollRequested>(_onEnrollRequested);
   }
 
   final StudentRepository _repository;
@@ -222,5 +223,44 @@ class CourseDetailBloc extends Bloc<CourseDetailEvent, CourseDetailState> {
     }
 
     emit(currentState.copyWith(certificate: cert));
+  }
+
+  Future<void> _onEnrollRequested(
+    CourseDetailEnrollRequested event,
+    Emitter<CourseDetailState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! CourseDetailSuccess) return;
+    if (currentState.isEnrolling) return; // Prevent double tap
+
+    final courseId = currentState.course?.id;
+    if (courseId == null) return;
+
+    emit(currentState.copyWith(isEnrolling: true));
+
+    try {
+      final enrollment = await _courseRepository.enrollCourse(courseId);
+      // Enroll success - reload full data
+      _id = enrollment.id;
+      _isEnrollment = true;
+      await _loadEnrollment(emit);
+    } catch (e) {
+      final error = _parseEnrollError(e);
+      emit(currentState.copyWith(isEnrolling: false, enrollError: error));
+    }
+  }
+
+  String _parseEnrollError(Object e) {
+    final message = e.toString();
+    if (message.contains('402') || message.contains('Payment')) {
+      return 'Khóa học trả phí. Vui lòng mua qua trang thanh toán.';
+    }
+    if (message.contains('404')) {
+      return 'Khóa học không tồn tại hoặc chưa được xuất bản.';
+    }
+    if (message.contains('409') || message.contains('COURSE_NOT_FOR_SALE')) {
+      return 'Khóa học đã ngừng bán.';
+    }
+    return 'Không thể đăng ký. Vui lòng thử lại.';
   }
 }

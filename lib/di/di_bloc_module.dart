@@ -16,6 +16,7 @@ import 'package:study/features/student/bloc/learning/learning_bloc.dart';
 import 'package:study/features/student/bloc/lesson/lesson_bloc.dart';
 import 'package:study/features/student/bloc/notification/notification_bloc.dart';
 import 'package:study/features/student/bloc/quiz/quiz_bloc.dart';
+import 'package:study/features/student/data/quiz_result_storage.dart';
 import 'package:study/features/student/bloc/schedule/schedule_bloc.dart';
 import 'package:study/features/student/bloc/search/search_bloc.dart';
 import 'package:study/features/student/repository/student_repository.dart';
@@ -67,7 +68,8 @@ abstract class BlocModule {
   SearchBloc searchBloc(StudentRepository repo) => SearchBloc(repo);
 
   @factoryMethod
-  QuizBloc quizBloc(StudentRepository repo) => QuizBloc(repo);
+  QuizBloc quizBloc(StudentRepository repo, AuthRepository authRepo, QuizResultStorage quizStorage) =>
+      QuizBloc(repo, authRepo, quizStorage);
 
   @factoryMethod
   NotificationBloc notificationBloc(StudentRepository repo) =>

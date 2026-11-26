@@ -63,7 +63,7 @@ abstract class StudentApiClient {
   // Search courses
   @GET('/api/courses')
   Future<HttpResponse<dynamic>> searchCourses({
-    @Query('search') String? query,
+    @Query('keyword') String? query,
     @Query('page') int page = 1,
     @Query('page_size') int pageSize = 20,
   });
@@ -88,4 +88,25 @@ abstract class StudentApiClient {
   Future<HttpResponse<dynamic>> getPublicProfile(
     @Path('userId') String userId,
   );
+
+  // === Family Link (Student side) ===
+
+  /// Danh sách yêu cầu liên kết từ phụ huynh
+  @GET('/api/family/link-requests/incoming')
+  Future<HttpResponse<dynamic>> getIncomingLinkRequests();
+
+  /// Trả lời yêu cầu liên kết (accept/reject)
+  @POST('/api/family/link-requests/{id}/respond')
+  Future<HttpResponse<dynamic>> respondLinkRequest(
+    @Path('id') String id,
+    @Body() Map<String, dynamic> body,
+  );
+
+  /// Danh sách phụ huynh đã liên kết
+  @GET('/api/family/parents')
+  Future<HttpResponse<dynamic>> getLinkedParents();
+
+  /// Hủy liên kết phụ huynh
+  @DELETE('/api/family/parents/{id}')
+  Future<HttpResponse<dynamic>> unlinkParent(@Path('id') String id);
 }

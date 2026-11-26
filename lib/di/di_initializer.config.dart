@@ -65,6 +65,7 @@ import 'package:study/features/student/bloc/quiz/quiz_bloc.dart' as _i938;
 import 'package:study/features/student/bloc/schedule/schedule_bloc.dart'
     as _i961;
 import 'package:study/features/student/bloc/search/search_bloc.dart' as _i336;
+import 'package:study/features/student/data/quiz_result_storage.dart' as _i673;
 import 'package:study/features/student/data/student_api_client.dart' as _i583;
 import 'package:study/features/student/repository/student_repository.dart'
     as _i962;
@@ -106,6 +107,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i235.FamilyInsightsRepository>(
       () => repositoryModule.provideFamilyInsightsRepository(),
     );
+    gh.lazySingleton<_i673.QuizResultStorage>(() => _i673.QuizResultStorage());
     gh.factory<_i354.ThemeRepository>(
       () => repositoryModule.provideThemeRepository(gh<_i1013.ThemeStorage>()),
     );
@@ -147,15 +149,6 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i510.ParentLearningBloc>(
       () => blocModule.parentLearningBloc(gh<_i385.ParentLearningRepository>()),
     );
-    gh.factory<_i584.AuthRepository>(
-      () => repositoryModule.provideAuthRepository(
-        gh<_i384.AuthApiClient>(),
-        gh<_i450.AuthStorage>(),
-        gh<_i361.Dio>(),
-        gh<_i830.BookmarkStorage>(),
-        gh<_i340.LastAccessedCourseStorage>(),
-      ),
-    );
     gh.factory<_i812.OnboardingRepository>(
       () => repositoryModule.provideOnboardingRepository(
         gh<_i38.OnboardingStorage>(),
@@ -167,12 +160,23 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i661.ParentHomeBloc>(
       () => blocModule.parentHomeBloc(gh<_i90.ParentHomeRepository>()),
     );
+    gh.factory<_i584.AuthRepository>(
+      () => repositoryModule.provideAuthRepository(
+        gh<_i384.AuthApiClient>(),
+        gh<_i450.AuthStorage>(),
+        gh<_i361.Dio>(),
+        gh<_i830.BookmarkStorage>(),
+        gh<_i340.LastAccessedCourseStorage>(),
+        gh<_i673.QuizResultStorage>(),
+      ),
+    );
     gh.lazySingleton<_i962.StudentRepository>(
       () => repositoryModule.provideStudentRepository(
         gh<_i583.StudentApiClient>(),
         gh<_i511.CourseApiClient>(),
         gh<_i584.AuthRepository>(),
         gh<_i340.LastAccessedCourseStorage>(),
+        gh<_i673.QuizResultStorage>(),
       ),
     );
     gh.factory<_i574.ParentScheduleBloc>(
@@ -182,6 +186,13 @@ extension GetItInjectableX on _i174.GetIt {
       () => blocModule.achievementBloc(
         gh<_i962.StudentRepository>(),
         gh<_i584.AuthRepository>(),
+      ),
+    );
+    gh.factory<_i938.QuizBloc>(
+      () => blocModule.quizBloc(
+        gh<_i962.StudentRepository>(),
+        gh<_i584.AuthRepository>(),
+        gh<_i673.QuizResultStorage>(),
       ),
     );
     gh.factory<_i144.HomeBloc>(
@@ -198,9 +209,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i336.SearchBloc>(
       () => blocModule.searchBloc(gh<_i962.StudentRepository>()),
-    );
-    gh.factory<_i938.QuizBloc>(
-      () => blocModule.quizBloc(gh<_i962.StudentRepository>()),
     );
     gh.factory<_i185.NotificationBloc>(
       () => blocModule.notificationBloc(gh<_i962.StudentRepository>()),

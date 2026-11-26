@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/student/data/quiz_result_storage.dart';
+import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/features/student/presentation/learning/quiz_screen.dart';
 import 'package:study/features/student/presentation/learning/quiz_result_screen.dart';
 import 'package:study/theme/theme.dart';
@@ -334,15 +336,17 @@ class QuizCard extends StatefulWidget {
 
 class _QuizCardState extends State<QuizCard> {
   QuizResultData? _result;
+  bool _loaded = false;
 
   @override
-  void initState() {
-    super.initState();
-    _loadResult();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_loaded) _loadResult();
   }
 
   Future<void> _loadResult() async {
-    final result = await QuizResultStorage.getResult(widget.quizId);
+    _loaded = true;
+    final result = await context.read<StudentRepository>().getQuizResult(widget.quizId);
     if (mounted) setState(() => _result = result);
   }
 

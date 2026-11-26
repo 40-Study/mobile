@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/bloc/theme/app_theme.dart';
 import 'package:study/bloc/theme/theme_cubit.dart';
+import 'package:study/features/student/presentation/family/family_link_screen.dart';
 import 'package:study/l10n/app_localizations.dart';
 import 'package:study/theme/theme.dart';
 import 'package:study/widgets/app_header_bar.dart';
@@ -52,6 +53,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: tt.bodySmall,
                 ),
                 onTap: () {},
+              ),
+            ],
+          ),
+          AppSpacing.vGap24,
+
+          // Family Link section
+          const _SectionTitle(title: 'Gia đình'),
+          _SettingsCard(
+            children: [
+              _SettingsTile(
+                icon: Icons.family_restroom_rounded,
+                title: 'Liên kết phụ huynh',
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (_) => const FamilyLinkScreen(),
+                  ),
+                ),
               ),
             ],
           ),

@@ -8,6 +8,7 @@ import 'package:study/features/course/data/models/certificate_model.dart';
 import 'package:study/features/course/data/models/course_model.dart';
 import 'package:study/features/course/data/models/enrollment_model.dart';
 import 'package:study/features/student/data/models/models.dart';
+import 'package:study/features/student/data/quiz_result_storage.dart';
 import 'package:study/features/student/data/student_api_client.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 
@@ -17,15 +18,18 @@ class StudentRepositoryImpl implements StudentRepository {
     required CourseApiClient courseApi,
     required AuthRepository authRepository,
     required LastAccessedCourseStorage lastAccessedStorage,
+    required QuizResultStorage quizResultStorage,
   })  : _studentApi = studentApi,
         _courseApi = courseApi,
         _authRepository = authRepository,
-        _lastAccessedStorage = lastAccessedStorage;
+        _lastAccessedStorage = lastAccessedStorage,
+        _quizResultStorage = quizResultStorage;
 
   final StudentApiClient _studentApi;
   final CourseApiClient _courseApi;
   final AuthRepository _authRepository;
   final LastAccessedCourseStorage _lastAccessedStorage;
+  final QuizResultStorage _quizResultStorage;
 
   Future<String?> _getCurrentUserId() async {
     final user = await _authRepository.getSavedUser();
@@ -321,13 +325,14 @@ class StudentRepositoryImpl implements StudentRepository {
   }
 
   @override
-  Future<ApiResult<List<NotificationModel>>> getNotifications() async {
+  Future<ApiResult<({List<NotificationModel> items, bool hasMore})>> getNotifications({int page = 1}) async {
     try {
-      final response = await _studentApi.getNotifications();
+      final response = await _studentApi.getNotifications(page: page);
       final list = _extractList(response.data['data']);
-      return Result.success(
-        list.map((e) => NotificationModel.fromJson(e as Map<String, dynamic>)).toList(),
-      );
+      final items = list.map((e) => NotificationModel.fromJson(e as Map<String, dynamic>)).toList();
+      // hasMore = có next page (server trả pagination info hoặc check list đủ page_size)
+      final hasMore = items.length >= 20;
+      return Result.success((items: items, hasMore: hasMore));
     } catch (e) {
       return Result.failure(ServerFailure(message: e.toString()));
     }
@@ -337,7 +342,8 @@ class StudentRepositoryImpl implements StudentRepository {
   Future<ApiResult<int>> getUnreadNotificationCount() async {
     try {
       final response = await _studentApi.getUnreadCount();
-      final count = response.data['data']['count'] as int? ?? 0;
+      // Backend trả unread_count, không phải count
+      final count = response.data['data']['unread_count'] as int? ?? 0;
       return Result.success(count);
     } catch (e) {
       return Result.failure(ServerFailure(message: e.toString()));
@@ -676,6 +682,68 @@ class StudentRepositoryImpl implements StudentRepository {
       final response = await _studentApi.getClass(classId);
       final courseId = response.data['data']?['course_id'] as String?;
       return Result.success(courseId);
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<bool> hasCompletedQuiz(String quizId) async {
+    final userId = await _getCurrentUserId();
+    if (userId == null) return false;
+    return _quizResultStorage.hasResult(userId, quizId);
+  }
+
+  @override
+  Future<QuizResultData?> getQuizResult(String quizId) async {
+    final userId = await _getCurrentUserId();
+    if (userId == null) return null;
+    return _quizResultStorage.getResult(userId, quizId);
+  }
+
+  // === Family Link (Student side) ===
+
+  @override
+  Future<ApiResult<List<ParentLinkRequestModel>>> getIncomingLinkRequests() async {
+    try {
+      final response = await _studentApi.getIncomingLinkRequests();
+      final list = _extractList(response.data['data']);
+      return Result.success(
+        list.map((e) => ParentLinkRequestModel.fromJson(e as Map<String, dynamic>)).toList(),
+      );
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<void>> respondLinkRequest(String id, {required bool accept}) async {
+    try {
+      await _studentApi.respondLinkRequest(id, {'accept': accept});
+      return const Result.success(null);
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<List<LinkedParentModel>>> getLinkedParents() async {
+    try {
+      final response = await _studentApi.getLinkedParents();
+      final list = _extractList(response.data['data']);
+      return Result.success(
+        list.map((e) => LinkedParentModel.fromJson(e as Map<String, dynamic>)).toList(),
+      );
+    } catch (e) {
+      return Result.failure(ServerFailure(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<ApiResult<void>> unlinkParent(String id) async {
+    try {
+      await _studentApi.unlinkParent(id);
+      return const Result.success(null);
     } catch (e) {
       return Result.failure(ServerFailure(message: e.toString()));
     }

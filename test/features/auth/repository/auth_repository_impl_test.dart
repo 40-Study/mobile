@@ -7,6 +7,7 @@ import 'package:study/data/last_accessed_course_storage.dart';
 import 'package:study/features/auth/data/auth_api_client.dart';
 import 'package:study/features/auth/data/auth_storage.dart';
 import 'package:study/features/auth/repository/auth_repository_impl.dart';
+import 'package:study/features/student/data/quiz_result_storage.dart';
 
 class _Api extends Mock implements AuthApiClient {}
 
@@ -18,6 +19,8 @@ class _LastAccessed extends Mock implements LastAccessedCourseStorage {}
 
 class _Goals extends Mock implements DailyGoalsStorage {}
 
+class _QuizResults extends Mock implements QuizResultStorage {}
+
 void main() {
   group('AuthRepositoryImpl', () {
     late _Api api;
@@ -25,6 +28,7 @@ void main() {
     late _Bookmarks bookmarks;
     late _LastAccessed lastAccessed;
     late _Goals goals;
+    late _QuizResults quizResults;
     late AuthRepositoryImpl repo;
 
     setUp(() {
@@ -33,10 +37,12 @@ void main() {
       bookmarks = _Bookmarks();
       lastAccessed = _LastAccessed();
       goals = _Goals();
+      quizResults = _QuizResults();
       when(() => authStorage.clearAll()).thenAnswer((_) async {});
       when(() => bookmarks.clear()).thenAnswer((_) async {});
       when(() => lastAccessed.clear()).thenAnswer((_) async {});
       when(() => goals.clear()).thenAnswer((_) async {});
+      when(() => quizResults.clear()).thenAnswer((_) async {});
       repo = AuthRepositoryImpl(
         apiClient: api,
         authStorage: authStorage,
@@ -44,10 +50,11 @@ void main() {
         bookmarkStorage: bookmarks,
         lastAccessedStorage: lastAccessed,
         dailyGoalsStorage: goals,
+        quizResultStorage: quizResults,
       );
     });
 
-    test('logout should clear bookmarks, goals and last accessed course even when API fails', () async {
+    test('logout should clear bookmarks, goals, quiz and last accessed course even when API fails', () async {
       when(() => api.logout()).thenThrow(DioException(requestOptions: RequestOptions()));
 
       await expectLater(repo.logout(), throwsA(isA<DioException>()));
@@ -56,6 +63,7 @@ void main() {
       verify(() => bookmarks.clear()).called(1);
       verify(() => lastAccessed.clear()).called(1);
       verify(() => goals.clear()).called(1);
+      verify(() => quizResults.clear()).called(1);
     });
 
     test('logoutAll should still clear goals when bookmark clear throws', () async {
@@ -68,12 +76,22 @@ void main() {
       verify(() => lastAccessed.clear()).called(1);
     });
 
-    test('clearSession should keep local user data', () async {
+    test('clearSession should clear auth and quiz but keep bookmarks/goals', () async {
       await repo.clearSession();
 
       verify(() => authStorage.clearAll()).called(1);
+      verify(() => quizResults.clear()).called(1);
       verifyNever(() => bookmarks.clear());
       verifyNever(() => goals.clear());
+    });
+
+    test('clearSession clears quiz even when auth clear fails', () async {
+      when(() => authStorage.clearAll()).thenThrow(Exception('io'));
+
+      await repo.clearSession(); // Should not throw
+
+      verify(() => authStorage.clearAll()).called(1);
+      verify(() => quizResults.clear()).called(1);
     });
   });
 }

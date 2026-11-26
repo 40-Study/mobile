@@ -20,10 +20,20 @@ final class NotificationSuccess extends NotificationState {
   const NotificationSuccess({
     required this.notifications,
     required this.unreadCount,
+    this.pendingIds = const {},
+    this.isMarkAllPending = false,
+    this.hasMore = true,
+    this.isLoadingMore = false,
+    this.currentPage = 1,
   });
 
   final List<NotificationModel> notifications;
   final int unreadCount;
+  final Set<String> pendingIds; // IDs đang xử lý
+  final bool isMarkAllPending;
+  final bool hasMore;
+  final bool isLoadingMore;
+  final int currentPage;
 
   // Group by day
   List<NotificationModel> get todayList => notifications
@@ -53,7 +63,7 @@ final class NotificationSuccess extends NotificationState {
   }
 
   @override
-  List<Object?> get props => [notifications, unreadCount];
+  List<Object?> get props => [notifications, unreadCount, pendingIds, isMarkAllPending, hasMore, isLoadingMore, currentPage];
 }
 
 final class NotificationFailure extends NotificationState {

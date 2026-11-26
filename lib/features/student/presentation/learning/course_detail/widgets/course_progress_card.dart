@@ -9,11 +9,13 @@ class CourseProgressCard extends StatelessWidget {
     required this.state,
     required this.onContinue,
     required this.onViewCertificate,
+    required this.onEnroll,
   });
 
   final CourseDetailSuccess state;
   final VoidCallback onContinue;
   final VoidCallback onViewCertificate;
+  final VoidCallback onEnroll;
 
   @override
   Widget build(BuildContext context) {
@@ -66,11 +68,7 @@ class CourseProgressCard extends StatelessWidget {
                 ),
               ),
               FilledButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.enrollmentDeveloping)),
-                  );
-                },
+                onPressed: state.isEnrolling ? null : onEnroll,
                 style: FilledButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: cs.primary,
@@ -82,10 +80,16 @@ class CourseProgressCard extends StatelessWidget {
                     vertical: AppSpacing.md,
                   ),
                 ),
-                child: Text(
-                  l10n.enrollNow,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
+                child: state.isEnrolling
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(
+                        l10n.enrollNow,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
               ),
             ],
           ),

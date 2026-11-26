@@ -9,8 +9,7 @@ abstract class CourseRepository {
     int pageSize = 20,
     String? categoryId,
     String? level,
-    String? search,
-    String? sortBy,
+    String? keyword,
     bool? isFree,
   });
 

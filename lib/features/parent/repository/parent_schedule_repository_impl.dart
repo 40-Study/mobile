@@ -322,46 +322,33 @@ class ParentScheduleRepositoryImpl implements ParentScheduleRepository {
   // =========================================================================
 
   List<FamilyScopeChild> _mergeWithMockChildren(List<FamilyScopeChild> real) {
-    final list = <FamilyScopeChild>[];
-
-    // 1. Luôn giữ nguyên tài khoản con thật ở đầu danh sách
+    // Nếu có con thật, dùng danh sách thật - không thêm mock
     if (real.isNotEmpty) {
-      list.addAll(real);
-    } else {
-      list.add(
-        FamilyScopeChild.sample(
-          id: studentTungId,
-          name: 'Mai Hoàng Tùng',
-          className: '12A',
-        ),
-      );
+      return real;
     }
 
-    // 2. Bổ sung Minh & Lan vào danh sách để trải nghiệm đầy đủ Family Scope
-    if (!list.any((c) => c.id == studentMinhId)) {
-      list.add(
-        const FamilyScopeChild(
-          id: studentMinhId,
-          name: 'Minh',
-          className: '10A1',
-          initialLetter: 'M',
-          badgeColor: Color(0xFFDBEAFE),
-        ),
-      );
-    }
-    if (!list.any((c) => c.id == studentLanId)) {
-      list.add(
-        const FamilyScopeChild(
-          id: studentLanId,
-          name: 'Lan',
-          className: '7B',
-          initialLetter: 'L',
-          badgeColor: Color(0xFFFCE7F3),
-        ),
-      );
-    }
-
-    return list;
+    // Không có con thật: trả về mock children để demo UI
+    return [
+      FamilyScopeChild.sample(
+        id: studentTungId,
+        name: 'Mai Hoàng Tùng',
+        className: '12A',
+      ),
+      const FamilyScopeChild(
+        id: studentMinhId,
+        name: 'Minh',
+        className: '10A1',
+        initialLetter: 'M',
+        badgeColor: Color(0xFFDBEAFE),
+      ),
+      const FamilyScopeChild(
+        id: studentLanId,
+        name: 'Lan',
+        className: '7B',
+        initialLetter: 'L',
+        badgeColor: Color(0xFFFCE7F3),
+      ),
+    ];
   }
 
   List<ParentScheduleSession> _buildMockSessionsForMonth(DateTime anchorMonth) {

@@ -5,6 +5,8 @@ import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/features/student/bloc/achievement/achievement_bloc.dart';
 import 'package:study/features/student/bloc/home/home_bloc.dart';
 import 'package:study/features/student/bloc/learning/learning_bloc.dart';
+import 'package:study/features/student/bloc/notification/notification_bloc.dart';
+import 'package:study/features/student/bloc/notification/notification_state.dart';
 import 'package:study/features/student/bloc/schedule/schedule_bloc.dart';
 import 'package:study/features/student/presentation/achievement/achievement_screen.dart';
 import 'package:study/features/student/presentation/bookmark/bookmark_screen.dart';
@@ -69,46 +71,51 @@ class _StudentShellState extends State<StudentShell> {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: context.surfaceBg,
-      drawer: AppDrawer(
-        userName: userData.name,
-        userEmail: userData.email,
-        userAvatar: userData.avatar,
-        notificationCount: 0, // TODO: Replace with real notification count from API
-        onNotificationsTap: () {
-          Navigator.pop(context);
-          Navigator.push(
-            context,
-            MaterialPageRoute<void>(builder: (_) => const NotificationScreen()),
+      drawer: BlocBuilder<NotificationBloc, NotificationState>(
+        builder: (context, notifState) {
+          final notifCount = notifState is NotificationSuccess ? notifState.unreadCount : 0;
+          return AppDrawer(
+            userName: userData.name,
+            userEmail: userData.email,
+            userAvatar: userData.avatar,
+            notificationCount: notifCount,
+            onNotificationsTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const NotificationScreen()),
+              );
+            },
+            onBookmarksTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const BookmarkScreen()),
+              );
+            },
+            onSearchTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const SearchScreen()),
+              );
+            },
+            onSettingsTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
+              );
+            },
+            onHelpTap: () {
+              Navigator.pop(context);
+              // TODO(MOCK-01): Help screen not implemented - needs HelpScreen widget
+            },
+            onLogoutTap: () {
+              Navigator.pop(context);
+              context.read<AuthBloc>().add(AuthLoggedOut());
+            },
           );
-        },
-        onBookmarksTap: () {
-          Navigator.pop(context);
-          Navigator.push(
-            context,
-            MaterialPageRoute<void>(builder: (_) => const BookmarkScreen()),
-          );
-        },
-        onSearchTap: () {
-          Navigator.pop(context);
-          Navigator.push(
-            context,
-            MaterialPageRoute<void>(builder: (_) => const SearchScreen()),
-          );
-        },
-        onSettingsTap: () {
-          Navigator.pop(context);
-          Navigator.push(
-            context,
-            MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
-          );
-        },
-        onHelpTap: () {
-          Navigator.pop(context);
-          // TODO(MOCK-01): Help screen not implemented - needs HelpScreen widget
-        },
-        onLogoutTap: () {
-          Navigator.pop(context);
-          context.read<AuthBloc>().add(AuthLoggedOut());
         },
       ),
       body: MultiBlocProvider(

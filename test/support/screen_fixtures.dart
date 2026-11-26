@@ -97,6 +97,7 @@ import 'package:study/features/student/presentation/search/search_screen.dart';
 import 'package:study/features/student/presentation/settings/help_center_screen.dart';
 import 'package:study/features/student/presentation/settings/settings_screen.dart';
 import 'package:study/features/student/presentation/student_shell.dart';
+import 'package:study/features/student/data/quiz_result_storage.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 import 'package:study/repository/theme_repository.dart';
 import 'package:study/routes/router.dart';
@@ -119,6 +120,8 @@ class _ParentHomeRepository extends Mock implements ParentHomeRepository {}
 
 class _ParentScheduleRepository extends Mock
     implements ParentScheduleRepository {}
+
+class _QuizStorage extends Mock implements QuizResultStorage {}
 
 const _user = UserModel(
   id: 'user',
@@ -279,8 +282,8 @@ Future<void> setUpScreenFixtures({int itemCount = 0}) async {
     () => student.getContributions(any()),
   ).thenAnswer((_) async => const Result.success([]));
   when(
-    () => student.getNotifications(),
-  ).thenAnswer((_) async => const Result.success([]));
+    () => student.getNotifications(page: any(named: 'page')),
+  ).thenAnswer((_) async => const Result.success((items: <NotificationModel>[], hasMore: false)));
   when(
     () => student.getCourseDetail(any()),
   ).thenAnswer((_) async => const Result.success(_enrollment));
@@ -364,7 +367,7 @@ Future<void> setUpScreenFixtures({int itemCount = 0}) async {
     ..registerFactory<BookmarkBloc>(() => BookmarkBloc(bookmarks))
     ..registerFactory<SearchBloc>(() => SearchBloc(student))
     ..registerFactory<NotificationBloc>(() => NotificationBloc(student))
-    ..registerFactory<QuizBloc>(() => QuizBloc(student))
+    ..registerFactory<QuizBloc>(() => QuizBloc(student, auth, _QuizStorage()))
     ..registerFactory<LessonBloc>(() => LessonBloc(student))
     ..registerFactory<ParentHomeBloc>(() => ParentHomeBloc(parentHome))
     ..registerFactory<ParentLearningBloc>(
@@ -719,9 +722,9 @@ Future<void> _populateData(int count) async {
       ),
     ),
   );
-  when(() => student.getNotifications()).thenAnswer(
-    (_) async => Result.success(
-      List.generate(
+  when(() => student.getNotifications(page: any(named: 'page'))).thenAnswer(
+    (_) async => Result.success((
+      items: List.generate(
         count,
         (i) => NotificationModel(
           id: 'notification-$i',
@@ -732,7 +735,8 @@ Future<void> _populateData(int count) async {
           isRead: i.isEven,
         ),
       ),
-    ),
+      hasMore: false,
+    )),
   );
   await prefs.setString(
     'bookmarks',

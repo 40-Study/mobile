@@ -16,8 +16,7 @@ abstract class CourseApiClient {
     @Query('page_size') int pageSize = 20,
     @Query('category_id') String? categoryId,
     @Query('level') String? level,
-    @Query('search') String? search,
-    @Query('sort_by') String? sortBy,
+    @Query('keyword') String? keyword,
     @Query('is_free') bool? isFree,
   });
 

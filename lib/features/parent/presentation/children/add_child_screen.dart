@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:study/features/parent/repository/parent_home_repository.dart';
 import 'package:study/theme/theme.dart';
 
-/// Add/Link Child - liên kết hồ sơ con bằng mã
-/// Theo deliverable: nhập mã liên kết do trung tâm cung cấp
+/// Add/Link Child - liên kết con bằng email học sinh
 class AddChildScreen extends StatefulWidget {
   const AddChildScreen({super.key});
 
@@ -11,13 +12,22 @@ class AddChildScreen extends StatefulWidget {
 }
 
 class _AddChildScreenState extends State<AddChildScreen> {
-  final _codeController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _messageController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  String _relationship = 'parent';
+
+  static const _relationships = [
+    ('parent', 'Phụ huynh'),
+    ('guardian', 'Người giám hộ'),
+    ('grandparent', 'Ông/Bà'),
+  ];
 
   @override
   void dispose() {
-    _codeController.dispose();
+    _emailController.dispose();
+    _messageController.dispose();
     super.dispose();
   }
 
@@ -31,7 +41,7 @@ class _AddChildScreenState extends State<AddChildScreen> {
         title: const Text('Liên kết hồ sơ con'),
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Form(
             key: _formKey,
@@ -48,7 +58,7 @@ class _AddChildScreenState extends State<AddChildScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    Icons.link_rounded,
+                    Icons.family_restroom_rounded,
                     color: cs.primary,
                     size: 36,
                   ),
@@ -56,38 +66,70 @@ class _AddChildScreenState extends State<AddChildScreen> {
 
                 // Title
                 Text(
-                  'Nhập mã liên kết',
+                  'Gửi yêu cầu liên kết',
                   style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 AppSpacing.vGap8,
                 Text(
-                  'Nhập mã liên kết do trung tâm cung cấp để liên kết hồ sơ con với tài khoản của bạn.',
+                  'Nhập email tài khoản học sinh của con để gửi yêu cầu liên kết. Con sẽ nhận được thông báo để xác nhận.',
                   style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                 ),
 
                 AppSpacing.vGap24,
 
-                // Code input
+                // Email input
                 TextFormField(
-                  controller: _codeController,
+                  controller: _emailController,
                   decoration: InputDecoration(
-                    labelText: 'Mã liên kết',
-                    hintText: 'VD: ABC123XYZ',
-                    prefixIcon: const Icon(Icons.vpn_key_outlined),
-                    border: OutlineInputBorder(
-                      borderRadius: AppRadius.borderMd,
-                    ),
+                    labelText: 'Email học sinh',
+                    hintText: 'email@example.com',
+                    prefixIcon: const Icon(Icons.email_outlined),
+                    border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
                   ),
-                  textCapitalization: TextCapitalization.characters,
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Vui lòng nhập mã liên kết';
+                      return 'Vui lòng nhập email';
                     }
-                    if (value.trim().length < 6) {
-                      return 'Mã liên kết phải có ít nhất 6 ký tự';
+                    if (!RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$').hasMatch(value.trim())) {
+                      return 'Email không hợp lệ';
                     }
                     return null;
                   },
+                ),
+
+                AppSpacing.vGap16,
+
+                // Relationship dropdown
+                DropdownButtonFormField<String>(
+                  value: _relationship,
+                  decoration: InputDecoration(
+                    labelText: 'Quan hệ với học sinh',
+                    prefixIcon: const Icon(Icons.people_outline),
+                    border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
+                  ),
+                  items: _relationships
+                      .map((r) => DropdownMenuItem(value: r.$1, child: Text(r.$2)))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) setState(() => _relationship = value);
+                  },
+                ),
+
+                AppSpacing.vGap16,
+
+                // Message input (optional)
+                TextFormField(
+                  controller: _messageController,
+                  decoration: InputDecoration(
+                    labelText: 'Lời nhắn (không bắt buộc)',
+                    hintText: 'VD: Con ơi, ba/mẹ muốn theo dõi tiến độ học tập của con',
+                    prefixIcon: const Icon(Icons.message_outlined),
+                    border: OutlineInputBorder(borderRadius: AppRadius.borderMd),
+                  ),
+                  maxLines: 2,
+                  maxLength: 500,
                 ),
 
                 AppSpacing.vGap24,
@@ -104,23 +146,12 @@ class _AddChildScreenState extends State<AddChildScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text('Xác nhận liên kết'),
+                      : const Text('Gửi yêu cầu liên kết'),
                 ),
 
-                AppSpacing.vGap16,
+                AppSpacing.vGap24,
 
-                // Help link
-                TextButton(
-                  onPressed: _showHelpDialog,
-                  child: Text(
-                    'Không có mã? Liên hệ hỗ trợ',
-                    style: tt.bodyMedium?.copyWith(color: cs.primary),
-                  ),
-                ),
-
-                const Spacer(),
-
-                // Note
+                // Info note
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
@@ -128,6 +159,7 @@ class _AddChildScreenState extends State<AddChildScreen> {
                     borderRadius: AppRadius.borderMd,
                   ),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(
                         Icons.info_outline_rounded,
@@ -137,10 +169,9 @@ class _AddChildScreenState extends State<AddChildScreen> {
                       AppSpacing.hGap12,
                       Expanded(
                         child: Text(
-                          'Mã liên kết thường được trung tâm cung cấp khi đăng ký học hoặc trong thông tin học viên.',
-                          style: tt.bodySmall?.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
+                          'Học sinh sẽ nhận được thông báo yêu cầu liên kết. '
+                          'Sau khi con xác nhận, bạn sẽ có thể theo dõi tiến độ học tập.',
+                          style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                         ),
                       ),
                     ],
@@ -159,83 +190,43 @@ class _AddChildScreenState extends State<AddChildScreen> {
 
     setState(() => _isLoading = true);
 
-    // TODO(MOCK-01): Replace Future.delayed with real link-child API call
-    // API endpoint: POST /api/parent/link-child
-    await Future<void>.delayed(const Duration(seconds: 2));
+    try {
+      final repo = context.read<ParentHomeRepository>();
+      await repo.sendLinkRequest(
+        studentEmail: _emailController.text.trim(),
+        relationship: _relationship,
+        message: _messageController.text.trim().isEmpty
+            ? null
+            : _messageController.text.trim(),
+      );
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    setState(() => _isLoading = false);
-
-    // TODO(MOCK-01): Handle API response - success/error states
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Tính năng đang phát triển')),
-    );
-  }
-
-  void _showHelpDialog() {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    showModalBottomSheet<void>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: cs.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            AppSpacing.vGap24,
-            Icon(
-              Icons.support_agent_rounded,
-              size: 48,
-              color: cs.primary,
-            ),
-            AppSpacing.vGap16,
-            Text(
-              'Liên hệ hỗ trợ',
-              style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            AppSpacing.vGap8,
-            Text(
-              'Nếu bạn không có mã liên kết, vui lòng liên hệ trung tâm để được hỗ trợ.',
-              style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-              textAlign: TextAlign.center,
-            ),
-            AppSpacing.vGap24,
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  // TODO(MOCK-01): Navigate to help/support - needs HelpScreen
-                },
-                icon: const Icon(Icons.chat_outlined),
-                label: const Text('Liên hệ hỗ trợ'),
-              ),
-            ),
-            AppSpacing.vGap12,
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Đóng'),
-              ),
-            ),
-            AppSpacing.vGap16,
-          ],
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã gửi yêu cầu liên kết. Chờ học sinh xác nhận.'),
+          backgroundColor: Colors.green,
         ),
-      ),
-    );
+      );
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+
+      var message = 'Không thể gửi yêu cầu. Vui lòng thử lại.';
+      final error = e.toString();
+      if (error.contains('not found') || error.contains('404')) {
+        message = 'Không tìm thấy tài khoản học sinh với email này.';
+      } else if (error.contains('already') || error.contains('409')) {
+        message = 'Đã có yêu cầu liên kết hoặc đã liên kết với học sinh này.';
+      } else if (error.contains('rate') || error.contains('429')) {
+        message = 'Bạn gửi quá nhiều yêu cầu. Vui lòng thử lại sau.';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 }

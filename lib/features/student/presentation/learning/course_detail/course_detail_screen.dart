@@ -69,8 +69,8 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
         ? (sections[sectionIndex].lessons?.indexWhere((l) => l.id == lesson.id) ?? 0) + 1
         : 1;
 
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
+    final requestCert = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(
         builder: (_) => BlocProvider(
           create: (_) => diContainer<LessonBloc>()
             ..add(LessonStarted(lesson.id)),
@@ -98,6 +98,13 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
     // Refresh enrollment data sau khi quay lại
     if (context.mounted) {
       context.read<CourseDetailBloc>().add(const CourseDetailRefreshed());
+      // Nếu user click "Xem chứng chỉ" từ lesson_detail
+      if (requestCert == true) {
+        final state = context.read<CourseDetailBloc>().state;
+        if (state is CourseDetailSuccess) {
+          _onViewCertificate(context, state);
+        }
+      }
     }
   }
 
@@ -142,14 +149,19 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
       body: BlocConsumer<CourseDetailBloc, CourseDetailState>(
         listenWhen: (prev, curr) {
           if (prev is! CourseDetailSuccess || curr is! CourseDetailSuccess) return false;
-          // Listen khi bookmark hoặc certificate thay đổi
-          return prev.isBookmarked != curr.isBookmarked ||
-              (prev.certificate == null && curr.certificate != null);
+          // Listen khi có certificate mới hoặc enrollError
+          return (prev.certificate == null && curr.certificate != null) ||
+              (prev.enrollError == null && curr.enrollError != null);
         },
         listener: (context, state) {
           if (state is! CourseDetailSuccess) return;
-
-          // Navigate khi có certificate mới
+          // Handle enroll error
+          final error = state.enrollError;
+          if (error != null) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+            return;
+          }
+          // Handle certificate
           final cert = state.certificate;
           if (cert != null) {
             Navigator.push(
@@ -247,6 +259,9 @@ class _CourseDetailScreenState extends State<CourseDetailScreen>
                     }
                   },
                   onViewCertificate: () => _onViewCertificate(context, state),
+                  onEnroll: () => context.read<CourseDetailBloc>().add(
+                        const CourseDetailEnrollRequested(),
+                      ),
                 ),
               ),
               SliverPersistentHeader(

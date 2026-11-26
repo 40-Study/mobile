@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/core/error/result.dart';
+import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/student/bloc/quiz/quiz_event.dart';
 import 'package:study/features/student/bloc/quiz/quiz_state.dart';
 import 'package:study/features/student/data/models/models.dart';
@@ -7,7 +8,8 @@ import 'package:study/features/student/data/quiz_result_storage.dart';
 import 'package:study/features/student/repository/student_repository.dart';
 
 class QuizBloc extends Bloc<QuizEvent, QuizState> {
-  QuizBloc(this._repository) : super(const QuizInitial()) {
+  QuizBloc(this._repository, this._authRepository, this._quizStorage)
+      : super(const QuizInitial()) {
     on<QuizStarted>(_onStarted);
     on<QuizAnswerSelected>(_onAnswerSelected);
     on<QuizNextQuestion>(_onNextQuestion);
@@ -18,9 +20,17 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
   }
 
   final StudentRepository _repository;
+  final AuthRepository _authRepository;
+  final QuizResultStorage _quizStorage;
+
+  String? _startingUserId; // Capture userId khi start quiz
 
   Future<void> _onStarted(QuizStarted event, Emitter<QuizState> emit) async {
     emit(const QuizLoading());
+
+    // Capture userId khi bắt đầu quiz để check khi save
+    final user = await _authRepository.getSavedUser();
+    _startingUserId = user?.id;
 
     final result = await _repository.startQuiz(event.quizId);
 
@@ -196,15 +206,20 @@ class QuizBloc extends Bloc<QuizEvent, QuizState> {
               (submitResult.percentage * totalCount / 100).round();
         }
 
-        // Lưu kết quả vào local storage kèm attemptId và timeSpentSeconds
-        await QuizResultStorage.saveResult(
-          quizId: current.quizId,
-          attemptId: current.attemptId,
-          correctCount: correctCount,
-          totalCount: totalCount,
-          score: submitResult.percentage,
-          timeSpentSeconds: submitResult.timeSpentSeconds,
-        );
+        // Check user chưa đổi trước khi save local
+        final currentUser = await _authRepository.getSavedUser();
+        if (_startingUserId != null && currentUser?.id == _startingUserId) {
+          await _quizStorage.saveResult(
+            userId: _startingUserId!,
+            quizId: current.quizId,
+            attemptId: current.attemptId,
+            correctCount: correctCount,
+            totalCount: totalCount,
+            score: submitResult.percentage,
+            timeSpentSeconds: submitResult.timeSpentSeconds,
+          );
+        }
+        // Nếu user đã đổi, skip save local - kết quả vẫn ở server
 
         emit(
           QuizCompleted(
