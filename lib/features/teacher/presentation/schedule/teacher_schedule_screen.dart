@@ -43,6 +43,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   final _classNames = <String, String>{};
   bool _showOnlyNeedsAttention = false;
   bool _needsAttentionExpanded = false; // Cho collapsible section
+  bool _calendarExpanded = false; // Cho expandable calendar
 
   @override
   void initState() {
@@ -92,7 +93,6 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
           }).toList();
 
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
 
     // Tìm buổi cần xử lý: quá giờ chưa hoàn tất hoặc cần bổ sung
     final needsAttention = <TeacherOccurrence>[];
@@ -211,6 +211,115 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
     );
     if (result == true) _reload();
     return false; // Không dismiss item
+  }
+
+  /// Long-press preview cho session
+  void _showSessionPreview(BuildContext context, TeacherOccurrence session) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final role = session.json['teacher_role']?.toString();
+    final studentCount = (session.json['student_count'] as int?) ?? 0;
+
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: AppSpacing.paddingScreenAll,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  TeacherClassIcon(
+                    className: session.classData.name,
+                    size: 48,
+                  ),
+                  AppSpacing.hGap12,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          session.classData.name,
+                          style: tt.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          '${DateFormat('EEEE, dd/MM/yyyy', 'vi').format(session.date)}',
+                          style: tt.bodySmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (role != null) TeacherRoleBadge(role: role),
+                ],
+              ),
+              AppSpacing.vGap16,
+              // Info rows
+              _PreviewInfoRow(
+                icon: Icons.access_time,
+                label: 'Thời gian',
+                value: '${session.start} - ${session.end}',
+              ),
+              if (session.topic.isNotEmpty)
+                _PreviewInfoRow(
+                  icon: Icons.subject,
+                  label: 'Chủ đề',
+                  value: session.topic,
+                ),
+              if (studentCount > 0)
+                _PreviewInfoRow(
+                  icon: Icons.people_outline,
+                  label: 'Học sinh',
+                  value: '$studentCount học sinh',
+                ),
+              _PreviewInfoRow(
+                icon: Icons.info_outline,
+                label: 'Trạng thái',
+                value: teacherStatus(session.status),
+              ),
+              AppSpacing.vGap16,
+              // Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Đóng'),
+                    ),
+                  ),
+                  AppSpacing.hGap12,
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        teacherPush<void>(
+                          context,
+                          TeacherSessionScreen(
+                            api: widget.api,
+                            classId: session.classId,
+                            sessionId: session.sessionId,
+                            occurrence: session,
+                            workplaceLabel: widget.workplaceLabel,
+                          ),
+                        ).then((_) => _reload());
+                      },
+                      child: const Text('Xem chi tiết'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _move(int direction) => setState(() {
@@ -332,53 +441,6 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
               ],
             ),
           ),
-          // View toggle
-          Padding(
-            padding: AppSpacing.paddingHorizontalXl,
-            child: Row(
-              children: [
-                Expanded(
-                  child: SegmentedButton<bool>(
-                    segments: const [
-                      ButtonSegment(value: false, label: Text('Tuần')),
-                      ButtonSegment(value: true, label: Text('Tháng')),
-                    ],
-                    selected: {_month},
-                    onSelectionChanged: (value) => setState(() {
-                      _month = value.first;
-                      _showOnlyNeedsAttention = false;
-                      _future = _load();
-                    }),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Week navigation (only show in week mode)
-          if (!_month)
-            Padding(
-              padding: AppSpacing.paddingHorizontalXl,
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => _move(-1),
-                    tooltip: 'Kỳ trước',
-                    icon: const Icon(Icons.chevron_left),
-                  ),
-                  Expanded(
-                    child: Text(
-                      '${DateFormat('dd/MM').format(_weekStart)} – ${DateFormat('dd/MM').format(_weekStart.add(const Duration(days: 6)))}',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => _move(1),
-                    tooltip: 'Kỳ sau',
-                    icon: const Icon(Icons.chevron_right),
-                  ),
-                ],
-              ),
-            ),
           AppSpacing.vGap8,
           Expanded(
         child: FutureBuilder<_ScheduleData>(
@@ -471,32 +533,22 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                     ),
 
                   if (!_showOnlyNeedsAttention) ...[
-                    if (_month)
-                      Padding(
-                        padding: AppSpacing.paddingHorizontalXl,
-                        child: Material(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.surfaceContainerLowest,
-                          borderRadius: BorderRadius.circular(12),
-                          child: CalendarDatePicker(
-                            key: ValueKey('${_selected.year}-${_selected.month}'),
-                            initialDate: _selected,
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2100),
-                            onDateChanged: (date) =>
-                                setState(() => _selected = date),
-                            onDisplayedMonthChanged: (date) => setState(() {
-                              _selected = _inMonth(
-                                date.month + (date.year - _selected.year) * 12,
-                              );
-                              _future = _load();
-                            }),
-                          ),
-                        ),
-                      )
-                    else
-                      _buildWeekStrip(context, sessions),
+                    // Expandable Calendar (week/month)
+                    TeacherExpandableCalendar(
+                      selectedDate: _selected,
+                      weekStart: _weekStart,
+                      isExpanded: _calendarExpanded,
+                      sessions: sessions,
+                      classFilter: _classId,
+                      onDateSelected: (date) => setState(() {
+                        _selected = date;
+                      }),
+                      onToggleExpand: () => setState(() {
+                        _calendarExpanded = !_calendarExpanded;
+                      }),
+                      onWeekChanged: (delta) => _move(delta),
+                    ),
+                    AppSpacing.vGap12,
                     Padding(
                       padding: AppSpacing.paddingHorizontalXl,
                       child: Align(
@@ -540,11 +592,14 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                         enabled: _isOverdue(session),
                         direction: DismissDirection.startToEnd,
                         onAction: () => _quickStartSession(session),
-                        child: TeacherSessionRow(
-                          onChanged: _reload,
-                          session: session,
-                          api: widget.api,
-                          workplaceLabel: widget.workplaceLabel,
+                        child: GestureDetector(
+                          onLongPress: () => _showSessionPreview(context, session),
+                          child: TeacherSessionRow(
+                            onChanged: _reload,
+                            session: session,
+                            api: widget.api,
+                            workplaceLabel: widget.workplaceLabel,
+                          ),
                         ),
                       ),
                     ),
@@ -712,160 +767,6 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
       ),
     );
   }
-
-  Widget _buildWeekStrip(BuildContext context, List<TeacherOccurrence> sessions) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return GestureDetector(
-      // Swipe horizontal để chuyển tuần
-      onHorizontalDragEnd: (details) {
-        final velocity = details.primaryVelocity ?? 0;
-        // Swipe phải → tuần trước, swipe trái → tuần sau
-        if (velocity > 300) {
-          _move(-1);
-        } else if (velocity < -300) {
-          _move(1);
-        }
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: AppSpacing.paddingHorizontalXl,
-          child: Row(
-            children: [
-            for (var i = 0; i < 7; i++)
-              Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.sm),
-                child: Builder(
-                  builder: (context) {
-                    final day = DateTime(
-                      _weekStart.year,
-                      _weekStart.month,
-                      _weekStart.day + i,
-                    );
-                    final daySessions = sessions
-                        .where(
-                          (s) =>
-                              teacherDate(s.date) == teacherDate(day) &&
-                              (_classId == null || s.classId == _classId),
-                        )
-                        .toList();
-                    final count = daySessions.length;
-                    final hasNeedsAttention = daySessions.any((s) {
-                      final confirmStatus =
-                          s.json['hour_confirmation_status']?.toString();
-                      return confirmStatus == 'needs_info';
-                    });
-                    final selected = teacherDate(day) == teacherDate(_selected);
-                    final today = teacherDate(day) == teacherDate(DateTime.now());
-
-                    return GestureDetector(
-                      onTap: () => setState(() => _selected = day),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        curve: Curves.easeOutCubic,
-                        width: today ? 72 : 56,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppSpacing.sm,
-                          horizontal: AppSpacing.xs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: selected
-                              ? cs.primary
-                              : cs.surfaceContainerLowest,
-                          borderRadius: AppRadius.borderMd,
-                          border: Border.all(
-                            color: selected
-                                ? cs.primary
-                                : today
-                                    ? cs.primary
-                                    : cs.outlineVariant.withValues(alpha: 0.5),
-                            width: today && !selected ? 2 : 1,
-                          ),
-                          boxShadow: selected
-                              ? [
-                                  BoxShadow(
-                                    color: cs.primary.withValues(alpha: 0.3),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              today
-                                  ? 'Hôm nay'
-                                  : const ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'][i],
-                              style: tt.labelSmall?.copyWith(
-                                color: selected
-                                    ? cs.onPrimary
-                                    : cs.onSurfaceVariant,
-                                fontSize: today ? 10 : 11,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              DateFormat('dd').format(day),
-                              style: tt.titleLarge?.copyWith(
-                                color: selected ? cs.onPrimary : cs.onSurface,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            if (count > 0)
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  if (hasNeedsAttention)
-                                    Container(
-                                      width: 6,
-                                      height: 6,
-                                      margin: const EdgeInsets.only(right: 4),
-                                      decoration: BoxDecoration(
-                                        color: selected
-                                            ? cs.onPrimary
-                                            : AchievementColors.red,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  Text(
-                                    '$count',
-                                    style: tt.labelMedium?.copyWith(
-                                      color: selected
-                                          ? cs.onPrimary
-                                          : cs.primary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            else
-                              Text(
-                                '—',
-                                style: tt.labelSmall?.copyWith(
-                                  color: selected
-                                      ? cs.onPrimary.withValues(alpha: 0.5)
-                                      : cs.onSurfaceVariant.withValues(alpha: 0.5),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 /// Data class chứa tất cả dữ liệu cần thiết cho ScheduleScreen
@@ -970,6 +871,57 @@ class _NeedsAttentionItem extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Info row trong session preview bottom sheet
+class _PreviewInfoRow extends StatelessWidget {
+  const _PreviewInfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: cs.onSurfaceVariant,
+          ),
+          AppSpacing.hGap8,
+          Text(
+            label,
+            style: tt.bodySmall?.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+          const Spacer(),
+          Flexible(
+            child: Text(
+              value,
+              style: tt.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.end,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }
