@@ -213,6 +213,21 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
     return false; // Không dismiss item
   }
 
+  /// Navigate to session detail screen
+  Future<void> _navigateToSession(TeacherOccurrence session) async {
+    final result = await teacherPush<bool>(
+      context,
+      TeacherSessionScreen(
+        api: widget.api,
+        classId: session.classId,
+        sessionId: session.sessionId,
+        occurrence: session,
+        workplaceLabel: widget.workplaceLabel,
+      ),
+    );
+    if (result == true) _reload();
+  }
+
   /// Long-press preview cho session
   void _showSessionPreview(BuildContext context, TeacherOccurrence session) {
     final cs = Theme.of(context).colorScheme;
@@ -460,11 +475,11 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
               return _buildNoClassState(context);
             }
 
-            final classes = {
-              for (final session in sessions)
-                session.classId: session.classData.name,
-            };
-            _classNames.addAll(classes);
+            // Clear và rebuild class names để tránh stale data
+            _classNames.clear();
+            for (final session in sessions) {
+              _classNames[session.classId] = session.classData.name;
+            }
 
             // Filter rows dựa trên mode
             List<TeacherOccurrence> rows;
@@ -676,10 +691,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
               ),
             _NeedsAttentionItem(
               session: data.needsAttention[i],
-              onTap: () {
-                // Navigate to session detail
-                setState(() => _showOnlyNeedsAttention = true);
-              },
+              onTap: () => _navigateToSession(data.needsAttention[i]),
             ),
           ],
           // Link xem tất cả nếu có nhiều items
