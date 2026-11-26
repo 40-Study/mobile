@@ -159,9 +159,9 @@ class TeacherRoleBadge extends StatelessWidget {
   }
 }
 
-/// Class avatar/icon với background màu
-class TeacherClassAvatar extends StatelessWidget {
-  const TeacherClassAvatar({
+/// Class icon với background màu (dùng cho class, không phải người)
+class TeacherClassIcon extends StatelessWidget {
+  const TeacherClassIcon({
     super.key,
     required this.className,
     this.size = 48,

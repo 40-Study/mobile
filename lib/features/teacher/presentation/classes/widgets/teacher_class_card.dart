@@ -62,7 +62,7 @@ class TeacherClassCard extends StatelessWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TeacherClassAvatar(
+                    TeacherClassIcon(
                       className: row.name,
                       size: 52,
                     ),

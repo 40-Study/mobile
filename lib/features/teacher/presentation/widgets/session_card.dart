@@ -94,8 +94,8 @@ class NextSessionCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    // Class avatar
-                    TeacherClassAvatar(
+                    // Class icon
+                    TeacherClassIcon(
                       className: session.classData.name,
                       size: 44,
                       color: cs.onPrimary,
