@@ -142,10 +142,10 @@ void main() {
       expect(tester.takeException(), isNull);
       if (const bool.fromEnvironment('TEACHER_CAPTURE'))
         await _capture(tester, 'preview-$width-home');
-      await tester.tap(find.text('Khóa học').last);
+      await tester.tap(find.text('Lớp').last);
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      expect(find.text('Python cho người mới bắt đầu'), findsOneWidget);
+      expect(find.text('Python cơ bản · PY26A'), findsOneWidget);
       if (const bool.fromEnvironment('TEACHER_CAPTURE'))
         await _capture(tester, 'preview-$width-courses');
       await disposeScreenFixture(tester);
@@ -171,10 +171,10 @@ void main() {
         size: Size(width.toDouble(), 1024),
       );
       expect(tester.takeException(), isNull);
-      await tester.tap(find.text('Khóa học').last);
+      await tester.tap(find.text('Lớp').last);
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      await tester.tap(find.text('Tài khoản').last);
+      await tester.tap(find.text('Hồ sơ').last);
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       await disposeScreenFixture(tester);

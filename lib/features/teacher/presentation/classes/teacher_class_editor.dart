@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/data/teacher_core.dart';
+import 'package:study/features/teacher/data/teacher_preview_api.dart';
+import 'package:study/theme/theme.dart';
 
 class TeacherClassEditor extends StatefulWidget {
   const TeacherClassEditor({super.key, required this.api, this.classData});
@@ -18,6 +20,7 @@ class _TeacherClassEditorState extends State<TeacherClassEditor> {
   late String _status;
   bool _dirty = false;
   bool _saving = false;
+  bool get _preview => widget.api is TeacherPreviewApi;
   Object? _error;
   @override
   void initState() {
@@ -40,7 +43,29 @@ class _TeacherClassEditorState extends State<TeacherClassEditor> {
   }
 
   Future<void> _save() async {
-    if (!_form.currentState!.validate()) return;
+    if (_preview || _saving || !_form.currentState!.validate()) return;
+    if (_status == 'archived' && widget.classData?.archived != true) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Lưu trữ lớp?'),
+          content: Text(
+            'Sau khi lưu trữ, ${widget.classData!.name} chuyển sang chế độ chỉ xem.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Tiếp tục chỉnh'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Lưu trữ lớp'),
+            ),
+          ],
+        ),
+      );
+      if (!mounted || confirmed != true || _saving) return;
+    }
     setState(() {
       _saving = true;
       _error = null;
@@ -49,10 +74,15 @@ class _TeacherClassEditorState extends State<TeacherClassEditor> {
       final data = <String, dynamic>{
         'name': _name.text.trim(),
         'description': _description.text.trim(),
-        if (_max.text.trim().isNotEmpty) 'max_students': int.parse(_max.text),
+        if (_max.text.trim().isNotEmpty)
+          'max_students': int.parse(_max.text.trim()),
       };
+      Object result = true;
       if (widget.classData == null) {
-        await widget.api.post('/classes', data: data);
+        final created = TeacherClassData(
+          teacherPayload(await widget.api.post('/classes', data: data)),
+        );
+        if (created.id.trim().isNotEmpty) result = created.id;
       } else {
         final detail = TeacherClassData(
           teacherPayload(
@@ -73,7 +103,7 @@ class _TeacherClassEditorState extends State<TeacherClassEditor> {
           _saving = false;
         });
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) Navigator.pop(context, true);
+          if (mounted) Navigator.pop(context, result);
         });
       }
     } catch (error) {
@@ -125,83 +155,127 @@ class _TeacherClassEditorState extends State<TeacherClassEditor> {
           widget.classData == null ? 'Tạo lớp cá nhân' : 'Chỉnh sửa lớp',
         ),
       ),
-      body: Form(
-        key: _form,
-        onChanged: () => setState(() => _dirty = true),
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            if (widget.classData == null)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 16),
-                child: Text(
-                  'Lớp mới là bản nháp. Sau khi tạo, phân công giáo viên để lớp xuất hiện trong lịch và danh sách được phân công.',
+      body: Column(
+        children: [
+          Expanded(
+            child: Form(
+              key: _form,
+              onChanged: () => setState(() => _dirty = true),
+              child: ListView(
+                padding: AppSpacing.paddingLg,
+                children: [
+                  if (_preview)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 16),
+                      child: Text('Dữ liệu mẫu · Chỉ xem'),
+                    ),
+                  if (widget.classData == null)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 16),
+                      child: Text(
+                        'Lớp mới là bản nháp. Bạn được phân công làm giáo viên chính và có thể thêm lịch sau khi tạo.',
+                      ),
+                    ),
+                  TextFormField(
+                    controller: _name,
+                    enabled: !_saving && !_preview,
+                    maxLength: 255,
+                    decoration: const InputDecoration(labelText: 'Tên lớp'),
+                    textInputAction: TextInputAction.next,
+                    validator: (value) => (value?.trim().length ?? 0) < 2
+                        ? 'Nhập ít nhất 2 ký tự.'
+                        : null,
+                  ),
+                  AppSpacing.vGap16,
+                  TextFormField(
+                    controller: _description,
+                    enabled: !_saving && !_preview,
+                    maxLines: 4,
+                    decoration: const InputDecoration(
+                      labelText: 'Mô tả (tùy chọn)',
+                    ),
+                  ),
+                  AppSpacing.vGap16,
+                  TextFormField(
+                    controller: _max,
+                    enabled: !_saving && !_preview,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Số học viên tối đa (tùy chọn)',
+                    ),
+                    validator: (value) =>
+                        value == null ||
+                            value.trim().isEmpty ||
+                            (int.tryParse(value.trim()) ?? 0) > 0
+                        ? null
+                        : 'Nhập số nguyên dương.',
+                  ),
+                  if (widget.classData != null) ...[
+                    AppSpacing.vGap16,
+                    DropdownButtonFormField<String>(
+                      initialValue: _status,
+                      decoration: const InputDecoration(
+                        labelText: 'Trạng thái',
+                      ),
+                      items: ['draft', 'active', 'archived']
+                          .map(
+                            (s) => DropdownMenuItem(
+                              value: s,
+                              child: Text(teacherStatus(s)),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: _saving || _preview
+                          ? null
+                          : (value) => setState(() {
+                              _status = value!;
+                              _dirty = true;
+                            }),
+                    ),
+                  ],
+                  if (_status == 'archived') ...[
+                    AppSpacing.vGap8,
+                    const Text('Lớp chuyển sang chế độ chỉ xem khi lưu trữ.'),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          if (!_preview)
+            Material(
+              child: SafeArea(
+                top: false,
+                minimum: AppSpacing.paddingLg,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (_error case final error?) ...[
+                      Semantics(
+                        liveRegion: true,
+                        child: Text(
+                          teacherErrorMessage(error),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                      AppSpacing.vGap8,
+                    ],
+                    FilledButton(
+                      onPressed: _saving ? null : _save,
+                      child: Text(
+                        _saving
+                            ? 'Đang lưu…'
+                            : widget.classData == null
+                            ? 'Tạo lớp'
+                            : 'Lưu thay đổi',
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            TextFormField(
-              controller: _name,
-              enabled: !_saving,
-              maxLength: 255,
-              decoration: const InputDecoration(labelText: 'Tên lớp'),
-              validator: (value) => (value?.trim().length ?? 0) < 2
-                  ? 'Nhập ít nhất 2 ký tự.'
-                  : null,
             ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _description,
-              enabled: !_saving,
-              maxLines: 4,
-              decoration: const InputDecoration(labelText: 'Mô tả'),
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _max,
-              enabled: !_saving,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Số học viên tối đa (tùy chọn)',
-              ),
-              validator: (value) =>
-                  value == null ||
-                      value.isEmpty ||
-                      (int.tryParse(value) ?? 0) > 0
-                  ? null
-                  : 'Nhập số nguyên dương.',
-            ),
-            if (widget.classData != null)
-              DropdownButtonFormField<String>(
-                initialValue: _status,
-                decoration: const InputDecoration(labelText: 'Trạng thái'),
-                items: ['draft', 'active', 'archived']
-                    .map(
-                      (s) => DropdownMenuItem(
-                        value: s,
-                        child: Text(teacherStatus(s)),
-                      ),
-                    )
-                    .toList(),
-                onChanged: _saving
-                    ? null
-                    : (value) => setState(() {
-                        _status = value!;
-                        _dirty = true;
-                      }),
-              ),
-            if (_status == 'archived')
-              const Text('Lưu trữ chuyển các nghiệp vụ lớp sang chỉ đọc.'),
-            if (_error != null)
-              Text(
-                'Chưa lưu được. $_error',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _saving ? null : _save,
-              child: Text(_saving ? 'Đang lưu…' : 'Lưu lớp'),
-            ),
-          ],
-        ),
+        ],
       ),
     ),
   );

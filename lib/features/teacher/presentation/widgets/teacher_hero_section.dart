@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:study/theme/theme.dart';
 
@@ -106,8 +108,8 @@ class TeacherSummaryChip extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    final effectiveColor = color ??
-        (isWarning ? AchievementColors.red : cs.primary);
+    final effectiveColor =
+        color ?? (isWarning ? AchievementColors.red : cs.primary);
     final backgroundColor = effectiveColor.withValues(alpha: 0.1);
 
     return Material(
@@ -126,11 +128,7 @@ class TeacherSummaryChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                size: 16,
-                color: effectiveColor,
-              ),
+              Icon(icon, size: 16, color: effectiveColor),
               AppSpacing.hGap4,
               Text(
                 label,
@@ -154,6 +152,7 @@ class TeacherCountdownBadge extends StatefulWidget {
     required this.targetTime,
     this.prefix = 'Còn',
     this.onExpired,
+    this.foregroundColor,
   });
 
   /// Thời điểm mục tiêu để đếm ngược
@@ -164,6 +163,7 @@ class TeacherCountdownBadge extends StatefulWidget {
 
   /// Callback khi hết giờ
   final VoidCallback? onExpired;
+  final Color? foregroundColor;
 
   @override
   State<TeacherCountdownBadge> createState() => _TeacherCountdownBadgeState();
@@ -172,6 +172,7 @@ class TeacherCountdownBadge extends StatefulWidget {
 class _TeacherCountdownBadgeState extends State<TeacherCountdownBadge> {
   late Duration _remaining;
   bool _expired = false;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -190,12 +191,17 @@ class _TeacherCountdownBadgeState extends State<TeacherCountdownBadge> {
   }
 
   void _startTimer() {
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(_updateRemaining);
-        if (!_expired) _startTimer();
-      }
+    if (_expired) return;
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(_updateRemaining);
+      if (_expired) timer.cancel();
     });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   String _formatDuration(Duration d) {
@@ -236,9 +242,7 @@ class _TeacherCountdownBadgeState extends State<TeacherCountdownBadge> {
       decoration: BoxDecoration(
         color: badgeColor.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppRadius.full),
-        border: Border.all(
-          color: badgeColor.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: badgeColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -248,16 +252,18 @@ class _TeacherCountdownBadgeState extends State<TeacherCountdownBadge> {
                 ? Icons.play_circle_filled
                 : Icons.timer_outlined,
             size: 14,
-            color: badgeColor,
+            color: widget.foregroundColor ?? badgeColor,
           ),
           AppSpacing.hGap4,
-          Text(
-            _remaining.isNegative
-                ? _formatDuration(_remaining)
-                : '${widget.prefix} ${_formatDuration(_remaining)}',
-            style: tt.labelSmall?.copyWith(
-              color: badgeColor,
-              fontWeight: FontWeight.w700,
+          Flexible(
+            child: Text(
+              _remaining.isNegative
+                  ? _formatDuration(_remaining)
+                  : '${widget.prefix} ${_formatDuration(_remaining)}',
+              style: tt.labelSmall?.copyWith(
+                color: badgeColor,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],

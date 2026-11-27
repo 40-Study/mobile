@@ -1,14 +1,25 @@
-# Xem thử giao diện Teacher với dữ liệu mẫu
+# Chạy Teacher với API dev hoặc dữ liệu mẫu
 
-Chạy từ thư mục `40Study`:
+Bản dev mặc định gọi API thật. Từ thư mục `backend`, dùng
+`go run ./cmd/seed -env=dev -mode=full` để nạp dữ liệu vào PostgreSQL dev cục bộ.
+Đăng nhập ở vai trò Teacher bằng tài khoản seed `teacher1@demo.com`.
 
 ```sh
-flutter run --flavor dev
+flutter run --flavor dev --dart-define=ENV=dev
 ```
 
-Dữ liệu mẫu tạm thời bật sẵn trong bản dev. Đăng nhập bằng tài khoản có role Teacher rồi chuyển sang role này như bình thường. Nếu app đang chạy, cần hot restart để khởi tạo lại TeacherShell; hot reload giữ API instance cũ.
+Trong bản dev, Xin nghỉ dùng dữ liệu trong phiên khi API báo chưa hỗ trợ.
+Menu Lịch có **Thử gửi bổ sung giờ dạy** để xem riêng chức năng chưa có API.
+Hai màn này ghi rõ dữ liệu mẫu và không cập nhật lịch hoặc gửi đến trung tâm.
 
-Preview mặc định bật khi ENV là dev và không phải release. Dùng `--dart-define=TEACHER_UI_PREVIEW=false` để trở lại API thật. Release luôn tắt preview. Các tab nghiệp vụ hiển thị nhãn **Dữ liệu mẫu · Chỉ xem giao diện**.
+Để xem toàn bộ giao diện bằng dữ liệu mẫu, chạy từ thư mục `mobile`:
+
+```sh
+flutter run --flavor dev --dart-define=ENV=dev --dart-define=TEACHER_UI_PREVIEW=true
+```
+
+Khởi động lại app với cấu hình mới khi đổi chế độ. Release luôn tắt preview.
+Các tab nghiệp vụ của chế độ preview hiển thị **Dữ liệu mẫu · Chỉ xem giao diện**.
 
 Dữ liệu gồm ba lớp lập trình, ba buổi hôm nay (hoàn thành/đang diễn ra/sắp tới), ba khóa học (đã xuất bản/nháp/chờ duyệt), học viên, điểm và ví cá nhân. Ngày mẫu lấy theo ngày chạy ứng dụng. Ảnh khóa Python dùng asset hiện có của dự án.
 

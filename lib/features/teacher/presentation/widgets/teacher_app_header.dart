@@ -10,17 +10,19 @@ class TeacherAppHeader extends StatelessWidget {
     required this.icon,
     required this.title,
     this.trailing,
+    this.titleSuffix,
     this.onAvatarTap,
     this.onNotificationTap,
-    this.showNotification = false,
+    this.hasUnreadNotifications = false,
   });
 
   final IconData icon;
   final String title;
   final Widget? trailing;
+  final Widget? titleSuffix;
   final VoidCallback? onAvatarTap;
   final VoidCallback? onNotificationTap;
-  final bool showNotification;
+  final bool hasUnreadNotifications;
 
   @override
   Widget build(BuildContext context) => RoleAppHeader(
@@ -30,8 +32,11 @@ class TeacherAppHeader extends StatelessWidget {
     iconBackgroundColor: RoleColors.teacherPrimary.withValues(alpha: 0.1),
     iconColor: RoleColors.teacherPrimary,
     trailing: trailing,
+    titleSuffix: titleSuffix,
     onAvatarTap: onAvatarTap,
     onNotificationTap: onNotificationTap,
-    showNotification: showNotification,
+    compact: true,
+    showNotification: true,
+    showNotificationBadge: hasUnreadNotifications,
   );
 }

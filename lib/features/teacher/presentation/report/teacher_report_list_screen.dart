@@ -1,233 +1,246 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
-import 'package:study/features/teacher/data/teacher_core.dart';
+import 'package:study/features/teacher/presentation/report/teacher_report_data.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_session_screen.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
 import 'package:study/theme/theme.dart';
 
-/// Danh sách buổi cấu thành nhóm trong báo cáo (T10 theo spec).
-class TeacherReportListScreen extends StatelessWidget {
+class TeacherReportListScreen extends StatefulWidget {
   const TeacherReportListScreen({
     super.key,
     required this.api,
+    required this.month,
     required this.title,
-    required this.sessions,
-    required this.classes,
+    required this.data,
+    required this.classId,
+    required this.classLabel,
     required this.workplaceLabel,
+    required this.status,
+    required this.reload,
   });
 
   final TeacherApi api;
+  final DateTime month;
   final String title;
-  final List<Map<String, dynamic>> sessions;
-  final List<TeacherClassData> classes;
+  final TeacherReportData data;
+  final String? classId;
+  final String classLabel;
   final String workplaceLabel;
+  final TeacherReportStatus? status;
+  final Future<TeacherReportData> Function() reload;
+
+  @override
+  State<TeacherReportListScreen> createState() =>
+      _TeacherReportListScreenState();
+}
+
+class _TeacherReportListScreenState extends State<TeacherReportListScreen> {
+  late TeacherReportData _data = widget.data;
+  bool _refreshing = false;
+  Object? _refreshError;
+  bool _opening = false;
+
+  Future<void> _reload() async {
+    if (_refreshing) return;
+    setState(() {
+      _refreshing = true;
+      _refreshError = null;
+    });
+    try {
+      final data = await widget.reload();
+      if (!mounted) return;
+      setState(() {
+        _data = data;
+        _refreshing = false;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _refreshError = error;
+        _refreshing = false;
+      });
+    }
+  }
+
+  Future<void> _open(TeacherReportSession row) async {
+    if (_opening) return;
+    _opening = true;
+    try {
+      final occurrence = row.occurrence;
+      final changed = await teacherPush<bool>(
+        context,
+        TeacherSessionScreen(
+          api: widget.api,
+          classId: occurrence.classId,
+          sessionId: occurrence.sessionId,
+          occurrence: occurrence,
+          workplaceLabel: widget.workplaceLabel,
+        ),
+      );
+      if (mounted && changed == true) await _reload();
+    } finally {
+      _opening = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final classById = {for (final c in classes) c.id: c};
-
-    // Sort by date desc
-    final sorted = List<Map<String, dynamic>>.from(sessions)
-      ..sort((a, b) {
-        final dateA = DateTime.tryParse('${a['date']}') ?? DateTime(2000);
-        final dateB = DateTime.tryParse('${b['date']}') ?? DateTime(2000);
-        return dateB.compareTo(dateA);
-      });
-
+    final theme = Theme.of(context);
+    final rows = _data.group(widget.classId, widget.status);
+    final noConfirmations =
+        rows.isNotEmpty &&
+        rows.every((row) => row.confirmation == TeacherReportStatus.unknown);
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: sorted.isEmpty
-          ? Center(
+      appBar: AppBar(title: Text(widget.title)),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Material(
+            color: theme.colorScheme.surfaceContainerLow,
+            child: Padding(
+              padding: AppSpacing.paddingLg,
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.event_note_outlined,
-                    size: 48,
-                    color: cs.onSurfaceVariant.withValues(alpha: 0.5),
-                  ),
-                  AppSpacing.vGap12,
                   Text(
-                    'Không có buổi nào',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: cs.onSurfaceVariant,
+                    teacherReportMonthLabel(widget.month),
+                    style: theme.textTheme.titleSmall,
+                  ),
+                  AppSpacing.vGap4,
+                  Text(
+                    '${widget.workplaceLabel} · ${widget.classLabel}',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
               ),
-            )
-          : ListView.separated(
-              padding: AppSpacing.paddingScreenAll,
-              itemCount: sorted.length,
-              separatorBuilder: (_, __) => AppSpacing.vGap8,
-              itemBuilder: (context, index) {
-                final session = sorted[index];
-                final classData = classById[session['class_id']?.toString()];
-                final className = classData?.name ?? 'Lớp học';
-                final date = session['date']?.toString() ?? '';
-                final startTime = teacherTime(session['start_time']);
-                final endTime = teacherTime(session['end_time']);
-                final duration = _durationMinutes(session);
-                final hours = duration ~/ 60;
-                final mins = duration % 60;
-                final durationText = hours > 0
-                    ? '$hours giờ${mins > 0 ? ' $mins phút' : ''}'
-                    : '$mins phút';
-
-                // Vai trò (nếu có)
-                final role = session['teacher_role']?.toString();
-                final roleLabel = switch (role) {
-                  'main' => 'Chính',
-                  'substitute' => 'Dạy thay',
-                  'assistant' => 'Trợ giảng',
-                  _ => null,
-                };
-
-                // Trạng thái xác nhận
-                final confirmStatus = session['hour_confirmation_status']?.toString() ?? 'pending';
-                final (statusLabel, statusColor) = switch (confirmStatus) {
-                  'confirmed' => ('Đã xác nhận', AchievementColors.green),
-                  'needs_info' => ('Cần bổ sung', AchievementColors.red),
-                  _ => ('Chờ xác nhận', AchievementColors.yellow),
-                };
-
-                return Material(
-                  color: cs.surfaceContainerLowest,
-                  borderRadius: AppRadius.borderMd,
-                  clipBehavior: Clip.antiAlias,
-                  child: InkWell(
-                    onTap: classData != null
-                        ? () => teacherPush<void>(
-                            context,
-                            TeacherSessionScreen(
-                              api: api,
-                              classId: classData.id,
-                              sessionId: session['session_id']?.toString(),
-                              workplaceLabel: workplaceLabel,
-                            ),
-                          )
-                        : null,
-                    child: Padding(
-                      padding: AppSpacing.paddingLg,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  className,
-                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                              if (roleLabel != null)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: cs.surfaceContainerHigh,
-                                    borderRadius: AppRadius.borderSm,
-                                  ),
-                                  child: Text(
-                                    roleLabel,
-                                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: cs.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                          AppSpacing.vGap4,
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.calendar_today_outlined,
-                                size: 14,
-                                color: cs.onSurfaceVariant,
-                              ),
-                              AppSpacing.hGap4,
-                              Text(
-                                date,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: cs.onSurfaceVariant,
-                                ),
-                              ),
-                              AppSpacing.hGap12,
-                              Icon(
-                                Icons.schedule_outlined,
-                                size: 14,
-                                color: cs.onSurfaceVariant,
-                              ),
-                              AppSpacing.hGap4,
-                              Text(
-                                '$startTime–$endTime',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: cs.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
-                          AppSpacing.vGap8,
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: statusColor.withValues(alpha: 0.15),
-                                  borderRadius: AppRadius.borderSm,
-                                ),
-                                child: Text(
-                                  statusLabel,
-                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: statusColor,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              AppSpacing.hGap12,
-                              Text(
-                                durationText,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: cs.primary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const Spacer(),
-                              if (classData != null)
-                                Icon(
-                                  Icons.chevron_right,
-                                  size: 20,
-                                  color: cs.onSurfaceVariant,
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
             ),
+          ),
+          SizedBox(
+            height: 2,
+            child: _refreshing ? const LinearProgressIndicator() : null,
+          ),
+          if (_refreshError case final error?)
+            Padding(
+              padding: AppSpacing.paddingHorizontalLg,
+              child: Row(
+                children: [
+                  Expanded(child: Text(teacherErrorMessage(error))),
+                  TextButton(onPressed: _reload, child: const Text('Thử lại')),
+                ],
+              ),
+            ),
+          Expanded(
+            key: const ValueKey('report-sessions'),
+            child: RefreshIndicator(
+              onRefresh: _reload,
+              child: ListView.builder(
+                padding: AppSpacing.paddingLg,
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: rows.isEmpty
+                    ? 1
+                    : rows.length + (noConfirmations ? 1 : 0),
+                itemBuilder: (context, index) {
+                  final rowIndex = index - (noConfirmations ? 1 : 0);
+                  if (rowIndex < 0) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: Text(
+                        'Chưa có thông tin xác nhận giờ.',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    );
+                  }
+                  return rows.isEmpty
+                      ? const TeacherEmptyState(
+                          icon: Icons.event_note_outlined,
+                          title: 'Không còn buổi nào trong nhóm này',
+                        )
+                      : _ReportSessionCard(
+                          row: rows[rowIndex],
+                          showStatus: !noConfirmations,
+                          onOpen: () => _open(rows[rowIndex]),
+                        );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
+}
 
-  int _durationMinutes(Map<String, dynamic> session) {
-    final start = session['start_time']?.toString() ?? '00:00';
-    final end = session['end_time']?.toString() ?? '00:00';
-    final startParts = start.split(':');
-    final endParts = end.split(':');
-    final startMin = (int.tryParse(startParts.first) ?? 0) * 60 +
-        (int.tryParse(startParts.length > 1 ? startParts[1] : '0') ?? 0);
-    final endMin = (int.tryParse(endParts.first) ?? 0) * 60 +
-        (int.tryParse(endParts.length > 1 ? endParts[1] : '0') ?? 0);
-    return endMin > startMin ? endMin - startMin : 0;
+class _ReportSessionCard extends StatelessWidget {
+  const _ReportSessionCard({
+    required this.row,
+    required this.onOpen,
+    required this.showStatus,
+  });
+  final TeacherReportSession row;
+  final VoidCallback onOpen;
+  final bool showStatus;
+
+  @override
+  Widget build(BuildContext context) {
+    final occurrence = row.occurrence;
+    final cs = Theme.of(context).colorScheme;
+    final statusColor = switch (row.confirmation) {
+      TeacherReportStatus.confirmed => cs.onSecondaryContainer,
+      TeacherReportStatus.pending => cs.onTertiaryContainer,
+      TeacherReportStatus.needsInfo => cs.error,
+      TeacherReportStatus.unknown => cs.onSurfaceVariant,
+    };
+    final role = switch (occurrence.json['teacher_role']) {
+      'main' => 'Giáo viên chính',
+      'substitute' => 'Dạy thay',
+      'assistant' => 'Trợ giảng',
+      _ => null,
+    };
+    return Card(
+      color: cs.surfaceContainerLow,
+      elevation: 0,
+      child: ListTile(
+        title: Text(occurrence.classData.name),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: onOpen,
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (occurrence.topic.trim().isNotEmpty)
+                Text(
+                  occurrence.topic,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.xs,
+                children: [
+                  Text(DateFormat('dd/MM/yyyy').format(occurrence.date)),
+                  if (occurrence.start.isNotEmpty && occurrence.end.isNotEmpty)
+                    Text('${occurrence.start}–${occurrence.end}'),
+                  if (role != null) Text(role),
+                ],
+              ),
+              AppSpacing.vGap4,
+              if (showStatus)
+                Text(switch (row.confirmation) {
+                  TeacherReportStatus.confirmed => 'Giờ dạy đã xác nhận',
+                  TeacherReportStatus.pending => 'Giờ dạy chờ xác nhận',
+                  _ => row.confirmation.label,
+                }, style: TextStyle(color: statusColor)),
+              Text(teacherReportDuration(row.minutes)),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

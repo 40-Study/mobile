@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
-import 'package:study/features/teacher/presentation/schedule/teacher_session_screen.dart';
+import 'package:study/features/teacher/data/teacher_core.dart';
+import 'package:study/features/teacher/data/teacher_notification_api.dart';
+import 'package:study/features/teacher/data/teacher_preview_api.dart';
+import 'package:study/features/teacher/presentation/leave/teacher_leave_detail_screen.dart';
 import 'package:study/features/teacher/presentation/leave/teacher_leave_list_screen.dart';
+import 'package:study/features/teacher/presentation/schedule/teacher_session_screen.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
 import 'package:study/theme/theme.dart';
 
 class TeacherNotificationsScreen extends StatefulWidget {
-  const TeacherNotificationsScreen({super.key, required this.api});
+  const TeacherNotificationsScreen({
+    super.key,
+    required this.api,
+    this.leaveApi,
+    this.confirmWorkplace,
+  });
+
   final TeacherApi api;
+  final TeacherApi? leaveApi;
+  final Future<String?> Function(String? organizationId)? confirmWorkplace;
 
   @override
   State<TeacherNotificationsScreen> createState() =>
@@ -17,388 +29,338 @@ class TeacherNotificationsScreen extends StatefulWidget {
 
 class _TeacherNotificationsScreenState
     extends State<TeacherNotificationsScreen> {
-  late Future<List<TeacherNotification>> _future;
+  late final _api = TeacherNotificationApi(widget.api);
+  final _items = <TeacherNotification>[];
+  final _readIds = <String>{};
+  final _markingIds = <String>{};
+  bool _loading = false;
+  bool _hasMore = false;
+  int _page = 0;
+  int _failedPage = 1;
+  Object? _error;
+  String? _openingId;
+  bool get _preview => widget.api is TeacherPreviewApi;
 
   @override
   void initState() {
     super.initState();
-    _future = _load();
+    _loadPage(1);
   }
 
-  Future<List<TeacherNotification>> _load() async {
-    final raw = await widget.api.get('/me/notifications');
-    final list = teacherList(teacherMap(raw), keys: const ['notifications']);
-    return list.map((e) => TeacherNotification.fromJson(e)).toList();
-  }
-
-  void _reload() => setState(() => _future = _load());
-
-  /// Mark notification as read via swipe
-  Future<bool> _markAsRead(TeacherNotification notif) async {
+  Future<void> _loadPage(int page) async {
+    if (_loading) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
-      await widget.api.post('/me/notifications/${notif.id}/read');
-      _reload();
+      final result = await _api.list(page);
+      if (!mounted) return;
+      setState(() {
+        if (page == 1) _items.clear();
+        final ids = _items.map((item) => item.id).toSet();
+        _items.addAll(result.items.where((item) => ids.add(item.id)));
+        _page = page;
+        _hasMore = result.hasMore;
+      });
+    } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã đánh dấu đã đọc'),
-            duration: Duration(seconds: 2),
-          ),
-        );
+        setState(() {
+          _error = error;
+          _failedPage = page;
+        });
       }
-      return false; // Không dismiss item, chỉ reload
-    } catch (_) {
-      // Mock API không hỗ trợ - vẫn reload UI
-      _reload();
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<bool> _markRead(TeacherNotification notification) async {
+    if (_preview ||
+        notification.isRead ||
+        _readIds.contains(notification.id) ||
+        !_markingIds.add(notification.id)) {
       return false;
     }
-  }
-
-  Future<void> _onTap(TeacherNotification notif) async {
-    // Mark as read (nếu API hỗ trợ)
     try {
-      await widget.api.post('/me/notifications/${notif.id}/read');
-    } catch (_) {
-      // Mock API không hỗ trợ write
-    }
-
-    if (!mounted) return;
-
-    // Deep link theo type
-    switch (notif.type) {
-      case 'upcoming_session':
-      case 'needs_completion':
-      case 'schedule_changed':
-      case 'confirmation_feedback':
-        final sessionId = notif.payload?['session_id']?.toString();
-        final classId = notif.payload?['class_id']?.toString() ?? '';
-        if (sessionId != null) {
-          await teacherPush<void>(
-            context,
-            TeacherSessionScreen(
-              api: widget.api,
-              sessionId: sessionId,
-              classId: classId,
-              workplaceLabel: '',
+      await _api.markAsRead(notification.id);
+      if (mounted) setState(() => _readIds.add(notification.id));
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Chưa đánh dấu đã đọc. ${teacherErrorMessage(error)}',
             ),
-          );
-          _reload();
-        }
-        break;
-      case 'leave_result':
-        // Navigate to leave list (user có thể tìm đơn trong đó)
-        await teacherPush<void>(
-          context,
-          TeacherLeaveListScreen(api: widget.api),
-        );
-        _reload();
-        break;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Thông báo')),
-      body: FutureBuilder<List<TeacherNotification>>(
-        future: _future,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return TeacherErrorView(
-              error: snapshot.error!,
-              onRetry: _reload,
-            );
-          }
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final notifications = snapshot.data!;
-          if (notifications.isEmpty) {
-            return _buildEmptyState(context);
-          }
-
-          // Group by date
-          final grouped = _groupByDate(notifications);
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              _reload();
-              await _future;
-            },
-            child: ListView.builder(
-              padding: AppSpacing.paddingScreenAll,
-              itemCount: grouped.length,
-              itemBuilder: (context, index) {
-                final group = grouped[index];
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (index > 0) const SizedBox(height: 16),
-                    Text(
-                      group.label,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                    ),
-                    const SizedBox(height: 8),
-                    for (final notif in group.notifications)
-                      TeacherSwipeToAction(
-                        itemKey: Key('notif_${notif.id}'),
-                        icon: Icons.mark_email_read_outlined,
-                        label: 'Đã đọc',
-                        color: AchievementColors.green,
-                        enabled: !notif.isRead,
-                        onAction: () => _markAsRead(notif),
-                        child: _NotificationItem(
-                          notification: notif,
-                          onTap: () => _onTap(notif),
-                        ),
-                      ),
-                  ],
-                );
-              },
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return const TeacherEmptyState(
-      icon: Icons.notifications_none_outlined,
-      title: 'Chưa có thông báo',
-      subtitle: 'Thông báo về lịch dạy và cập nhật sẽ hiện ở đây.',
-    );
-  }
-
-  List<_NotificationGroup> _groupByDate(List<TeacherNotification> notifications) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-
-    final todayList = <TeacherNotification>[];
-    final yesterdayList = <TeacherNotification>[];
-    final olderList = <TeacherNotification>[];
-
-    for (final notif in notifications) {
-      final notifDate = DateTime(
-        notif.createdAt.year,
-        notif.createdAt.month,
-        notif.createdAt.day,
-      );
-      if (notifDate == today) {
-        todayList.add(notif);
-      } else if (notifDate == yesterday) {
-        yesterdayList.add(notif);
-      } else {
-        olderList.add(notif);
-      }
-    }
-
-    return [
-      if (todayList.isNotEmpty)
-        _NotificationGroup(label: 'Hôm nay', notifications: todayList),
-      if (yesterdayList.isNotEmpty)
-        _NotificationGroup(label: 'Hôm qua', notifications: yesterdayList),
-      if (olderList.isNotEmpty)
-        _NotificationGroup(label: 'Trước đó', notifications: olderList),
-    ];
-  }
-}
-
-class _NotificationGroup {
-  const _NotificationGroup({required this.label, required this.notifications});
-  final String label;
-  final List<TeacherNotification> notifications;
-}
-
-class _NotificationItem extends StatelessWidget {
-  const _NotificationItem({required this.notification, required this.onTap});
-  final TeacherNotification notification;
-  final VoidCallback onTap;
-
-  IconData get _icon {
-    switch (notification.type) {
-      case 'upcoming_session':
-        return Icons.calendar_today_outlined;
-      case 'needs_completion':
-        return Icons.warning_amber_outlined;
-      case 'schedule_changed':
-        return Icons.swap_horiz_outlined;
-      case 'leave_result':
-        return Icons.event_busy_outlined;
-      case 'confirmation_feedback':
-        return Icons.check_circle_outline;
-      default:
-        return Icons.notifications_outlined;
-    }
-  }
-
-  Color _iconColor(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    switch (notification.type) {
-      case 'needs_completion':
-        return AchievementColors.red;
-      case 'confirmation_feedback':
-        return AchievementColors.green;
-      case 'leave_result':
-        return AchievementColors.yellow;
-      default:
-        return cs.primary;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-    final isUnread = !notification.isRead;
-    final iconColor = _iconColor(context);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        decoration: BoxDecoration(
-          color: isUnread
-              ? cs.primaryContainer.withValues(alpha: 0.15)
-              : cs.surfaceContainerLowest,
-          borderRadius: AppRadius.borderMd,
-          border: Border.all(
-            color: isUnread
-                ? cs.primary.withValues(alpha: 0.3)
-                : cs.outlineVariant.withValues(alpha: 0.5),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF010120).withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+        );
+      }
+    } finally {
+      _markingIds.remove(notification.id);
+    }
+    return false;
+  }
+
+  String? _targetId(Object? value) {
+    if (value is! String || !RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(value)) {
+      return null;
+    }
+    return value;
+  }
+
+  Future<bool> _openTarget(TeacherNotification notification) async {
+    final confirm = widget.confirmWorkplace;
+    if (confirm == null) return false;
+    switch (notification.type) {
+      case 'upcoming_session':
+      case 'needs_completion':
+      case 'schedule_changed':
+      case 'confirmation_feedback':
+        final sessionId = _targetId(notification.payload['session_id']);
+        final classId = _targetId(notification.payload['class_id']);
+        if (sessionId == null || classId == null) return false;
+        final path = '/classes/$classId';
+        final classData = teacherPayload(await widget.api.get(path));
+        if (!mounted || classData['id']?.toString() != classId) return false;
+        final orgId = classData['organization_id']?.toString();
+        final targetOrg = notification.payload['organization_id']?.toString();
+        if (targetOrg != null && targetOrg != orgId) return false;
+        final session = teacherPayload(
+          await widget.api.get('$path/sessions/$sessionId'),
+        );
+        if (!mounted ||
+            session['id']?.toString() != sessionId ||
+            session['class_id']?.toString() != classId) {
+          return false;
+        }
+        final label = await confirm(orgId);
+        if (!mounted || label == null) return false;
+        await teacherPush<bool>(
+          context,
+          TeacherSessionScreen(
+            api: widget.api,
+            sessionId: sessionId,
+            classId: classId,
+            workplaceLabel: label,
+          ),
+        );
+        return true;
+      case 'leave_result':
+        final leaveId = _targetId(notification.payload['leave_id']);
+        if (leaveId == null) return false;
+        final leaveApi = widget.leaveApi ?? widget.api;
+        final rows = await teacherAllPages(
+          leaveApi,
+          '/me/leave-requests',
+          'leave_requests',
+        );
+        final row = rows
+            .where((row) => row['id']?.toString() == leaveId)
+            .firstOrNull;
+        if (!mounted || row == null) return false;
+        final request = TeacherLeaveRequest.fromJson(row);
+        final targetOrg = notification.payload['organization_id']?.toString();
+        if (targetOrg != null && targetOrg != request.organizationId) {
+          return false;
+        }
+        final label = await confirm(request.organizationId);
+        if (!mounted || label == null) return false;
+        await teacherPush<bool>(
+          context,
+          TeacherLeaveDetailScreen(
+            api: leaveApi,
+            request: request,
+            workplaceLabel: label,
+          ),
+        );
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  Future<void> _open(TeacherNotification notification) async {
+    if (_openingId != null) return;
+    setState(() => _openingId = notification.id);
+    try {
+      await _markRead(notification);
+      if (!mounted) return;
+      String? errorMessage;
+      try {
+        if (await _openTarget(notification)) return;
+      } catch (error) {
+        errorMessage = teacherErrorMessage(error);
+      }
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(_title(notification)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (notification.content.isNotEmpty)
+                  SelectableText(notification.content),
+                if (notification.createdAt case final time?)
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.sm),
+                    child: Text(DateFormat('dd/MM/yyyy · HH:mm').format(time)),
+                  ),
+                if (errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.sm),
+                    child: Text(errorMessage),
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Đóng'),
             ),
           ],
         ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: AppRadius.borderMd,
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: AppSpacing.paddingMd,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: iconColor.withValues(alpha: 0.12),
-                      borderRadius: AppRadius.borderSm,
-                    ),
-                    child: Icon(_icon, size: 20, color: iconColor),
-                  ),
-                  AppSpacing.hGap12,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                notification.title,
-                                style: tt.titleSmall?.copyWith(
-                                  fontWeight:
-                                      isUnread ? FontWeight.w700 : FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            if (isUnread)
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: cs.primary,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: cs.primary.withValues(alpha: 0.4),
-                                      blurRadius: 4,
-                                      spreadRadius: 1,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                        AppSpacing.vGap4,
-                        Text(
-                          notification.body,
-                          style: tt.bodySmall?.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        AppSpacing.vGap4,
-                        Text(
-                          DateFormat('HH:mm').format(notification.createdAt),
-                          style: tt.labelSmall?.copyWith(
-                            color: cs.onSurfaceVariant.withValues(alpha: 0.7),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(
-                    Icons.chevron_right,
-                    size: 20,
-                    color: cs.onSurfaceVariant,
-                  ),
-                ],
-              ),
+      );
+    } finally {
+      if (mounted) setState(() => _openingId = null);
+    }
+  }
+
+  String _title(TeacherNotification notification) =>
+      notification.title.trim().isEmpty ? 'Thông báo' : notification.title;
+
+  String _dayLabel(DateTime? time) {
+    if (time == null) return 'Thông báo khác';
+    final now = DateTime.now();
+    if (DateUtils.isSameDay(time, now)) return 'Hôm nay';
+    if (DateUtils.isSameDay(time, DateTime(now.year, now.month, now.day - 1))) {
+      return 'Hôm qua';
+    }
+    return DateFormat('dd/MM/yyyy').format(time);
+  }
+
+  IconData _icon(String type) => switch (type) {
+    'upcoming_session' || 'schedule_changed' => Icons.event_outlined,
+    'needs_completion' => Icons.warning_amber_outlined,
+    'leave_result' => Icons.event_busy_outlined,
+    'confirmation_feedback' => Icons.fact_check_outlined,
+    _ => Icons.notifications_outlined,
+  };
+
+  Widget _tile(TeacherNotification notification) {
+    final unread = !notification.isRead && !_readIds.contains(notification.id);
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    return TeacherSwipeToAction(
+      itemKey: ValueKey(notification.id),
+      icon: Icons.mark_email_read_outlined,
+      label: 'Đã đọc',
+      color: cs.primary,
+      enabled: unread && !_preview && _openingId == null,
+      onAction: () => _markRead(notification),
+      child: Semantics(
+        label: unread ? 'Chưa đọc' : 'Đã đọc',
+        child: ListTile(
+          contentPadding: AppSpacing.paddingHorizontalLg,
+          tileColor: unread ? cs.primaryContainer : cs.surface,
+          leading: Icon(_icon(notification.type), color: cs.primary),
+          title: Text(
+            _title(notification),
+            style: tt.titleSmall?.copyWith(
+              fontWeight: unread ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (notification.content.isNotEmpty)
+                Text(
+                  notification.content,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              if (notification.createdAt case final time?)
+                Text(DateFormat('HH:mm').format(time), style: tt.labelSmall),
+            ],
+          ),
+          trailing: _openingId == notification.id
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.chevron_right),
+          onTap: _openingId == null ? () => _open(notification) : null,
         ),
       ),
     );
   }
-}
 
-/// Model for notification
-class TeacherNotification {
-  const TeacherNotification({
-    required this.id,
-    required this.type,
-    required this.title,
-    required this.body,
-    required this.createdAt,
-    required this.isRead,
-    this.payload,
-  });
-
-  final String id;
-  final String type;
-  final String title;
-  final String body;
-  final DateTime createdAt;
-  final bool isRead;
-  final Map<String, dynamic>? payload;
-
-  factory TeacherNotification.fromJson(Map<String, dynamic> json) {
-    return TeacherNotification(
-      id: '${json['id']}',
-      type: '${json['type']}',
-      title: '${json['title']}',
-      body: '${json['body']}',
-      createdAt: DateTime.tryParse('${json['created_at']}') ?? DateTime.now(),
-      isRead: json['is_read'] == true,
-      payload: json['payload'] is Map<String, dynamic>
-          ? json['payload'] as Map<String, dynamic>
-          : null,
+  @override
+  Widget build(BuildContext context) {
+    final groups = <String, List<TeacherNotification>>{};
+    for (final notification in _items) {
+      groups
+          .putIfAbsent(_dayLabel(notification.createdAt), () => [])
+          .add(notification);
+    }
+    final error = _error;
+    return Scaffold(
+      appBar: AppBar(title: const Text('Thông báo')),
+      body: _page == 0 && _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _page == 0 && error != null
+          ? TeacherErrorView(error: error, onRetry: () => _loadPage(1))
+          : RefreshIndicator(
+              onRefresh: () => _loading ? Future.value() : _loadPage(1),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: AppSpacing.paddingVerticalSm,
+                children: [
+                  if (_preview)
+                    const ListTile(
+                      leading: Icon(Icons.science_outlined),
+                      title: Text('Thông báo mẫu · Chỉ xem'),
+                    ),
+                  if (_items.isEmpty)
+                    const TeacherEmptyState(
+                      icon: Icons.notifications_none_outlined,
+                      title: 'Chưa có thông báo',
+                      subtitle:
+                          'Thông báo về lịch dạy và cập nhật sẽ hiện ở đây.',
+                    ),
+                  for (final group in groups.entries) ...[
+                    Padding(
+                      padding: AppSpacing.paddingLg,
+                      child: Text(
+                        group.key,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                    for (final notification in group.value) _tile(notification),
+                  ],
+                  if (_loading)
+                    const Padding(
+                      padding: AppSpacing.paddingLg,
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (error != null)
+                    TeacherErrorView(
+                      error: error,
+                      onRetry: () => _loadPage(_failedPage),
+                    )
+                  else if (_hasMore)
+                    Center(
+                      child: TextButton(
+                        onPressed: () => _loadPage(_page + 1),
+                        child: const Text('Xem thêm thông báo'),
+                      ),
+                    ),
+                ],
+              ),
+            ),
     );
   }
 }

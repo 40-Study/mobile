@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/teacher/data/teacher_core.dart';
 import 'package:study/features/teacher/presentation/classes/widgets/teacher_class_elements.dart';
-import 'package:study/features/teacher/presentation/classes/widgets/teacher_class_schedules_panel.dart';
 import 'package:study/features/teacher/presentation/classes/widgets/teacher_class_teachers_panel.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
 import 'package:study/theme/theme.dart';
@@ -11,23 +10,48 @@ class TeacherClassOverview extends StatelessWidget {
     super.key,
     required this.detail,
     required this.loadTeachers,
-    required this.loadSchedules,
-    required this.onAddSchedule,
-    required this.onEditSchedule,
-    required this.onDeleteSchedule,
-    required this.onGenerate,
+    required this.onManageTeachers,
+    required this.onOpenSchedules,
+    this.onEditClass,
+    this.teachersRevision,
   });
   final TeacherClassData detail;
   final Future<List<Map<String, dynamic>>> Function() loadTeachers;
-  final Future<List<Map<String, dynamic>>> Function() loadSchedules;
-  final VoidCallback onAddSchedule;
-  final ValueChanged<Map<String, dynamic>> onEditSchedule;
-  final ValueChanged<String> onDeleteSchedule;
-  final VoidCallback onGenerate;
+  final VoidCallback onManageTeachers;
+  final VoidCallback onOpenSchedules;
+  final VoidCallback? onEditClass;
+  final Object? teachersRevision;
   @override
   Widget build(BuildContext context) => ListView(
     padding: const EdgeInsets.all(AppSpacing.lg),
     children: [
+      if (detail.canManage && detail.json['status'] == 'draft') ...[
+        TeacherClassPanel(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Lớp đang ở bản nháp. Thêm lịch hoặc chỉnh trạng thái khi lớp sẵn sàng.',
+              ),
+              Wrap(
+                spacing: AppSpacing.sm,
+                children: [
+                  TextButton(
+                    onPressed: onOpenSchedules,
+                    child: const Text('Mở lịch định kỳ'),
+                  ),
+                  if (onEditClass != null)
+                    TextButton(
+                      onPressed: onEditClass,
+                      child: const Text('Chỉnh sửa lớp'),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        AppSpacing.vGap12,
+      ],
       TeacherClassPanel(
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -91,14 +115,22 @@ class TeacherClassOverview extends StatelessWidget {
         ),
       ),
       const TeacherSectionTitle(title: 'Giáo viên được phân công'),
-      TeacherClassTeachersPanel(load: loadTeachers),
-      TeacherClassSchedulesPanel(
-        detail: detail,
-        load: loadSchedules,
-        onAdd: onAddSchedule,
-        onEdit: onEditSchedule,
-        onDelete: onDeleteSchedule,
-        onGenerate: onGenerate,
+      TeacherClassTeachersPanel(
+        load: loadTeachers,
+        refreshToken: teachersRevision,
+      ),
+      AppSpacing.vGap8,
+      Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: TextButton.icon(
+          onPressed: onManageTeachers,
+          icon: const Icon(Icons.groups_outlined),
+          label: Text(
+            detail.canAssignTeachers
+                ? 'Quản lý giáo viên'
+                : 'Xem danh sách giáo viên',
+          ),
+        ),
       ),
     ],
   );

@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/data/teacher_core.dart';
+import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
+import 'package:study/theme/theme.dart';
 
 Future<Map<String, dynamic>> teacherLoadApplication(TeacherApi api) async {
   try {
@@ -57,7 +59,7 @@ class _TeacherProfessionalScreenState extends State<TeacherProfessionalScreen> {
   }
 
   Future<void> _save() async {
-    if (!_form.currentState!.validate()) return;
+    if (_saving || !_form.currentState!.validate()) return;
     setState(() {
       _saving = true;
       _error = null;
@@ -131,73 +133,110 @@ class _TeacherProfessionalScreenState extends State<TeacherProfessionalScreen> {
     },
     child: Scaffold(
       appBar: AppBar(title: const Text('Hồ sơ nghề nghiệp')),
-      body: Form(
-        key: _form,
-        onChanged: () => setState(() => _dirty = true),
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            if (widget.application.isEmpty)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 24),
-                child: Text(
-                  'Hoàn thiện thông tin chuyên môn để gửi hồ sơ xét duyệt giáo viên.',
-                ),
-              ),
-            for (final entry in _labels.entries)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: TextFormField(
-                  controller: _controllers[entry.key],
-                  enabled: !_saving,
-                  decoration: InputDecoration(labelText: entry.value),
-                  maxLines: entry.key == 'certificate_info' ? 4 : 1,
-                  maxLength:
-                      entry.key == 'experience_years' ||
-                          entry.key == 'certificate_info'
-                      ? null
-                      : 255,
-                  keyboardType: entry.key == 'experience_years'
-                      ? TextInputType.number
-                      : null,
-                  validator: (value) {
-                    if (entry.key == 'experience_years' &&
-                        value != null &&
-                        value.isNotEmpty &&
-                        (int.tryParse(value) == null || int.parse(value) < 0)) {
-                      return 'Nhập số nguyên từ 0.';
-                    }
-                    if ((entry.key == 'specialization' ||
-                            entry.key == 'education') &&
-                        (value?.trim().isEmpty ?? true)) {
-                      return 'Vui lòng bổ sung thông tin này.';
-                    }
-                    return null;
-                  },
-                ),
-              ),
-            if (_error != null)
-              Text(
-                'Chưa lưu được. ${teacherErrorMessage(_error!)}',
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            FilledButton(
-              onPressed: _saving ? null : _save,
-              child: Text(
-                _saving
-                    ? 'Đang lưu…'
-                    : widget.application.isEmpty
-                    ? 'Gửi hồ sơ'
-                    : 'Lưu hồ sơ',
+      body: Column(
+        children: [
+          Expanded(
+            child: Form(
+              key: _form,
+              onChanged: () => setState(() => _dirty = true),
+              child: ListView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: AppSpacing.paddingLg,
+                children: [
+                  if (widget.application.isEmpty)
+                    const Text(
+                      'Hoàn thiện thông tin chuyên môn để gửi hồ sơ '
+                      'xét duyệt giáo viên.',
+                    ),
+                  if (widget.application['approval_status'] == 'rejected')
+                    const TeacherSurface(
+                      showShadow: false,
+                      child: Text(
+                        'Sau khi lưu, quay lại trang trạng thái và chọn '
+                        'Nộp lại hồ sơ để gửi xét duyệt.',
+                      ),
+                    ),
+                  const TeacherSectionTitle(title: 'Thông tin chuyên môn'),
+                  _field('specialization'),
+                  _field('education'),
+                  _field('experience_years'),
+                  _field('department'),
+                  const TeacherSectionTitle(title: 'Chứng chỉ'),
+                  _field('certificate_info'),
+                ],
               ),
             ),
-            if (widget.application['approval_status'] == 'rejected')
-              const Text(
-                'Lưu thay đổi chưa nộp lại hồ sơ. Quay lại trang trạng thái để gửi xét duyệt.',
+          ),
+          Material(
+            child: SafeArea(
+              top: false,
+              minimum: AppSpacing.paddingLg,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_error case final error?) ...[
+                    Semantics(
+                      liveRegion: true,
+                      child: Text(
+                        teacherErrorMessage(error),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                      ),
+                    ),
+                    AppSpacing.vGap8,
+                  ],
+                  FilledButton(
+                    onPressed: _saving ? null : _save,
+                    child: Text(
+                      _saving
+                          ? 'Đang lưu…'
+                          : widget.application.isEmpty
+                          ? 'Gửi hồ sơ'
+                          : 'Lưu hồ sơ',
+                    ),
+                  ),
+                ],
               ),
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     ),
   );
+
+  Widget _field(String key) {
+    final isYears = key == 'experience_years';
+    final isCertificate = key == 'certificate_info';
+    final required = key == 'specialization' || key == 'education';
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+      child: TextFormField(
+        controller: _controllers[key],
+        enabled: !_saving,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
+        decoration: InputDecoration(
+          labelText: _labels[key],
+          helperText: required ? null : 'Tùy chọn',
+        ),
+        maxLines: isCertificate ? 4 : 1,
+        maxLength: isYears || isCertificate ? null : 255,
+        textInputAction: isCertificate
+            ? TextInputAction.newline
+            : TextInputAction.next,
+        keyboardType: isYears ? TextInputType.number : null,
+        validator: (value) {
+          final text = value?.trim() ?? '';
+          if (required && text.isEmpty) {
+            return 'Vui lòng bổ sung thông tin này.';
+          }
+          if (isYears && text.isNotEmpty && (int.tryParse(text) ?? -1) < 0) {
+            return 'Nhập số nguyên từ 0.';
+          }
+          return null;
+        },
+      ),
+    );
+  }
 }

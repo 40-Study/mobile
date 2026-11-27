@@ -1,5 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:study/di/di_container.dart';
+
+const teacherDevSamplesEnabled =
+    !kReleaseMode &&
+    String.fromEnvironment('ENV', defaultValue: 'dev') == 'dev';
 
 /// Reuses the application's authenticated Dio and token-refresh lifecycle.
 class TeacherApi {

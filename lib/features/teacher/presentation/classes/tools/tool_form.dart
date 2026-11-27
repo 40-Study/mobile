@@ -12,6 +12,10 @@ Future<bool> teacherToolForm(
   String action = 'Lưu',
   Map<String, Map<String, String>> choices = const {},
   Set<String> dateFields = const {},
+  Set<String> requiredExistingDates = const {},
+  Map<String, String> sectionTitles = const {},
+  Set<String> rawFields = const {},
+  bool Function(String field, Map<String, String> values)? showField,
 }) async {
   final controllers = fields.map(
     (key, value) => MapEntry(key, TextEditingController(text: value)),
@@ -43,88 +47,113 @@ Future<bool> teacherToolForm(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   for (final field in controllers.entries)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: choices.containsKey(field.key)
-                          ? DropdownButtonFormField<String>(
-                              initialValue: field.value.text,
-                              decoration: InputDecoration(labelText: field.key),
-                              items: choices[field.key]!.entries
-                                  .map(
-                                    (entry) => DropdownMenuItem(
-                                      value: entry.key,
-                                      child: Text(entry.value),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: busy
-                                  ? null
-                                  : (value) => field.value.text = value ?? '',
-                            )
-                          : TextField(
-                              controller: field.value,
-                              enabled: !busy,
-                              readOnly: dateFields.contains(field.key),
-                              onTap: !dateFields.contains(field.key)
-                                  ? null
-                                  : () async {
-                                      final initial =
-                                          dates[field.key]?.toLocal() ??
-                                          DateTime.now();
-                                      final day = await showDatePicker(
-                                        context: context,
-                                        initialDate: initial,
-                                        firstDate: DateTime(2020),
-                                        lastDate: DateTime(2100),
-                                      );
-                                      if (day == null || !context.mounted) {
-                                        return;
-                                      }
-                                      final time = await showTimePicker(
-                                        context: context,
-                                        initialTime: TimeOfDay.fromDateTime(
-                                          initial,
-                                        ),
-                                      );
-                                      if (time == null || !context.mounted) {
-                                        return;
-                                      }
-                                      final date = DateTime(
-                                        day.year,
-                                        day.month,
-                                        day.day,
-                                        time.hour,
-                                        time.minute,
-                                      );
-                                      setState(() {
-                                        dates[field.key] = date;
-                                        field.value.text = DateFormat(
-                                          'dd/MM/yyyy HH:mm',
-                                        ).format(date);
-                                      });
-                                    },
-                              maxLines:
-                                  field.key.contains('Nội dung') ||
-                                      field.key.contains('Code')
-                                  ? 4
-                                  : 1,
-                              decoration: InputDecoration(
-                                labelText: field.key,
-                                suffixIcon: dateFields.contains(field.key)
-                                    ? IconButton(
-                                        tooltip: 'Xóa thời điểm',
-                                        icon: const Icon(Icons.clear),
-                                        onPressed: busy
-                                            ? null
-                                            : () => setState(() {
-                                                dates.remove(field.key);
-                                                field.value.clear();
-                                              }),
-                                      )
-                                    : null,
-                              ),
+                    if (showField?.call(
+                          field.key,
+                          controllers.map((name, c) => MapEntry(name, c.text)),
+                        ) ??
+                        true) ...[
+                      if (sectionTitles[field.key] case final section?)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Text(
+                              section,
+                              style: Theme.of(context).textTheme.titleSmall,
                             ),
-                    ),
+                          ),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: choices.containsKey(field.key)
+                            ? DropdownButtonFormField<String>(
+                                initialValue: field.value.text,
+                                decoration: InputDecoration(
+                                  labelText: field.key,
+                                ),
+                                items: choices[field.key]!.entries
+                                    .map(
+                                      (entry) => DropdownMenuItem(
+                                        value: entry.key,
+                                        child: Text(entry.value),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: busy
+                                    ? null
+                                    : (value) => setState(
+                                        () => field.value.text = value ?? '',
+                                      ),
+                              )
+                            : TextField(
+                                controller: field.value,
+                                enabled: !busy,
+                                readOnly: dateFields.contains(field.key),
+                                onTap: !dateFields.contains(field.key)
+                                    ? null
+                                    : () async {
+                                        final initial =
+                                            dates[field.key]?.toLocal() ??
+                                            DateTime.now();
+                                        final day = await showDatePicker(
+                                          context: context,
+                                          initialDate: initial,
+                                          firstDate: DateTime(2020),
+                                          lastDate: DateTime(2100),
+                                        );
+                                        if (day == null || !context.mounted) {
+                                          return;
+                                        }
+                                        final time = await showTimePicker(
+                                          context: context,
+                                          initialTime: TimeOfDay.fromDateTime(
+                                            initial,
+                                          ),
+                                        );
+                                        if (time == null || !context.mounted) {
+                                          return;
+                                        }
+                                        final date = DateTime(
+                                          day.year,
+                                          day.month,
+                                          day.day,
+                                          time.hour,
+                                          time.minute,
+                                        );
+                                        setState(() {
+                                          dates[field.key] = date;
+                                          field.value.text = DateFormat(
+                                            'dd/MM/yyyy HH:mm',
+                                          ).format(date);
+                                        });
+                                      },
+                                maxLines:
+                                    field.key.contains('Nội dung') ||
+                                        field.key.contains('Code')
+                                    ? 4
+                                    : 1,
+                                decoration: InputDecoration(
+                                  labelText: field.key,
+                                  suffixIcon:
+                                      dateFields.contains(field.key) &&
+                                          !requiredExistingDates.contains(
+                                            field.key,
+                                          )
+                                      ? IconButton(
+                                          tooltip: 'Xóa thời điểm',
+                                          icon: const Icon(Icons.clear),
+                                          onPressed: busy
+                                              ? null
+                                              : () => setState(() {
+                                                  dates.remove(field.key);
+                                                  field.value.clear();
+                                                }),
+                                        )
+                                      : null,
+                                ),
+                              ),
+                      ),
+                    ],
                   if (error != null)
                     Text(
                       error!,
@@ -152,6 +181,8 @@ Future<bool> teacherToolForm(
                           key,
                           dateFields.contains(key)
                               ? dates[key]?.toUtc().toIso8601String() ?? ''
+                              : rawFields.contains(key)
+                              ? c.text
                               : c.text.trim(),
                         ),
                       );

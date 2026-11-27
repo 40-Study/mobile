@@ -1,48 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:study/features/teacher/presentation/widgets/teacher_surface.dart';
+import 'package:study/theme/app_spacing.dart';
 
 class TeacherGradeColumnSelector extends StatelessWidget {
   const TeacherGradeColumnSelector({
     super.key,
     required this.columns,
     required this.columnId,
-    required this.selectedColumn,
     required this.busy,
     required this.uncertain,
     required this.hasDrafts,
-    required this.hasDraftEntries,
     required this.error,
     required this.onChanged,
-    required this.onEdit,
   });
   final List<Map<String, dynamic>> columns;
   final String? columnId;
-  final Map<String, dynamic>? selectedColumn;
-  final bool busy, uncertain, hasDrafts, hasDraftEntries;
+  final bool busy, uncertain, hasDrafts;
   final String? error;
   final ValueChanged<String?> onChanged;
-  final VoidCallback onEdit;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(16),
-    child: TeacherSurface(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (columns.isNotEmpty)
           DropdownButtonFormField<String>(
-            initialValue: columns.any((c) => c['id'] == columnId)
+            initialValue: columns.any((c) => '${c['id']}' == columnId)
                 ? columnId
                 : null,
             isExpanded: true,
-            decoration: const InputDecoration(
-              labelText: 'Cột điểm để nhập mới',
-            ),
+            decoration: const InputDecoration(labelText: 'Cột điểm đang xem'),
             items: columns
                 .map(
                   (c) => DropdownMenuItem(
                     value: '${c['id']}',
                     child: Text(
-                      '${c['name']} · /${c['max_score']} · trọng số ${c['weight']}',
+                      '${c['name']} · Thang ${c['max_score']}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -51,24 +44,14 @@ class TeacherGradeColumnSelector extends StatelessWidget {
                 .toList(),
             onChanged: busy || uncertain || hasDrafts ? null : onChanged,
           ),
-          if (selectedColumn != null)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton(
-                onPressed: busy || hasDraftEntries ? null : onEdit,
-                child: const Text('Sửa cấu hình cột'),
-              ),
-            ),
-          const Text(
-            'Ô trống là chưa nhập điểm. Điểm đã có được sửa riêng; tổng kết dùng trọng số của từng điểm đã lưu.',
+        if (error != null) ...[
+          AppSpacing.vGap8,
+          Text(
+            error!,
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
           ),
-          if (error != null)
-            Text(
-              error!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
         ],
-      ),
+      ],
     ),
   );
 }

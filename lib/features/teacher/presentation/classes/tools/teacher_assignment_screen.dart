@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:study/theme/app_spacing.dart';
-import '../../../data/teacher_api.dart';
-import '../../widgets/teacher_widgets.dart';
-import 'tool_form.dart';
 
+import '../../../data/teacher_api.dart';
+import '../../../data/teacher_preview_api.dart';
+import '../../widgets/teacher_widgets.dart';
 import 'assignment_format.dart';
 import 'teacher_assignment_detail.dart';
+import 'tool_form.dart';
 
 class TeacherAssignmentScreen extends StatefulWidget {
   const TeacherAssignmentScreen({
@@ -26,23 +27,35 @@ class TeacherAssignmentScreen extends StatefulWidget {
 
 class _TeacherAssignmentScreenState extends State<TeacherAssignmentScreen> {
   int revision = 0;
+  bool get canWrite => widget.canWrite && widget.api is! TeacherPreviewApi;
+
   Future<void> create() async {
     final saved = await teacherToolForm(
       context,
       title: 'Bài tập lập trình mới',
+      sectionTitles: const {
+        'Tiêu đề': 'Nội dung đề',
+        'Code mẫu': 'Mã khởi đầu',
+        'Loại bài tập': 'Thiết lập bài',
+        'Bắt đầu': 'Thời gian nộp',
+        'Cho nộp muộn': 'Nộp muộn',
+      },
+      showField: (field, values) =>
+          !_lateSettings.contains(field) || values['Cho nộp muộn'] == 'true',
       choices: const {
         'Độ khó': {'easy': 'Dễ', 'medium': 'Trung bình', 'hard': 'Khó'},
         'Loại bài tập': {'homework': 'Bài tập về nhà', 'project': 'Dự án'},
         'Cho nộp muộn': {'true': 'Cho phép', 'false': 'Không cho phép'},
       },
+      rawFields: const {'Code mẫu'},
       dateFields: const {'Bắt đầu', 'Hạn nộp'},
       fields: {
-        'Loại bài tập': 'homework',
         'Tiêu đề': '',
         'Nội dung đề': '',
+        'Code mẫu': '',
+        'Loại bài tập': 'homework',
         'Ngôn ngữ (phân cách dấu phẩy)': 'python',
         'Độ khó': 'easy',
-        'Code mẫu': '',
         'Bắt đầu': '',
         'Hạn nộp': '',
         'Cho nộp muộn': 'false',
@@ -62,24 +75,12 @@ class _TeacherAssignmentScreenState extends State<TeacherAssignmentScreen> {
             .every((s) => s.trim().isEmpty)) {
           return 'Chọn ít nhất một ngôn ngữ.';
         }
-        final start = v['Bắt đầu']!, end = v['Hạn nộp']!;
-        if ((start.isNotEmpty && DateTime.tryParse(start) == null) ||
-            (end.isNotEmpty && DateTime.tryParse(end) == null)) {
-          return 'Vui lòng chọn lại thời gian bắt đầu và hạn nộp.';
-        }
-        if (start.isNotEmpty &&
-            end.isNotEmpty &&
-            !DateTime.parse(end).isAfter(DateTime.parse(start))) {
-          return 'Hạn nộp phải sau thời điểm bắt đầu.';
-        }
-        if (!['true', 'false'].contains(v['Cho nộp muộn'])) {
-          return 'Cho nộp muộn nhận true hoặc false.';
-        }
-        for (final key in [
-          'Trừ điểm muộn (%)',
-          'Số ngày nộp muộn tối đa',
-          'Thời gian ân hạn (phút)',
-        ]) {
+        final dateError = teacherAssignmentDateError(
+          v['Bắt đầu']!,
+          v['Hạn nộp']!,
+        );
+        if (dateError != null || v['Cho nộp muộn'] != 'true') return dateError;
+        for (final key in _lateSettings) {
           final n = int.tryParse(v[key]!);
           if (n == null || n < 0 || (key.contains('%') && n > 100)) {
             return '$key không hợp lệ.';
@@ -113,15 +114,23 @@ class _TeacherAssignmentScreenState extends State<TeacherAssignmentScreen> {
                 v['Hạn nộp']!,
               ).toUtc().toIso8601String(),
             'allow_late_submission': v['Cho nộp muộn'] == 'true',
-            'late_penalty_percent': int.parse(v['Trừ điểm muộn (%)']!),
-            'max_late_days': int.parse(v['Số ngày nộp muộn tối đa']!),
-            'grace_period_minutes': int.parse(v['Thời gian ân hạn (phút)']!),
+            if (v['Cho nộp muộn'] == 'true') ...{
+              'late_penalty_percent': int.parse(v['Trừ điểm muộn (%)']!),
+              'max_late_days': int.parse(v['Số ngày nộp muộn tối đa']!),
+              'grace_period_minutes': int.parse(v['Thời gian ân hạn (phút)']!),
+            },
           },
         );
       },
     );
     if (saved && mounted) setState(() => revision++);
   }
+
+  static const _lateSettings = {
+    'Trừ điểm muộn (%)',
+    'Số ngày nộp muộn tối đa',
+    'Thời gian ân hạn (phút)',
+  };
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -130,7 +139,7 @@ class _TeacherAssignmentScreenState extends State<TeacherAssignmentScreen> {
         : AppBar(
             title: const Text('Bài tập lập trình'),
             actions: [
-              if (widget.canWrite)
+              if (canWrite)
                 IconButton(
                   onPressed: create,
                   tooltip: 'Tạo bài tập',
@@ -140,7 +149,16 @@ class _TeacherAssignmentScreenState extends State<TeacherAssignmentScreen> {
           ),
     body: Column(
       children: [
-        if (widget.embedded && widget.canWrite)
+        if (!canWrite)
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text(
+              widget.api is TeacherPreviewApi
+                  ? 'Dữ liệu mẫu · Chỉ xem'
+                  : 'Chỉ xem',
+            ),
+          ),
+        if (widget.embedded && canWrite)
           Align(
             alignment: Alignment.centerRight,
             child: Padding(
@@ -158,32 +176,53 @@ class _TeacherAssignmentScreenState extends State<TeacherAssignmentScreen> {
         Expanded(
           child: TeacherAsyncView<List<Map<String, dynamic>>>(
             key: ValueKey(revision),
-            load: () =>
-                toolPages(widget.api, '/classes/${widget.classId}/assignments'),
+            load: () => toolPages(
+              widget.api,
+              '/classes/${widget.classId}/assignments',
+              keys: const ['assignments'],
+            ),
             builder: (context, rows) => rows.isEmpty
                 ? const Center(child: Text('Chưa có bài tập lập trình.'))
                 : ListView.separated(
                     itemCount: rows.length,
                     separatorBuilder: (_, _) => const Divider(height: 1),
-                    itemBuilder: (context, i) => ListTile(
-                      title: Text('${rows[i]['title']}'),
-                      subtitle: Text(
-                        '${teacherAssignmentDeadline(rows[i]['end_time'])}\n${rows[i]['is_published'] == true ? 'Đã công bố' : 'Bản nháp'} · ${teacherAssignmentDifficulty(rows[i]['difficulty'])}',
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () async {
-                        await Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => TeacherAssignmentDetail(
-                              api: widget.api,
-                              id: '${rows[i]['id']}',
-                              canWrite: widget.canWrite,
+                    itemBuilder: (context, i) {
+                      final row = rows[i];
+                      final published = row['is_published'] == true;
+                      final scheme = Theme.of(context).colorScheme;
+                      return ListTile(
+                        contentPadding: AppSpacing.paddingHorizontalLg,
+                        title: Text('${row['title'] ?? 'Bài tập'}'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              published ? 'Đã công bố' : 'Bản nháp',
+                              style: TextStyle(
+                                color: published
+                                    ? scheme.primary
+                                    : scheme.onSurfaceVariant,
+                              ),
                             ),
-                          ),
-                        );
-                        if (mounted) setState(() => revision++);
-                      },
-                    ),
+                            Text(teacherAssignmentDeadline(row['end_time'])),
+                          ],
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () async {
+                          final changed = await teacherPush<bool>(
+                            context,
+                            TeacherAssignmentDetail(
+                              api: widget.api,
+                              id: '${row['id']}',
+                              canWrite: canWrite,
+                            ),
+                          );
+                          if (changed == true && mounted) {
+                            setState(() => revision++);
+                          }
+                        },
+                      );
+                    },
                   ),
           ),
         ),

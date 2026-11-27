@@ -125,8 +125,8 @@ void main() {
         tester,
         TeacherShell(api: api, workplace: workplace),
       );
-      expect(find.byType(NavigationDestination), findsNWidgets(5));
-      await tester.tap(find.text('Tài khoản').last);
+      expect(find.byType(NavigationDestination), findsNWidgets(4));
+      await tester.tap(find.text('Hồ sơ').last);
       await tester.pumpAndSettle();
       expect(find.byType(ProfileCard), findsOneWidget);
       expect(find.byType(SettingsSection), findsOneWidget);
@@ -146,7 +146,7 @@ void main() {
         tester,
         TeacherShell(api: api, workplace: workplace),
       );
-      await tester.tap(find.text('Tài khoản').last);
+      await tester.tap(find.text('Hồ sơ').last);
       await tester.pumpAndSettle();
       final provider = tester
           .element(find.byType(ProfileCard))
@@ -160,7 +160,7 @@ void main() {
       );
       expect(
         tester.widget<NavigationBar>(find.byType(NavigationBar)).selectedIndex,
-        4,
+        3,
       );
       verifyNever(() => auth.getProfiles());
       expect(tester.takeException(), isNull);

@@ -3,10 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study/features/auth/bloc/auth/auth_bloc.dart';
 import 'package:study/features/auth/repository/auth_repository.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
-import 'package:study/features/teacher/data/teacher_core.dart';
 import 'package:study/features/teacher/presentation/profile/teacher_professional_screen.dart';
 import 'package:study/features/teacher/presentation/profile/teacher_role_switcher.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
+import 'package:study/theme/theme.dart';
 
 class TeacherApplicantScreen extends StatefulWidget {
   const TeacherApplicantScreen({super.key, this.api});
@@ -22,6 +22,25 @@ class _TeacherApplicantScreenState extends State<TeacherApplicantScreen> {
   Object? _error;
   void _reload() => setState(() => _revision++);
   Future<void> _resubmit() async {
+    if (_saving) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Nộp lại hồ sơ?'),
+        content: const Text('Hồ sơ hiện tại sẽ được gửi để xét duyệt lại.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Xem lại'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Nộp lại hồ sơ'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted || _saving) return;
     setState(() {
       _saving = true;
       _error = null;
@@ -37,6 +56,7 @@ class _TeacherApplicantScreenState extends State<TeacherApplicantScreen> {
   }
 
   Future<void> _activate() async {
+    if (_saving) return;
     setState(() {
       _saving = true;
       _error = null;
@@ -69,6 +89,14 @@ class _TeacherApplicantScreenState extends State<TeacherApplicantScreen> {
     }
   }
 
+  Future<void> _openProfile(Map<String, dynamic> application) async {
+    final changed = await teacherPush<bool>(
+      context,
+      TeacherProfessionalScreen(api: _api, application: application),
+    );
+    if (changed == true && mounted) _reload();
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
@@ -82,78 +110,94 @@ class _TeacherApplicantScreenState extends State<TeacherApplicantScreen> {
       ],
     ),
     body: TeacherAsyncView<Map<String, dynamic>>(
-      key: ValueKey(_revision),
+      refreshToken: _revision,
       load: () => teacherLoadApplication(_api),
       builder: (context, application) {
         final status = application['approval_status'];
+        final reason = '${application['rejection_reason'] ?? ''}'.trim();
+        final canResubmit =
+            status == 'rejected' && application['can_resubmit'] == true;
+        final theme = Theme.of(context);
+        final colors = theme.colorScheme;
+        final (icon, iconColor) = switch (status) {
+          'approved' => (Icons.check_circle_outline, colors.secondary),
+          'rejected' => (Icons.info_outline, colors.error),
+          'pending' => (Icons.schedule_outlined, colors.primary),
+          _ => (Icons.school_outlined, colors.primary),
+        };
+        final title = switch (status) {
+          'approved' => 'Hồ sơ đã được duyệt',
+          'rejected' => 'Hồ sơ chưa được duyệt',
+          'pending' => 'Hồ sơ đang được xét duyệt',
+          _ => 'Hoàn thiện hồ sơ giáo viên',
+        };
+        final message = switch (status) {
+          'pending' => 'Bạn có thể xem thông tin đã gửi và kiểm tra cập nhật.',
+          'rejected' =>
+            canResubmit
+                ? 'Cập nhật hồ sơ theo phản hồi rồi gửi xét duyệt lại.'
+                : 'Bạn đã dùng hết số lượt nộp lại. '
+                      'Thông tin đã gửi vẫn có thể xem bên dưới.',
+          'approved' =>
+            'Chuyển sang vai trò Giáo viên để mở không gian giảng dạy.',
+          _ =>
+            'Điền thông tin chuyên môn, học vấn và kinh nghiệm '
+                'để gửi xét duyệt.',
+        };
+        final facts = <(String, Object?)>[
+          ('Chuyên môn', application['specialization']),
+          ('Học vấn', application['education']),
+          ('Số năm kinh nghiệm', application['experience_years']),
+          ('Bộ môn', application['department']),
+          ('Chứng chỉ', application['certificate_info']),
+        ].where((fact) => '${fact.$2 ?? ''}'.trim().isNotEmpty).toList();
         return ListView(
-          padding: const EdgeInsets.all(24),
+          padding: AppSpacing.paddingScreenAll,
           children: [
-            const Icon(Icons.school_outlined, size: 48),
-            const SizedBox(height: 24),
-            Text(
-              application.isEmpty
-                  ? 'Hoàn thiện hồ sơ giáo viên'
-                  : teacherStatus(status),
-              style: Theme.of(context).textTheme.headlineSmall,
+            TeacherSurface(
+              showShadow: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(icon, color: iconColor, size: AppIconSize.xl),
+                  AppSpacing.vGap12,
+                  Text(title, style: theme.textTheme.titleLarge),
+                  AppSpacing.vGap8,
+                  Text(message),
+                  if (status == 'rejected' && reason.isNotEmpty) ...[
+                    AppSpacing.vGap16,
+                    Text(
+                      'Phản hồi xét duyệt',
+                      style: theme.textTheme.titleSmall,
+                    ),
+                    AppSpacing.vGap4,
+                    Text(
+                      reason,
+                      style: TextStyle(color: colors.onSurfaceVariant),
+                    ),
+                  ],
+                  if (status == 'rejected' &&
+                      application['resubmission_count'] != null &&
+                      application['max_resubmissions'] != null) ...[
+                    AppSpacing.vGap8,
+                    Text(
+                      'Đã nộp lại ${application['resubmission_count']}/${application['max_resubmissions']} lần',
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            Text(switch (status) {
-              'pending' =>
-                'Hồ sơ đang được xét duyệt. Bạn có thể xem thông tin đã gửi và kiểm tra cập nhật.',
-              'rejected' =>
-                application['can_resubmit'] == true
-                    ? 'Bổ sung thông tin theo phản hồi, lưu hồ sơ rồi nộp lại.'
-                    : 'Hồ sơ đã hết lượt nộp lại. Bạn vẫn có thể xem thông tin và sử dụng vai trò khác.',
-              'approved' =>
-                'Hồ sơ đã được duyệt. Cập nhật phiên đăng nhập để bắt đầu giảng dạy.',
-              _ =>
-                'Cung cấp chuyên môn, học vấn, kinh nghiệm và chứng chỉ để gửi xét duyệt.',
-            }),
-            if (application['rejection_reason'] != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Text('Lý do: ${application['rejection_reason']}'),
-              ),
-            if (application['resubmission_count'] != null)
-              Text(
-                'Đã nộp lại ${application['resubmission_count']}/${application['max_resubmissions']} lần',
-              ),
-            if (application['specialization'] != null)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Chuyên môn'),
-                subtitle: Text('${application['specialization']}'),
-              ),
-            if (application['education'] != null)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Học vấn'),
-                subtitle: Text('${application['education']}'),
-              ),
-            if (application['certificate_info'] != null)
-              Text('Chứng chỉ: ${application['certificate_info']}'),
-            const SizedBox(height: 24),
-            if (application.isEmpty ||
-                (status == 'rejected' && application['can_resubmit'] == true))
+            if (application.isEmpty || canResubmit || status == 'approved')
+              AppSpacing.vGap16,
+            if (application.isEmpty || canResubmit)
               FilledButton(
-                onPressed: _saving
-                    ? null
-                    : () async {
-                        await teacherPush<Object?>(
-                          context,
-                          TeacherProfessionalScreen(
-                            api: _api,
-                            application: application,
-                          ),
-                        );
-                        if (mounted) _reload();
-                      },
+                onPressed: _saving ? null : () => _openProfile(application),
                 child: Text(
                   application.isEmpty ? 'Hoàn thiện hồ sơ' : 'Sửa hồ sơ',
                 ),
               ),
-            if (status == 'rejected' && application['can_resubmit'] == true)
+            if (canResubmit)
               OutlinedButton(
                 onPressed: _saving ? null : _resubmit,
                 child: Text(_saving ? 'Đang gửi…' : 'Nộp lại hồ sơ'),
@@ -164,10 +208,30 @@ class _TeacherApplicantScreenState extends State<TeacherApplicantScreen> {
                 child: Text(_saving ? 'Đang cập nhật…' : 'Bắt đầu giảng dạy'),
               ),
             if (_error != null)
-              Text(
-                teacherErrorMessage(_error!),
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              Semantics(
+                liveRegion: true,
+                child: Text(
+                  teacherErrorMessage(_error!),
+                  style: TextStyle(color: colors.error),
+                ),
               ),
+            if (facts.isNotEmpty) ...[
+              const TeacherSectionTitle(title: 'Hồ sơ đã gửi'),
+              TeacherSurface(
+                showShadow: false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final (label, value) in facts)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(label),
+                        subtitle: Text('$value'),
+                      ),
+                  ],
+                ),
+              ),
+            ],
             const TeacherSectionTitle(title: 'Vai trò khác'),
             const TeacherRoleSwitcher(),
           ],

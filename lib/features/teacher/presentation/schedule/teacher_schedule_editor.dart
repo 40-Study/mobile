@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/data/teacher_core.dart';
+import 'package:study/theme/theme.dart';
 
 class TeacherScheduleEditor extends StatefulWidget {
   const TeacherScheduleEditor({
@@ -38,7 +40,28 @@ class _TeacherScheduleEditorState extends State<TeacherScheduleEditor> {
   late TextEditingController _room;
   bool _dirty = false;
   bool _saving = false;
+  bool _showValidation = false;
   Object? _error;
+
+  String? get _dateError {
+    if (widget.generate && _until == null) return 'Chọn ngày kết thúc.';
+    if (_until?.isBefore(_date) == true) {
+      return 'Ngày kết thúc phải từ ngày bắt đầu trở đi.';
+    }
+    return null;
+  }
+
+  String? get _timeError =>
+      !widget.generate &&
+          _end.hour * 60 + _end.minute <= _start.hour * 60 + _start.minute
+      ? 'Giờ kết thúc phải sau giờ bắt đầu.'
+      : null;
+
+  String get _title => widget.generate
+      ? 'Sinh buổi từ lịch định kỳ'
+      : widget.recurring
+      ? (widget.scheduleId == null ? 'Thêm lịch định kỳ' : 'Sửa lịch định kỳ')
+      : (widget.sessionId == null ? 'Tạo buổi học' : 'Sửa buổi học');
   @override
   void initState() {
     super.initState();
@@ -66,12 +89,18 @@ class _TeacherScheduleEditorState extends State<TeacherScheduleEditor> {
 
   TimeOfDay _parseTime(dynamic value, TimeOfDay fallback) {
     final parts = teacherTime(value).split(':');
-    return parts.length == 2
-        ? TimeOfDay(
-            hour: int.tryParse(parts[0]) ?? fallback.hour,
-            minute: int.tryParse(parts[1]) ?? fallback.minute,
-          )
-        : fallback;
+    if (parts.length != 2) return fallback;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null ||
+        hour < 0 ||
+        hour > 23 ||
+        minute == null ||
+        minute < 0 ||
+        minute > 59) {
+      return fallback;
+    }
+    return TimeOfDay(hour: hour, minute: minute);
   }
 
   String _time(TimeOfDay time) =>
@@ -122,13 +151,11 @@ class _TeacherScheduleEditorState extends State<TeacherScheduleEditor> {
 
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
-    if ((!widget.generate &&
-            _end.hour * 60 + _end.minute <= _start.hour * 60 + _start.minute) ||
-        (_until != null && _until!.isBefore(_date)) ||
-        (widget.generate && _until == null)) {
-      setState(
-        () => _error = StateError('Kiểm tra giờ kết thúc và khoảng ngày.'),
-      );
+    if (_dateError != null || _timeError != null) {
+      setState(() {
+        _showValidation = true;
+        _error = null;
+      });
       return;
     }
     setState(() {
@@ -140,7 +167,9 @@ class _TeacherScheduleEditorState extends State<TeacherScheduleEditor> {
         teacherPayload(await widget.api.get('/classes/${widget.classId}')),
       );
       if (!detail.canManage) {
-        throw StateError('Lớp chỉ đọc hoặc bạn không có quyền sửa lịch.');
+        throw const FormatException(
+          'Lớp chỉ đọc hoặc bạn không có quyền sửa lịch.',
+        );
       }
       final base = '/classes/${widget.classId}';
       Object result = true;
@@ -174,7 +203,8 @@ class _TeacherScheduleEditorState extends State<TeacherScheduleEditor> {
         if (id == null) {
           final response = await widget.api.post(path, data: data);
           if (!widget.recurring) {
-            result = teacherPayload(response)['id']?.toString() ?? true;
+            final createdId = teacherPayload(response)['id']?.toString().trim();
+            if (createdId != null && createdId.isNotEmpty) result = createdId;
           }
         } else {
           await widget.api.put('$path/$id', data: data);
@@ -233,13 +263,25 @@ class _TeacherScheduleEditorState extends State<TeacherScheduleEditor> {
       if (!didPop) _discard();
     },
     child: Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.generate
-              ? 'Sinh buổi từ lịch lặp'
-              : widget.recurring
-              ? 'Lịch dạy định kỳ'
-              : 'Thông tin buổi học',
+      appBar: AppBar(title: Text(_title)),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: AppSpacing.paddingLg,
+          child: FilledButton(
+            onPressed: _saving ? null : _save,
+            child: Text(
+              _saving
+                  ? 'Đang lưu…'
+                  : widget.generate
+                  ? 'Sinh buổi học'
+                  : widget.recurring
+                  ? 'Lưu lịch định kỳ'
+                  : widget.sessionId == null
+                  ? 'Tạo buổi học'
+                  : 'Lưu buổi học',
+            ),
+          ),
         ),
       ),
       body: Form(
@@ -248,6 +290,12 @@ class _TeacherScheduleEditorState extends State<TeacherScheduleEditor> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            if (widget.generate) ...[
+              const Text(
+                'Chọn khoảng ngày để tạo buổi học từ các lịch định kỳ đang áp dụng.',
+              ),
+              AppSpacing.vGap16,
+            ],
             if (widget.recurring)
               DropdownButtonFormField<int>(
                 initialValue: _weekday,
@@ -270,8 +318,8 @@ class _TeacherScheduleEditorState extends State<TeacherScheduleEditor> {
               title: Text(
                 widget.recurring || widget.generate ? 'Từ ngày' : 'Ngày học',
               ),
-              subtitle: Text(teacherDate(_date)),
-              trailing: const Icon(Icons.calendar_today),
+              subtitle: Text(DateFormat('dd/MM/yyyy').format(_date)),
+              trailing: const Icon(Icons.calendar_today_outlined),
               onTap: _saving ? null : () => _pickDate(false),
             ),
             if (widget.recurring || widget.generate)
@@ -280,22 +328,43 @@ class _TeacherScheduleEditorState extends State<TeacherScheduleEditor> {
                 subtitle: Text(
                   _until == null
                       ? (widget.generate ? 'Bắt buộc chọn' : 'Không giới hạn')
-                      : teacherDate(_until!),
+                      : DateFormat('dd/MM/yyyy').format(_until!),
                 ),
-                trailing: const Icon(Icons.calendar_today),
+                trailing: const Icon(Icons.calendar_today_outlined),
                 onTap: _saving ? null : () => _pickDate(true),
+              ),
+            if (_showValidation && _dateError != null)
+              Padding(
+                padding: AppSpacing.paddingHorizontalLg,
+                child: Text(
+                  _dateError!,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
+                ),
               ),
             if (!widget.generate) ...[
               ListTile(
                 title: const Text('Bắt đầu'),
                 subtitle: Text(_time(_start)),
+                trailing: const Icon(Icons.schedule_outlined),
                 onTap: _saving ? null : () => _pickTime(false),
               ),
               ListTile(
                 title: const Text('Kết thúc'),
                 subtitle: Text(_time(_end)),
+                trailing: const Icon(Icons.schedule_outlined),
                 onTap: _saving ? null : () => _pickTime(true),
               ),
+              if (_showValidation && _timeError != null)
+                Padding(
+                  padding: AppSpacing.paddingHorizontalLg,
+                  child: Text(
+                    _timeError!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ),
+              AppSpacing.vGap12,
               if (widget.recurring)
                 TextFormField(
                   controller: _room,
@@ -321,21 +390,10 @@ class _TeacherScheduleEditorState extends State<TeacherScheduleEditor> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Text(
-                  'Chưa lưu được. $_error',
+                  'Chưa lưu được. ${teacherErrorMessage(_error!)}',
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _saving ? null : _save,
-              child: Text(
-                _saving
-                    ? 'Đang lưu…'
-                    : widget.generate
-                    ? 'Sinh buổi học'
-                    : 'Lưu lịch',
-              ),
-            ),
           ],
         ),
       ),

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/data/teacher_core.dart';
+import 'package:study/features/teacher/data/teacher_preview_api.dart';
 import 'package:study/features/teacher/presentation/advanced/teacher_live_sessions_screen.dart';
 import 'package:study/features/teacher/presentation/classes/teacher_class_screen.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_attendance_screen.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_complete_session_screen.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_needs_info_screen.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_schedule_editor.dart';
+import 'package:study/features/teacher/presentation/schedule/teacher_session_row.dart';
 import 'package:study/features/teacher/presentation/widgets/session_card.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
-import 'package:study/features/teacher/presentation/widgets/teacher_surface.dart';
-import 'package:study/features/teacher/presentation/schedule/teacher_session_row.dart';
-import 'package:study/theme/app_spacing.dart';
 import 'package:study/theme/theme.dart';
 
 class TeacherSessionScreen extends StatefulWidget {
@@ -35,7 +35,9 @@ class TeacherSessionScreen extends StatefulWidget {
 class _TeacherSessionScreenState extends State<TeacherSessionScreen> {
   late Future<(TeacherClassData, Map<String, dynamic>)> _future;
   late String? _sessionId = widget.sessionId;
+  bool _createdWithoutId = false;
   bool _saving = false;
+  bool _changed = false;
   Object? _error;
   @override
   void initState() {
@@ -61,16 +63,29 @@ class _TeacherSessionScreenState extends State<TeacherSessionScreen> {
     _future = _load();
   });
 
-  Future<void> _cancel() async {
-    final controller = TextEditingController();
+  Future<void> _cancel(String className, String schedule) async {
+    if (_saving) return;
+    var draftReason = '';
     final reason = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Hủy buổi học?'),
-        content: TextField(
-          controller: controller,
-          maxLines: 3,
-          decoration: const InputDecoration(labelText: 'Lý do hủy'),
+        scrollable: true,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(className),
+            if (schedule.isNotEmpty) Text(schedule),
+            AppSpacing.vGap8,
+            const Text('Buổi dạy sẽ chuyển sang trạng thái Đã hủy.'),
+            AppSpacing.vGap12,
+            TextField(
+              maxLines: 3,
+              decoration: const InputDecoration(labelText: 'Lý do hủy'),
+              onChanged: (value) => draftReason = value,
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -78,24 +93,23 @@ class _TeacherSessionScreenState extends State<TeacherSessionScreen> {
             child: const Text('Quay lại'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, controller.text),
+            onPressed: () => Navigator.pop(context, draftReason.trim()),
             child: const Text('Hủy buổi học'),
           ),
         ],
       ),
     );
-    controller.dispose();
     if (reason == null || !mounted) return;
     setState(() {
       _saving = true;
       _error = null;
     });
     try {
-      await widget.api.put(
+      await widget.api.delete(
         '/classes/${widget.classId}/sessions/${_sessionId}',
-        data: {'status': 'cancelled', 'cancel_reason': reason},
+        data: {'cancel_reason': reason},
       );
-      if (mounted) _reload();
+      if (mounted) _markChanged();
     } catch (error) {
       if (mounted) setState(() => _error = error);
     } finally {
@@ -103,584 +117,483 @@ class _TeacherSessionScreenState extends State<TeacherSessionScreen> {
     }
   }
 
+  void _markChanged() {
+    _changed = true;
+    _reload();
+  }
+
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Chi tiết buổi dạy')),
-    body: FutureBuilder<(TeacherClassData, Map<String, dynamic>)>(
-      future: _future,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return TeacherErrorView(error: snapshot.error!, onRetry: _reload);
-        }
-        if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        final (detail, session) = snapshot.data!;
-        final projected = _sessionId == null;
-        final date = projected
-            ? teacherDate(widget.occurrence!.date)
-            : '${session['date']}';
-        final cancelled = session['status'] == 'cancelled';
-        final completed = session['status'] == 'completed';
+  Widget build(BuildContext context) => PopScope(
+    canPop: !_changed && !_saving,
+    onPopInvokedWithResult: (didPop, _) {
+      if (!didPop && !_saving) Navigator.of(context).pop(true);
+    },
+    child: Scaffold(
+      appBar: AppBar(title: const Text('Chi tiết buổi dạy')),
+      body: FutureBuilder<(TeacherClassData, Map<String, dynamic>)>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return TeacherErrorView(error: snapshot.error!, onRetry: _reload);
+          }
+          if (snapshot.connectionState != ConnectionState.done ||
+              !snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final (detail, session) = snapshot.data!;
+          final canManage =
+              detail.canManage && widget.api is! TeacherPreviewApi;
+          final sessionId = _sessionId;
+          final projected = sessionId == null;
+          final rawDate = widget.occurrence != null && projected
+              ? teacherDate(widget.occurrence!.date)
+              : session['date']?.toString() ?? '';
+          final sessionDate = DateTime.tryParse(rawDate.split('T').first);
+          final date = sessionDate == null ? rawDate : teacherDate(sessionDate);
+          final displayDate = sessionDate == null
+              ? date
+              : DateFormat('dd/MM/yyyy').format(sessionDate);
+          final start = teacherTime(session['start_time']);
+          final end = teacherTime(session['end_time']);
+          final schedule = [
+            displayDate,
+            if (start.isNotEmpty && end.isNotEmpty) '$start–$end',
+          ].where((value) => value.isNotEmpty).join(' · ');
+          final status = session['status']?.toString() ?? 'scheduled';
+          final cancelled = status == 'cancelled';
+          final completed = status == 'completed';
+          final role =
+              (session['teacher_role'] ??
+                      widget.occurrence?.json['teacher_role'])
+                  ?.toString();
+          final isAssistant = role == 'assistant';
+          final confirmStatus =
+              (session['hour_confirmation_status'] ??
+                      widget.occurrence?.json['hour_confirmation_status'])
+                  ?.toString();
+          final needsInfo = confirmStatus == 'needs_info';
+          final rejectionReason =
+              (session['rejection_reason'] ??
+                      widget.occurrence?.json['rejection_reason'])
+                  ?.toString()
+                  .trim() ??
+              '';
+          final roomLink =
+              (session['room_link'] ?? widget.occurrence?.json['room_link'])
+                  ?.toString()
+                  .trim() ??
+              '';
+          final livestreamId =
+              (session['livestream_session_id'] ??
+                      widget.occurrence?.json['livestream_session_id'])
+                  ?.toString()
+                  .trim() ??
+              '';
+          final canJoin =
+              !cancelled && (livestreamId.isNotEmpty || roomLink.isNotEmpty);
+          final canEdit =
+              canManage && !cancelled && !isAssistant && sessionId != null;
+          final ended = _hasEnded(date, end);
+          final canComplete = canEdit && !completed && ended && !needsInfo;
+          final canCreate =
+              !_createdWithoutId && projected && canManage && !isAssistant;
+          final cs = Theme.of(context).colorScheme;
+          final tt = Theme.of(context).textTheme;
+          final topic = session['topic']?.toString().trim() ?? '';
+          final notes = session['notes']?.toString().trim() ?? '';
+          final room = session['room']?.toString().trim() ?? '';
+          final cancelReason =
+              session['cancel_reason']?.toString().trim() ?? '';
+          final statusLabel = switch (status) {
+            _ when _createdWithoutId => 'Đã tạo buổi học',
+            _ when projected => 'Lịch dự kiến · chưa tạo buổi',
+            'scheduled' when ended => 'Quá giờ · Chưa bắt đầu',
+            'in_progress' when ended => 'Quá giờ · Chưa hoàn tất',
+            _ => teacherStatus(status),
+          };
 
-        // Vai trò của người dạy: main, substitute, assistant
-        final role = session['teacher_role']?.toString();
-        final isAssistant = role == 'assistant';
-        final isMainOrSubstitute = role == 'main' || role == 'substitute';
-        final roleLabel = switch (role) {
-          'main' => 'Chính',
-          'substitute' => 'Dạy thay',
-          'assistant' => 'Trợ giảng',
-          _ => null,
-        };
+          Future<void> openEditor() async {
+            final result = await teacherPush<Object?>(
+              context,
+              TeacherScheduleEditor(
+                api: widget.api,
+                classId: detail.id,
+                sessionId: sessionId,
+                initialDate: projected ? widget.occurrence?.date : null,
+                initial: session,
+              ),
+            );
+            if (!mounted) return;
+            if (result is String) {
+              _sessionId = result;
+            } else if (result == true && projected) {
+              _createdWithoutId = true;
+            } else if (result != true) {
+              return;
+            }
+            _markChanged();
+          }
 
-        // Trạng thái xác nhận giờ: pending, confirmed, needs_info
-        final confirmStatus = session['hour_confirmation_status']?.toString();
-        final needsInfo = confirmStatus == 'needs_info';
-
-        // Link phòng học
-        final roomLink = session['room_link']?.toString();
-        final hasRoomLink = roomLink != null && roomLink.isNotEmpty;
-
-        // Có thể hoàn tất: buổi đã tạo, chưa hoàn tất, là giáo viên chính/dạy thay
-        final canComplete = !projected &&
-            !cancelled &&
-            !completed &&
-            isMainOrSubstitute &&
-            _sessionId != null;
-
-        return RefreshIndicator(
-          onRefresh: () async {
-            _reload();
-            await _future;
-          },
-          child: ListView(
-            padding: AppSpacing.paddingScreenAll,
-            children: [
-              TeacherSurface(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            detail.name,
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                        // Badge vai trò
-                        if (roleLabel != null)
-                          _RoleBadge(role: role!, label: roleLabel),
-                      ],
+          final actions = <(IconData, String, VoidCallback)>[
+            if (needsInfo && sessionId != null)
+              (
+                Icons.info_outline,
+                'Xem yêu cầu bổ sung',
+                () => teacherPush<void>(
+                  context,
+                  TeacherNeedsInfoScreen(
+                    api: widget.api,
+                    classId: detail.id,
+                    sessionId: sessionId,
+                    className: detail.name,
+                    date: date,
+                    isAssistant: isAssistant,
+                    initial: {...?widget.occurrence?.json, ...session},
+                  ),
+                ),
+              ),
+            if (canComplete)
+              (
+                Icons.check_circle_outline,
+                'Hoàn tất buổi dạy',
+                () async {
+                  final result = await teacherPush<bool>(
+                    context,
+                    TeacherCompleteSessionScreen(
+                      onAttendanceSaved: _markChanged,
+                      api: widget.api,
+                      classId: detail.id,
+                      sessionId: sessionId,
+                      className: detail.name,
+                      date: date,
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      widget.workplaceLabel,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  );
+                  if (result == true && mounted) _markChanged();
+                },
+              ),
+            if (canJoin)
+              (
+                Icons.videocam_outlined,
+                'Vào phòng học',
+                () {
+                  if (livestreamId.isNotEmpty) {
+                    teacherPush<void>(
+                      context,
+                      TeacherLiveSessionScreen(
+                        api: widget.api,
+                        sessionId: livestreamId,
                       ),
+                    );
+                  } else {
+                    launchTeacherUrl(context, roomLink);
+                  }
+                },
+              ),
+            if (canCreate)
+              (Icons.event_available_outlined, 'Tạo buổi học', openEditor),
+            if (canEdit)
+              (
+                Icons.fact_check_outlined,
+                'Điểm danh',
+                () => teacherPush<Object?>(
+                  context,
+                  TeacherAttendanceScreen(
+                    onSaved: _markChanged,
+                    api: widget.api,
+                    classId: detail.id,
+                    sessionId: sessionId,
+                    title: detail.name,
+                    sessionDate: date,
+                    startTime: start,
+                    endTime: end,
+                  ),
+                ),
+              ),
+          ];
+          final primary = actions.firstOrNull;
+
+          final showsConfirmation =
+              completed || needsInfo || confirmStatus == 'confirmed';
+          final hasContent =
+              topic.isNotEmpty || notes.isNotEmpty || room.isNotEmpty;
+          final notices = [
+            if (cancelled && cancelReason.isNotEmpty)
+              'Lý do hủy: $cancelReason',
+            if (detail.archived) 'Lớp đã lưu trữ · Chỉ xem',
+            if (!projected && !cancelled && !completed && isAssistant)
+              'Chờ giáo viên chính hoàn tất',
+            if (_createdWithoutId) 'Quay lại Lịch để xem buổi mới.',
+            if (role == 'substitute')
+              'Người dạy thay chỉ xem được buổi được giao.',
+          ];
+          final related = <(IconData, String, VoidCallback)>[
+            ...actions.skip(1),
+            if (role != 'substitute')
+              (
+                Icons.school_outlined,
+                'Lớp và học viên',
+                () => teacherPush<Object?>(
+                  context,
+                  TeacherClassScreen(
+                    api: widget.api,
+                    classId: detail.id,
+                    workplaceLabel: widget.workplaceLabel,
+                  ),
+                ),
+              ),
+            (
+              Icons.video_camera_front_outlined,
+              'Phiên trực tuyến của lớp',
+              () => teacherPush<Object?>(
+                context,
+                TeacherLiveSessionsScreen(api: widget.api, classId: detail.id),
+              ),
+            ),
+          ];
+
+          return RefreshIndicator(
+            onRefresh: () async {
+              _reload();
+              await _future;
+            },
+            child: SafeArea(
+              top: false,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: AppSpacing.paddingLg,
+                children: [
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: cs.primaryContainer,
+                      borderRadius: AppRadius.borderLg,
                     ),
-                    const SizedBox(height: 20),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.schedule_outlined,
-                          size: 22,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Padding(
+                      padding: AppSpacing.paddingLg,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              Text(
-                                '${teacherTime(session['start_time'])}–${teacherTime(session['end_time'])}',
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(fontWeight: FontWeight.w700),
+                              Expanded(
+                                child: Text(
+                                  detail.name,
+                                  style: tt.titleLarge?.copyWith(
+                                    color: cs.onPrimaryContainer,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                               ),
-                              Text(
-                                date,
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurfaceVariant,
+                              if (canEdit)
+                                PopupMenuButton<bool>(
+                                  tooltip: 'Quản lý buổi học',
+                                  iconColor: cs.onPrimaryContainer,
+                                  enabled: !_saving,
+                                  onSelected: (cancel) {
+                                    if (cancel) {
+                                      _cancel(detail.name, schedule);
+                                    } else {
+                                      openEditor();
+                                    }
+                                  },
+                                  itemBuilder: (context) => const [
+                                    PopupMenuItem(
+                                      value: false,
+                                      child: Text('Chỉnh sửa buổi học'),
                                     ),
-                              ),
+                                    PopupMenuItem(
+                                      value: true,
+                                      child: Text('Hủy buổi học'),
+                                    ),
+                                  ],
+                                ),
                             ],
                           ),
-                        ),
-                      ],
+                          AppSpacing.vGap8,
+                          Wrap(
+                            spacing: AppSpacing.md,
+                            runSpacing: AppSpacing.sm,
+                            children: [
+                              if (displayDate.isNotEmpty)
+                                _SessionMeta(
+                                  icon: Icons.calendar_today_outlined,
+                                  text: displayDate,
+                                ),
+                              if (start.isNotEmpty && end.isNotEmpty)
+                                _SessionMeta(
+                                  icon: Icons.schedule,
+                                  text: '$start–$end',
+                                ),
+                              if (widget.workplaceLabel.trim().isNotEmpty)
+                                _SessionMeta(
+                                  icon: Icons.place_outlined,
+                                  text: widget.workplaceLabel,
+                                ),
+                            ],
+                          ),
+                          AppSpacing.vGap12,
+                          Wrap(
+                            spacing: AppSpacing.sm,
+                            runSpacing: AppSpacing.xs,
+                            children: [
+                              TeacherSessionStatusLabel(
+                                label: statusLabel,
+                                status: status,
+                              ),
+                              if (role == 'main' ||
+                                  role == 'substitute' ||
+                                  role == 'assistant')
+                                TeacherRoleBadge(role: role!),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 14),
-                    Row(
+                  ),
+                  if (hasContent ||
+                      showsConfirmation ||
+                      notices.isNotEmpty) ...[
+                    AppSpacing.vGap12,
+                    TeacherSurface(
+                      showShadow: false,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (notices.isNotEmpty) ...[
+                            for (final notice in notices)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: AppSpacing.xs,
+                                ),
+                                child: Text(
+                                  notice,
+                                  style: tt.bodyMedium?.copyWith(
+                                    color: cancelled
+                                        ? cs.error
+                                        : cs.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                          ],
+                          if (hasContent) ...[
+                            if (notices.isNotEmpty) AppSpacing.vGap8,
+                            Text('Nội dung buổi học', style: tt.titleSmall),
+                            if (topic.isNotEmpty) ...[
+                              AppSpacing.vGap4,
+                              Text(topic, style: tt.bodyLarge),
+                            ],
+                            if (notes.isNotEmpty) ...[
+                              AppSpacing.vGap4,
+                              Text(
+                                notes,
+                                style: tt.bodyMedium?.copyWith(
+                                  color: cs.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                            if (room.isNotEmpty) ...[
+                              AppSpacing.vGap8,
+                              Text('Phòng: $room', style: tt.bodyMedium),
+                            ],
+                          ],
+                          if (showsConfirmation) ...[
+                            if (hasContent || notices.isNotEmpty)
+                              const Divider(height: AppSpacing.xl),
+                            Text('Xác nhận giờ dạy', style: tt.titleSmall),
+                            AppSpacing.vGap4,
+                            Text(
+                              switch (confirmStatus) {
+                                'needs_info' => 'Cần bổ sung',
+                                'confirmed' => 'Đã xác nhận',
+                                'pending' => 'Chờ xác nhận',
+                                _ => 'Chưa có thông tin xác nhận',
+                              },
+                              style: tt.bodyMedium?.copyWith(
+                                color: needsInfo
+                                    ? cs.error
+                                    : cs.onSurfaceVariant,
+                              ),
+                            ),
+                            if (needsInfo && rejectionReason.isNotEmpty) ...[
+                              AppSpacing.vGap4,
+                              Text(rejectionReason, style: tt.bodyMedium),
+                            ],
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (_error != null) ...[
+                    AppSpacing.vGap12,
+                    Text(
+                      'Chưa cập nhật được. ${teacherErrorMessage(_error!)}',
+                      style: tt.bodyMedium?.copyWith(color: cs.error),
+                    ),
+                  ],
+                  if (primary != null) ...[
+                    AppSpacing.vGap16,
+                    FilledButton.icon(
+                      onPressed: _saving ? null : primary.$3,
+                      icon: Icon(primary.$1),
+                      label: Text(primary.$2),
+                    ),
+                  ],
+                  AppSpacing.vGap12,
+                  TeacherSurface(
+                    showShadow: false,
+                    padding: EdgeInsets.zero,
+                    child: Column(
                       children: [
-                        TeacherSessionStatusLabel(
-                          label: projected
-                              ? 'Lịch dự kiến · chưa tạo buổi'
-                              : teacherStatus(session['status']),
-                          status: session['status']?.toString() ?? 'scheduled',
-                        ),
-                        if (needsInfo) ...[
-                          AppSpacing.hGap8,
-                          _ConfirmStatusBadge(status: 'needs_info'),
-                        ] else if (confirmStatus == 'confirmed') ...[
-                          AppSpacing.hGap8,
-                          _ConfirmStatusBadge(status: 'confirmed'),
-                        ] else if (completed && confirmStatus == 'pending') ...[
-                          AppSpacing.hGap8,
-                          _ConfirmStatusBadge(status: 'pending'),
+                        for (var i = 0; i < related.length; i++) ...[
+                          if (i > 0)
+                            const Divider(height: 1, indent: AppSpacing.lg),
+                          ListTile(
+                            leading: Icon(related[i].$1, color: cs.primary),
+                            title: Text(related[i].$2),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: _saving ? null : related[i].$3,
+                          ),
                         ],
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              // Nút "Vào lớp" - mở link phòng
-              if (!cancelled && hasRoomLink) ...[
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () => launchTeacherUrl(roomLink),
-                    icon: const Icon(Icons.videocam_outlined),
-                    label: const Text('Vào lớp'),
-                  ),
-                ),
-              ],
-              // Nút "Vào lớp" bị tắt khi buổi đã hủy (K12)
-              if (cancelled && hasRoomLink) ...[
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: null,
-                    icon: const Icon(Icons.videocam_off_outlined),
-                    label: const Text('Vào lớp'),
-                  ),
-                ),
-                Text(
-                  'Buổi đã hủy, không thể vào lớp',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-
-              if ('${session['topic'] ?? ''}'.isNotEmpty) ...[
-                const SizedBox(height: 24),
-                Text(
-                  'Nội dung buổi học',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 8),
-                Text('${session['topic']}'),
-              ],
-              if ('${session['notes'] ?? ''}'.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    '${session['notes']}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              if (session['room'] != null)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Icon(
-                    Icons.meeting_room_outlined,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  title: Text('Phòng: ${session['room']}'),
-                ),
-              if (cancelled)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Text(
-                    'Lý do hủy: ${session['cancel_reason'] ?? 'Không có'}',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                ),
-              if (detail.archived)
-                const Padding(
-                  padding: EdgeInsets.only(top: 16),
-                  child: Text('Lớp đã lưu trữ, hiện chỉ được xem.'),
-                ),
-              const SizedBox(height: 24),
-
-              // Nút Hoàn tất hoặc Cần bổ sung (cho giáo viên chính/dạy thay)
-              if (canComplete && !needsInfo)
-                FilledButton.icon(
-                  icon: const Icon(Icons.check_circle_outline),
-                  onPressed: _saving
-                      ? null
-                      : () async {
-                          final result = await teacherPush<bool>(
-                            context,
-                            TeacherCompleteSessionScreen(
-                              api: widget.api,
-                              classId: detail.id,
-                              sessionId: _sessionId!,
-                              className: detail.name,
-                              date: date,
-                            ),
-                          );
-                          if (result == true && mounted) _reload();
-                        },
-                  label: const Text('Hoàn tất buổi dạy'),
-                ),
-
-              // Nút mở Cần bổ sung (giờ bị trả về)
-              if (needsInfo && isMainOrSubstitute) ...[
-                _NeedsInfoCard(
-                  rejectionReason: session['rejection_reason']?.toString(),
-                  onTap: () async {
-                    final result = await teacherPush<bool>(
-                      context,
-                      TeacherNeedsInfoScreen(
-                        api: widget.api,
-                        classId: detail.id,
-                        sessionId: _sessionId!,
-                        className: detail.name,
-                        date: date,
-                        isAssistant: false,
-                      ),
-                    );
-                    if (result == true && mounted) _reload();
-                  },
-                ),
-              ],
-
-              // Trợ giảng với buổi cần bổ sung: chỉ xem lý do
-              if (needsInfo && isAssistant) ...[
-                _NeedsInfoCard(
-                  rejectionReason: session['rejection_reason']?.toString(),
-                  onTap: () => teacherPush<void>(
-                    context,
-                    TeacherNeedsInfoScreen(
-                      api: widget.api,
-                      classId: detail.id,
-                      sessionId: _sessionId!,
-                      className: detail.name,
-                      date: date,
-                      isAssistant: true,
-                    ),
-                  ),
-                ),
-              ],
-
-              // Trợ giảng: thông báo chờ giáo viên chính hoàn tất (K15)
-              if (!projected && !cancelled && !completed && isAssistant)
-                _AssistantWaitingCard(),
-
-              const SizedBox(height: 12),
-              if (!projected && !cancelled && detail.canManage)
-                FilledButton.icon(
-                  icon: const Icon(Icons.fact_check_outlined),
-                  onPressed: _saving
-                      ? null
-                      : () => teacherPush<Object?>(
-                          context,
-                          TeacherAttendanceScreen(
-                            api: widget.api,
-                            classId: detail.id,
-                            sessionId: _sessionId!,
-                            title: '${detail.name} · $date',
-                          ),
-                        ),
-                  label: const Text('Điểm danh'),
-                ),
-              if (projected && detail.canManage)
-                FilledButton(
-                  onPressed: () async {
-                    final result = await teacherPush<Object?>(
-                      context,
-                      TeacherScheduleEditor(
-                        api: widget.api,
-                        classId: detail.id,
-                        initialDate: widget.occurrence!.date,
-                        initial: session,
-                      ),
-                    );
-                    if (mounted) {
-                      if (result is String) _sessionId = result;
-                      _reload();
-                    }
-                  },
-                  child: const Text('Tạo buổi học để điểm danh'),
-                ),
-              const SizedBox(height: 12),
-              // Người dạy thay chỉ thấy buổi được giao, không mở được lớp (K5)
-              if (role != 'substitute')
-                OutlinedButton(
-                  onPressed: () => teacherPush<Object?>(
-                    context,
-                    TeacherClassScreen(
-                      api: widget.api,
-                      classId: detail.id,
-                      workplaceLabel: widget.workplaceLabel,
-                    ),
-                  ),
-                  child: const Text('Xem lớp và học viên'),
-                ),
-              if (role == 'substitute')
-                Text(
-                  'Người dạy thay chỉ xem được buổi được giao.',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              if (!projected && detail.canManage && !cancelled) ...[
-                const SizedBox(height: 16),
-                Text(
-                  'Quản lý buổi học',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 8),
-                OutlinedButton(
-                  onPressed: _saving
-                      ? null
-                      : () async {
-                          await teacherPush<Object?>(
-                            context,
-                            TeacherScheduleEditor(
-                              api: widget.api,
-                              classId: detail.id,
-                              sessionId: _sessionId,
-                              initial: session,
-                            ),
-                          );
-                          if (mounted) _reload();
-                        },
-                  child: const Text('Chỉnh sửa buổi học'),
-                ),
-                TextButton(
-                  onPressed: _saving ? null : _cancel,
-                  style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.error,
-                  ),
-                  child: Text(_saving ? 'Đang cập nhật…' : 'Hủy buổi học'),
-                ),
-              ],
-              if (session['livestream_session_id'] != null)
-                OutlinedButton.icon(
-                  onPressed: _saving
-                      ? null
-                      : () => teacherPush<Object?>(
-                          context,
-                          TeacherLiveSessionScreen(
-                            api: widget.api,
-                            sessionId: session['livestream_session_id']
-                                .toString(),
-                          ),
-                        ),
-                  icon: const Icon(Icons.videocam_outlined),
-                  label: const Text('Xem phòng dạy trực tuyến'),
-                ),
-              OutlinedButton(
-                onPressed: () => teacherPush<Object?>(
-                  context,
-                  TeacherLiveSessionsScreen(
-                    api: widget.api,
-                    classId: detail.id,
-                  ),
-                ),
-                child: const Text('Các phiên trực tuyến của lớp'),
-              ),
-              if (_error != null)
-                Text(
-                  'Chưa cập nhật được: $_error',
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-            ],
-          ),
-        );
-      },
+            ),
+          );
+        },
+      ),
     ),
   );
 }
 
-/// Badge hiển thị vai trò của giáo viên trên buổi dạy
-class _RoleBadge extends StatelessWidget {
-  const _RoleBadge({required this.role, required this.label});
+class _SessionMeta extends StatelessWidget {
+  const _SessionMeta({required this.icon, required this.text});
 
-  final String role;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final (bg, fg) = switch (role) {
-      'main' => (cs.primary.withValues(alpha: 0.12), cs.primary),
-      'substitute' => (AchievementColors.orange.withValues(alpha: 0.12), AchievementColors.orange),
-      'assistant' => (AchievementColors.blue.withValues(alpha: 0.12), AchievementColors.blue),
-      _ => (cs.surfaceContainerHigh, cs.onSurfaceVariant),
-    };
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: fg,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-}
-
-/// Badge hiển thị trạng thái xác nhận giờ
-class _ConfirmStatusBadge extends StatelessWidget {
-  const _ConfirmStatusBadge({required this.status});
-
-  final String status;
+  final IconData icon;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    final (label, color) = switch (status) {
-      'confirmed' => ('Đã xác nhận', AchievementColors.green),
-      'needs_info' => ('Cần bổ sung', AchievementColors.red),
-      'pending' => ('Chờ xác nhận', AchievementColors.yellow),
-      _ => ('', Colors.grey),
-    };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: color,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
-}
-
-/// Card hiển thị thông báo cần bổ sung với lý do từ trung tâm
-class _NeedsInfoCard extends StatelessWidget {
-  const _NeedsInfoCard({this.rejectionReason, required this.onTap});
-
-  final String? rejectionReason;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Material(
-        color: AchievementColors.red.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: AppSpacing.paddingLg,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.info_outline,
-                  color: AchievementColors.red,
-                  size: 24,
-                ),
-                AppSpacing.hGap12,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Cần bổ sung thông tin',
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: AchievementColors.red,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      if (rejectionReason != null && rejectionReason!.isNotEmpty)
-                        Text(
-                          rejectionReason!,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: cs.onSurface,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.chevron_right,
-                  color: AchievementColors.red,
-                ),
-              ],
-            ),
+    final theme = Theme.of(context);
+    final color = theme.colorScheme.onPrimaryContainer;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: AppIconSize.sm, color: color),
+        AppSpacing.hGap4,
+        Flexible(
+          child: Text(
+            text,
+            style: theme.textTheme.bodyMedium?.copyWith(color: color),
           ),
         ),
-      ),
+      ],
     );
   }
 }
 
-/// Card thông báo cho trợ giảng khi buổi chưa được hoàn tất
-class _AssistantWaitingCard extends StatelessWidget {
-  const _AssistantWaitingCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Container(
-        padding: AppSpacing.paddingMd,
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: cs.outlineVariant),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.hourglass_empty,
-              color: cs.onSurfaceVariant,
-              size: 20,
-            ),
-            AppSpacing.hGap8,
-            Expanded(
-              child: Text(
-                'Chờ giáo viên chính hoàn tất',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+bool _hasEnded(String date, String end) {
+  final time = DateTime.tryParse('$date $end');
+  return time != null && !time.isAfter(DateTime.now());
 }

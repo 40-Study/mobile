@@ -15,6 +15,10 @@ Future<bool> teacherGradeColumnForm(
   return teacherToolForm(
     context,
     title: column == null ? 'Thêm cột điểm' : 'Sửa cột điểm',
+    sectionTitles: const {
+      'Tên cột': 'Thông tin cột',
+      'Thang điểm': 'Cách tính điểm',
+    },
     choices: const {
       'Loại điểm': {
         'assignment': 'Bài tập',
@@ -159,10 +163,11 @@ class _TeacherGradeColumnsScreenState extends State<TeacherGradeColumnsScreen> {
     ),
     body: Column(
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.all(AppSpacing.screenPadding),
           child: Text(
-            'Cấu hình tên, thang điểm và trọng số trước khi nhập. Đổi cấu hình không sửa các điểm đã lưu.',
+            'Thang điểm và trọng số của cột áp dụng cho điểm nhập mới.',
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
         if (busy) const LinearProgressIndicator(),
@@ -171,8 +176,12 @@ class _TeacherGradeColumnsScreenState extends State<TeacherGradeColumnsScreen> {
             key: ValueKey(revision),
             load: () async => teacherList(await widget.api.get(path)),
             builder: (context, columns) => columns.isEmpty
-                ? const Center(
-                    child: Text('Chưa có cột điểm. Thêm cột để bắt đầu.'),
+                ? Center(
+                    child: Text(
+                      widget.canWrite
+                          ? 'Chưa có cột điểm. Thêm cột để bắt đầu.'
+                          : 'Chưa có cột điểm.',
+                    ),
                   )
                 : ListView.separated(
                     itemCount: columns.length,

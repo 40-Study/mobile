@@ -1,11 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
 import 'package:study/features/teacher/data/teacher_core.dart';
+import 'package:study/features/teacher/data/teacher_preview_api.dart';
+import 'package:study/features/teacher/presentation/advanced/teacher_live_sessions_screen.dart';
+import 'package:study/features/teacher/presentation/schedule/teacher_attendance_screen.dart';
+import 'package:study/features/teacher/presentation/schedule/teacher_schedule_timeline.dart';
+import 'package:study/features/teacher/presentation/leave/teacher_leave_list_screen.dart';
+import 'package:study/features/teacher/presentation/profile/teacher_reminders_screen.dart';
+import 'package:study/features/teacher/presentation/schedule/teacher_needs_info_screen.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_session_row.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_session_screen.dart';
-import 'package:study/features/teacher/presentation/profile/teacher_reminders_screen.dart';
-import 'package:study/features/teacher/presentation/leave/teacher_leave_list_screen.dart';
 import 'package:study/features/teacher/presentation/widgets/session_card.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
 import 'package:study/theme/theme.dart';
@@ -14,22 +21,28 @@ class TeacherScheduleScreen extends StatefulWidget {
   const TeacherScheduleScreen({
     super.key,
     required this.api,
+    this.leaveApi,
     required this.organizationId,
     required this.workplaceLabel,
     this.teacherName,
     this.onNavigateToReport,
     this.onNeedsAttentionCountChanged,
+    this.onSessionChanged,
+    this.now = DateTime.now,
   });
   final TeacherApi api;
+  final TeacherApi? leaveApi;
   final String? organizationId;
   final String workplaceLabel;
   final String? teacherName;
 
   /// Callback để chuyển sang tab Báo cáo (tap vào dòng tổng tháng)
-  final VoidCallback? onNavigateToReport;
+  final ValueChanged<DateTime>? onNavigateToReport;
 
   /// Callback để sync số buổi cần xử lý lên WorkplaceController
   final void Function(int count)? onNeedsAttentionCountChanged;
+  final VoidCallback? onSessionChanged;
+  final DateTime Function() now;
 
   @override
   State<TeacherScheduleScreen> createState() => _TeacherScheduleScreenState();
@@ -42,15 +55,73 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   bool _month = false;
   final _classNames = <String, String>{};
   bool _showOnlyNeedsAttention = false;
-  bool _needsAttentionExpanded = false; // Cho collapsible section
-  bool _calendarExpanded = false; // Cho expandable calendar
+  final _agendaKey = GlobalKey();
+  int _loadRevision = 0;
+  int _attendanceEpoch = 0;
+  int _attendanceRunning = 0;
+  final _attendance = <String, bool?>{};
+  final _attendancePending = <String>{};
+  final _attendancePermissions = <String, Future<bool>>{};
+  late final AppLifecycleListener _lifecycle;
+  Timer? _minuteTimer;
 
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
+    final now = widget.now();
     _selected = DateTime(now.year, now.month, now.day);
     _future = _load();
+    _lifecycle = AppLifecycleListener(
+      onResume: () {
+        _scheduleMinuteTick();
+        _reload();
+      },
+    );
+    _scheduleMinuteTick();
+  }
+
+  @override
+  void didUpdateWidget(covariant TeacherScheduleScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.organizationId != widget.organizationId ||
+        oldWidget.api != widget.api) {
+      _classId = null;
+      _classNames.clear();
+      _showOnlyNeedsAttention = false;
+      _invalidateAttendance();
+      _future = _load();
+    }
+  }
+
+  @override
+  void dispose() {
+    _minuteTimer?.cancel();
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  void _scheduleMinuteTick() {
+    _minuteTimer?.cancel();
+    final now = widget.now();
+    final nextMinute = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      now.hour,
+      now.minute + 1,
+    );
+    _minuteTimer = Timer(nextMinute.difference(now), () {
+      if (!mounted) return;
+      setState(() {});
+      _scheduleMinuteTick();
+    });
+  }
+
+  void _invalidateAttendance() {
+    _attendanceEpoch++;
+    _attendance.clear();
+    _attendancePending.clear();
+    _attendancePermissions.clear();
   }
 
   DateTime get _weekStart => DateTime(
@@ -60,7 +131,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   );
 
   String _formatSelectedDate() {
-    final now = DateTime.now();
+    final now = widget.now();
     final today = DateTime(now.year, now.month, now.day);
     final selected = DateTime(_selected.year, _selected.month, _selected.day);
 
@@ -73,73 +144,76 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
   }
 
   Future<_ScheduleData> _load() async {
-    // Luôn load cả tháng để tránh call API 2 lần
-    final monthStart = DateTime(_selected.year, _selected.month);
-    final monthEnd = DateTime(_selected.year, _selected.month + 1, 0);
-
-    final monthSessions = await teacherLoadTimetable(
-      widget.api,
-      widget.organizationId,
-      monthStart,
-      monthEnd,
+    final revision = ++_loadRevision;
+    final api = widget.api;
+    final organizationId = widget.organizationId;
+    final selected = _selected;
+    final monthStart = DateTime(selected.year, selected.month);
+    final monthEnd = DateTime(selected.year, selected.month + 1, 0);
+    final weekStart = _weekStart;
+    final weekEnd = DateTime(
+      weekStart.year,
+      weekStart.month,
+      weekStart.day + 6,
+    );
+    final from = weekStart.isBefore(monthStart) ? weekStart : monthStart;
+    final to = weekEnd.isAfter(monthEnd) ? weekEnd : monthEnd;
+    final classes = await teacherAssignedClasses(api);
+    if (!mounted || revision != _loadRevision)
+      return const _ScheduleData.empty();
+    final today = widget.now();
+    final results = await Future.wait([
+      teacherLoadTimetable(
+        api,
+        organizationId,
+        from,
+        to,
+        assignedClasses: classes,
+      ),
+      teacherLoadTimetable(
+        api,
+        organizationId,
+        DateTime(today.year, today.month),
+        DateTime(today.year, today.month, today.day + 30),
+        assignedClasses: classes,
+      ),
+    ]);
+    if (!mounted || revision != _loadRevision)
+      return const _ScheduleData.empty();
+    final sessions = results[0];
+    final todaySessions = results[1];
+    final monthSessions = sessions.where(
+      (s) => s.date.year == selected.year && s.date.month == selected.month,
     );
 
-    // Filter cho tuần nếu ở week mode
-    final weekEnd = DateTime(_weekStart.year, _weekStart.month, _weekStart.day + 6);
-    final sessions = _month
-        ? monthSessions
-        : monthSessions.where((s) {
-            return !s.date.isBefore(_weekStart) && !s.date.isAfter(weekEnd);
-          }).toList();
-
-    final now = DateTime.now();
+    final now = widget.now();
 
     // Tìm buổi cần xử lý: quá giờ chưa hoàn tất hoặc cần bổ sung
     final needsAttention = <TeacherOccurrence>[];
-    for (final s in monthSessions) {
-      final role = s.json['teacher_role']?.toString();
-      final confirmStatus = s.json['hour_confirmation_status']?.toString();
-
-      // Cần bổ sung (returned by center)
-      if (confirmStatus == 'needs_info') {
-        needsAttention.add(s);
-        continue;
-      }
-
-      // Quá giờ chưa hoàn tất (chỉ cho giáo viên chính/dạy thay)
-      if (role != 'assistant' &&
-          s.status == 'scheduled' &&
-          s.sessionId != null) {
-        final endParts = s.end.split(':');
-        final endTime = DateTime(
-          s.date.year,
-          s.date.month,
-          s.date.day,
-          int.tryParse(endParts.first) ?? 23,
-          int.tryParse(endParts.last) ?? 59,
-        );
-        if (endTime.isBefore(now)) {
-          needsAttention.add(s);
+    final currentMonth = todaySessions.where(
+      (s) => s.date.year == now.year && s.date.month == now.month,
+    );
+    final overdueIds = currentMonth
+        .where((s) => _isOverdue(s, now))
+        .map((s) => s.classId)
+        .toSet();
+    final writable = await Future.wait(
+      overdueIds.map((id) async {
+        try {
+          final detail = TeacherClassData(
+            teacherPayload(await api.get('/classes/$id')),
+          );
+          return detail.canManage ? id : null;
+        } catch (_) {
+          return null;
         }
-      }
-    }
-
-    // Tìm buổi tiếp theo (chưa kết thúc hoặc sắp bắt đầu)
-    TeacherOccurrence? nextSession;
-    for (final s in sessions) {
-      if (s.status == 'cancelled') continue;
-      final endParts = s.end.split(':');
-      final endTime = DateTime(
-        s.date.year,
-        s.date.month,
-        s.date.day,
-        int.tryParse(endParts.first) ?? 23,
-        int.tryParse(endParts.last) ?? 59,
-      );
-      // Hiện buổi đang diễn ra hoặc sắp bắt đầu
-      if (endTime.isAfter(now)) {
-        nextSession = s;
-        break;
+      }),
+    );
+    for (final s in currentMonth) {
+      final confirmStatus = s.json['hour_confirmation_status']?.toString();
+      if (confirmStatus == 'needs_info' ||
+          (writable.contains(s.classId) && _isOverdue(s, now))) {
+        needsAttention.add(s);
       }
     }
 
@@ -147,54 +221,64 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
     var monthCompletedSessions = 0;
     var monthMinutes = 0;
     for (final s in monthSessions) {
-      if (s.status == 'completed' || s.json['status'] == 'completed') {
+      if (!s.projected && s.status == 'completed') {
         monthCompletedSessions++;
         final startTime = s.json['start_time']?.toString() ?? '00:00';
         final endTime = s.json['end_time']?.toString() ?? '00:00';
         final startParts = startTime.split(':');
         final endParts = endTime.split(':');
-        final startMin = (int.tryParse(startParts.first) ?? 0) * 60 +
+        final startMin =
+            (int.tryParse(startParts.first) ?? 0) * 60 +
             (int.tryParse(startParts.length > 1 ? startParts[1] : '0') ?? 0);
-        final endMin = (int.tryParse(endParts.first) ?? 0) * 60 +
+        final endMin =
+            (int.tryParse(endParts.first) ?? 0) * 60 +
             (int.tryParse(endParts.length > 1 ? endParts[1] : '0') ?? 0);
         if (endMin > startMin) monthMinutes += endMin - startMin;
       }
     }
 
     // Sync needsAttention count lên WorkplaceController
-    widget.onNeedsAttentionCountChanged?.call(needsAttention.length);
+    if (mounted && revision == _loadRevision) {
+      widget.onNeedsAttentionCountChanged?.call(needsAttention.length);
+    }
 
     return _ScheduleData(
       sessions: sessions,
+      classes: classes.where((c) => c.inScope(organizationId)).toList(),
       needsAttention: needsAttention,
-      nextSession: nextSession,
       monthCompletedSessions: monthCompletedSessions,
       monthMinutes: monthMinutes,
     );
   }
 
+  void _sessionChanged() {
+    if (!mounted) return;
+    _reload();
+    widget.onSessionChanged?.call();
+  }
+
   void _reload() => setState(() {
+    _invalidateAttendance();
     _future = _load();
   });
 
-  /// Check if session is overdue and can be quick-started
-  bool _isOverdue(TeacherOccurrence session) {
-    if (session.status != 'scheduled') return false;
-    if (session.sessionId == null) return false;
-    final role = session.json['teacher_role']?.toString();
-    if (role == 'assistant') return false; // Trợ giảng không cần hoàn tất
-
-    final now = DateTime.now();
+  DateTime _sessionEnd(TeacherOccurrence session) {
     final endParts = session.end.split(':');
-    final endTime = DateTime(
+    return DateTime(
       session.date.year,
       session.date.month,
       session.date.day,
       int.tryParse(endParts.first) ?? 23,
-      int.tryParse(endParts.last) ?? 59,
+      endParts.length > 1 ? int.tryParse(endParts[1]) ?? 59 : 59,
     );
-    return endTime.isBefore(now);
   }
+
+  bool _isOverdue(TeacherOccurrence session, DateTime now) =>
+      !session.projected &&
+      session.json['teacher_role'] != 'assistant' &&
+      session.json['hour_confirmation_status'] != 'needs_info' &&
+      (session.status == 'scheduled' || session.status == 'in_progress') &&
+      !_sessionEnd(session).isAfter(now);
 
   /// Quick start session via swipe (navigate to complete screen)
   Future<bool> _quickStartSession(TeacherOccurrence session) async {
@@ -209,7 +293,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
         workplaceLabel: widget.workplaceLabel,
       ),
     );
-    if (result == true) _reload();
+    if (result == true) _sessionChanged();
     return false; // Không dismiss item
   }
 
@@ -225,22 +309,27 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
         workplaceLabel: widget.workplaceLabel,
       ),
     );
-    if (result == true) _reload();
+    if (result == true) _sessionChanged();
   }
 
   /// Long-press preview cho session
-  void _showSessionPreview(BuildContext context, TeacherOccurrence session) {
+  Future<void> _showSessionPreview(
+    BuildContext context,
+    TeacherOccurrence session,
+  ) async {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final role = session.json['teacher_role']?.toString();
-    final studentCount = (session.json['student_count'] as int?) ?? 0;
+    final studentCount = session.json['student_count'];
 
-    showModalBottomSheet<void>(
+    final openDetail = await showModalBottomSheet<bool>(
       context: context,
       showDragHandle: true,
+      isScrollControlled: true,
+      useSafeArea: true,
       builder: (context) => SafeArea(
-        child: Padding(
-          padding: AppSpacing.paddingScreenAll,
+        child: SingleChildScrollView(
+          padding: AppSpacing.paddingLg,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,10 +337,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
               // Header
               Row(
                 children: [
-                  TeacherClassIcon(
-                    className: session.classData.name,
-                    size: 48,
-                  ),
+                  TeacherClassIcon(className: session.classData.name, size: 48),
                   AppSpacing.hGap12,
                   Expanded(
                     child: Column(
@@ -264,7 +350,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                           ),
                         ),
                         Text(
-                          '${DateFormat('EEEE, dd/MM/yyyy', 'vi').format(session.date)}',
+                          DateFormat('dd/MM/yyyy').format(session.date),
                           style: tt.bodySmall?.copyWith(
                             color: cs.onSurfaceVariant,
                           ),
@@ -288,53 +374,32 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
                   label: 'Chủ đề',
                   value: session.topic,
                 ),
-              if (studentCount > 0)
+              if (studentCount is num)
                 _PreviewInfoRow(
                   icon: Icons.people_outline,
-                  label: 'Học sinh',
-                  value: '$studentCount học sinh',
+                  label: 'Học viên',
+                  value: '$studentCount',
                 ),
               _PreviewInfoRow(
                 icon: Icons.info_outline,
                 label: 'Trạng thái',
-                value: teacherStatus(session.status),
+                value: teacherSessionStateLabel(session),
               ),
               AppSpacing.vGap16,
               // Actions
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Đóng'),
-                    ),
-                  ),
-                  AppSpacing.hGap12,
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        teacherPush<void>(
-                          context,
-                          TeacherSessionScreen(
-                            api: widget.api,
-                            classId: session.classId,
-                            sessionId: session.sessionId,
-                            occurrence: session,
-                            workplaceLabel: widget.workplaceLabel,
-                          ),
-                        ).then((_) => _reload());
-                      },
-                      child: const Text('Xem chi tiết'),
-                    ),
-                  ),
-                ],
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Xem chi tiết'),
+                ),
               ),
             ],
           ),
         ),
       ),
     );
+    if (openDetail == true && mounted) await _navigateToSession(session);
   }
 
   void _move(int direction) => setState(() {
@@ -402,316 +467,560 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
       setState(() => _classId = selection.isEmpty ? null : selection);
   }
 
+  bool get _isToday => teacherDate(_selected) == teacherDate(widget.now());
+
+  void _selectDay(DateTime date) {
+    final sameMonth =
+        date.year == _selected.year && date.month == _selected.month;
+    setState(() {
+      final previousWeek = _weekStart;
+      _selected = date;
+      if (!sameMonth || previousWeek != _weekStart) _future = _load();
+    });
+    if (!_month) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final anchor = _agendaKey.currentContext;
+      if (mounted && anchor != null && _selected == date) {
+        Scrollable.ensureVisible(
+          anchor,
+          alignment: 0.25,
+          duration: const Duration(milliseconds: 200),
+        );
+      }
+    });
+  }
+
+  void _today() {
+    final now = widget.now();
+    setState(() {
+      _selected = DateUtils.dateOnly(now);
+      _showOnlyNeedsAttention = false;
+      _invalidateAttendance();
+      _future = _load();
+    });
+  }
+
+  Widget _calendarMenu(BuildContext context) => PopupMenuButton<String>(
+    tooltip: 'Tùy chọn lịch dạy',
+    icon: const Icon(Icons.more_vert),
+    onSelected: (value) {
+      if (value == 'leave')
+        teacherPush<Object?>(
+          context,
+          TeacherLeaveListScreen(
+            api: widget.leaveApi ?? widget.api,
+            organizationId: widget.organizationId,
+            workplaceLabel: widget.workplaceLabel,
+          ),
+        );
+      if (value == 'reminders')
+        teacherPush<Object?>(context, TeacherRemindersScreen(api: widget.api));
+      if (value == 'refresh') _reload();
+      if (value == 'sample-needs-info') {
+        teacherPush<void>(
+          context,
+          TeacherNeedsInfoScreen(
+            api: widget.api,
+            classId: 'sample-class',
+            sessionId: 'sample-session',
+            className: 'Buổi dạy mẫu',
+            date: teacherDate(widget.now()),
+            sample: true,
+            initial: const {
+              'start_time': '09:00',
+              'end_time': '10:30',
+              'rejection_reason': 'Bổ sung nội dung đã dạy.',
+            },
+          ),
+        );
+      }
+    },
+    itemBuilder: (_) => const [
+      PopupMenuItem(value: 'leave', child: Text('Xin nghỉ')),
+      PopupMenuItem(value: 'reminders', child: Text('Nhắc lịch')),
+      if (teacherDevSamplesEnabled)
+        PopupMenuItem(
+          value: 'sample-needs-info',
+          child: Text('Thử gửi bổ sung giờ dạy'),
+        ),
+      PopupMenuItem(value: 'refresh', child: Text('Tải lại')),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final isLight = Theme.of(context).brightness == Brightness.light;
-    final topSurfaceColor = isLight ? Colors.white : cs.surface;
-
     return Scaffold(
-      backgroundColor: topSurfaceColor,
+      backgroundColor: teacherScheduleBackground(context),
       body: Column(
         children: [
-          // Hero Section
-          TeacherHeroSection(
-            greeting: TeacherHeroSection.getGreeting(),
-            name: TeacherHeroSection.getFirstName(widget.teacherName),
-            chips: [
-              TeacherSummaryChip(
-                icon: Icons.calendar_today_outlined,
-                label: _formatSelectedDate(),
-                onTap: () {
-                  final now = DateTime.now();
-                  setState(() {
-                    _selected = DateTime(now.year, now.month, now.day);
-                    _showOnlyNeedsAttention = false;
-                    _future = _load();
-                  });
-                },
-              ),
-            ],
-            trailing: PopupMenuButton<String>(
-              tooltip: 'Tùy chọn lịch dạy',
-              icon: const Icon(Icons.more_vert),
-              onSelected: (value) {
-                if (value == 'leave')
-                  teacherPush<Object?>(
-                    context,
-                    TeacherLeaveListScreen(
-                      api: widget.api,
-                      organizationId: widget.organizationId,
-                    ),
-                  );
-                if (value == 'reminders')
-                  teacherPush<Object?>(
-                    context,
-                    TeacherRemindersScreen(api: widget.api),
-                  );
-                if (value == 'refresh') _reload();
-              },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'leave', child: Text('Xin nghỉ')),
-                PopupMenuItem(value: 'reminders', child: Text('Nhắc lịch')),
-                PopupMenuItem(value: 'refresh', child: Text('Tải lại')),
-              ],
-            ),
-          ),
-          AppSpacing.vGap8,
           Expanded(
-        child: FutureBuilder<_ScheduleData>(
-          future: _future,
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return _buildErrorState(context, snapshot.error!);
-            }
-            if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            final data = snapshot.data!;
-            final sessions = data.sessions;
+            child: FutureBuilder<_ScheduleData>(
+              future: _future,
+              builder: (context, snapshot) {
+                final done = snapshot.connectionState == ConnectionState.done;
+                final ready = done && snapshot.hasData;
+                final data = ready
+                    ? snapshot.data!
+                    : const _ScheduleData.empty();
+                final sessions = data.sessions;
+                if (ready) {
+                  _classNames
+                    ..clear()
+                    ..addEntries(
+                      data.classes.map((c) => MapEntry(c.id, c.name)),
+                    );
+                }
 
-            // State 01: Chưa được giao lớp
-            if (sessions.isEmpty && data.monthCompletedSessions == 0) {
-              return _buildNoClassState(context);
-            }
+                final daySessions = sessions
+                    .where(
+                      (session) => DateUtils.isSameDay(session.date, _selected),
+                    )
+                    .toList();
+                final rows = _showOnlyNeedsAttention
+                    ? data.needsAttention
+                    : daySessions
+                          .where(
+                            (session) =>
+                                _classId == null || session.classId == _classId,
+                          )
+                          .toList();
+                final now = widget.now();
+                final next = !_showOnlyNeedsAttention && _isToday
+                    ? _heroSession(rows, now)
+                    : null;
+                if (ready && !_showOnlyNeedsAttention) {
+                  _scheduleAttendanceReads(
+                    _month ? daySessions : sessions,
+                    now,
+                  );
+                }
 
-            // Clear và rebuild class names để tránh stale data
-            _classNames.clear();
-            for (final session in sessions) {
-              _classNames[session.classId] = session.classData.name;
-            }
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    _reload();
+                    await _future;
+                  },
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      if (!_showOnlyNeedsAttention) ...[
+                        // Expandable Calendar (week/month)
+                        TeacherExpandableCalendar(
+                          selectedDate: _selected,
+                          weekStart: _weekStart,
+                          isExpanded: _month,
+                          sessions: sessions,
+                          classFilter: _classId,
+                          now: now,
+                          onToday: _today,
+                          dotFor: (session) => _dotFor(session, now),
+                          onDateSelected: _selectDay,
+                          onToggleExpand: () =>
+                              setState(() => _month = !_month),
+                          onWeekChanged: (delta) => _move(delta),
+                        ),
+                        AppSpacing.vGap12,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.lg,
+                          ),
+                          child: Wrap(
+                            spacing: AppSpacing.sm,
+                            runSpacing: AppSpacing.xs,
+                            children: [
+                              if (_classNames.length > 1 || _classId != null)
+                                OutlinedButton.icon(
+                                  onPressed: ready ? _filter : null,
+                                  icon: const Icon(Icons.filter_list),
+                                  label: Text(
+                                    _classId == null
+                                        ? 'Tất cả lớp'
+                                        : _classNames[_classId] ??
+                                              'Lớp đã chọn',
+                                  ),
+                                ),
+                              if (data.needsAttention.isNotEmpty)
+                                TextButton.icon(
+                                  onPressed: () => setState(
+                                    () => _showOnlyNeedsAttention = true,
+                                  ),
+                                  icon: const Icon(Icons.chevron_right),
+                                  label: Text(
+                                    'Cần xử lý · ${data.needsAttention.length} buổi',
+                                  ),
+                                ),
+                              _calendarMenu(context),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          key: _agendaKey,
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                          child: Text(
+                            ready && rows.isNotEmpty
+                                ? '${rows.length} buổi dạy · ${_formatSelectedDate()}'
+                                : _formatSelectedDate(),
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ],
 
-            // Filter rows dựa trên mode
-            List<TeacherOccurrence> rows;
-            if (_showOnlyNeedsAttention) {
-              rows = data.needsAttention;
-            } else {
-              rows = sessions
-                  .where(
-                    (s) =>
-                        teacherDate(s.date) == teacherDate(_selected) &&
-                        (_classId == null || s.classId == _classId),
-                  )
-                  .toList();
-            }
+                      if (done && snapshot.hasError)
+                        _buildErrorState(context, snapshot.error!)
+                      else if (!ready)
+                        const Center(child: CircularProgressIndicator())
+                      else if (rows.isEmpty && !_showOnlyNeedsAttention)
+                        _buildEmptyDayState(data),
+                      if (_showOnlyNeedsAttention) ...[
+                        Padding(
+                          padding: AppSpacing.paddingHorizontalLg,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  '${data.needsAttention.length} buổi cần xử lý',
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.w700),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () => setState(() {
+                                  _showOnlyNeedsAttention = false;
+                                }),
+                                child: const Text('Xem lịch'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Empty state khi không còn buổi cần xử lý
+                        if (ready && data.needsAttention.isEmpty)
+                          const TeacherEmptyStateInline(
+                            icon: Icons.check_circle_outline,
+                            message:
+                                'Không còn buổi nào cần xử lý.\nTất cả đã hoàn tất!',
+                          ),
+                      ],
 
-            return RefreshIndicator(
-              onRefresh: () async {
-                _reload();
-                await _future;
-              },
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  // Mục "Cần xử lý" - collapsible section
-                  if (data.needsAttention.isNotEmpty && !_showOnlyNeedsAttention)
-                    Padding(
-                      padding: AppSpacing.paddingHorizontalXl,
-                      child: _buildNeedsAttentionSection(context, data),
-                    ),
-                  if (_showOnlyNeedsAttention) ...[
-                    Padding(
-                      padding: AppSpacing.paddingHorizontalXl,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              '${data.needsAttention.length} buổi cần xử lý',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
+                      if (_showOnlyNeedsAttention)
+                        for (final session in rows)
+                          Padding(
+                            padding: AppSpacing.paddingHorizontalLg,
+                            child: _swipeSession(
+                              session,
+                              data,
+                              now,
+                              GestureDetector(
+                                onLongPress: () =>
+                                    _showSessionPreview(context, session),
+                                child: TeacherSessionRow(
+                                  onChanged: _sessionChanged,
+                                  includeDate: true,
+                                  session: session,
+                                  api: widget.api,
+                                  workplaceLabel: widget.workplaceLabel,
+                                ),
                               ),
                             ),
-                          ),
-                          TextButton(
-                            onPressed: () => setState(() {
-                              _showOnlyNeedsAttention = false;
-                            }),
-                            child: const Text('Xem lịch'),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Empty state khi không còn buổi cần xử lý
-                    if (data.needsAttention.isEmpty)
-                      const TeacherEmptyStateInline(
-                        icon: Icons.check_circle_outline,
-                        message: 'Không còn buổi nào cần xử lý.\nTất cả đã hoàn tất!',
-                      ),
-                  ],
-
-                  // Thẻ "Buổi tiếp theo" (hiện ngay sau Cần xử lý)
-                  if (!_showOnlyNeedsAttention && data.nextSession != null)
-                    Padding(
-                      padding: AppSpacing.paddingHorizontalXl.copyWith(
-                        top: AppSpacing.md,
-                        bottom: AppSpacing.md,
-                      ),
-                      child: NextSessionCard(
-                        session: data.nextSession!,
-                        api: widget.api,
-                        workplaceLabel: widget.workplaceLabel,
-                        onChanged: _reload,
-                      ),
-                    ),
-
-                  if (!_showOnlyNeedsAttention) ...[
-                    // Expandable Calendar (week/month)
-                    TeacherExpandableCalendar(
-                      selectedDate: _selected,
-                      weekStart: _weekStart,
-                      isExpanded: _calendarExpanded,
-                      sessions: sessions,
-                      classFilter: _classId,
-                      onDateSelected: (date) => setState(() {
-                        _selected = date;
-                      }),
-                      onToggleExpand: () => setState(() {
-                        _calendarExpanded = !_calendarExpanded;
-                      }),
-                      onWeekChanged: (delta) => _move(delta),
-                    ),
-                    AppSpacing.vGap12,
-                    // Filter button - chỉ hiện khi có nhiều hơn 1 lớp
-                    if (_classNames.length > 1)
-                      Padding(
-                        padding: AppSpacing.paddingHorizontalXl,
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: OutlinedButton.icon(
-                            onPressed: _filter,
-                            icon: const Icon(Icons.filter_list),
-                            label: Text(
-                              _classId == null
-                                  ? 'Tất cả lớp'
-                                  : _classNames[_classId] ?? 'Lớp đã chọn',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                          )
+                      else if (rows.isNotEmpty)
+                        TeacherScheduleTimeline(
+                          rows: rows,
+                          daySessions: daySessions,
+                          dotFor: (session) => _dotFor(session, now),
+                          buildCard: (session) => _swipeSession(
+                            session,
+                            data,
+                            now,
+                            _timelineCard(session, now, hero: session == next),
                           ),
                         ),
-                      ),
-                    // Header count - chỉ hiện khi có sessions
-                    if (rows.isNotEmpty)
-                      Padding(
-                        padding: AppSpacing.paddingScreenAll,
-                        child: Text(
-                          '${rows.length} buổi dạy · ${_formatSelectedDate()}',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                  ],
 
-                  // State 02: Hôm nay không có lịch
-                  if (rows.isEmpty && !_showOnlyNeedsAttention)
-                    _buildEmptyDayState(context, data),
+                      // Dòng tổng tháng cuối danh sách
+                      if (!_showOnlyNeedsAttention &&
+                          data.monthCompletedSessions > 0)
+                        _buildMonthlySummary(context, data),
 
-                  for (final session in rows)
-                    Padding(
-                      padding: AppSpacing.paddingHorizontalXl,
-                      child: TeacherSwipeToAction(
-                        itemKey: Key('session_${session.sessionId ?? session.classId}_${session.date}'),
-                        icon: Icons.play_arrow_rounded,
-                        label: 'Hoàn tất',
-                        color: AchievementColors.green,
-                        enabled: _isOverdue(session),
-                        direction: DismissDirection.startToEnd,
-                        onAction: () => _quickStartSession(session),
-                        child: GestureDetector(
-                          onLongPress: () => _showSessionPreview(context, session),
-                          child: TeacherSessionRow(
-                            onChanged: _reload,
-                            session: session,
-                            api: widget.api,
-                            workplaceLabel: widget.workplaceLabel,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                  // Dòng tổng tháng cuối danh sách
-                  if (!_showOnlyNeedsAttention && data.monthCompletedSessions > 0)
-                    _buildMonthlySummary(context, data),
-
-                  const SizedBox(height: 24),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
-    ],
-      ),
-    );
-  }
-
-  /// State 01: Chưa được giao lớp
-  Widget _buildNoClassState(BuildContext context) {
-    return const TeacherEmptyState(
-      icon: Icons.school_outlined,
-      title: 'Chưa có lịch dạy',
-      subtitle: 'Lịch sẽ hiện khi bạn được phân công lớp.\nLiên hệ trung tâm nếu bạn cần được phân công.',
-    );
-  }
-
-  /// State 02: Hôm nay không có lịch
-  Widget _buildEmptyDayState(BuildContext context, _ScheduleData data) {
-    return TeacherEmptyStateInline(
-      icon: Icons.event_available_outlined,
-      message: data.nextSession != null
-          ? 'Không có buổi dạy trong ngày này.\nBuổi tiếp theo: ${DateFormat('dd/MM').format(data.nextSession!.date)} lúc ${data.nextSession!.start}'
-          : 'Không có buổi dạy trong ngày này.',
-    );
-  }
-
-  /// Section "Cần xử lý" collapsible
-  Widget _buildNeedsAttentionSection(BuildContext context, _ScheduleData data) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return TeacherCollapsibleCard(
-      title: 'Cần xử lý',
-      subtitle: 'Buổi quá giờ hoặc cần bổ sung thông tin',
-      icon: Icons.warning_amber_outlined,
-      iconColor: AchievementColors.red,
-      badgeCount: data.needsAttention.length,
-      badgeColor: AchievementColors.red,
-      initiallyExpanded: _needsAttentionExpanded,
-      onExpansionChanged: (expanded) {
-        setState(() => _needsAttentionExpanded = expanded);
-      },
-      child: Column(
-        children: [
-          for (var i = 0; i < data.needsAttention.length; i++) ...[
-            if (i > 0)
-              Divider(
-                height: 1,
-                color: cs.outlineVariant.withValues(alpha: 0.3),
-              ),
-            _NeedsAttentionItem(
-              session: data.needsAttention[i],
-              onTap: () => _navigateToSession(data.needsAttention[i]),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                );
+              },
             ),
-          ],
-          // Link xem tất cả nếu có nhiều items
-          if (data.needsAttention.length > 3) ...[
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () => setState(() => _showOnlyNeedsAttention = true),
-              child: Text(
-                'Xem tất cả ${data.needsAttention.length} buổi',
-                style: tt.labelMedium?.copyWith(
-                  color: cs.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+          ),
         ],
       ),
     );
   }
+
+  Widget _buildEmptyDayState(_ScheduleData data) {
+    final weekEnd = DateTime(
+      _weekStart.year,
+      _weekStart.month,
+      _weekStart.day + 6,
+    );
+    final hasSessions = data.sessions.any(
+      (s) => _month
+          ? s.date.month == _selected.month && s.date.year == _selected.year
+          : !s.date.isBefore(_weekStart) && !s.date.isAfter(weekEnd),
+    );
+    final String message;
+    if (data.classes.isEmpty) {
+      message = 'Bạn chưa được phân công lớp tại nơi làm việc này.';
+    } else if (_classId != null) {
+      message = 'Lớp đã chọn không có buổi dạy trong ngày này.';
+    } else if (hasSessions) {
+      message = 'Không có buổi dạy trong ngày này.';
+    } else {
+      message = _month
+          ? 'Không có buổi dạy trong tháng này.'
+          : 'Không có buổi dạy trong tuần này.';
+    }
+    return TeacherEmptyStateInline(
+      icon: Icons.event_available_outlined,
+      message: message,
+    );
+  }
+
+  bool _isOpenSession(TeacherOccurrence session) =>
+      session.status == 'scheduled' ||
+      session.status == 'in_progress' ||
+      (session.projected && session.status == 'active');
+
+  TeacherCalendarDot _dotFor(TeacherOccurrence session, DateTime now) {
+    if (session.status == 'completed') return TeacherCalendarDot.completed;
+    final start = teacherScheduleTime(session, session.start);
+    if (_isOpenSession(session) && start != null) {
+      if (start.isAfter(now)) return TeacherCalendarDot.upcoming;
+      if (_attendance[session.sessionId] == false)
+        return TeacherCalendarDot.unmarked;
+    }
+    return TeacherCalendarDot.neutral;
+  }
+
+  void _scheduleAttendanceReads(
+    List<TeacherOccurrence> sessions,
+    DateTime now,
+  ) {
+    if (_attendanceRunning >= 4) return;
+    final first = _month ? _selected : _weekStart;
+    final last = DateTime(
+      first.year,
+      first.month,
+      first.day + (_month ? 0 : 6),
+    );
+    final candidates = sessions
+        .where((session) {
+          final id = session.sessionId;
+          final start = teacherScheduleTime(session, session.start);
+          final date = DateUtils.dateOnly(session.date);
+          return id != null &&
+              id.isNotEmpty &&
+              !_attendance.containsKey(id) &&
+              !_attendancePending.contains(id) &&
+              (_classId == null || session.classId == _classId) &&
+              !date.isBefore(first) &&
+              !date.isAfter(last) &&
+              _isOpenSession(session) &&
+              start != null &&
+              !start.isAfter(now);
+        })
+        .take(4 - _attendanceRunning)
+        .toList();
+    if (candidates.isEmpty) return;
+
+    final revision = _loadRevision;
+    final epoch = _attendanceEpoch;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          revision != _loadRevision ||
+          epoch != _attendanceEpoch ||
+          _showOnlyNeedsAttention)
+        return;
+      for (final session in candidates) {
+        final id = session.sessionId!;
+        if (_attendanceRunning >= 4) break;
+        if (_attendance.containsKey(id) || !_attendancePending.add(id))
+          continue;
+        _attendanceRunning++;
+        unawaited(_readAttendance(id, epoch));
+      }
+    });
+  }
+
+  Future<void> _readAttendance(String id, int epoch) async {
+    bool? hasAttendance;
+    try {
+      final response = await widget.api.get('/sessions/$id/attendances');
+      final rows = response is Map ? response['data'] : response;
+      if (rows is List &&
+          rows.every((row) => row is Map && row['student_id'] != null)) {
+        hasAttendance = rows.isNotEmpty;
+      }
+    } catch (_) {
+      // Unknown attendance stays neutral and can be retried on refresh.
+    } finally {
+      _attendanceRunning--;
+    }
+    if (!mounted) return;
+    setState(() {
+      if (epoch == _attendanceEpoch) {
+        _attendancePending.remove(id);
+        _attendance[id] = hasAttendance;
+      }
+    });
+  }
+
+  TeacherOccurrence? _heroSession(List<TeacherOccurrence> rows, DateTime now) {
+    TeacherOccurrence? due;
+    TeacherOccurrence? upcoming;
+    for (final row in rows) {
+      if (!_isOpenSession(row)) continue;
+      final start = teacherScheduleTime(row, row.start);
+      final end = teacherScheduleTime(row, row.end);
+      if (start == null ||
+          end == null ||
+          !end.isAfter(start) ||
+          !end.isAfter(now))
+        continue;
+      if (start.isAfter(now)) {
+        upcoming ??= row;
+      } else {
+        if (!row.projected && row.status == 'in_progress') return row;
+        due ??= row;
+      }
+    }
+    return due ?? upcoming;
+  }
+
+  String _heroLabel(TeacherOccurrence session, DateTime now) {
+    final start = teacherScheduleTime(session, session.start)!;
+    final end = teacherScheduleTime(session, session.end)!;
+    if (start.isAfter(now)) {
+      final minutes = (start.difference(now).inSeconds / 60).ceil().clamp(
+        1,
+        1440,
+      );
+      return 'SẮP BẮT ĐẦU SAU $minutes PHÚT';
+    }
+    if (!session.projected && session.status == 'in_progress') {
+      final minutes = (end.difference(now).inSeconds / 60).ceil().clamp(
+        1,
+        1440,
+      );
+      return 'ĐANG DIỄN RA • CÒN $minutes PHÚT';
+    }
+    return 'ĐẾN GIỜ DẠY';
+  }
+
+  Future<bool> _canTakeAttendance(TeacherOccurrence session) async {
+    final api = widget.api;
+    try {
+      final responses = await Future.wait([
+        api.get('/classes/${session.classId}'),
+        api.get('/classes/${session.classId}/sessions/${session.sessionId}'),
+      ]);
+      final detail = TeacherClassData(teacherPayload(responses[0]));
+      final current = teacherPayload(responses[1]);
+      final role = current['teacher_role'] ?? session.json['teacher_role'];
+      return detail.canManage &&
+          role != 'assistant' &&
+          (current['status'] == 'scheduled' ||
+              current['status'] == 'in_progress');
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void _openAttendance(TeacherOccurrence session) {
+    teacherPush<Object?>(
+      context,
+      TeacherAttendanceScreen(
+        api: widget.api,
+        classId: session.classId,
+        sessionId: session.sessionId!,
+        title: session.classData.name,
+        sessionDate: teacherDate(session.date),
+        startTime: session.start,
+        endTime: session.end,
+        onSaved: _sessionChanged,
+      ),
+    );
+  }
+
+  Widget _timelineCard(
+    TeacherOccurrence session,
+    DateTime now, {
+    required bool hero,
+  }) {
+    final liveId =
+        session.json['livestream_session_id']?.toString().trim() ?? '';
+    final roomLink = session.json['room_link']?.toString().trim() ?? '';
+    Widget card({bool canAttend = false}) => TeacherTimelineCard(
+      session: session,
+      now: now,
+      dot: _dotFor(session, now),
+      heroLabel: hero ? _heroLabel(session, now) : null,
+      onDetails: () => _navigateToSession(session),
+      onPreview: () => _showSessionPreview(context, session),
+      onAttendance: canAttend ? () => _openAttendance(session) : null,
+      onJoin: hero && (liveId.isNotEmpty || roomLink.isNotEmpty)
+          ? () {
+              if (liveId.isNotEmpty) {
+                teacherPush<void>(
+                  context,
+                  TeacherLiveSessionScreen(api: widget.api, sessionId: liveId),
+                );
+              } else {
+                launchTeacherUrl(context, roomLink);
+              }
+            }
+          : null,
+    );
+    final id = session.sessionId;
+    if (!hero ||
+        id == null ||
+        id.isEmpty ||
+        widget.api is TeacherPreviewApi ||
+        session.json['teacher_role'] == 'assistant')
+      return card();
+
+    return FutureBuilder<bool>(
+      future: _attendancePermissions.putIfAbsent(
+        id,
+        () => _canTakeAttendance(session),
+      ),
+      builder: (context, snapshot) => card(
+        canAttend:
+            snapshot.connectionState == ConnectionState.done &&
+            snapshot.data == true,
+      ),
+    );
+  }
+
+  Widget _swipeSession(
+    TeacherOccurrence session,
+    _ScheduleData data,
+    DateTime now,
+    Widget child,
+  ) => TeacherSwipeToAction(
+    itemKey: ValueKey((
+      session.classId,
+      session.sessionId,
+      session.json['schedule_id'],
+      session.date,
+      session.start,
+    )),
+    icon: Icons.play_arrow_rounded,
+    label: 'Hoàn tất',
+    color: AchievementColors.green,
+    enabled:
+        _isOverdue(session, now) &&
+        data.needsAttention.any((row) => row.sessionId == session.sessionId),
+    direction: DismissDirection.startToEnd,
+    onAction: () => _quickStartSession(session),
+    child: child,
+  );
 
   /// State 04: Lỗi mạng
   Widget _buildErrorState(BuildContext context, Object error) {
@@ -727,10 +1036,7 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
               color: Theme.of(context).colorScheme.error,
             ),
             const SizedBox(height: 16),
-            Text(
-              teacherErrorMessage(error),
-              textAlign: TextAlign.center,
-            ),
+            Text(teacherErrorMessage(error), textAlign: TextAlign.center),
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: _reload,
@@ -753,36 +1059,35 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
         : '$mins phút';
 
     return Padding(
-      padding: AppSpacing.paddingHorizontalXl.copyWith(top: AppSpacing.lg),
+      padding: AppSpacing.paddingHorizontalLg.copyWith(top: AppSpacing.lg),
       child: Material(
-        color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
+        color: teacherScheduleCardColor(context),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: BorderSide(color: teacherScheduleBorder(context)),
+        ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: widget.onNavigateToReport,
+          onTap: widget.onNavigateToReport == null
+              ? null
+              : () => widget.onNavigateToReport!(
+                  DateTime(_selected.year, _selected.month),
+                ),
           child: Padding(
             padding: AppSpacing.paddingMd,
             child: Row(
               children: [
-                Icon(
-                  Icons.bar_chart_outlined,
-                  color: cs.primary,
-                  size: 20,
-                ),
+                Icon(Icons.bar_chart_outlined, color: cs.primary, size: 20),
                 AppSpacing.hGap8,
                 Expanded(
                   child: Text(
-                    '${data.monthCompletedSessions} buổi · $hoursText tháng này',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: cs.onSurface,
-                    ),
+                    '${data.monthCompletedSessions} buổi hoàn tất · $hoursText · ${_selected.month}/${_selected.year}',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: cs.onSurface),
                   ),
                 ),
-                Icon(
-                  Icons.chevron_right,
-                  color: cs.onSurfaceVariant,
-                  size: 20,
-                ),
+                Icon(Icons.chevron_right, color: cs.onSurfaceVariant, size: 20),
               ],
             ),
           ),
@@ -796,110 +1101,27 @@ class _TeacherScheduleScreenState extends State<TeacherScheduleScreen> {
 class _ScheduleData {
   const _ScheduleData({
     required this.sessions,
+    required this.classes,
     required this.needsAttention,
-    required this.nextSession,
     required this.monthCompletedSessions,
     required this.monthMinutes,
   });
 
+  const _ScheduleData.empty()
+    : this(
+        sessions: const [],
+        classes: const [],
+        needsAttention: const [],
+        monthCompletedSessions: 0,
+        monthMinutes: 0,
+      );
+  final List<TeacherClassData> classes;
   final List<TeacherOccurrence> sessions;
   final List<TeacherOccurrence> needsAttention;
-  final TeacherOccurrence? nextSession;
   final int monthCompletedSessions;
   final int monthMinutes;
 }
 
-/// Item trong collapsible "Cần xử lý" section
-class _NeedsAttentionItem extends StatelessWidget {
-  const _NeedsAttentionItem({
-    required this.session,
-    required this.onTap,
-  });
-
-  final TeacherOccurrence session;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    final confirmStatus = session.json['hour_confirmation_status']?.toString();
-    final isNeedsInfo = confirmStatus == 'needs_info';
-
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          vertical: AppSpacing.sm,
-        ),
-        child: Row(
-          children: [
-            // Status indicator
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: isNeedsInfo
-                    ? AchievementColors.yellow
-                    : AchievementColors.red,
-                shape: BoxShape.circle,
-              ),
-            ),
-            AppSpacing.hGap12,
-            // Session info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    session.classData.name,
-                    style: tt.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    '${DateFormat('dd/MM').format(session.date)} · ${session.start} - ${session.end}',
-                    style: tt.bodySmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Status label
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
-              ),
-              decoration: BoxDecoration(
-                color: (isNeedsInfo
-                        ? AchievementColors.yellow
-                        : AchievementColors.red)
-                    .withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                isNeedsInfo ? 'Cần bổ sung' : 'Quá giờ',
-                style: tt.labelSmall?.copyWith(
-                  color: isNeedsInfo
-                      ? AchievementColors.yellow
-                      : AchievementColors.red,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Info row trong session preview bottom sheet
 class _PreviewInfoRow extends StatelessWidget {
   const _PreviewInfoRow({
     required this.icon,
@@ -920,25 +1142,17 @@ class _PreviewInfoRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
         children: [
-          Icon(
-            icon,
-            size: 18,
-            color: cs.onSurfaceVariant,
-          ),
+          Icon(icon, size: 18, color: cs.onSurfaceVariant),
           AppSpacing.hGap8,
           Text(
             label,
-            style: tt.bodySmall?.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
+            style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
           ),
           const Spacer(),
           Flexible(
             child: Text(
               value,
-              style: tt.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+              style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               textAlign: TextAlign.end,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

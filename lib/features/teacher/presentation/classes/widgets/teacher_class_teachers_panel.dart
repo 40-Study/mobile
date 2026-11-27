@@ -5,13 +5,19 @@ import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart
 import 'package:study/theme/theme.dart';
 
 class TeacherClassTeachersPanel extends StatelessWidget {
-  const TeacherClassTeachersPanel({super.key, required this.load});
+  const TeacherClassTeachersPanel({
+    super.key,
+    required this.load,
+    this.refreshToken,
+  });
+  final Object? refreshToken;
   final Future<List<Map<String, dynamic>>> Function() load;
   @override
   Widget build(
     BuildContext context,
   ) => TeacherAsyncView<List<Map<String, dynamic>>>(
     load: load,
+    refreshToken: refreshToken,
     builder: (context, rows) => TeacherClassPanel(
       rows.isEmpty
           ? TeacherClassEmpty(

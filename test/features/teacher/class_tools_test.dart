@@ -55,7 +55,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Giáo viên'));
     await tester.pumpAndSettle();
-    expect(find.byTooltip('Thêm thành viên'), findsNothing);
+    expect(find.byTooltip('Thêm giáo viên'), findsNothing);
   });
   testWidgets(
     'explicit teacher assignment capability shows add member action',
@@ -72,7 +72,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Giáo viên'));
       await tester.pumpAndSettle();
-      expect(find.byTooltip('Thêm thành viên'), findsOneWidget);
+      expect(find.byTooltip('Thêm giáo viên'), findsOneWidget);
     },
   );
   testWidgets('archived classes suppress student management writes', (
@@ -90,7 +90,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Học viên'));
     await tester.pumpAndSettle();
-    expect(find.byTooltip('Thêm thành viên'), findsNothing);
+    expect(find.byTooltip('Thêm học viên'), findsNothing);
   });
   test(
     'unpaginated testcase arrays terminate even at exactly page size',

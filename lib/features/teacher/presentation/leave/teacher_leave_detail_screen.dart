@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
+import 'package:study/features/teacher/data/teacher_leave_api.dart';
+import 'package:study/features/teacher/data/teacher_preview_api.dart';
 import 'package:study/features/teacher/presentation/leave/teacher_leave_list_screen.dart';
 import 'package:study/theme/theme.dart';
 
@@ -9,9 +11,11 @@ class TeacherLeaveDetailScreen extends StatefulWidget {
     super.key,
     required this.api,
     required this.request,
+    this.workplaceLabel,
   });
   final TeacherApi api;
   final TeacherLeaveRequest request;
+  final String? workplaceLabel;
 
   @override
   State<TeacherLeaveDetailScreen> createState() =>
@@ -21,12 +25,17 @@ class TeacherLeaveDetailScreen extends StatefulWidget {
 class _TeacherLeaveDetailScreenState extends State<TeacherLeaveDetailScreen> {
   bool _withdrawing = false;
 
+  bool get _readOnly => widget.api is TeacherPreviewApi;
+
   Future<void> _withdraw() async {
+    if (_readOnly || _withdrawing) return;
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Rút đơn xin nghỉ?'),
-        content: const Text('Đơn sẽ bị hủy và bạn sẽ phải tạo đơn mới nếu cần.'),
+        content: const Text(
+          'Đơn sẽ bị hủy và bạn sẽ phải tạo đơn mới nếu cần.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -39,40 +48,24 @@ class _TeacherLeaveDetailScreenState extends State<TeacherLeaveDetailScreen> {
         ],
       ),
     );
-    if (confirm != true || !mounted) return;
+    if (confirm != true || !mounted || _withdrawing) return;
 
     setState(() => _withdrawing = true);
     try {
       await widget.api.post('/me/leave-requests/${widget.request.id}/withdraw');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã rút đơn xin nghỉ')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Đã rút đơn xin nghỉ')));
         Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
         setState(() => _withdrawing = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(teacherErrorMessage(e))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(teacherErrorMessage(e))));
       }
-    }
-  }
-
-  Color _statusColor(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    switch (widget.request.status) {
-      case 'pending':
-        return AchievementColors.yellow;
-      case 'approved':
-        return AchievementColors.green;
-      case 'rejected':
-        return cs.error;
-      case 'withdrawn':
-        return cs.onSurfaceVariant;
-      default:
-        return cs.primary;
     }
   }
 
@@ -87,7 +80,7 @@ class _TeacherLeaveDetailScreenState extends State<TeacherLeaveDetailScreen> {
       case 'withdrawn':
         return 'Đã rút';
       default:
-        return widget.request.status;
+        return 'Chưa rõ trạng thái';
     }
   }
 
@@ -111,29 +104,50 @@ class _TeacherLeaveDetailScreenState extends State<TeacherLeaveDetailScreen> {
     final cs = Theme.of(context).colorScheme;
     final dateFormat = DateFormat('dd/MM/yyyy');
     final request = widget.request;
+    final (background, foreground) = switch (request.status) {
+      'pending' => (cs.tertiaryContainer, cs.onTertiaryContainer),
+      'approved' => (cs.secondaryContainer, cs.onSecondaryContainer),
+      'rejected' => (cs.errorContainer, cs.onErrorContainer),
+      _ => (cs.surfaceContainerLow, cs.onSurfaceVariant),
+    };
 
-    final dateRange = request.fromDate == request.toDate
+    final dateRange = DateUtils.isSameDay(request.fromDate, request.toDate)
         ? dateFormat.format(request.fromDate)
         : '${dateFormat.format(request.fromDate)} - ${dateFormat.format(request.toDate)}';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Chi tiết đơn xin nghỉ')),
+      bottomNavigationBar: !_readOnly && request.status == 'pending'
+          ? SafeArea(
+              top: false,
+              child: Padding(
+                padding: AppSpacing.paddingLg,
+                child: OutlinedButton.icon(
+                  onPressed: _withdrawing ? null : _withdraw,
+                  icon: const Icon(Icons.undo_outlined),
+                  label: Text(_withdrawing ? 'Đang rút đơn…' : 'Rút đơn'),
+                  style: OutlinedButton.styleFrom(foregroundColor: cs.error),
+                ),
+              ),
+            )
+          : null,
       body: ListView(
-        padding: AppSpacing.paddingScreenAll,
+        padding: AppSpacing.paddingLg,
         children: [
+          if (teacherUsingSampleLeave(widget.api)) ...[
+            const Text('Đơn mẫu · Không gửi đến trung tâm'),
+            AppSpacing.vGap12,
+          ],
           // Status card
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _statusColor(context).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: _statusColor(context).withValues(alpha: 0.3),
-              ),
+              color: background,
+              borderRadius: AppRadius.borderMd,
             ),
             child: Row(
               children: [
-                Icon(_statusIcon, color: _statusColor(context), size: 32),
+                Icon(_statusIcon, color: foreground, size: 24),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -141,17 +155,15 @@ class _TeacherLeaveDetailScreenState extends State<TeacherLeaveDetailScreen> {
                     children: [
                       Text(
                         _statusLabel,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: _statusColor(context),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              color: foreground,
                               fontWeight: FontWeight.w700,
                             ),
                       ),
-                      Text(
-                        'Tạo ngày ${DateFormat('dd/MM/yyyy HH:mm').format(request.createdAt)}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
-                      ),
+                      Text(dateRange, style: TextStyle(color: foreground)),
+                      if (widget.workplaceLabel case final label?)
+                        Text(label, style: TextStyle(color: foreground)),
                     ],
                   ),
                 ),
@@ -161,36 +173,21 @@ class _TeacherLeaveDetailScreenState extends State<TeacherLeaveDetailScreen> {
 
           const SizedBox(height: 24),
 
-          // Date range
-          _DetailSection(
-            icon: Icons.calendar_today_outlined,
-            title: 'Ngày xin nghỉ',
-            content: dateRange,
-          ),
-
-          const SizedBox(height: 16),
-
-          // Reason
-          _DetailSection(
-            icon: Icons.notes_outlined,
-            title: 'Lý do',
-            content: request.reason,
-          ),
-
-          // Feedback (if any)
           if (request.feedback != null && request.feedback!.isNotEmpty) ...[
-            const SizedBox(height: 16),
             _DetailSection(
               icon: Icons.feedback_outlined,
               title: 'Phản hồi từ trung tâm',
               content: request.feedback!,
               highlight: true,
             ),
+            AppSpacing.vGap12,
           ],
-
-          const SizedBox(height: 24),
-
-          // Affected sessions
+          _DetailSection(
+            icon: Icons.notes_outlined,
+            title: 'Lý do',
+            content: request.reason,
+          ),
+          AppSpacing.vGap16,
           Text(
             'Buổi học bị ảnh hưởng',
             style: Theme.of(context).textTheme.titleSmall,
@@ -205,9 +202,9 @@ class _TeacherLeaveDetailScreenState extends State<TeacherLeaveDetailScreen> {
               ),
               child: Text(
                 'Không có buổi học nào bị ảnh hưởng',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
               ),
             )
           else
@@ -221,7 +218,7 @@ class _TeacherLeaveDetailScreenState extends State<TeacherLeaveDetailScreen> {
                       leading: const Icon(Icons.school_outlined),
                       title: Text(request.affectedSessions[i].className),
                       subtitle: Text(
-                        '${request.affectedSessions[i].date} · ${request.affectedSessions[i].time}',
+                        '${_formatSessionDate(request.affectedSessions[i].date, dateFormat)} · ${request.affectedSessions[i].time}',
                       ),
                     ),
                   ],
@@ -229,27 +226,21 @@ class _TeacherLeaveDetailScreenState extends State<TeacherLeaveDetailScreen> {
               ),
             ),
 
-          const SizedBox(height: 32),
-
-          // Withdraw button (only for pending)
-          if (request.status == 'pending')
-            OutlinedButton.icon(
-              onPressed: _withdrawing ? null : _withdraw,
-              icon: _withdrawing
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.undo_outlined),
-              label: const Text('Rút đơn'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: cs.error,
-              ),
-            ),
+          AppSpacing.vGap16,
+          Text(
+            'Tạo ngày ${DateFormat('dd/MM/yyyy HH:mm').format(request.createdAt)}',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+          ),
         ],
       ),
     );
+  }
+
+  String _formatSessionDate(String raw, DateFormat format) {
+    final date = DateTime.tryParse(raw.split('T').first);
+    return date == null ? raw : format.format(date);
   }
 }
 
@@ -279,7 +270,11 @@ class _DetailSection extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 20, color: highlight ? cs.primary : cs.onSurfaceVariant),
+          Icon(
+            icon,
+            size: 20,
+            color: highlight ? cs.primary : cs.onSurfaceVariant,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -287,15 +282,12 @@ class _DetailSection extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  content,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
+                Text(content, style: Theme.of(context).textTheme.bodyMedium),
               ],
             ),
           ),

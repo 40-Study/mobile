@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
-import 'package:study/features/teacher/data/teacher_core.dart';
+import 'package:study/features/teacher/presentation/report/teacher_report_data.dart';
 import 'package:study/features/teacher/presentation/report/teacher_report_list_screen.dart';
 import 'package:study/features/teacher/presentation/widgets/teacher_widgets.dart';
 import 'package:study/theme/theme.dart';
 
-/// Báo cáo giờ dạy theo spec mốc 1a (T10).
-/// Hiển thị tổng buổi hoàn tất, giờ dạy, nhóm theo trạng thái xác nhận.
 class TeacherReportScreen extends StatefulWidget {
   const TeacherReportScreen({
     super.key,
+    this.initialMonth,
+    this.monthRequestRevision = 0,
+    this.refreshRevision = 0,
     required this.api,
     required this.organizationId,
     required this.workplaceLabel,
   });
 
+  final DateTime? initialMonth;
+  final int monthRequestRevision;
+  final int refreshRevision;
   final TeacherApi api;
   final String? organizationId;
   final String workplaceLabel;
@@ -23,879 +27,479 @@ class TeacherReportScreen extends StatefulWidget {
   State<TeacherReportScreen> createState() => _TeacherReportScreenState();
 }
 
-class _TeacherReportScreenState extends State<TeacherReportScreen> {
+class _TeacherReportScreenState extends State<TeacherReportScreen>
+    with AutomaticKeepAliveClientMixin {
   late DateTime _month;
   late Future<TeacherReportData> _future;
   String? _classId;
-  final _classNames = <String, String>{};
-  bool _statusSectionExpanded = true; // Cho collapsible "Chi tiết theo trạng thái"
+  String? _className;
+
+  @override
+  bool get wantKeepAlive => true;
+
+  DateTime get _currentMonth => _monthStart(DateTime.now());
+
+  DateTime _monthStart(DateTime date) => DateTime(date.year, date.month);
 
   @override
   void initState() {
     super.initState();
-    final now = DateTime.now();
-    _month = DateTime(now.year, now.month);
+    _month = _monthStart(widget.initialMonth ?? DateTime.now());
     _future = _load();
   }
 
-  Future<TeacherReportData> _load() async {
-    final from = _month;
-    final to = DateTime(_month.year, _month.month + 1, 0);
-
-    // Load timetable để lấy buổi hoàn tất
-    final classes = await teacherAssignedClasses(widget.api);
-    final inScope = classes
-        .where((c) => c.inScope(widget.organizationId))
-        .toList();
-
-    // Load all sessions cho tháng này
-    final raw = teacherPayload(
-      await widget.api.get(
-        '/me/timetable',
-        query: {
-          'sessions_from': teacherDate(from),
-          'sessions_to': teacherDate(to),
-        },
-      ),
-    );
-
-    final entries = teacherList(raw, keys: const ['entries'])
-        .map(teacherMap)
-        .toList();
-
-    // Filter chỉ buổi có session_id và trong phạm vi nơi làm việc
-    final classIds = inScope.map((c) => c.id).toSet();
-    final sessions = entries.where((e) {
-      final classId = e['class_id']?.toString();
-      final sessionId = e['session_id'];
-      final date = DateTime.tryParse('${e['date']}');
-      if (classId == null || sessionId == null || date == null) return false;
-      if (!classIds.contains(classId)) return false;
-      if (_classId != null && classId != _classId) return false;
-      return !date.isBefore(from) && !date.isAfter(to);
-    }).toList();
-
-    // Clear và rebuild class names để tránh stale data
-    _classNames.clear();
-    for (final c in inScope) {
-      _classNames[c.id] = c.name;
+  @override
+  void didUpdateWidget(TeacherReportScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final scopeChanged =
+        oldWidget.organizationId != widget.organizationId ||
+        oldWidget.api != widget.api;
+    final requested =
+        oldWidget.monthRequestRevision != widget.monthRequestRevision;
+    final refreshed = oldWidget.refreshRevision != widget.refreshRevision;
+    if (scopeChanged) {
+      _month = _currentMonth;
+      _classId = _className = null;
+    } else if (requested) {
+      _month = _monthStart(widget.initialMonth ?? DateTime.now());
     }
-
-    // Calculate stats
-    int totalSessions = 0;
-    int totalMinutes = 0;
-    int confirmedMinutes = 0;
-    int pendingMinutes = 0;
-    int needsInfoMinutes = 0;
-    final confirmedSessions = <Map<String, dynamic>>[];
-    final pendingSessions = <Map<String, dynamic>>[];
-    final needsInfoSessions = <Map<String, dynamic>>[];
-
-    // Stats theo vai trò
-    int mainSessions = 0;
-    int substituteSessions = 0;
-    int assistantSessions = 0;
-
-    for (final session in sessions) {
-      if (session['status'] != 'completed') continue;
-
-      totalSessions++;
-      final duration = _durationMinutes(session);
-      totalMinutes += duration;
-
-      // Vai trò: main, substitute, assistant
-      final role = session['teacher_role']?.toString();
-      switch (role) {
-        case 'main':
-          mainSessions++;
-        case 'substitute':
-          substituteSessions++;
-        case 'assistant':
-          assistantSessions++;
-      }
-
-      // Trạng thái xác nhận giờ: confirmed, pending, needs_info
-      final confirmStatus = session['hour_confirmation_status']?.toString() ?? 'pending';
-
-      switch (confirmStatus) {
-        case 'confirmed':
-          confirmedMinutes += duration;
-          confirmedSessions.add(session);
-        case 'needs_info':
-          needsInfoMinutes += duration;
-          needsInfoSessions.add(session);
-        default: // pending hoặc không có
-          pendingMinutes += duration;
-          pendingSessions.add(session);
-      }
-    }
-
-    return TeacherReportData(
-      totalSessions: totalSessions,
-      totalMinutes: totalMinutes,
-      confirmedMinutes: confirmedMinutes,
-      pendingMinutes: pendingMinutes,
-      needsInfoMinutes: needsInfoMinutes,
-      confirmedSessions: confirmedSessions,
-      pendingSessions: pendingSessions,
-      needsInfoSessions: needsInfoSessions,
-      classes: inScope,
-      mainSessions: mainSessions,
-      substituteSessions: substituteSessions,
-      assistantSessions: assistantSessions,
-    );
+    if (scopeChanged || requested || refreshed) _future = _load();
   }
 
-  int _durationMinutes(Map<String, dynamic> session) {
-    final start = session['start_time']?.toString() ?? '00:00';
-    final end = session['end_time']?.toString() ?? '00:00';
-    final startParts = start.split(':');
-    final endParts = end.split(':');
-    final startMin = (int.tryParse(startParts.first) ?? 0) * 60 +
-        (int.tryParse(startParts.length > 1 ? startParts[1] : '0') ?? 0);
-    final endMin = (int.tryParse(endParts.first) ?? 0) * 60 +
-        (int.tryParse(endParts.length > 1 ? endParts[1] : '0') ?? 0);
-    return endMin > startMin ? endMin - startMin : 0;
+  Future<TeacherReportData> _load() =>
+      TeacherReportData.load(widget.api, widget.organizationId, _month);
+
+  void _selectMonth(DateTime month) {
+    final next = _monthStart(month);
+    if (next == _month || next.year < 1 || next.year > 9999) return;
+    setState(() {
+      _month = next;
+      _future = _load();
+    });
   }
 
   void _reload() => setState(() => _future = _load());
 
-  void _changeMonth(int delta) => setState(() {
-    _month = DateTime(_month.year, _month.month + delta);
-    _future = _load();
-  });
+  Future<void> _refresh() async {
+    _reload();
+    try {
+      await _future;
+    } catch (_) {
+      // The report body displays the error and retry action.
+    }
+  }
 
-  Future<void> _filter() async {
+  Future<void> _pickMonth() async {
+    final month = await showDialog<DateTime>(
+      context: context,
+      builder: (_) => _ReportMonthPicker(initialMonth: _month),
+    );
+    if (mounted && month != null) _selectMonth(month);
+  }
+
+  void _clearClass() => setState(() => _classId = _className = null);
+
+  String _classLabel(TeacherReportData? data) =>
+      data?.classes.where((row) => row.id == _classId).firstOrNull?.name ??
+      _className ??
+      'Tất cả lớp';
+
+  Future<void> _filter(TeacherReportData data) async {
+    final scope = widget.organizationId;
     final selection = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
-      isScrollControlled: true,
       builder: (context) => SafeArea(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.sizeOf(context).height * .7,
-          ),
-          child: ListView(
-            shrinkWrap: true,
-            children: [
-              Padding(
-                padding: AppSpacing.paddingScreenAll,
-                child: Text(
-                  'Lọc theo lớp',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ),
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            const ListTile(title: Text('Lọc theo lớp')),
+            ListTile(
+              title: const Text('Tất cả lớp'),
+              selected: _classId == null,
+              onTap: () => Navigator.pop(context, ''),
+            ),
+            for (final row in data.classes)
               ListTile(
-                title: const Text('Tất cả lớp'),
-                selected: _classId == null,
-                trailing: _classId == null ? const Icon(Icons.check) : null,
-                onTap: () => Navigator.pop(context, ''),
+                title: Text(row.name),
+                selected: _classId == row.id,
+                onTap: () => Navigator.pop(context, row.id),
               ),
-              for (final entry in _classNames.entries)
-                ListTile(
-                  title: Text(entry.value),
-                  selected: _classId == entry.key,
-                  trailing: _classId == entry.key
-                      ? const Icon(Icons.check)
-                      : null,
-                  onTap: () => Navigator.pop(context, entry.key),
-                ),
-            ],
-          ),
+          ],
         ),
       ),
     );
-    if (selection != null && mounted) {
+    if (!mounted || selection == null || scope != widget.organizationId) return;
+    if (selection.isEmpty) {
+      _clearClass();
+    } else {
       setState(() {
-        _classId = selection.isEmpty ? null : selection;
-        _future = _load();
+        _classId = selection;
+        _className = data.classes.firstWhere((row) => row.id == selection).name;
       });
     }
   }
 
-  void _openGroup(
-    BuildContext context,
-    String title,
-    List<Map<String, dynamic>> sessions,
-    List<TeacherClassData> classes,
-  ) {
+  void _openGroup(TeacherReportData data, TeacherReportStatus? status) {
+    final month = _month;
+    final api = widget.api;
+    final organizationId = widget.organizationId;
     teacherPush<void>(
       context,
       TeacherReportListScreen(
-        api: widget.api,
-        title: title,
-        sessions: sessions,
-        classes: classes,
+        api: api,
+        month: month,
+        title: status?.label ?? 'Tất cả buổi đã hoàn tất',
+        data: data,
+        classId: _classId,
+        classLabel: _classLabel(data),
         workplaceLabel: widget.workplaceLabel,
+        status: status,
+        reload: () async {
+          final previous = _future;
+          final next = await TeacherReportData.load(api, organizationId, month);
+          if (mounted &&
+              widget.api == api &&
+              widget.organizationId == organizationId &&
+              _month == month &&
+              _future == previous) {
+            setState(() => _future = Future.value(next));
+          }
+          return next;
+        },
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final tt = Theme.of(context).textTheme;
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.screenPadding,
-            AppSpacing.md,
-            AppSpacing.screenPadding,
-            0,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+    super.build(context);
+    final before = DateTime(_month.year, _month.month - 1);
+    final after = DateTime(_month.year, _month.month + 1);
+    return FutureBuilder<TeacherReportData>(
+      key: ValueKey((widget.api, widget.organizationId, _month)),
+      future: _future,
+      builder: (context, snapshot) {
+        final loading = snapshot.connectionState != ConnectionState.done;
+        final data = snapshot.data;
+        return Column(
+          children: [
+            Padding(
+              padding: AppSpacing.paddingHorizontalLg,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                    onPressed: () => _changeMonth(-1),
-                    icon: const Icon(Icons.chevron_left),
-                    tooltip: 'Tháng trước',
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: before.year < 1
+                            ? null
+                            : () => _selectMonth(before),
+                        tooltip: 'Tháng trước',
+                        icon: const Icon(Icons.chevron_left),
+                      ),
+                      Expanded(
+                        child: TextButton.icon(
+                          onPressed: _pickMonth,
+                          icon: const Icon(Icons.calendar_month_outlined),
+                          label: Text(
+                            teacherReportMonthLabel(_month),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: after.year > 9999
+                            ? null
+                            : () => _selectMonth(after),
+                        tooltip: 'Tháng sau',
+                        icon: const Icon(Icons.chevron_right),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: Text(
-                      'Tháng ${_month.month}/${_month.year}',
-                      textAlign: TextAlign.center,
-                      style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => _changeMonth(1),
-                    icon: const Icon(Icons.chevron_right),
-                    tooltip: 'Tháng sau',
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    children: [
+                      OutlinedButton.icon(
+                        onPressed: data == null ? null : () => _filter(data),
+                        icon: const Icon(Icons.filter_list),
+                        label: Text(
+                          _classLabel(data),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (_month != _currentMonth)
+                        TextButton(
+                          onPressed: () => _selectMonth(_currentMonth),
+                          child: const Text('Về tháng hiện tại'),
+                        ),
+                    ],
                   ),
                 ],
               ),
-              AppSpacing.vGap8,
-              OutlinedButton.icon(
-                onPressed: _filter,
-                icon: const Icon(Icons.filter_list),
-                label: Text(
-                  _classId == null
-                      ? 'Tất cả lớp'
-                      : _classNames[_classId] ?? 'Lớp đã chọn',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+            ),
+            SizedBox(
+              height: 2,
+              child: loading && data != null
+                  ? const LinearProgressIndicator()
+                  : null,
+            ),
+            Expanded(
+              child: data != null
+                  ? _reportBody(data)
+                  : loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : TeacherErrorView(
+                      error:
+                          snapshot.error ?? StateError('Chưa tải được báo cáo'),
+                      onRetry: _reload,
+                    ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _reportBody(TeacherReportData data) {
+    final rows = data.group(_classId, null);
+    final totalMinutes = teacherReportTotalMinutes(rows);
+    final groups = <TeacherReportStatus, List<TeacherReportSession>>{
+      for (final status in TeacherReportStatus.values)
+        status: data.group(_classId, status),
+    };
+    final unknown = groups[TeacherReportStatus.unknown]!.length;
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: AppSpacing.paddingLg,
+        children: [
+          if (rows.isEmpty)
+            TeacherEmptyState(
+              icon: Icons.bar_chart_outlined,
+              title: _classId == null
+                  ? 'Không có buổi hoàn tất trong tháng ${_month.month}/${_month.year}'
+                  : 'Lớp đã chọn chưa có buổi hoàn tất',
+              actionLabel: _classId == null ? null : 'Xóa bộ lọc',
+              onAction: _classId == null ? null : _clearClass,
+            )
+          else ...[
+            Card(
+              margin: EdgeInsets.zero,
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: AppRadius.borderLg,
+                side: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant,
                 ),
               ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: FutureBuilder<TeacherReportData>(
-            future: _future,
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return TeacherErrorView(error: snapshot.error!, onRetry: _reload);
-              }
-              if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              final data = snapshot.data!;
-              final hasReviewProcess = data.confirmedMinutes > 0 ||
-                  data.needsInfoMinutes > 0 ||
-                  data.pendingSessions.isNotEmpty;
-
-              return RefreshIndicator(
-                onRefresh: () async {
-                  _reload();
-                  await _future;
-                },
-                child: ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: AppSpacing.paddingScreenAll,
+              child: Padding(
+                padding: AppSpacing.paddingLg,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Summary card
-                    _SummaryCard(
-                      totalSessions: data.totalSessions,
-                      totalMinutes: data.totalMinutes,
-                      onTap: data.totalSessions > 0
-                          ? () => _openGroup(
-                              context,
-                              'Tất cả buổi hoàn tất',
-                              [
-                                ...data.confirmedSessions,
-                                ...data.pendingSessions,
-                                ...data.needsInfoSessions,
-                              ],
-                              data.classes,
-                            )
-                          : null,
+                    Text(
+                      'Buổi đã hoàn tất',
+                      style: Theme.of(context).textTheme.titleMedium,
                     ),
-
-                    // Breakdown theo vai trò (nếu có nhiều vai trò)
-                    if (data.hasRoleBreakdown) ...[
-                      AppSpacing.vGap12,
-                      _RoleBreakdownRow(
-                        mainSessions: data.mainSessions,
-                        substituteSessions: data.substituteSessions,
-                        assistantSessions: data.assistantSessions,
-                      ),
-                    ],
-
-                    if (data.totalSessions == 0) ...[
-                      AppSpacing.vGap24,
-                      _EmptyState(month: _month, classId: _classId),
-                    ] else if (hasReviewProcess) ...[
-                      AppSpacing.vGap24,
-                      // Collapsible section cho chi tiết theo trạng thái
-                      TeacherCollapsibleSection(
-                        title: 'Chi tiết theo trạng thái',
-                        icon: Icons.pie_chart_outline,
-                        initiallyExpanded: _statusSectionExpanded,
-                        onExpansionChanged: (expanded) {
-                          setState(() => _statusSectionExpanded = expanded);
-                        },
-                        child: Column(
+                    AppSpacing.vGap12,
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final count = _metric(
+                          context,
+                          'Số buổi',
+                          '${rows.length}',
+                        );
+                        final duration = _metric(
+                          context,
+                          'Tổng thời lượng',
+                          totalMinutes == null
+                              ? 'Chưa có dữ liệu'
+                              : teacherReportDuration(totalMinutes),
+                        );
+                        if (constraints.maxWidth < 260 ||
+                            MediaQuery.textScalerOf(context).scale(14) > 20) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [count, AppSpacing.vGap8, duration],
+                          );
+                        }
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            AppSpacing.vGap8,
-                            if (data.confirmedSessions.isNotEmpty)
-                              _StatusCard(
-                                icon: Icons.check_circle_outline,
-                                iconColor: AchievementColors.green,
-                                title: 'Đã xác nhận',
-                                sessions: data.confirmedSessions.length,
-                                minutes: data.confirmedMinutes,
-                                onTap: () => _openGroup(
-                                  context,
-                                  'Giờ đã xác nhận',
-                                  data.confirmedSessions,
-                                  data.classes,
-                                ),
-                              ),
-                            if (data.pendingSessions.isNotEmpty)
-                              _StatusCard(
-                                icon: Icons.hourglass_empty,
-                                iconColor: AchievementColors.yellow,
-                                title: 'Chờ xác nhận',
-                                sessions: data.pendingSessions.length,
-                                minutes: data.pendingMinutes,
-                                onTap: () => _openGroup(
-                                  context,
-                                  'Giờ chờ xác nhận',
-                                  data.pendingSessions,
-                                  data.classes,
-                                ),
-                              ),
-                            if (data.needsInfoSessions.isNotEmpty)
-                              _StatusCard(
-                                icon: Icons.info_outline,
-                                iconColor: AchievementColors.red,
-                                title: 'Cần bổ sung',
-                                sessions: data.needsInfoSessions.length,
-                                minutes: data.needsInfoMinutes,
-                                onTap: () => _openGroup(
-                                  context,
-                                  'Giờ cần bổ sung',
-                                  data.needsInfoSessions,
-                                  data.classes,
-                                ),
-                              ),
+                            Expanded(child: count),
+                            AppSpacing.hGap12,
+                            Expanded(child: duration),
                           ],
+                        );
+                      },
+                    ),
+                    AppSpacing.vGap8,
+                    if (totalMinutes != null &&
+                        rows.any((row) => row.minutes == null))
+                      Text(
+                        'Tổng chỉ gồm các buổi có thời lượng.',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    if (unknown == rows.length)
+                      Text(
+                        'Chưa có thông tin xác nhận giờ.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
-                    ],
-                    AppSpacing.vGap24,
-                    // Trung tâm đã rời - chỉ hiện khi có nhiều trung tâm
-                    OutlinedButton.icon(
-                      onPressed: () => _showLeftOrganizations(context),
-                      icon: const Icon(Icons.history),
-                      label: const Text('Trung tâm đã rời'),
+                    TextButton.icon(
+                      onPressed: () => _openGroup(data, null),
+                      icon: const Icon(Icons.arrow_forward),
+                      label: const Text('Xem danh sách'),
                     ),
                   ],
                 ),
-              );
-            },
+              ),
+            ),
+            if (unknown != rows.length)
+              TeacherCollapsibleSection(
+                title: 'Chi tiết theo trạng thái',
+                icon: Icons.pie_chart_outline,
+                child: Column(
+                  children: [
+                    for (final entry in groups.entries)
+                      if (entry.value.isNotEmpty)
+                        ListTile(
+                          title: Text(entry.key.label),
+                          subtitle: Text(
+                            '${entry.value.length} buổi · ${teacherReportDuration(teacherReportTotalMinutes(entry.value))}',
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => _openGroup(data, entry.key),
+                        ),
+                  ],
+                ),
+              ),
+            _roleBreakdown(rows),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _metric(BuildContext context, String label, String value) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          value,
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        Text(
+          label,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
       ],
     );
   }
 
-  void _showLeftOrganizations(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: AppSpacing.paddingScreenAll,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Trung tâm đã rời',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              AppSpacing.vGap8,
-              Text(
-                'Lịch sử giờ dạy tại các trung tâm bạn đã rời sẽ hiển thị ở đây. '
-                'Dữ liệu chỉ bao gồm ngày, tên lớp, số phút và trạng thái xác nhận.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              AppSpacing.vGap16,
-              const Center(
-                child: Text('Chưa có trung tâm đã rời'),
-              ),
-            ],
-          ),
-        ),
-      ),
+  Widget _roleBreakdown(List<TeacherReportSession> rows) {
+    const labels = {
+      'main': 'Giáo viên chính',
+      'substitute': 'Dạy thay',
+      'assistant': 'Trợ giảng',
+    };
+    final counts = <String, int>{};
+    for (final row in rows) {
+      final label =
+          labels[row.occurrence.json['teacher_role']] ?? 'Chưa rõ vai trò';
+      counts.update(label, (count) => count + 1, ifAbsent: () => 1);
+    }
+    if (counts.length <= 1) return const SizedBox.shrink();
+    return Wrap(
+      spacing: AppSpacing.sm,
+      children: [
+        for (final entry in counts.entries)
+          Chip(label: Text('${entry.key} · ${entry.value} buổi')),
+      ],
     );
   }
 }
 
-class TeacherReportData {
-  const TeacherReportData({
-    required this.totalSessions,
-    required this.totalMinutes,
-    required this.confirmedMinutes,
-    required this.pendingMinutes,
-    required this.needsInfoMinutes,
-    required this.confirmedSessions,
-    required this.pendingSessions,
-    required this.needsInfoSessions,
-    required this.classes,
-    this.mainSessions = 0,
-    this.substituteSessions = 0,
-    this.assistantSessions = 0,
-  });
-
-  final int totalSessions;
-  final int totalMinutes;
-  final int confirmedMinutes;
-  final int pendingMinutes;
-  final int needsInfoMinutes;
-  final List<Map<String, dynamic>> confirmedSessions;
-  final List<Map<String, dynamic>> pendingSessions;
-  final List<Map<String, dynamic>> needsInfoSessions;
-  final List<TeacherClassData> classes;
-
-  /// Stats theo vai trò
-  final int mainSessions;
-  final int substituteSessions;
-  final int assistantSessions;
-
-  /// Có hiển thị breakdown theo vai trò không (khi có nhiều hơn một vai trò)
-  bool get hasRoleBreakdown =>
-      (mainSessions > 0 ? 1 : 0) +
-          (substituteSessions > 0 ? 1 : 0) +
-          (assistantSessions > 0 ? 1 : 0) >
-      1;
-}
-
-class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({
-    required this.totalSessions,
-    required this.totalMinutes,
-    this.onTap,
-  });
-
-  final int totalSessions;
-  final int totalMinutes;
-  final VoidCallback? onTap;
+class _ReportMonthPicker extends StatefulWidget {
+  const _ReportMonthPicker({required this.initialMonth});
+  final DateTime initialMonth;
 
   @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-    final hours = totalMinutes ~/ 60;
-    final mins = totalMinutes % 60;
+  State<_ReportMonthPicker> createState() => _ReportMonthPickerState();
+}
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            cs.primary,
-            cs.primary.withValues(alpha: 0.85),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: AppRadius.borderLg,
-        boxShadow: AppShadows.layeredCard,
-      ),
-      child: Stack(
+class _ReportMonthPickerState extends State<_ReportMonthPicker> {
+  final _form = GlobalKey<FormState>();
+  late final _year = TextEditingController(text: '${widget.initialMonth.year}');
+  late int _month = widget.initialMonth.month;
+
+  @override
+  void dispose() {
+    _year.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: const Text('Chọn tháng báo cáo'),
+    scrollable: true,
+    content: Form(
+      key: _form,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Decorative circles
-          Positioned(
-            top: -30,
-            right: -30,
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
-              ),
-            ),
+          TextFormField(
+            controller: _year,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(labelText: 'Năm'),
+            validator: (value) {
+              final year = int.tryParse(value?.trim() ?? '');
+              return year == null || year < 1 || year > 9999
+                  ? 'Nhập năm hợp lệ.'
+                  : null;
+            },
           ),
-          Positioned(
-            bottom: -20,
-            left: -20,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
-              ),
-            ),
-          ),
-          Material(
-            color: Colors.transparent,
-            borderRadius: AppRadius.borderLg,
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onTap,
-              child: Padding(
-                padding: AppSpacing.paddingXl,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: cs.onPrimary.withValues(alpha: 0.15),
-                            borderRadius: AppRadius.borderSm,
-                          ),
-                          child: Icon(
-                            Icons.school_outlined,
-                            color: cs.onPrimary,
-                            size: 20,
-                          ),
-                        ),
-                        AppSpacing.hGap12,
-                        Text(
-                          'Tổng kết tháng',
-                          style: tt.titleSmall?.copyWith(
-                            color: cs.onPrimary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const Spacer(),
-                        if (onTap != null)
-                          Icon(
-                            Icons.arrow_forward,
-                            color: cs.onPrimary,
-                            size: 20,
-                          ),
-                      ],
-                    ),
-                    AppSpacing.vGap24,
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '$totalSessions',
-                                style: tt.displaySmall?.copyWith(
-                                  color: cs.onPrimary,
-                                  fontWeight: FontWeight.w700,
-                                  height: 1,
-                                ),
-                              ),
-                              AppSpacing.vGap4,
-                              Text(
-                                'buổi hoàn tất',
-                                style: tt.labelMedium?.copyWith(
-                                  color: cs.onPrimary.withValues(alpha: 0.85),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          width: 1,
-                          height: 48,
-                          color: cs.onPrimary.withValues(alpha: 0.2),
-                        ),
-                        AppSpacing.hGap16,
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.baseline,
-                                textBaseline: TextBaseline.alphabetic,
-                                children: [
-                                  Text(
-                                    '$hours',
-                                    style: tt.displaySmall?.copyWith(
-                                      color: cs.onPrimary,
-                                      fontWeight: FontWeight.w700,
-                                      height: 1,
-                                    ),
-                                  ),
-                                  Text(
-                                    'h',
-                                    style: tt.titleLarge?.copyWith(
-                                      color: cs.onPrimary.withValues(alpha: 0.85),
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  if (mins > 0) ...[
-                                    AppSpacing.hGap4,
-                                    Text(
-                                      '$mins',
-                                      style: tt.headlineSmall?.copyWith(
-                                        color: cs.onPrimary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    Text(
-                                      'p',
-                                      style: tt.titleMedium?.copyWith(
-                                        color: cs.onPrimary.withValues(alpha: 0.85),
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              AppSpacing.vGap4,
-                              Text(
-                                'giờ dạy',
-                                style: tt.labelMedium?.copyWith(
-                                  color: cs.onPrimary.withValues(alpha: 0.85),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          AppSpacing.vGap12,
+          DropdownButtonFormField<int>(
+            initialValue: _month,
+            decoration: const InputDecoration(labelText: 'Tháng'),
+            items: [
+              for (var i = 1; i <= 12; i++)
+                DropdownMenuItem(value: i, child: Text('Tháng $i')),
+            ],
+            onChanged: (value) {
+              if (value != null) setState(() => _month = value);
+            },
           ),
         ],
       ),
-    );
-  }
-}
-
-class _StatusCard extends StatelessWidget {
-  const _StatusCard({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.sessions,
-    required this.minutes,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final int sessions;
-  final int minutes;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-    final hours = minutes ~/ 60;
-    final mins = minutes % 60;
-    final hoursText = hours > 0
-        ? '$hours giờ${mins > 0 ? ' $mins phút' : ''}'
-        : '$mins phút';
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        curve: Curves.easeOutCubic,
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerLowest,
-          borderRadius: AppRadius.borderMd,
-          border: Border.all(
-            color: cs.outlineVariant.withValues(alpha: 0.5),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF010120).withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: AppRadius.borderMd,
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onTap,
-            child: Padding(
-              padding: AppSpacing.paddingLg,
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: iconColor.withValues(alpha: 0.12),
-                      borderRadius: AppRadius.borderSm,
-                    ),
-                    child: Icon(icon, color: iconColor, size: 22),
-                  ),
-                  AppSpacing.hGap12,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: tt.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Text(
-                              '$sessions',
-                              style: tt.labelLarge?.copyWith(
-                                color: iconColor,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              ' buổi · ',
-                              style: tt.bodySmall?.copyWith(
-                                color: cs.onSurfaceVariant,
-                              ),
-                            ),
-                            Text(
-                              hoursText,
-                              style: tt.bodySmall?.copyWith(
-                                color: cs.onSurfaceVariant,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, color: cs.onSurfaceVariant, size: 20),
-                ],
-              ),
-            ),
-          ),
-        ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Hủy'),
       ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.month, this.classId});
-
-  final DateTime month;
-  final String? classId;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Center(
-      child: Padding(
-        padding: AppSpacing.paddingXl,
-        child: Column(
-          children: [
-            Icon(
-              Icons.bar_chart_outlined,
-              size: 48,
-              color: cs.onSurfaceVariant.withValues(alpha: 0.5),
-            ),
-            AppSpacing.vGap12,
-            Text(
-              classId != null
-                  ? 'Không có buổi hoàn tất cho lớp này trong tháng ${month.month}/${month.year}'
-                  : 'Không có buổi hoàn tất trong tháng ${month.month}/${month.year}',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-            if (classId != null) ...[
-              AppSpacing.vGap8,
-              Text(
-                'Thử xóa bộ lọc hoặc chọn tháng khác.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ],
-        ),
+      FilledButton(
+        onPressed: () {
+          if (_form.currentState!.validate()) {
+            Navigator.pop(
+              context,
+              DateTime(int.parse(_year.text.trim()), _month),
+            );
+          }
+        },
+        child: const Text('Xem báo cáo'),
       ),
-    );
-  }
-}
-
-/// Hiển thị breakdown theo vai trò
-class _RoleBreakdownRow extends StatelessWidget {
-  const _RoleBreakdownRow({
-    required this.mainSessions,
-    required this.substituteSessions,
-    required this.assistantSessions,
-  });
-
-  final int mainSessions;
-  final int substituteSessions;
-  final int assistantSessions;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final parts = <String>[];
-
-    if (mainSessions > 0) parts.add('$mainSessions buổi Chính');
-    if (substituteSessions > 0) parts.add('$substituteSessions buổi Dạy thay');
-    if (assistantSessions > 0) parts.add('$assistantSessions buổi Trợ giảng');
-
-    if (parts.isEmpty) return const SizedBox.shrink();
-
-    return Container(
-      padding: AppSpacing.paddingMd,
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        borderRadius: AppRadius.borderMd,
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.person_outline,
-            size: 18,
-            color: cs.onSurfaceVariant,
-          ),
-          AppSpacing.hGap8,
-          Expanded(
-            child: Text(
-              parts.join(' · '),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+    ],
+  );
 }

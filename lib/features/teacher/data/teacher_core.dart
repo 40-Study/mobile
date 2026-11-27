@@ -140,30 +140,30 @@ Future<List<TeacherOccurrence>> teacherLoadTimetable(
   TeacherApi api,
   String? organizationId,
   DateTime from,
-  DateTime to,
-) async {
-  final classes = await teacherAssignedClasses(api);
+  DateTime to, {
+  List<TeacherClassData>? assignedClasses,
+}) async {
+  final classes = assignedClasses ?? await teacherAssignedClasses(api);
+  final scopedClasses = classes
+      .where((c) => c.inScope(organizationId))
+      .toList();
+  if (scopedClasses.isEmpty) return [];
   final raw = teacherPayload(
     await api.get(
       '/me/timetable',
       query: {
         'sessions_from': teacherDate(from),
         'sessions_to': teacherDate(to),
+        if (organizationId == null)
+          'scope': 'personal'
+        else
+          'organization_id': organizationId,
       },
     ),
   );
-  final ids = {for (final c in classes) c.id};
-  if (teacherList(
-    raw,
-    keys: const ['entries'],
-  ).map(teacherMap).any((row) => !ids.contains(row['class_id']))) {
-    throw StateError(
-      'Chưa xác định được phạm vi của lịch dạy. Vui lòng tải lại.',
-    );
-  }
   return teacherOccurrences(
     timetable: raw,
-    classes: classes.where((c) => c.inScope(organizationId)).toList(),
+    classes: scopedClasses,
     from: from,
     to: to,
   );

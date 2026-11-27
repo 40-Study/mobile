@@ -2,18 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:study/features/teacher/data/teacher_api.dart';
 
-/// Temporary dev preview, enabled by default while the Teacher UI is reviewed.
+/// Explicit opt-in for reviewing the full Teacher UI without a server.
 class TeacherPreviewApi extends TeacherApi {
   TeacherPreviewApi()
     : super(dio: Dio(BaseOptions(baseUrl: 'https://preview.invalid')));
 
   static const enabled =
-      !kReleaseMode &&
-      bool.fromEnvironment(
-        'TEACHER_UI_PREVIEW',
-        defaultValue:
-            String.fromEnvironment('ENV', defaultValue: 'dev') == 'dev',
-      );
+      !kReleaseMode && bool.fromEnvironment('TEACHER_UI_PREVIEW');
   static const _writeError = FormatException(
     'Dữ liệu mẫu chỉ dùng để xem giao diện, không lưu thay đổi.',
   );
@@ -111,64 +106,81 @@ class TeacherPreviewApi extends TeacherApi {
         'student_id': row.$1,
         'user_id': row.$1,
         'full_name': row.$2,
-        'user_name': row.$2,
+        'user_name': row.$1,
         'student_name': row.$2,
+        'status': 'active',
         'email': '${row.$1}@example.invalid',
         'enrolled_at': _timestamp,
       },
+  ];
+
+  static const _gradeColumns = <Map<String, dynamic>>[
+    {
+      'id': 'practice',
+      'name': 'Thực hành',
+      'grade_type': 'assignment',
+      'max_score': 10,
+      'weight': 1,
+    },
   ];
 
   // V3: Notifications mock data
   List<Map<String, dynamic>> get _notifications {
     final now = DateTime.now();
     final today = now.toIso8601String().substring(0, 10);
-    final yesterday = now.subtract(const Duration(days: 1)).toIso8601String().substring(0, 10);
-    final twoDaysAgo = now.subtract(const Duration(days: 2)).toIso8601String().substring(0, 10);
+    final yesterday = now
+        .subtract(const Duration(days: 1))
+        .toIso8601String()
+        .substring(0, 10);
+    final twoDaysAgo = now
+        .subtract(const Duration(days: 2))
+        .toIso8601String()
+        .substring(0, 10);
     return [
       {
         'id': 'notif-1',
-        'type': 'upcoming_session',
+        'notification_type': 'upcoming_session',
         'title': 'Buổi học sắp bắt đầu',
-        'body': 'Python cơ bản · PY26A bắt đầu lúc 09:00',
+        'content': 'Python cơ bản · PY26A bắt đầu lúc 09:00',
         'created_at': '${today}T08:45:00+07:00',
         'is_read': false,
         'payload': {'session_id': 'session-python', 'class_id': 'python'},
       },
       {
         'id': 'notif-2',
-        'type': 'needs_completion',
+        'notification_type': 'needs_completion',
         'title': 'Buổi cần hoàn tất',
-        'body': 'Thiết kế Web · WEB26B hôm qua chưa được hoàn tất',
+        'content': 'Thiết kế Web · WEB26B hôm qua chưa được hoàn tất',
         'created_at': '${today}T07:00:00+07:00',
         'is_read': false,
         'payload': {'session_id': 'session-web', 'class_id': 'web'},
       },
       {
         'id': 'notif-3',
-        'type': 'schedule_changed',
+        'notification_type': 'schedule_changed',
         'title': 'Lịch học thay đổi',
-        'body': 'Scratch · SC26 đổi sang 19:30 thay vì 19:00',
+        'content': 'Scratch · SC26 đổi sang 19:30 thay vì 19:00',
         'created_at': '${yesterday}T14:00:00+07:00',
         'is_read': true,
         'payload': {'session_id': 'session-scratch', 'class_id': 'scratch'},
       },
       {
         'id': 'notif-4',
-        'type': 'leave_result',
+        'notification_type': 'leave_result',
         'title': 'Đơn xin nghỉ được duyệt',
-        'body': 'Đơn xin nghỉ ngày 25/11 đã được chấp nhận',
+        'content': 'Đơn xin nghỉ ngày 25/11 đã được chấp nhận',
         'created_at': '${yesterday}T10:00:00+07:00',
         'is_read': true,
         'payload': {'leave_id': 'leave-1'},
       },
       {
         'id': 'notif-5',
-        'type': 'confirmation_feedback',
+        'notification_type': 'confirmation_feedback',
         'title': 'Giờ dạy đã xác nhận',
-        'body': 'Python cơ bản ngày 18/11 đã được xác nhận',
+        'content': 'Python cơ bản ngày 18/11 đã được xác nhận',
         'created_at': '${twoDaysAgo}T09:00:00+07:00',
         'is_read': true,
-        'payload': {'session_id': 'session-python'},
+        'payload': {'session_id': 'session-python', 'class_id': 'python'},
       },
     ];
   }
@@ -180,31 +192,80 @@ class TeacherPreviewApi extends TeacherApi {
       {
         'id': 'leave-1',
         'organization_id': null,
-        'from_date': now.add(const Duration(days: 5)).toIso8601String().substring(0, 10),
-        'to_date': now.add(const Duration(days: 5)).toIso8601String().substring(0, 10),
+        'from_date': now
+            .add(const Duration(days: 5))
+            .toIso8601String()
+            .substring(0, 10),
+        'to_date': now
+            .add(const Duration(days: 5))
+            .toIso8601String()
+            .substring(0, 10),
         'reason': 'Có việc gia đình cần giải quyết',
         'status': 'approved',
         'feedback': 'Đã sắp xếp giáo viên dạy thay',
         'created_at': now.subtract(const Duration(days: 2)).toIso8601String(),
         'affected_sessions': [
-          {'id': 'session-python', 'class_name': 'Python cơ bản', 'date': now.add(const Duration(days: 5)).toIso8601String().substring(0, 10), 'time': '09:00 - 10:30'},
+          {
+            'id': 'session-python',
+            'class_name': 'Python cơ bản',
+            'date': now
+                .add(const Duration(days: 5))
+                .toIso8601String()
+                .substring(0, 10),
+            'time': '09:00 - 10:30',
+          },
         ],
       },
       {
         'id': 'leave-2',
         'organization_id': null,
-        'from_date': now.add(const Duration(days: 10)).toIso8601String().substring(0, 10),
-        'to_date': now.add(const Duration(days: 10)).toIso8601String().substring(0, 10),
+        'from_date': now
+            .add(const Duration(days: 10))
+            .toIso8601String()
+            .substring(0, 10),
+        'to_date': now
+            .add(const Duration(days: 10))
+            .toIso8601String()
+            .substring(0, 10),
         'reason': 'Khám sức khỏe định kỳ',
         'status': 'pending',
         'feedback': null,
         'created_at': now.subtract(const Duration(days: 1)).toIso8601String(),
         'affected_sessions': [
-          {'id': 'session-web', 'class_name': 'Thiết kế Web', 'date': now.add(const Duration(days: 10)).toIso8601String().substring(0, 10), 'time': '14:00 - 15:30'},
+          {
+            'id': 'session-web',
+            'class_name': 'Thiết kế Web',
+            'date': now
+                .add(const Duration(days: 10))
+                .toIso8601String()
+                .substring(0, 10),
+            'time': '14:00 - 15:30',
+          },
         ],
       },
     ];
   }
+
+  List<Map<String, dynamic>> _classAssignments(String classId) => [
+    for (final published in [true, false])
+      {
+        'id': '${published ? 'practice' : 'review'}-$classId',
+        'class_id': classId,
+        'type': 'homework',
+        'title': published
+            ? 'Bài thực hành tuần 3'
+            : 'Ôn tập kiến thức nền tảng',
+        'description': published
+            ? 'Viết chương trình đọc một số và in bình phương của số đó.'
+            : 'Củng cố nội dung đã học trước buổi tiếp theo.',
+        'difficulty': 'easy',
+        'language': ['python'],
+        'is_published': published,
+        'allow_late_submission': false,
+        if (published) 'end_time': '${_today}T23:00:00+07:00',
+        'created_at': _timestamp,
+      },
+  ];
 
   dynamic _data(dynamic data) => {'data': data};
   dynamic _page(
@@ -292,43 +353,13 @@ class TeacherPreviewApi extends TeacherApi {
           },
         ]);
       if (parts[2] == 'assignments')
-        return _page(
-          [
-            {
-              'id': 'practice-${parts[1]}',
-              'title': 'Bài thực hành tuần 3',
-              'description':
-                  'Vận dụng kiến thức để hoàn thành một sản phẩm nhỏ.',
-              'status': 'published',
-              'max_score': 10,
-              'due_date': '${_today}T23:00:00+07:00',
-              'created_at': _timestamp,
-            },
-            {
-              'id': 'review-${parts[1]}',
-              'title': 'Ôn tập kiến thức nền tảng',
-              'description': 'Củng cố nội dung đã học trước buổi tiếp theo.',
-              'status': 'draft',
-              'max_score': 10,
-              'created_at': _timestamp,
-            },
-          ],
-          'assignments',
-          query,
-        );
+        return _page(_classAssignments(parts[1]), 'assignments', query);
+      if (parts[2] == 'grade-columns') return _data(_gradeColumns);
       if (parts[2] == 'grades')
         return _data({
-          'columns': [
-            {
-              'id': 'practice',
-              'name': 'Thực hành',
-              'grade_type': 'assignment',
-              'max_score': 10,
-              'weight': 1,
-            },
-          ],
+          'columns': _gradeColumns,
           'students': [
-            for (var i = 0; i < _students.length; i++)
+            for (var i = 0; i < _students.length - 1; i++)
               {
                 ..._students[i],
                 'grades': [
@@ -345,7 +376,63 @@ class TeacherPreviewApi extends TeacherApi {
               },
           ],
         });
-      if (parts[2] == 'final-grades') return _data(<dynamic>[]);
+      if (parts[2] == 'final-grades')
+        return _data([
+          {
+            'id': 'final-minh',
+            'student_name': _students.first['full_name'],
+            'weighted_average': 8,
+            'letter_grade': 'B',
+            'status': 'passed',
+            'rank': 1,
+            'calculated_at': _timestamp,
+          },
+        ]);
+    }
+    final assignmentId = switch (parts) {
+      ['assignments', final id] ||
+      ['assignments', final id, 'testcases'] ||
+      ['submissions', 'assignment', final id] => id,
+      _ => null,
+    };
+    if (assignmentId != null) {
+      final assignment = _classes
+          .expand((c) => _classAssignments(c['id'] as String))
+          .where((a) => a['id'] == assignmentId)
+          .firstOrNull;
+      if (assignment != null) {
+        if (parts.length == 2) return _data(assignment);
+        final published = assignment['is_published'] == true;
+        if (parts.first == 'assignments') {
+          return _data([
+            if (published)
+              {
+                'id': 'test-$assignmentId',
+                'input': '3',
+                'expected_output': '9',
+                'is_hidden': false,
+              },
+          ]);
+        }
+        return _page(
+          [
+            if (published)
+              {
+                'id': 'submission-$assignmentId',
+                'user': {'full_name': _students.first['full_name']},
+                'verdict': 'accepted',
+                'language': 'python',
+                'test_cases_passed': 1,
+                'total_test_cases': 1,
+                'created_at': _timestamp,
+                'score': 10,
+                'code': 'n = int(input())\nprint(n * n)',
+              },
+          ],
+          'data',
+          query,
+        );
+      }
     }
     if (parts.length >= 2 && parts.first == 'courses') {
       final course = _courses.where((c) => c['id'] == parts[1]).firstOrNull;
@@ -516,17 +603,21 @@ class TeacherPreviewApi extends TeacherApi {
     if (route == '/reminders/settings')
       return _data([
         {
-          'event_type': 'class_session',
-          'remind_before_minutes': 15,
+          'event_type': 'class',
+          'remind_before_minutes': [15],
           'channels': ['push'],
           'is_enabled': true,
         },
       ]);
     // V3: Notifications
-    if (route == '/me/notifications')
+    if (route == '/notifications')
       return _page(_notifications, 'notifications', query);
-    if (route == '/me/notifications/unread-count')
-      return _data({'count': _notifications.where((n) => n['is_read'] != true).length});
+    if (route == '/notifications/unread-count')
+      return _data({
+        'unread_count': _notifications
+            .where((n) => n['is_read'] != true)
+            .length,
+      });
     // V3: Leave requests
     if (route == '/me/leave-requests')
       return _page(_leaveRequests, 'leave_requests', query);

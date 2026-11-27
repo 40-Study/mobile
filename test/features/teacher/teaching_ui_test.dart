@@ -6,6 +6,9 @@ import 'package:study/features/teacher/presentation/classes/tools/teacher_gradeb
 import 'package:study/features/teacher/presentation/schedule/teacher_attendance_screen.dart';
 import 'package:study/features/teacher/presentation/schedule/teacher_schedule_screen.dart';
 
+import 'package:study/features/teacher/data/teacher_core.dart';
+import 'package:study/features/teacher/presentation/widgets/teacher_expandable_calendar.dart';
+
 import '../../support/teacher_screen_fixtures.dart';
 
 class _Api extends TeacherFixtureApi {
@@ -27,8 +30,10 @@ class _Api extends TeacherFixtureApi {
   ];
   List<String>? reordered;
   String? deleted;
+  final timetableQueries = <Map<String, dynamic>>[];
   @override
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) {
+    if (path == '/me/timetable' && query != null) timetableQueries.add(query);
     if (path.endsWith('/grade-columns')) return Future.value({'data': columns});
     if (path.endsWith('/grades'))
       return Future.value({
@@ -67,6 +72,73 @@ class _Api extends TeacherFixtureApi {
 }
 
 void main() {
+  testWidgets('empty weeks keep both calendar navigation controls', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TeacherScheduleScreen(
+          api: _Api(),
+          organizationId: null,
+          workplaceLabel: 'Cá nhân',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final previous = find.byKey(const ValueKey('teacher-calendar-previous'));
+    final next = find.byKey(const ValueKey('teacher-calendar-next'));
+    for (final arrow in [next, previous, previous]) {
+      await tester.tap(arrow);
+      await tester.pumpAndSettle();
+      expect(next, findsOneWidget);
+      expect(previous, findsOneWidget);
+    }
+
+    expect(find.text('Không có buổi dạy trong tuần này.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('a week crossing months requests every visible day', (
+    tester,
+  ) async {
+    final api = _Api();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: TeacherScheduleScreen(
+          api: api,
+          organizationId: null,
+          workplaceLabel: 'Cá nhân',
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final next = find.byKey(const ValueKey('teacher-calendar-next'));
+    final calendar = find.byType(TeacherExpandableCalendar);
+    for (var attempt = 0; attempt < 10; attempt++) {
+      final weekStart = tester
+          .widget<TeacherExpandableCalendar>(calendar)
+          .weekStart;
+      final weekEnd = DateTime(
+        weekStart.year,
+        weekStart.month,
+        weekStart.day + 6,
+      );
+      if (weekStart.month != weekEnd.month) {
+        final range = api.timetableQueries[api.timetableQueries.length - 2];
+        expect(
+          range['sessions_from'].toString().compareTo(teacherDate(weekStart)),
+          lessThanOrEqualTo(0),
+        );
+        expect(
+          range['sessions_to'].toString().compareTo(teacherDate(weekEnd)),
+          greaterThanOrEqualTo(0),
+        );
+        return;
+      }
+      await tester.tap(next);
+      await tester.pumpAndSettle();
+    }
+    fail('No cross-month week reached');
+  });
   testWidgets('class has direct assignment and grade tabs', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -145,7 +217,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Đánh dấu tất cả có mặt'));
+    await tester.tap(find.text('Đánh dấu cả lớp có mặt'));
     await tester.pumpAndSettle();
     expect(find.text('Ghi đè điểm danh đã chọn?'), findsOneWidget);
     await tester.tap(find.text('Hủy'));
@@ -168,7 +240,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Tháng'));
+      await tester.tap(find.byTooltip('Mở rộng lịch tháng'));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       await tester.tap(find.byTooltip('Tùy chọn lịch dạy'));

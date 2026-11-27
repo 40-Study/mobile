@@ -15,10 +15,13 @@ class RoleAppHeader extends StatelessWidget {
     this.categoryLabel = '40STUDY',
     required this.title,
     this.trailing,
+    this.titleSuffix,
     this.onNotificationTap,
     this.onAvatarTap,
     this.backgroundColor,
     this.showNotification = true,
+    this.showNotificationBadge = true,
+    this.compact = false,
     this.showAvatar = true,
     this.iconBackgroundColor,
     this.iconColor,
@@ -45,6 +48,7 @@ class RoleAppHeader extends StatelessWidget {
 
   /// Widget phụ trợ ở bên phải (VD: icon tìm kiếm, filter)
   final Widget? trailing;
+  final Widget? titleSuffix;
 
   /// Callback khi bấm vào chuông thông báo
   final VoidCallback? onNotificationTap;
@@ -57,6 +61,8 @@ class RoleAppHeader extends StatelessWidget {
 
   /// Có hiển thị chuông thông báo hay không
   final bool showNotification;
+  final bool showNotificationBadge;
+  final bool compact;
 
   /// Có hiển thị avatar hay không
   final bool showAvatar;
@@ -81,6 +87,17 @@ class RoleAppHeader extends StatelessWidget {
         final user = isAuth ? state.user : null;
         final displayName = user?.fullName ?? user?.username ?? 'Bạn';
 
+        final titleText = Text(
+          title,
+          style: tt.titleMedium?.copyWith(
+            color: cs.onSurface,
+            fontWeight: FontWeight.w700,
+            fontSize: compact ? 22 : 18,
+          ),
+          maxLines: compact ? 2 : 1,
+          overflow: TextOverflow.ellipsis,
+        );
+        final suffix = titleSuffix;
         final effectiveLeadingTap = onLeadingTap ?? onDrawerTap;
         final effectiveIcon =
             icon ??
@@ -88,12 +105,14 @@ class RoleAppHeader extends StatelessWidget {
 
         return Container(
           color: backgroundColor ?? cs.surface,
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.lg,
-            AppSpacing.sm,
-            AppSpacing.lg,
-            AppSpacing.md,
-          ),
+          padding: compact
+              ? const EdgeInsets.symmetric(horizontal: 16, vertical: 4)
+              : const EdgeInsets.fromLTRB(
+                  AppSpacing.lg,
+                  AppSpacing.sm,
+                  AppSpacing.lg,
+                  AppSpacing.md,
+                ),
           child: Row(
             children: [
               // Icon đại diện phân hệ / menu dẫn hướng
@@ -106,8 +125,8 @@ class RoleAppHeader extends StatelessWidget {
                     onTap: effectiveLeadingTap,
                     borderRadius: BorderRadius.circular(AppRadius.full),
                     child: Container(
-                      width: 44,
-                      height: 44,
+                      width: compact ? 32 : 44,
+                      height: compact ? 32 : 44,
                       decoration: BoxDecoration(
                         color: iconBackgroundColor ?? cs.primaryContainer,
                         shape: BoxShape.circle,
@@ -118,7 +137,7 @@ class RoleAppHeader extends StatelessWidget {
                       child: Icon(
                         effectiveIcon,
                         color: iconColor ?? cs.primary,
-                        size: 24,
+                        size: compact ? 20 : 24,
                       ),
                     ),
                   ),
@@ -130,27 +149,34 @@ class RoleAppHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      categoryLabel,
-                      style: tt.labelSmall?.copyWith(
-                        color: cs.onSurfaceVariant,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.1,
+                    if (!compact)
+                      Text(
+                        categoryLabel,
+                        style: tt.labelSmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.1,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      title,
-                      style: tt.titleMedium?.copyWith(
-                        color: cs.onSurface,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 18,
+                    if (!compact) const SizedBox(height: 2),
+                    if (suffix == null)
+                      titleText
+                    else
+                      Row(
+                        children: [
+                          Flexible(
+                            flex: 2,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: titleText,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(flex: 3, child: suffix),
+                        ],
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
                   ],
                 ),
               ),
@@ -161,7 +187,11 @@ class RoleAppHeader extends StatelessWidget {
                 Badge(
                   backgroundColor: AchievementColors.red,
                   smallSize: 8,
+                  isLabelVisible: showNotificationBadge,
                   child: IconButton(
+                    constraints: compact
+                        ? const BoxConstraints(minWidth: 48, minHeight: 48)
+                        : null,
                     onPressed: onNotificationTap,
                     icon: Icon(
                       Icons.notifications_outlined,
@@ -173,7 +203,23 @@ class RoleAppHeader extends StatelessWidget {
                 AppSpacing.hGap8,
               ],
               // Avatar tài khoản
-              if (showAvatar)
+              if (showAvatar && compact)
+                IconButton(
+                  onPressed: onAvatarTap,
+                  tooltip: 'Hồ sơ',
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  ),
+                  padding: EdgeInsets.zero,
+                  icon: CachedAvatar(
+                    url: user?.avatarUrl,
+                    radius: 18,
+                    backgroundColor: cs.primaryContainer,
+                    name: displayName,
+                  ),
+                )
+              else if (showAvatar)
                 GestureDetector(
                   onTap: onAvatarTap,
                   child: CachedAvatar(
