@@ -306,41 +306,74 @@ class TeacherTimelineCard extends StatelessWidget {
                   ],
                 ),
               ],
-              if (hero)
-                Wrap(
-                  spacing: 8,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    if (onAttendance != null)
-                      FilledButton(
-                        onPressed: onAttendance,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: teacherScheduleBlue,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Điểm danh ngay'),
-                      ),
-                    TextButton(
-                      onPressed: onDetails,
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('Chi tiết'),
-                          Icon(Icons.chevron_right, size: 18),
-                        ],
-                      ),
-                    ),
-                    if (onJoin != null)
-                      TextButton(
-                        onPressed: onJoin,
-                        child: const Text('Vào phòng'),
-                      ),
-                  ],
-                ),
+              if (hero) ...[const SizedBox(height: 8), _actions(theme)],
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _actions(ThemeData theme) {
+    final dark = theme.brightness == Brightness.dark;
+    final colors = theme.colorScheme;
+    final labelStyle = theme.textTheme.labelMedium?.copyWith(
+      fontWeight: FontWeight.w600,
+    );
+    final secondaryStyle = TextButton.styleFrom(
+      backgroundColor: Colors.transparent,
+      foregroundColor: dark ? colors.onSurfaceVariant : const Color(0xFF475569),
+      minimumSize: const Size(48, 36),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      textStyle: labelStyle,
+      tapTargetSize: MaterialTapTargetSize.padded,
+      visualDensity: VisualDensity.standard,
+    );
+
+    return Wrap(
+      spacing: 12,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        if (onAttendance != null)
+          FilledButton(
+            onPressed: onAttendance,
+            style: FilledButton.styleFrom(
+              backgroundColor: dark
+                  ? colors.primaryContainer
+                  : teacherSchedulePaleBlue,
+              foregroundColor: dark
+                  ? colors.onPrimaryContainer
+                  : const Color(0xFF1D4ED8),
+              minimumSize: const Size(48, 36),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              textStyle: labelStyle,
+              tapTargetSize: MaterialTapTargetSize.padded,
+              visualDensity: VisualDensity.standard,
+            ),
+            child: const Text('Điểm danh ngay'),
+          ),
+        TextButton(
+          onPressed: onDetails,
+          style: secondaryStyle,
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(child: Text('Chi tiết')),
+              SizedBox(width: 4),
+              Icon(Icons.chevron_right, size: 16),
+            ],
+          ),
+        ),
+        if (onJoin != null)
+          TextButton(
+            onPressed: onJoin,
+            style: secondaryStyle,
+            child: const Text('Vào phòng'),
+          ),
+      ],
     );
   }
 

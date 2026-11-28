@@ -144,6 +144,85 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final brightness in Brightness.values) {
+    testWidgets('session actions stay readable at 320dp in $brightness', (
+      tester,
+    ) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(320, 640);
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+      final theme = ThemeData(brightness: brightness);
+      final now = DateTime(2026, 11, 28, 14);
+      final session = TeacherOccurrence(
+        json: _row('session', now, '14:00', '15:00'),
+        date: now,
+        classData: TeacherClassData({'id': 'teacher-class', 'name': 'Python'}),
+      );
+      final taps = <String>[];
+      Future<void> show({required bool allActions}) => tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          home: Scaffold(
+            body: TeacherScheduleTimeline(
+              rows: [session],
+              daySessions: [session],
+              dotFor: (_) => TeacherCalendarDot.upcoming,
+              buildCard: (_) => TeacherTimelineCard(
+                session: session,
+                now: now,
+                dot: TeacherCalendarDot.upcoming,
+                heroLabel: 'ĐẾN GIỜ DẠY',
+                onDetails: () => taps.add('details'),
+                onPreview: () {},
+                onAttendance: allActions ? () => taps.add('attendance') : null,
+                onJoin: allActions ? () => taps.add('join') : null,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await show(allActions: true);
+      final attendance = find.widgetWithText(FilledButton, 'Điểm danh ngay');
+      final details = find.widgetWithText(TextButton, 'Chi tiết');
+      final join = find.widgetWithText(TextButton, 'Vào phòng');
+      final dark = brightness == Brightness.dark;
+      final style = tester.widget<FilledButton>(attendance).style!;
+      expect(
+        style.backgroundColor!.resolve({}),
+        dark ? theme.colorScheme.primaryContainer : const Color(0xFFEFF6FF),
+      );
+      expect(
+        style.foregroundColor!.resolve({}),
+        dark ? theme.colorScheme.onPrimaryContainer : const Color(0xFF1D4ED8),
+      );
+      expect(
+        tester.widget<TextButton>(details).style!.foregroundColor!.resolve({}),
+        dark ? theme.colorScheme.onSurfaceVariant : const Color(0xFF475569),
+      );
+      expect(
+        tester.getTopLeft(join).dy,
+        greaterThan(tester.getTopLeft(attendance).dy),
+      );
+      for (final action in [attendance, details, join]) {
+        expect(tester.getSize(action).shortestSide, greaterThanOrEqualTo(48));
+        await tester.tap(action);
+      }
+      expect(taps, ['attendance', 'details', 'join']);
+      expect(tester.takeException(), isNull);
+
+      await show(allActions: false);
+      expect(details, findsOneWidget);
+      expect(attendance, findsNothing);
+      expect(join, findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets(
     'break labels respect the threshold, overlaps and filtered classes',
     (tester) async {
